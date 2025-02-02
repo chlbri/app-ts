@@ -22,6 +22,7 @@ import type { GuardConfig } from '~guards';
 import type { AnyMachine } from '~machine';
 import type { PromiseConfig } from '~promises';
 import type {
+  ExtractActionsFromDelayed,
   ExtractActionsFromTransitions,
   ExtractDelaysFromTransitions,
   ExtractGuardsFromTransitions,
@@ -49,12 +50,26 @@ export type NodesConfigWithInitials = Record<
   NodeConfigWithInitials
 >;
 
-export type ActivityConfig = Record<string, SingleOrArrayL<ActionConfig>>;
+export type ActivityArray = SingleOrArrayL<
+  | {
+      guards?: GuardConfig;
+      actions: SingleOrArrayL<ActionConfig>;
+    }
+  | ActionConfig
+>;
+
+export type ActivityConfig = Record<string, ActivityArray>;
+
+export type ActionsFromActivity<TS extends ActivityArray> = TS extends any
+  ? TS extends { actions: SingleOrArrayL<ActionConfig> }
+    ? ExtractActionsFromDelayed<TS>
+    : FromActionConfig<ReduceArray<Extract<TS, ActionConfig>>>
+  : never;
 
 export type ExtractActionsFromActivity<
   T extends { activities: ActivityConfig },
 > = T['activities'] extends infer TA extends ActivityConfig
-  ? { [key in keyof TA]: FromActionConfig<ReduceArray<TA[key]>> }[keyof TA]
+  ? { [key in keyof TA]: ActionsFromActivity<TA[key]> }[keyof TA]
   : never;
 
 export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T
