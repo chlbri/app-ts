@@ -52,7 +52,7 @@
     "eslint": "eslint \"{src/**/*,App}.{ts,tsx}\"",
     "lint": "pnpm run prettier && pnpm run eslint --fix",
     "lint:watch": "onchange --await-write-finish 5500 -d 50000 -v \"**/*.ts\" -- pnpm run lint",
-    "p-q": "pretty-quick --staged",
+    "p-q": "pretty-quick",
     "posttest": "pnpm run prettier && pnpm run p-q",
     "prepare": "husky",
     "prepublishOnly": "",

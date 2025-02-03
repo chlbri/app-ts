@@ -4,7 +4,7 @@ import type { EventsMap, ToEvents } from '~events';
 import type { GuardConfig } from '~guards';
 import type { Machine } from '~machine';
 import type { PromiseConfig } from '~promises';
-import type { DelayedTransitions } from '~transitions';
+import type { DelayedTransitions, TransitionConfig } from '~transitions';
 import type { PrimitiveObject } from '~types';
 import type { CatchEvent, ThenEvent } from './constants';
 import type { Interpreter } from './interpreter';
@@ -24,6 +24,7 @@ export type WorkingStatus =
   | 'starting'
   | 'started'
   | 'working'
+  | 'sending'
   | 'stopped'
   | 'busy';
 
@@ -89,9 +90,19 @@ export type PerformPromise_F<
 > = (promise: PromiseFunction2<E, Pc, Tc>) => Promise<any>;
 
 export type ExecuteActivities_F = (activity: ActivityConfig) => void;
-export type PerformAfter_F = (
-  activity: DelayedTransitions,
-) => Promise<string[]>;
+export type PerformAfter_F<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (
+  from: string,
+  after: DelayedTransitions,
+) => Promise<
+  | {
+      result: Contexts<Pc, Tc>;
+      target?: string;
+    }
+  | undefined
+>;
 
 export type ToPromiseSrc_F<
   E extends EventsMap = EventsMap,
@@ -99,10 +110,58 @@ export type ToPromiseSrc_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (promise: string) => PromiseFunction2<E, Pc, Tc>;
 
-export type PerformPromisee_F = (promisee: PromiseConfig) => Promise<
-  | {
-      events: ThenEvent | CatchEvent;
-      targets: string[];
-    }
-  | undefined
+export type PerformPromisees_F<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (
+  from: string,
+  ...promisees: PromiseConfig[]
+) => Promise<
+  PromiseSettledResult<
+    | {
+        event: ThenEvent;
+        result: Contexts<Pc, Tc>;
+        target?: string;
+      }
+    | {
+        event: CatchEvent;
+        result: Contexts<Pc, Tc>;
+        target?: string;
+      }
+    | undefined
+  >[]
 >;
+
+export type Contexts<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  pContext?: Pc;
+  context?: Tc;
+};
+
+export type PerformTransition_F<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (transition: TransitionConfig) =>
+  | {
+      target?: string;
+      result: Contexts<Pc, Tc>;
+    }
+  | string
+  | false;
+
+export type PerformTransitions_F<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (...transitions: TransitionConfig[]) => {
+  target?: string;
+  result?: Contexts<Pc, Tc>;
+};
+
+export type SleepContexts_F = <
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+>(
+  ms?: number,
+) => Promise<Contexts<Pc, Tc>>;

@@ -1,26 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-private-class-members */
 import { isDefined } from '@bemedev/basifun';
+import { decomposeSV } from '@bemedev/decompose';
 import sleep from '@bemedev/sleep';
 import cloneDeep from 'clone-deep';
 import { deepmerge } from 'deepmerge-ts';
 import type { ActionConfig } from '~actions';
+import { DEFAULT_DELIMITER } from '~constants';
 import type { EventsMap, ToEvents } from '~events';
 import type { GuardConfig } from '~guards';
 import { getEntries, getExits, type Machine } from '~machine';
 import type { PromiseConfig } from '~promises';
 import { nextSV, type StateValue } from '~states';
 import type { TransitionConfig } from '~transitions';
-import type { PrimitiveObject } from '~types';
-import { toArray } from '~utils';
+import { isDescriber, type PrimitiveObject } from '~types';
+import { replaceAll, toArray } from '~utils';
 import {
   CATCH_EVENT_TYPE,
   DEFAULT_MAX_PROMISE,
   THEN_EVENT_TYPE,
+  type CatchEvent,
+  type ThenEvent,
 } from './constants';
 import { flatMap } from './flatMap';
 import {
+  performRemaining,
+  possibleEvents,
+  sleepU,
+} from './interpreter.helpers';
+import {
   INIT_EVENT,
+  type Contexts,
   type ExecuteActivities_F,
   type Interpreter_F,
   type Mode,
@@ -29,7 +39,9 @@ import {
   type PerformDelay_F,
   type PerformPredicate_F,
   type PerformPromise_F,
-  type PerformPromisee_F,
+  type PerformPromisees_F,
+  type PerformTransition_F,
+  type PerformTransitions_F,
   type ToAction_F,
   type ToDelay_F,
   type ToPredicate_F,
@@ -70,11 +82,12 @@ export class Interpreter<
   #machine: Machine<C, Pc, Tc, E, Mo>;
   #status: WorkingStatus = 'idle';
   #config: NodeConfigWithInitials;
-  #flat: RecordS<NodeConfigWithInitials>;
-  #value: StateValue;
+  #flat!: RecordS<NodeConfigWithInitials>;
+  #possibleEvents!: string[];
+  #value!: StateValue;
   #mode: Mode;
   readonly #initialNode: Node<E, Pc, Tc>;
-  #currentNode: Node<E, Pc, Tc>;
+  #node!: Node<E, Pc, Tc>;
   #iterator = 0;
   #event: ToEvents<E> = INIT_EVENT;
   readonly #initialConfig: NodeConfigWithInitials;
@@ -103,16 +116,20 @@ export class Interpreter<
     this.#machine = machine.renew;
 
     this.#initialConfig = this.#machine.initialConfig;
+    this.#initialNode = this.#resolveNode(this.#initialConfig) as any;
+    this.#mode = mode;
     this.#config = this.#initialConfig;
 
-    this.#value = nodeToValue(this.#config);
-    this.#mode = mode;
-    this.#initialNode = this.#resolveNode(this.#initialConfig) as any;
-    this.#currentNode = this.#initialNode;
-
-    const configForFlat = this.#machine.postConfig as NodeConfig;
-    this.#flat = flatMap(configForFlat, false) as any;
+    this.#performConfig();
   }
+
+  #performConfig = () => {
+    this.#value = nodeToValue(this.#config);
+    this.#node = this.#resolveNode(this.#config) as any;
+    const configForFlat = this.#config as NodeConfig;
+    this.#flat = flatMap(configForFlat, false) as any;
+    this.#possibleEvents = possibleEvents(this.#flat);
+  };
 
   protected iterate = () => this.#iterator++;
 
@@ -129,7 +146,7 @@ export class Interpreter<
   }
 
   get node() {
-    return this.#currentNode;
+    return this.#node;
   }
 
   makeStrict = () => {
@@ -187,16 +204,24 @@ export class Interpreter<
     this.#makeBusy();
     const { pContext, context } = this.#performAction(action);
 
-    //TODO some verifs
-    this.#pContext = deepmerge(this.#pContext, pContext) as any;
-    this.#context = deepmerge(this.#context, context) as any;
-
     this.#status = 'started';
     return { pContext, context };
   };
 
+  get #contexts() {
+    return {
+      pContext: cloneDeep(this.#pContext),
+      context: structuredClone(this.#context),
+    };
+  }
+
   #performActions = (...actions: ActionConfig[]) => {
-    return actions.map(this.toAction).forEach(this.#executeAction);
+    return actions
+      .map(this.toAction)
+      .map(this.#executeAction)
+      .reduce((acc, value) => {
+        return deepmerge(acc, value) as any;
+      }, this.#contexts);
   };
 
   #performPredicate: PerformPredicate_F<E, Pc, Tc> = predicate => {
@@ -216,6 +241,7 @@ export class Interpreter<
   };
 
   #performGuards = (...guards: GuardConfig[]) => {
+    if (guards.length < 1) return true;
     return guards
       .map(this.toPredicate)
       .map(this.#executePredicate)
@@ -275,20 +301,36 @@ export class Interpreter<
     return Promise.race(promises.map(promise => promise()));
   };
 
-  #performTransition = (transition: TransitionConfig) => {
+  #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';
     if (check) return transition;
 
     const { guards, actions, target } = transition;
     const response = this.#performGuards(...toArray<GuardConfig>(guards));
     if (response) {
-      this.#performActions(...toArray<ActionConfig>(actions));
-      return target;
+      const result = this.#performActions(
+        ...toArray<ActionConfig>(actions),
+      );
+      return { target, result };
     }
-    return;
+    return false;
   };
 
-  #performPromise: PerformPromise_F<E, Pc, Tc> = promise => {
+  #performTransitions: PerformTransitions_F<Pc, Tc> = (...transitions) => {
+    for (const _transition of transitions) {
+      const transition = this.#performTransition(_transition);
+      const check1 = typeof transition === 'string';
+      if (check1) return { target: transition };
+
+      const check2 = typeof transition === 'object';
+      if (check2) {
+        return transition;
+      }
+    }
+    return {};
+  };
+
+  #performPromiseSrc: PerformPromise_F<E, Pc, Tc> = promise => {
     return promise(
       cloneDeep(this.#pContext),
       structuredClone(this.#context),
@@ -296,91 +338,293 @@ export class Interpreter<
     );
   };
 
-  #_performPromisee = async ({
-    src,
-    then,
-    catch: _catch,
-    finally: _finally,
-  }: PromiseConfig) => {
-    const promiseF = this.toPromiseSrc(src);
-    let event: ToEvents<E>;
-    const targets: string[] = [];
+  #performFinally = (_finally?: PromiseConfig['finally']) => {
+    const check1 = _finally === undefined;
+    if (check1) return;
 
-    try {
-      const payload = await this.#performPromise(promiseF);
-      event = { type: THEN_EVENT_TYPE, payload };
+    const finals = toArray.typed(_finally);
 
-      const _targets = toArray
-        .typed(then)
-        .map(this.#performTransition)
-        .filter(target => target !== undefined);
+    for (const final of finals) {
+      const check2 = typeof final === 'string';
+      const check3 = isDescriber(final);
 
-      targets.push(..._targets);
-    } catch (payload) {
-      event = { type: CATCH_EVENT_TYPE, payload };
+      const check4 = check2 || check3;
+      if (check4) {
+        const result = this.#performActions(final);
+        return result;
+      }
 
-      const _targets = toArray
-        .typed(_catch)
-        .map(this.#performTransition)
-        .filter(target => target !== undefined);
-
-      targets.push(..._targets);
-    } finally {
-      const check1 = _finally !== undefined;
-      if (check1) {
-        const finals = toArray.typed(_finally);
-        finals.forEach(final => {
-          const check2 = typeof final === 'string';
-          if (check2) this.#performActions(final);
-          else {
-            const check3 = this.#performGuards(
-              ...toArray.typed(final.guards),
-            );
-            if (check3) {
-              this.#performActions(...toArray.typed(final.actions));
-            }
-          }
-        });
+      const response = this.#performGuards(...toArray.typed(final.guards));
+      if (response) {
+        const result = this.#performActions(
+          ...toArray.typed(final.actions),
+        );
+        return result;
       }
     }
-
-    return { event, targets };
+    return;
   };
 
-  #performPromisee: PerformPromisee_F = promisee => {
-    const promises: (() => Promise<any>)[] = [];
+  //TODO add an array to mark all promises started by state
 
-    const promise = () => this.#_performPromisee(promisee);
-    promises.push(promise, DEFAULT_MAX_PROMISE);
-    const maxS = promisee.max;
-    const check = isDefined(maxS);
+  get #sending() {
+    return this.#status === 'sending';
+  }
 
-    if (check) {
-      const max = this.#performDelay(this.toDelay(maxS));
-      promises.push(() => sleep(max));
+  #_performPromisee = async (
+    from: string,
+    { src, then, catch: _catch, finally: _finally }: PromiseConfig,
+  ) => {
+    const promiseF = this.toPromiseSrc(src);
+    let event: ToEvents<E> | undefined = undefined;
+    let target: string | undefined = undefined;
+    let result: Contexts<Pc, Tc> = {};
+
+    await this.#performPromiseSrc(promiseF)
+      .then(payload => {
+        const check = this.#sending || !this.#isInsideValue(from);
+        if (check) return;
+
+        event = { type: THEN_EVENT_TYPE, payload };
+
+        const thens = toArray.typed(then);
+        const transition = this.#performTransitions(...thens);
+
+        target = transition.target;
+        result = transition.result ?? {};
+        result = deepmerge(result, this.#performFinally(_finally));
+      })
+      .catch(payload => {
+        const check = this.#sending || !this.#isInsideValue(from);
+        if (check) return;
+
+        event = { type: CATCH_EVENT_TYPE, payload };
+        const catchs = toArray.typed(_catch);
+        const transition = this.#performTransitions(...catchs);
+
+        target = transition.target;
+        result = transition.result ?? {};
+        result = deepmerge(result, this.#performFinally(_finally));
+      });
+
+    return { event, result, target };
+  };
+
+  #remaining: RecordS<
+    () => {
+      target?: string;
+      result: Contexts<Pc, Tc>;
     }
+  > = {};
 
-    return Promise.race(promises.map(p => p()));
+  #addRemainingPromise = (
+    state: string,
+    remain: () => {
+      target?: string;
+      result: Contexts<Pc, Tc>;
+    },
+  ) => {
+    const key = `${state}::promise`;
+    this.#remaining[key] = remain;
   };
 
-  #performAfter: PerformAfter_F = after => {
+  #addRemainingAfter = (
+    state: string,
+    remain: () => {
+      target?: string;
+      result: Contexts<Pc, Tc>;
+    },
+  ) => {
+    const key = `${state}::after`;
+    this.#remaining[key] = remain;
+  };
+
+  #performPromisees: PerformPromisees_F<Pc, Tc> = async (
+    from,
+    ...promisees
+  ) => {
+    // #region Constants
+    let event: ToEvents<E> | undefined = undefined;
+    let target: string | undefined = undefined;
+    let result: Contexts<Pc, Tc> = {};
+
+    const promises: Promise<
+      | {
+          event: ThenEvent;
+          result: Contexts<Pc, Tc>;
+          target?: string;
+        }
+      | {
+          event: CatchEvent;
+          result: Contexts<Pc, Tc>;
+          target?: string;
+        }
+      | undefined
+    >[] = [];
+
+    const remains: (() => {
+      result: Contexts<Pc, Tc>;
+      target?: string;
+    })[] = [];
+    // #endregion
+
+    promisees.forEach(
+      ({ src, then, catch: _catch, finally: _finally, max: maxS }) => {
+        const promiseF = this.toPromiseSrc(src);
+
+        const _promises: Promise<
+          | {
+              event: ThenEvent;
+              result: Contexts<Pc, Tc>;
+              target: string | undefined;
+            }
+          | {
+              event: CatchEvent;
+              result: Contexts<Pc, Tc>;
+              target: string | undefined;
+            }
+          | undefined
+        >[] = [DEFAULT_MAX_PROMISE];
+
+        const _promise = this.#performPromiseSrc(promiseF)
+          .then(payload => {
+            const out = () => {
+              event = { type: THEN_EVENT_TYPE, payload };
+
+              const thens = toArray.typed(then);
+              const transition = this.#performTransitions(...thens);
+
+              target = transition.target;
+              result = deepmerge(
+                result,
+                transition.result,
+                this.#performFinally(_finally),
+              );
+
+              return { event, result, target };
+            };
+
+            const check = this.#sending || !this.#isInsideValue(from);
+            if (check) {
+              const remain = () => {
+                const { event, ...rest } = out();
+                return rest;
+              };
+              remains.push(remain);
+              return;
+            }
+            return out();
+          })
+          .catch(payload => {
+            const out = () => {
+              event = { type: CATCH_EVENT_TYPE, payload };
+              const catchs = toArray.typed(_catch);
+              const transition = this.#performTransitions(...catchs);
+
+              target = transition.target;
+              result = deepmerge(
+                result,
+                transition.result,
+                this.#performFinally(_finally),
+              );
+
+              return { event, result, target };
+            };
+
+            const check = this.#sending || !this.#isInsideValue(from);
+            if (check) {
+              const remain = () => {
+                const { event, ...rest } = out();
+                return rest;
+              };
+              remains.push(remain);
+              return;
+            }
+
+            return out();
+          });
+
+        _promises.push(_promise);
+
+        const check = isDefined(maxS);
+
+        if (check) {
+          const max = this.#performDelay(this.toDelay(maxS));
+          _promises.push(sleepU(max));
+        }
+
+        const promise = Promise.race(_promises);
+
+        promises.push(promise);
+      },
+    );
+
+    const finalize = () => {
+      const remaining = performRemaining(...remains);
+      this.#addRemainingPromise(from, remaining);
+    };
+
+    return Promise.allSettled(promises).finally(finalize);
+  };
+
+  get possibleEvents() {
+    return this.#possibleEvents;
+  }
+
+  canEvent = (eventS: string) => {
+    return this.#possibleEvents.includes(eventS);
+  };
+
+  #performAfter: PerformAfter_F<Pc, Tc> = async (from, after) => {
     const entries = Object.entries(after);
-    const promises: (() => Promise<string[]>)[] = [];
+
+    const promises: Promise<
+      | {
+          result: Contexts<Pc, Tc>;
+          target?: string;
+        }
+      | undefined
+    >[] = [];
+
+    const remains: (() => {
+      result: Contexts<Pc, Tc>;
+      target?: string;
+    })[] = [];
+
+    let target: string | undefined = undefined;
+    let result: Contexts<Pc, Tc> = {};
 
     entries.forEach(([_delay, transition]) => {
       const delay = this.#executeDelay(this.toDelay(_delay));
       const transitions = toArray.typed(transition);
-      const promise = async () => {
-        await sleep(delay);
-        const out = transitions.map(this.#performTransition);
 
-        return out.filter(val => val !== undefined);
-      };
+      const promise = sleep(delay).then(() => {
+        const remain = () => {
+          const out = this.#performTransitions(...transitions);
+          target = out.target;
+          result = out.result ?? {};
+
+          return { target, result };
+        };
+
+        const check = this.#sending || !this.#isInsideValue(from);
+        if (check) {
+          remains.push(remain);
+          return;
+        }
+
+        return remain();
+      });
 
       promises.push(promise);
     });
 
-    return Promise.race(promises.map(p => p()));
+    const finalize = () => {
+      const remaining = performRemaining(...remains);
+      this.#addRemainingAfter(from, remaining);
+    };
+
+    return Promise.race(promises).finally(finalize);
   };
 
   //TODO build Event loop with priorities / order
@@ -569,6 +813,22 @@ export class Interpreter<
   //   return out;
   // };
   // #endregion
+
+  #isInsideValue = (_state: string) => {
+    const check1 = _state === '/';
+    if (check1) return true;
+
+    const values = decomposeSV(this.#value);
+
+    const entry = _state.substring(1);
+    const state = replaceAll({
+      entry,
+      match: DEFAULT_DELIMITER,
+      replacement: '.',
+    });
+
+    return values.includes(state);
+  };
 
   #makeWork = () => {
     this.#status = 'working';

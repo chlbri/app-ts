@@ -1,5 +1,9 @@
 import type { Unionize } from '@bemedev/types';
-import type { CatchEvent, ThenEvent } from 'src/machine/constants';
+import type {
+  CatchEvent,
+  MaxExceededEvent,
+  ThenEvent,
+} from 'src/machine/constants';
 import type {
   AlwaysEvent,
   InitEvent,
@@ -21,4 +25,5 @@ export type ToEvents<T extends EventsMap> =
   | InitEvent
   | AlwaysEvent
   | ThenEvent
-  | CatchEvent;
+  | CatchEvent
+  | MaxExceededEvent;

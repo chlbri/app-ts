@@ -1,4 +1,8 @@
-import type { CatchEvent, ThenEvent } from 'src/machine/constants';
+import type {
+  CatchEvent,
+  MaxExceededEvent,
+  ThenEvent,
+} from 'src/machine/constants';
 import type {
   AlwaysEvent,
   InitEvent,
@@ -28,4 +32,5 @@ expectTypeOf<TT1>().toEqualTypeOf<
   | AlwaysEvent
   | ThenEvent
   | CatchEvent
+  | MaxExceededEvent
 >();
