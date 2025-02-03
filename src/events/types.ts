@@ -1,11 +1,11 @@
 import type { Unionize } from '@bemedev/types';
+import type { CatchEvent, ThenEvent } from 'src/machine/constants';
 import type {
   AlwaysEvent,
   InitEvent,
 } from 'src/machine/interpreter.types';
-import type { PrimitiveObject } from '~types';
 
-export type EventObject<T extends PrimitiveObject = PrimitiveObject> = {
+export type EventObject<T = any> = {
   type: string;
   payload?: T;
 };
@@ -19,4 +19,6 @@ export type ToEvents<T extends EventsMap> =
         : never
       : { type: string; payload: any })
   | InitEvent
-  | AlwaysEvent;
+  | AlwaysEvent
+  | ThenEvent
+  | CatchEvent;

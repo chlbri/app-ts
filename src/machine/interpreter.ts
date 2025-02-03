@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-private-class-members */
-import { toArray } from '@bemedev/basifun';
+import { isDefined } from '@bemedev/basifun';
+import sleep from '@bemedev/sleep';
 import cloneDeep from 'clone-deep';
 import { deepmerge } from 'deepmerge-ts';
 import type { ActionConfig } from '~actions';
@@ -11,17 +12,28 @@ import type { PromiseConfig } from '~promises';
 import { nextSV, type StateValue } from '~states';
 import type { TransitionConfig } from '~transitions';
 import type { PrimitiveObject } from '~types';
+import { toArray } from '~utils';
+import {
+  CATCH_EVENT_TYPE,
+  DEFAULT_MAX_PROMISE,
+  THEN_EVENT_TYPE,
+} from './constants';
 import { flatMap } from './flatMap';
 import {
   INIT_EVENT,
+  type ExecuteActivities_F,
   type Interpreter_F,
   type Mode,
   type PerformAction_F,
+  type PerformAfter_F,
   type PerformDelay_F,
   type PerformPredicate_F,
+  type PerformPromise_F,
+  type PerformPromisee_F,
   type ToAction_F,
   type ToDelay_F,
   type ToPredicate_F,
+  type ToPromiseSrc_F,
   type WorkingStatus,
 } from './interpreter.types';
 import { nodeToValue } from './nodeToValue';
@@ -30,7 +42,7 @@ import { toAction } from './toAction';
 import { toDelay } from './toDelay';
 import { toMachine } from './toMachine';
 import { toPredicate } from './toPredicate';
-import { toPromise } from './toPromise';
+import { toPromiseSrc } from './toPromise';
 import { toTransition } from './toTransition';
 import type {
   Action,
@@ -228,8 +240,39 @@ export class Interpreter<
     return out;
   };
 
-  #performDelays = (...delays: string[]) => {
-    return delays.map(this.toDelay).forEach(this.#executeDelay);
+  #executeActivity: ExecuteActivities_F = activities => {
+    const entries = Object.entries(activities);
+    const promises: (() => Promise<void>)[] = [];
+
+    entries.forEach(([_delay, _activity]) => {
+      const delay = this.#executeDelay(this.toDelay(_delay));
+      const activities2 = toArray.typed(_activity);
+
+      const promise = async () => {
+        await sleep(delay);
+        activities2.forEach(activity => {
+          const check1 = typeof activity === 'string';
+          const check2 =
+            typeof activity === 'object' && 'name' in activity;
+
+          const check3 = check1 || check2;
+
+          if (check3) return this.#performActions(activity);
+
+          const check5 = this.#performGuards(
+            ...toArray<GuardConfig>(activity.guards),
+          );
+          if (check5)
+            return this.#performActions(
+              ...toArray<ActionConfig>(activity.actions),
+            );
+        });
+      };
+
+      promises.push(promise);
+    });
+
+    return Promise.race(promises.map(promise => promise()));
   };
 
   #performTransition = (transition: TransitionConfig) => {
@@ -245,12 +288,102 @@ export class Interpreter<
     return;
   };
 
-  // #region TODO
-  //TODO perform activities
-  //TODO perform promises
-  //TODO perform wait delays
+  #performPromise: PerformPromise_F<E, Pc, Tc> = promise => {
+    return promise(
+      cloneDeep(this.#pContext),
+      structuredClone(this.#context),
+      structuredClone(this.#event),
+    );
+  };
 
-  // #endregion
+  #_performPromisee = async ({
+    src,
+    then,
+    catch: _catch,
+    finally: _finally,
+  }: PromiseConfig) => {
+    const promiseF = this.toPromiseSrc(src);
+    let event: ToEvents<E>;
+    const targets: string[] = [];
+
+    try {
+      const payload = await this.#performPromise(promiseF);
+      event = { type: THEN_EVENT_TYPE, payload };
+
+      const _targets = toArray
+        .typed(then)
+        .map(this.#performTransition)
+        .filter(target => target !== undefined);
+
+      targets.push(..._targets);
+    } catch (payload) {
+      event = { type: CATCH_EVENT_TYPE, payload };
+
+      const _targets = toArray
+        .typed(_catch)
+        .map(this.#performTransition)
+        .filter(target => target !== undefined);
+
+      targets.push(..._targets);
+    } finally {
+      const check1 = _finally !== undefined;
+      if (check1) {
+        const finals = toArray.typed(_finally);
+        finals.forEach(final => {
+          const check2 = typeof final === 'string';
+          if (check2) this.#performActions(final);
+          else {
+            const check3 = this.#performGuards(
+              ...toArray.typed(final.guards),
+            );
+            if (check3) {
+              this.#performActions(...toArray.typed(final.actions));
+            }
+          }
+        });
+      }
+    }
+
+    return { event, targets };
+  };
+
+  #performPromisee: PerformPromisee_F = promisee => {
+    const promises: (() => Promise<any>)[] = [];
+
+    const promise = () => this.#_performPromisee(promisee);
+    promises.push(promise, DEFAULT_MAX_PROMISE);
+    const maxS = promisee.max;
+    const check = isDefined(maxS);
+
+    if (check) {
+      const max = this.#performDelay(this.toDelay(maxS));
+      promises.push(() => sleep(max));
+    }
+
+    return Promise.race(promises.map(p => p()));
+  };
+
+  #performAfter: PerformAfter_F = after => {
+    const entries = Object.entries(after);
+    const promises: (() => Promise<string[]>)[] = [];
+
+    entries.forEach(([_delay, transition]) => {
+      const delay = this.#executeDelay(this.toDelay(_delay));
+      const transitions = toArray.typed(transition);
+      const promise = async () => {
+        await sleep(delay);
+        const out = transitions.map(this.#performTransition);
+
+        return out.filter(val => val !== undefined);
+      };
+
+      promises.push(promise);
+    });
+
+    return Promise.race(promises.map(p => p()));
+  };
+
+  //TODO build Event loop with priorities / order
 
   #startInitialEntries = () =>
     this.#performActions(...getEntries(this.#initialConfig));
@@ -470,12 +603,12 @@ export class Interpreter<
     return toPredicate({ guard, events, predicates, mode });
   };
 
-  toPromise = (promise: PromiseConfig) => {
+  toPromiseSrc: ToPromiseSrc_F = src => {
     const events = this.#machine.eventsMap;
-    const options = this.#machine.options;
+    const promises = this.#machine.promises;
     const mode = this.#mode;
 
-    return toPromise({ promise, events, options, mode });
+    return toPromiseSrc({ src, events, promises, mode }) as any;
   };
 
   toDelay: ToDelay_F<E, Pc, Tc> = delay => {

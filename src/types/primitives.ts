@@ -236,7 +236,10 @@ export type CheckKeys_F = <T extends object>(
   ...keys: string[]
 ) => boolean;
 
-export type ToArray_F = <T>(obj: any) => T[];
+export interface ToArray_F {
+  <T>(obj: any): T[];
+  typed: <T>(obj: T | T[] | readonly T[]) => Exclude<T, undefined>[];
+}
 
 export type ToArray<T> = T extends any[] ? T : T[];
 

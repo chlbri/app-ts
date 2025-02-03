@@ -28,6 +28,8 @@ export const toArray: ToArray_F = obj => {
   }
 };
 
+toArray.typed = toArray;
+
 export const checkKeys: CheckKeys_F = (arg, ...keys) => {
   const argKeys = Object.keys(arg);
   for (const key of keys) {

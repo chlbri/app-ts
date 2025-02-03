@@ -4,14 +4,18 @@ import type { EventsMap, ToEvents } from '~events';
 import type { GuardConfig } from '~guards';
 import type { Machine } from '~machine';
 import type { PromiseConfig } from '~promises';
+import type { DelayedTransitions } from '~transitions';
 import type { PrimitiveObject } from '~types';
+import type { CatchEvent, ThenEvent } from './constants';
 import type { Interpreter } from './interpreter';
 import type {
   Action2,
   ActionResult,
+  ActivityConfig,
   Config,
   MachineOptions,
   PredicateS2,
+  PromiseFunction2,
   SimpleMachineOptions2,
 } from './types';
 
@@ -78,8 +82,27 @@ export type PerformDelay_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (delay: Fn<[Pc, Tc, ToEvents<E>], number>) => number;
 
-export type ToPromise_F<
+export type PerformPromise_F<
   E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (promise: PromiseConfig) => Fn<[Pc, Tc, ToEvents<E>], number>;
+> = (promise: PromiseFunction2<E, Pc, Tc>) => Promise<any>;
+
+export type ExecuteActivities_F = (activity: ActivityConfig) => void;
+export type PerformAfter_F = (
+  activity: DelayedTransitions,
+) => Promise<string[]>;
+
+export type ToPromiseSrc_F<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (promise: string) => PromiseFunction2<E, Pc, Tc>;
+
+export type PerformPromisee_F = (promisee: PromiseConfig) => Promise<
+  | {
+      events: ThenEvent | CatchEvent;
+      targets: string[];
+    }
+  | undefined
+>;

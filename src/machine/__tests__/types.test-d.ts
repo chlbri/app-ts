@@ -1,3 +1,4 @@
+import type { CatchEvent, ThenEvent } from '../constants';
 import type { AlwaysEvent, InitEvent } from '../interpreter.types';
 import type {
   ActionKeysFrom,
@@ -53,6 +54,8 @@ expectTypeOf<TTE>().toEqualTypeOf<
     }
   | InitEvent
   | AlwaysEvent
+  | ThenEvent
+  | CatchEvent
 >();
 
 type ActionKeys = ActionKeysFrom<Machine1>;

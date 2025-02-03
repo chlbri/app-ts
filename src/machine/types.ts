@@ -50,13 +50,14 @@ export type NodesConfigWithInitials = Record<
   NodeConfigWithInitials
 >;
 
-export type ActivityArray = SingleOrArrayL<
+export type ActivityMap =
   | {
-      guards?: GuardConfig;
+      guards: SingleOrArrayL<GuardConfig>;
       actions: SingleOrArrayL<ActionConfig>;
     }
-  | ActionConfig
->;
+  | ActionConfig;
+
+export type ActivityArray = SingleOrArrayL<ActivityMap>;
 
 export type ActivityConfig = Record<string, ActivityArray>;
 
@@ -599,7 +600,7 @@ export type PromiseFunction2<
   E extends EventsMap = EventsMap,
   Pc = any,
   TC extends PrimitiveObject = PrimitiveObject,
-> = Fn<[E, Pc, TC], Promise<any>>;
+> = Fn<[Pc, TC, ToEvents<E>], Promise<any>>;
 
 export type ToPromiseSrc_F = <
   E extends EventsMap = EventsMap,
@@ -607,7 +608,7 @@ export type ToPromiseSrc_F = <
   TC extends PrimitiveObject = PrimitiveObject,
 >(params: {
   events: E;
-  src: ActionConfig;
+  src: string;
   promises?: SimpleMachineOptions<E, Pc, TC>['promises'];
   mode?: Mode;
 }) => PromiseFunction2<E, Pc, TC>;

@@ -20,7 +20,7 @@ import type {
 } from '~promises';
 
 type _TransitionConfigMap = {
-  readonly target?: SingleOrArrayL<string>;
+  readonly target?: string;
   // readonly internal?: boolean;
   readonly actions?: SingleOrArrayL<ActionConfig>;
   readonly guards?: SingleOrArrayL<GuardConfig>;
