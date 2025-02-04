@@ -1,6 +1,7 @@
+import { MAX_EXCEEDED_EVENT_TYPE } from './constants';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-private-class-members */
-import { isDefined } from '@bemedev/basifun';
+import { isDefined, partialCall } from '@bemedev/basifun';
 import { decomposeSV } from '@bemedev/decompose';
 import sleep from '@bemedev/sleep';
 import cloneDeep from 'clone-deep';
@@ -19,8 +20,6 @@ import {
   CATCH_EVENT_TYPE,
   DEFAULT_MAX_PROMISE,
   THEN_EVENT_TYPE,
-  type CatchEvent,
-  type ThenEvent,
 } from './constants';
 import { flatMap } from './flatMap';
 import {
@@ -30,6 +29,7 @@ import {
 } from './interpreter.helpers';
 import {
   INIT_EVENT,
+  type _Send_F,
   type Contexts,
   type ExecuteActivities_F,
   type Interpreter_F,
@@ -42,6 +42,8 @@ import {
   type PerformPromisees_F,
   type PerformTransition_F,
   type PerformTransitions_F,
+  type PromiseeResult,
+  type Remaininigs,
   type ToAction_F,
   type ToDelay_F,
   type ToPredicate_F,
@@ -55,7 +57,6 @@ import { toDelay } from './toDelay';
 import { toMachine } from './toMachine';
 import { toPredicate } from './toPredicate';
 import { toPromiseSrc } from './toPromise';
-import { toTransition } from './toTransition';
 import type {
   Action,
   Child,
@@ -208,7 +209,7 @@ export class Interpreter<
     return { pContext, context };
   };
 
-  get #contexts() {
+  get #contexts(): Contexts<Pc, Tc> {
     return {
       pContext: cloneDeep(this.#pContext),
       context: structuredClone(this.#context),
@@ -371,45 +372,6 @@ export class Interpreter<
     return this.#status === 'sending';
   }
 
-  #_performPromisee = async (
-    from: string,
-    { src, then, catch: _catch, finally: _finally }: PromiseConfig,
-  ) => {
-    const promiseF = this.toPromiseSrc(src);
-    let event: ToEvents<E> | undefined = undefined;
-    let target: string | undefined = undefined;
-    let result: Contexts<Pc, Tc> = {};
-
-    await this.#performPromiseSrc(promiseF)
-      .then(payload => {
-        const check = this.#sending || !this.#isInsideValue(from);
-        if (check) return;
-
-        event = { type: THEN_EVENT_TYPE, payload };
-
-        const thens = toArray.typed(then);
-        const transition = this.#performTransitions(...thens);
-
-        target = transition.target;
-        result = transition.result ?? {};
-        result = deepmerge(result, this.#performFinally(_finally));
-      })
-      .catch(payload => {
-        const check = this.#sending || !this.#isInsideValue(from);
-        if (check) return;
-
-        event = { type: CATCH_EVENT_TYPE, payload };
-        const catchs = toArray.typed(_catch);
-        const transition = this.#performTransitions(...catchs);
-
-        target = transition.target;
-        result = transition.result ?? {};
-        result = deepmerge(result, this.#performFinally(_finally));
-      });
-
-    return { event, result, target };
-  };
-
   #remaining: RecordS<
     () => {
       target?: string;
@@ -443,114 +405,81 @@ export class Interpreter<
     from,
     ...promisees
   ) => {
+    type PR = PromiseeResult<Pc, Tc>;
+    type Events = PR['event'];
     // #region Constants
-    let event: ToEvents<E> | undefined = undefined;
-    let target: string | undefined = undefined;
-    let result: Contexts<Pc, Tc> = {};
+    let event: Events = MAX_EXCEEDED_EVENT_TYPE;
+    let target: PR['target'] = undefined;
+    let result: PR['result'] = this.#contexts;
 
-    const promises: Promise<
-      | {
-          event: ThenEvent;
-          result: Contexts<Pc, Tc>;
-          target?: string;
-        }
-      | {
-          event: CatchEvent;
-          result: Contexts<Pc, Tc>;
-          target?: string;
-        }
-      | undefined
-    >[] = [];
+    const promises: Promise<PR | undefined>[] = [];
 
-    const remains: (() => {
-      result: Contexts<Pc, Tc>;
-      target?: string;
-    })[] = [];
+    const remains: Remaininigs<Pc, Tc> = [];
     // #endregion
 
     promisees.forEach(
       ({ src, then, catch: _catch, finally: _finally, max: maxS }) => {
         const promiseF = this.toPromiseSrc(src);
 
-        const _promises: Promise<
-          | {
-              event: ThenEvent;
-              result: Contexts<Pc, Tc>;
-              target: string | undefined;
-            }
-          | {
-              event: CatchEvent;
-              result: Contexts<Pc, Tc>;
-              target: string | undefined;
-            }
-          | undefined
-        >[] = [DEFAULT_MAX_PROMISE];
+        const _promises: Promise<PR | undefined>[] = [
+          DEFAULT_MAX_PROMISE.then(() => ({
+            event,
+            result,
+            target,
+          })),
+        ];
+
+        const handlePromise = (type: 'then' | 'catch', payload: any) => {
+          const out = () => {
+            event = {
+              type: type === 'then' ? THEN_EVENT_TYPE : CATCH_EVENT_TYPE,
+              payload,
+            };
+
+            const transitions = toArray.typed(
+              type === 'then' ? then : _catch,
+            );
+            const transition = this.#performTransitions(...transitions);
+
+            target = transition.target;
+            result = deepmerge(
+              result,
+              transition.result,
+              this.#performFinally(_finally),
+            );
+
+            return { event, result, target };
+          };
+
+          const check = this.#sending || !this.#isInsideValue(from);
+          if (check) {
+            const remain = () => {
+              const { event, ...rest } = out();
+              return rest;
+            };
+
+            remains.push(remain);
+            return;
+          }
+          return out();
+        };
 
         const _promise = this.#performPromiseSrc(promiseF)
-          .then(payload => {
-            const out = () => {
-              event = { type: THEN_EVENT_TYPE, payload };
-
-              const thens = toArray.typed(then);
-              const transition = this.#performTransitions(...thens);
-
-              target = transition.target;
-              result = deepmerge(
-                result,
-                transition.result,
-                this.#performFinally(_finally),
-              );
-
-              return { event, result, target };
-            };
-
-            const check = this.#sending || !this.#isInsideValue(from);
-            if (check) {
-              const remain = () => {
-                const { event, ...rest } = out();
-                return rest;
-              };
-              remains.push(remain);
-              return;
-            }
-            return out();
-          })
-          .catch(payload => {
-            const out = () => {
-              event = { type: CATCH_EVENT_TYPE, payload };
-              const catchs = toArray.typed(_catch);
-              const transition = this.#performTransitions(...catchs);
-
-              target = transition.target;
-              result = deepmerge(
-                result,
-                transition.result,
-                this.#performFinally(_finally),
-              );
-
-              return { event, result, target };
-            };
-
-            const check = this.#sending || !this.#isInsideValue(from);
-            if (check) {
-              const remain = () => {
-                const { event, ...rest } = out();
-                return rest;
-              };
-              remains.push(remain);
-              return;
-            }
-
-            return out();
-          });
+          .then(partialCall(handlePromise, 'then'))
+          .catch(partialCall(handlePromise, 'catch'));
 
         _promises.push(_promise);
 
         const check = isDefined(maxS);
-
         if (check) {
           const max = this.#performDelay(this.toDelay(maxS));
-          _promises.push(sleepU(max));
+          _promises.push(
+            sleepU(max).then(() => ({
+              event,
+              result,
+              target,
+            })),
+          );
         }
 
         const promise = Promise.race(_promises);
@@ -559,8 +488,9 @@ export class Interpreter<
       },
     );
 
+    const remaining = performRemaining(...remains);
+
     const finalize = () => {
-      const remaining = performRemaining(...remains);
       this.#addRemainingPromise(from, remaining);
     };
 
@@ -576,20 +506,19 @@ export class Interpreter<
   };
 
   #performAfter: PerformAfter_F<Pc, Tc> = async (from, after) => {
-    const entries = Object.entries(after);
-
-    const promises: Promise<
+    // #region type Promises
+    type Promises = Promise<
       | {
           result: Contexts<Pc, Tc>;
           target?: string;
         }
       | undefined
-    >[] = [];
+    >[];
+    // #endregion
 
-    const remains: (() => {
-      result: Contexts<Pc, Tc>;
-      target?: string;
-    })[] = [];
+    const entries = Object.entries(after);
+    const promises: Promises = [];
+    const remains: Remaininigs<Pc, Tc> = [];
 
     let target: string | undefined = undefined;
     let result: Contexts<Pc, Tc> = {};
@@ -619,8 +548,9 @@ export class Interpreter<
       promises.push(promise);
     });
 
+    const remaining = performRemaining(...remains);
+
     const finalize = () => {
-      const remaining = performRemaining(...remains);
       this.#addRemainingAfter(from, remaining);
     };
 
@@ -738,28 +668,74 @@ export class Interpreter<
   };
 
   // #region Next
-  protected _send = (event: Exclude<ToEvents<E>, string>) => {
+
+  //TODO many froms and many targets
+  protected _send: _Send_F<E, Pc, Tc> = (
+    from: string,
+    event: Exclude<ToEvents<E>, string>,
+  ) => {
+    const check1 = !this.#isInsideValue(from);
+    if (check1) return;
+
+    type PR = PromiseeResult<Pc, Tc>;
+    let target: PR['target'] = undefined;
+    let result: PR['result'] = this.#contexts;
+
     this.#event = event;
+    this.#status = 'sending';
+
     const flat = this.#flat;
     const entries = Object.entries(flat);
-    const transitionConfigs: TransitionConfig[] = [];
+    const transitions: TransitionConfig[] = [];
 
     entries.forEach(([, node]) => {
       const on = node.on;
       const type = event.type;
       if (on) {
-        transitionConfigs.push(...toArray<TransitionConfig>(on[type]));
+        transitions.push(...toArray.typed(on[type]));
       }
     });
 
-    const transitions = transitionConfigs.map(config =>
-      toTransition<E, Pc, Tc>({
-        config,
-        events: this.#machine.eventsMap,
-        options: this.#machine.options,
-        mode: this.#mode,
-      }),
-    );
+    let _result: PR['result'] = this.#contexts;
+
+    transitions.forEach(_transition => {
+      const transition = this.#performTransitions(_transition);
+
+      target = transition.target;
+      _result = deepmerge(result, transition.result);
+    });
+
+    if (target !== undefined) {
+      const { diffEntries, diffExits, next } = this.#diffNext(target);
+
+      result = deepmerge(
+        result,
+        this.#performActions(...diffExits),
+        this.#performActions(...diffEntries),
+        _result,
+      ) as any;
+
+      return { result, next };
+    }
+
+    return { result };
+  };
+
+  send = (from: string, event: Exclude<ToEvents<E>, string>) => {
+    const sends = this._send(from, event);
+    const check1 = sends === undefined;
+
+    if (check1) return;
+    const { result, next } = sends;
+    const check2 = next !== undefined;
+
+    this.#pContext = deepmerge(this.#pContext, result.pContext) as any;
+    this.#context = deepmerge(this.#context, result.context) as any;
+
+    if (check2) {
+      this.#config = next;
+      this.#performConfig();
+    }
   };
 
   #proposedNextSV = (target: string) => nextSV(this.#value, target);
@@ -771,15 +747,15 @@ export class Interpreter<
     return out;
   };
 
-  #diffEntries: string[] = [];
-  #diffExits: string[] = [];
-
   #diffNext = (target: string) => {
-    const next = this.proposedNextConfig(target) as NodeConfig;
+    const _next = this.proposedNextConfig(target);
+    const next = _next as NodeConfig;
     const flatNext = flatMap(next);
     const entriesCurrent = Object.entries(this.#flat);
     const keysNext = Object.keys(flatNext);
     const keys = entriesCurrent.map(([key]) => key);
+    const diffEntries: string[] = [];
+    const diffExits: string[] = [];
 
     // #region Entry actions
     // These actions are from next config states that are not inside the previous
@@ -788,7 +764,7 @@ export class Interpreter<
 
       if (check2) {
         const out2 = this.#machine.retrieveParentFromInitial(key);
-        this.#diffEntries.push(...getEntries(out2));
+        diffEntries.push(...getEntries(out2));
       }
     });
     // #endregion
@@ -799,10 +775,12 @@ export class Interpreter<
       const check2 = !keysNext.includes(key);
 
       if (check2) {
-        this.#diffExits.push(...getExits(node as any));
+        diffExits.push(...getExits(node as any));
       }
     });
     // #endregion
+
+    return { next: _next, diffEntries, diffExits };
   };
 
   // #region to review
@@ -832,17 +810,6 @@ export class Interpreter<
 
   #makeWork = () => {
     this.#status = 'working';
-  };
-  protected next = (...targets: string[]) => {
-    // this.#finishExists();
-    const current = this.#config as NodeConfig;
-    this.#flat = flatMap(current, false) as any;
-
-    targets.forEach(this.#diffNext);
-    this.#performActions(...this.#diffExits);
-    this.#performActions(...this.#diffEntries);
-
-    this.#makeWork();
   };
 
   // #endregion

@@ -6,7 +6,7 @@ import type { Machine } from '~machine';
 import type { PromiseConfig } from '~promises';
 import type { DelayedTransitions, TransitionConfig } from '~transitions';
 import type { PrimitiveObject } from '~types';
-import type { CatchEvent, ThenEvent } from './constants';
+import type { CatchEvent, MaxExceededEvent, ThenEvent } from './constants';
 import type { Interpreter } from './interpreter';
 import type {
   Action2,
@@ -14,6 +14,7 @@ import type {
   ActivityConfig,
   Config,
   MachineOptions,
+  NodeConfigWithInitials,
   PredicateS2,
   PromiseFunction2,
   SimpleMachineOptions2,
@@ -110,27 +111,22 @@ export type ToPromiseSrc_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (promise: string) => PromiseFunction2<E, Pc, Tc>;
 
+export type PromiseeResult<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  event: ThenEvent | CatchEvent | MaxExceededEvent;
+  result: Contexts<Pc, Tc>;
+  target?: string;
+};
+
 export type PerformPromisees_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   from: string,
   ...promisees: PromiseConfig[]
-) => Promise<
-  PromiseSettledResult<
-    | {
-        event: ThenEvent;
-        result: Contexts<Pc, Tc>;
-        target?: string;
-      }
-    | {
-        event: CatchEvent;
-        result: Contexts<Pc, Tc>;
-        target?: string;
-      }
-    | undefined
-  >[]
->;
+) => Promise<PromiseSettledResult<PromiseeResult<Pc, Tc> | undefined>[]>;
 
 export type Contexts<
   Pc = any,
@@ -165,3 +161,22 @@ export type SleepContexts_F = <
 >(
   ms?: number,
 ) => Promise<Contexts<Pc, Tc>>;
+
+export type Remaininigs<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (() => { target?: string; result: Contexts<Pc, Tc> })[];
+
+export type _Send_F<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (
+  from: string,
+  event: Exclude<ToEvents<E>, string>,
+) =>
+  | {
+      result: Contexts<Pc, Tc>;
+      next?: NodeConfigWithInitials;
+    }
+  | undefined;
