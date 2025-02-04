@@ -23,9 +23,9 @@ describe('Interpreter', () => {
     });
 
     describe('#3 => The machine is started', () => {
-      test('#1 => The machine is at "status: started"', () => {
+      test('#1 => The machine is at "status: busy"', () => {
         const actual = service.status;
-        expect(actual).toBe('started');
+        expect(actual).toBe('working');
       });
 
       describe('#2 => Check the currentvalue', () => {

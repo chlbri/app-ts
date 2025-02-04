@@ -4,9 +4,12 @@ import type { EventsMap, ToEvents } from '~events';
 import type { GuardConfig } from '~guards';
 import type { Machine } from '~machine';
 import type { PromiseConfig } from '~promises';
-import type { DelayedTransitions, TransitionConfig } from '~transitions';
+import type {
+  AlwaysConfig,
+  DelayedTransitions,
+  TransitionConfig,
+} from '~transitions';
 import type { PrimitiveObject } from '~types';
-import type { CatchEvent, MaxExceededEvent, ThenEvent } from './constants';
 import type { Interpreter } from './interpreter';
 import type {
   Action2,
@@ -90,7 +93,11 @@ export type PerformPromise_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (promise: PromiseFunction2<E, Pc, Tc>) => Promise<any>;
 
-export type ExecuteActivities_F = (activity: ActivityConfig) => void;
+export type ExecuteActivities_F<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (activity: ActivityConfig) => Promise<Contexts<Pc, Tc> | undefined>;
+
 export type PerformAfter_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -105,6 +112,19 @@ export type PerformAfter_F<
   | undefined
 >;
 
+export type PerformAlway_F<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (
+  from: string,
+  always: AlwaysConfig,
+) =>
+  | {
+      result: Contexts<Pc, Tc>;
+      target: string;
+    }
+  | undefined;
+
 export type ToPromiseSrc_F<
   E extends EventsMap = EventsMap,
   Pc = any,
@@ -112,21 +132,23 @@ export type ToPromiseSrc_F<
 > = (promise: string) => PromiseFunction2<E, Pc, Tc>;
 
 export type PromiseeResult<
+  E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  event: ThenEvent | CatchEvent | MaxExceededEvent;
+  event: ToEvents<E>;
   result: Contexts<Pc, Tc>;
   target?: string;
 };
 
 export type PerformPromisees_F<
+  E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   from: string,
   ...promisees: PromiseConfig[]
-) => Promise<PromiseSettledResult<PromiseeResult<Pc, Tc> | undefined>[]>;
+) => Promise<PromiseeResult<E, Pc, Tc> | undefined>;
 
 export type Contexts<
   Pc = any,
@@ -171,12 +193,9 @@ export type _Send_F<
   E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (
-  from: string,
-  event: Exclude<ToEvents<E>, string>,
-) =>
+> = (event: Exclude<ToEvents<E>, string>) =>
   | {
       result: Contexts<Pc, Tc>;
-      next?: NodeConfigWithInitials;
+      next: NodeConfigWithInitials;
     }
   | undefined;

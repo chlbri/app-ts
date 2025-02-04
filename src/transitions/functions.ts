@@ -28,7 +28,7 @@ export const toTransition: ToTransition_F = (
   const out = { target, actions, guards } as any;
 
   if (description) out.description = description;
-  out.in = toArray(config.in);
+
   if (__id) out.__id = __id;
 
   return out;

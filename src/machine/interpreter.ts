@@ -1,11 +1,9 @@
-import { MAX_EXCEEDED_EVENT_TYPE } from './constants';
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-private-class-members */
 import { isDefined, partialCall } from '@bemedev/basifun';
 import { decomposeSV } from '@bemedev/decompose';
 import sleep from '@bemedev/sleep';
 import cloneDeep from 'clone-deep';
 import { deepmerge } from 'deepmerge-ts';
+import equal from 'fast-deep-equal';
 import type { ActionConfig } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { EventsMap, ToEvents } from '~events';
@@ -13,12 +11,19 @@ import type { GuardConfig } from '~guards';
 import { getEntries, getExits, type Machine } from '~machine';
 import type { PromiseConfig } from '~promises';
 import { nextSV, type StateValue } from '~states';
-import type { TransitionConfig } from '~transitions';
+import type {
+  AlwaysConfig,
+  DelayedTransitions,
+  TransitionConfig,
+} from '~transitions';
 import { isDescriber, type PrimitiveObject } from '~types';
 import { replaceAll, toArray } from '~utils';
 import {
   CATCH_EVENT_TYPE,
   DEFAULT_MAX_PROMISE,
+  MAX_EXCEEDED_EVENT_TYPE,
+  MAX_TIME_PROMISE,
+  MIN_ACTIVITY_TIME,
   THEN_EVENT_TYPE,
 } from './constants';
 import { flatMap } from './flatMap';
@@ -36,6 +41,7 @@ import {
   type Mode,
   type PerformAction_F,
   type PerformAfter_F,
+  type PerformAlway_F,
   type PerformDelay_F,
   type PerformPredicate_F,
   type PerformPromise_F,
@@ -59,6 +65,7 @@ import { toPredicate } from './toPredicate';
 import { toPromiseSrc } from './toPromise';
 import type {
   Action,
+  ActivityConfig,
   Child,
   Config,
   Delay,
@@ -188,9 +195,11 @@ export class Interpreter<
 
   #startStatus = (): WorkingStatus => (this.#status = 'started');
 
-  start = () => {
+  start = async () => {
     this.#startStatus();
     this.#startInitialEntries();
+    this.#performActivities();
+    this.#performStartTransitions();
   };
 
   #performAction: PerformAction_F<E, Pc, Tc> = action => {
@@ -267,39 +276,76 @@ export class Interpreter<
     return out;
   };
 
-  #executeActivity: ExecuteActivities_F = activities => {
-    const entries = Object.entries(activities);
-    const promises: (() => Promise<void>)[] = [];
+  #_executeActivities: ExecuteActivities_F<Pc, Tc> = async _activities => {
+    const entries = Object.entries(_activities);
+    const promises: (() => Promise<Contexts<Pc, Tc> | undefined>)[] = [];
 
     entries.forEach(([_delay, _activity]) => {
       const delay = this.#executeDelay(this.toDelay(_delay));
-      const activities2 = toArray.typed(_activity);
 
+      const check1 = delay < MIN_ACTIVITY_TIME;
+      if (check1) {
+        this.addWarning(`${_delay} is too short`);
+        return;
+      }
+
+      const activities = toArray.typed(_activity);
       const promise = async () => {
         await sleep(delay);
-        activities2.forEach(activity => {
-          const check1 = typeof activity === 'string';
-          const check2 =
+        for (const activity of activities) {
+          const check2 = typeof activity === 'string';
+          const check3 =
             typeof activity === 'object' && 'name' in activity;
 
-          const check3 = check1 || check2;
+          const check4 = check2 || check3;
 
-          if (check3) return this.#performActions(activity);
+          if (check4) return this.#performActions(activity);
 
           const check5 = this.#performGuards(
             ...toArray<GuardConfig>(activity.guards),
           );
-          if (check5)
-            return this.#performActions(
-              ...toArray<ActionConfig>(activity.actions),
-            );
-        });
+          if (check5) {
+            const actions = toArray.typed(activity.actions);
+            return this.#performActions(...actions);
+          }
+        }
+        return;
       };
 
       promises.push(promise);
     });
 
-    return Promise.race(promises.map(promise => promise()));
+    return Promise.all(promises.map(promise => promise())).then(values => {
+      return values.reduce(
+        (acc, value) => deepmerge(acc, value) as any,
+        this.#contexts,
+      );
+    });
+  };
+
+  #executeActivities = async (
+    from: string,
+    _activities: ActivityConfig,
+  ) => {
+    // Loop while inside from
+    let activities = await this.#_executeActivities(_activities);
+    if (!activities) return;
+
+    let check1 = !this.#sending && this.#isInsideValue(from);
+
+    while (check1) {
+      activities = await this.#_executeActivities(_activities);
+      check1 = !this.#sending && this.#isInsideValue(from);
+      if (!check1 || !activities) return;
+
+      this.#pContext = deepmerge(
+        this.#pContext,
+        activities.pContext,
+      ) as any;
+
+      this.#context = deepmerge(this.#context, activities.context) as any;
+      check1 = !this.#sending && this.#isInsideValue(from);
+    }
   };
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
@@ -366,8 +412,6 @@ export class Interpreter<
     return;
   };
 
-  //TODO add an array to mark all promises started by state
-
   get #sending() {
     return this.#status === 'sending';
   }
@@ -379,6 +423,8 @@ export class Interpreter<
     }
   > = {};
 
+  #produceKeyRemainPromise = (from: string) => `${from}::promise`;
+
   #addRemainingPromise = (
     state: string,
     remain: () => {
@@ -386,9 +432,11 @@ export class Interpreter<
       result: Contexts<Pc, Tc>;
     },
   ) => {
-    const key = `${state}::promise`;
+    const key = this.#produceKeyRemainPromise(state);
     this.#remaining[key] = remain;
   };
+
+  #produceKeyRemainAfter = (from: string) => `${from}::after`;
 
   #addRemainingAfter = (
     state: string,
@@ -397,25 +445,30 @@ export class Interpreter<
       result: Contexts<Pc, Tc>;
     },
   ) => {
-    const key = `${state}::after`;
+    const key = this.#produceKeyRemainAfter(state);
     this.#remaining[key] = remain;
   };
 
-  #performPromisees: PerformPromisees_F<Pc, Tc> = async (
+  #performPromisees0: PerformPromisees_F<E, Pc, Tc> = async (
     from,
     ...promisees
   ) => {
-    type PR = PromiseeResult<Pc, Tc>;
+    type PR = PromiseeResult<E, Pc, Tc>;
     type Events = PR['event'];
-    // #region Constants
-    let event: Events = MAX_EXCEEDED_EVENT_TYPE;
-    let target: PR['target'] = undefined;
-    let result: PR['result'] = this.#contexts;
+    let event: Events = this.#event;
+
+    // #region Checker for reentering
+    const key = this.#produceKeyRemainPromise(from);
+    const remain = this.#remaining[key];
+    const check = remain !== undefined;
+    if (check) {
+      const out = remain();
+      return { ...out, event };
+    }
+    // #endregion
 
     const promises: Promise<PR | undefined>[] = [];
-
     const remains: Remaininigs<Pc, Tc> = [];
-    // #endregion
 
     promisees.forEach(
       ({ src, then, catch: _catch, finally: _finally, max: maxS }) => {
@@ -424,8 +477,7 @@ export class Interpreter<
         const _promises: Promise<PR | undefined>[] = [
           DEFAULT_MAX_PROMISE.then(() => ({
             event,
-            result,
-            target,
+            result: this.#contexts,
           })),
         ];
 
@@ -441,9 +493,9 @@ export class Interpreter<
             );
             const transition = this.#performTransitions(...transitions);
 
-            target = transition.target;
-            result = deepmerge(
-              result,
+            const target = transition.target;
+            const result = deepmerge(
+              this.#contexts,
               transition.result,
               this.#performFinally(_finally),
             );
@@ -454,8 +506,8 @@ export class Interpreter<
           const check = this.#sending || !this.#isInsideValue(from);
           if (check) {
             const remain = () => {
-              const { event, ...rest } = out();
-              return rest;
+              const { result, target } = out();
+              return { result, target };
             };
 
             remains.push(remain);
@@ -476,8 +528,7 @@ export class Interpreter<
           _promises.push(
             sleepU(max).then(() => ({
               event,
-              result,
-              target,
+              result: this.#contexts,
             })),
           );
         }
@@ -488,13 +539,28 @@ export class Interpreter<
       },
     );
 
-    const remaining = performRemaining(...remains);
-
     const finalize = () => {
+      const remaining = performRemaining(...remains);
       this.#addRemainingPromise(from, remaining);
     };
 
-    return Promise.allSettled(promises).finally(finalize);
+    return Promise.all(promises)
+      .then(values => {
+        let event: Events = MAX_EXCEEDED_EVENT_TYPE;
+        let result: Contexts<Pc, Tc> = this.#contexts;
+        let target: string | undefined = undefined;
+
+        values.forEach(value => {
+          if (value) {
+            event = value.event;
+            result = deepmerge(result, value.result) as any;
+            target = value.target;
+          }
+        });
+
+        return { event, result, target };
+      })
+      .finally(finalize);
   };
 
   get possibleEvents() {
@@ -506,6 +572,16 @@ export class Interpreter<
   };
 
   #performAfter: PerformAfter_F<Pc, Tc> = async (from, after) => {
+    // #region Checker for reentering
+    const key = this.#produceKeyRemainAfter(from);
+    const remain = this.#remaining[key];
+    const check = remain !== undefined;
+    if (check) {
+      const out = remain();
+      return { ...out, event: this.#event };
+    }
+    // #endregion
+
     // #region type Promises
     type Promises = Promise<
       | {
@@ -520,24 +596,28 @@ export class Interpreter<
     const promises: Promises = [];
     const remains: Remaininigs<Pc, Tc> = [];
 
-    let target: string | undefined = undefined;
-    let result: Contexts<Pc, Tc> = {};
-
     entries.forEach(([_delay, transition]) => {
       const delay = this.#executeDelay(this.toDelay(_delay));
+
+      const check1 = delay < MAX_TIME_PROMISE;
+      if (check1) {
+        this.addWarning(`${_delay} is too long`);
+        return;
+      }
+
       const transitions = toArray.typed(transition);
 
       const promise = sleep(delay).then(() => {
         const remain = () => {
           const out = this.#performTransitions(...transitions);
-          target = out.target;
-          result = out.result ?? {};
+          const target = out.target;
+          const result = out.result ?? {};
 
           return { target, result };
         };
 
-        const check = this.#sending || !this.#isInsideValue(from);
-        if (check) {
+        const check2 = this.#sending || !this.#isInsideValue(from);
+        if (check2) {
           remains.push(remain);
           return;
         }
@@ -557,7 +637,198 @@ export class Interpreter<
     return Promise.race(promises).finally(finalize);
   };
 
-  //TODO build Event loop with priorities / order
+  #performAlway: PerformAlway_F<Pc, Tc> = (from, alway) => {
+    const check1 = this.#sending || !this.#isInsideValue(from);
+    if (check1) return;
+
+    const always = toArray.typed(alway);
+
+    const out = this.#performTransitions(...(always as any));
+    const target = out.target;
+    const result = deepmerge(this.#contexts, out.result);
+    if (target) return { target, result };
+
+    return;
+  };
+
+  get #collectedPromisees() {
+    const entriesFlat = Object.entries(this.#flat);
+    const entries: [from: string, ...promisees: PromiseConfig[]][] = [];
+
+    entriesFlat.forEach(([from, node]) => {
+      const promisees = toArray.typed(node.promises);
+      if (promisees) {
+        entries.push([from, ...promisees]);
+      }
+    });
+
+    return entries;
+  }
+
+  get #collectedActivities() {
+    const entriesFlat = Object.entries(this.#flat);
+    const entries: [from: string, activities: ActivityConfig][] = [];
+
+    entriesFlat.forEach(([from, node]) => {
+      const activities = node.activities;
+      if (activities) {
+        entries.push([from, activities]);
+      }
+    });
+
+    return entries;
+  }
+
+  get #collectedAfters() {
+    const entriesFlat = Object.entries(this.#flat);
+    const entries: [from: string, after: DelayedTransitions][] = [];
+
+    entriesFlat.forEach(([from, node]) => {
+      const after = node.after;
+      if (after) {
+        entries.push([from, after]);
+      }
+    });
+
+    return entries;
+  }
+
+  get #collectedAlways() {
+    const entriesFlat = Object.entries(this.#flat);
+    const entries: [from: string, always: AlwaysConfig][] = [];
+
+    entriesFlat.forEach(([from, node]) => {
+      const always = node.always;
+      if (always) {
+        entries.push([from, always]);
+      }
+    });
+
+    return entries;
+  }
+
+  get #_performPromisees() {
+    return Promise.all(
+      this.#collectedPromisees.map(args => {
+        const out = this.#performPromisees0(...args);
+        return out;
+      }),
+    );
+  }
+
+  get #_performAfters() {
+    return Promise.race(
+      this.#collectedAfters.map(args => {
+        const promise = this.#performAfter(...args);
+        return promise;
+      }),
+    );
+  }
+
+  get #_performAlways() {
+    const collected = this.#collectedAlways;
+    const check = collected.length < 1;
+    if (check) return;
+    return this.#collectedAlways
+      .map(args => {
+        const out = this.#performAlway(...args);
+        return out;
+      })
+      .reduce((acc, value) => deepmerge(acc, value));
+  }
+
+  #performActivities = () => {
+    const collected = this.#collectedActivities;
+    const check = collected.length < 1;
+    if (check) return;
+
+    return Promise.all(
+      this.#collectedActivities.map(args => {
+        const promise = this.#executeActivities(...args);
+        return promise;
+      }),
+    ).then(() => undefined);
+  };
+
+  #performAfters = async () => {
+    const resultAfter = await this.#_performAfters;
+
+    if (resultAfter) {
+      const { target, result } = resultAfter;
+
+      this.#pContext = deepmerge(this.#pContext, result.pContext) as any;
+      this.#context = deepmerge(this.#context, result.context) as any;
+
+      if (target) {
+        this.#config = this.proposedNextConfig(target);
+        this.#performConfig();
+      }
+    }
+  };
+
+  #performAlways = () => {
+    const resultAlways = this.#_performAlways;
+
+    if (resultAlways) {
+      const out = async () => {
+        this.#status = 'busy';
+        const { target, result } = resultAlways;
+
+        this.#pContext = deepmerge(this.#pContext, result.pContext) as any;
+        this.#context = deepmerge(this.#context, result.context) as any;
+
+        if (target) {
+          this.#config = this.proposedNextConfig(target);
+          this.#performConfig();
+        }
+        this.#status = 'started';
+      };
+
+      return out;
+    }
+    return undefined;
+  };
+
+  #performPromisees = async () => {
+    const values = await this.#_performPromisees;
+
+    let target: string | undefined = undefined;
+
+    values.forEach(value => {
+      if (value) {
+        this.#pContext = deepmerge(
+          this.#pContext,
+          value.result.pContext,
+        ) as any;
+
+        this.#context = deepmerge(
+          this.#context,
+          value.result.context,
+        ) as any;
+
+        this.#event = value.event;
+        target = value.target;
+      }
+    });
+
+    if (target) {
+      this.#config = this.proposedNextConfig(target);
+      this.#performConfig();
+    }
+  };
+
+  #performStartTransitions = async () => {
+    this.#status = 'busy';
+    const promises = [this.#performPromisees, this.#performAfters];
+    const always = this.#performAlways();
+    const check = always !== undefined;
+
+    if (check) {
+      promises.push(always);
+    }
+
+    return Promise.race(promises.map(p => p())).finally(this.#makeWork);
+  };
 
   #startInitialEntries = () =>
     this.#performActions(...getEntries(this.#initialConfig));
@@ -565,7 +836,7 @@ export class Interpreter<
   // #finishExists = () => this.#performIO(...getExits(this.#currentConfig));
 
   stop = () => {
-    if (this.#canBeStoped) this.#status = 'started';
+    if (this.#canBeStoped) this.#status = 'stopped';
   };
 
   #makeBusy = (): WorkingStatus => (this.#status = 'busy');
@@ -669,73 +940,86 @@ export class Interpreter<
 
   // #region Next
 
-  //TODO many froms and many targets
   protected _send: _Send_F<E, Pc, Tc> = (
-    from: string,
+    // from: string,
     event: Exclude<ToEvents<E>, string>,
   ) => {
-    const check1 = !this.#isInsideValue(from);
-    if (check1) return;
+    type PR = PromiseeResult<E, Pc, Tc>;
 
-    type PR = PromiseeResult<Pc, Tc>;
-    let target: PR['target'] = undefined;
     let result: PR['result'] = this.#contexts;
+    let sv = this.#value;
+    const entriesFlat = Object.entries(this.#flat);
+    const flat: [from: string, tarnsitions: TransitionConfig[]][] = [];
+    const targets: string[] = [];
 
-    this.#event = event;
-    this.#status = 'sending';
-
-    const flat = this.#flat;
-    const entries = Object.entries(flat);
-    const transitions: TransitionConfig[] = [];
-
-    entries.forEach(([, node]) => {
+    entriesFlat.forEach(([from, node]) => {
       const on = node.on;
       const type = event.type;
-      if (on) {
-        transitions.push(...toArray.typed(on[type]));
+      const trs = on?.[type];
+      if (trs) {
+        const transitions = toArray.typed(trs);
+        flat.push([from, transitions]);
       }
     });
 
-    let _result: PR['result'] = this.#contexts;
+    flat.forEach(([from, transitions]) => {
+      const check1 = !this.#isInsideValue(from);
+      if (check1) return;
 
-    transitions.forEach(_transition => {
-      const transition = this.#performTransitions(_transition);
+      transitions.forEach(transition => {
+        const { target, result: _result } =
+          this.#performTransitions(transition);
 
-      target = transition.target;
-      _result = deepmerge(result, transition.result);
+        const check2 = target !== undefined;
+        if (check2) {
+          targets.push(target);
+        }
+
+        result = deepmerge(result, _result);
+      });
     });
 
-    if (target !== undefined) {
-      const { diffEntries, diffExits, next } = this.#diffNext(target);
+    // #region Use targets to perform entry and exit actions
+    targets.forEach(target => {
+      const { diffEntries, diffExits, sv: _sv } = this.#diffNext(target);
 
+      const check3 = equal(this.#value, _sv);
+      if (check3) return;
+
+      sv = nextSV(sv, target);
       result = deepmerge(
         result,
         this.#performActions(...diffExits),
         this.#performActions(...diffEntries),
-        _result,
       ) as any;
+    });
+    // #endregion
 
-      return { result, next };
-    }
+    const check4 = equal(this.#value, sv); //If no changes in state value
+    if (check4) return; // Return nothing
 
-    return { result };
+    const next = this.#machine.valueToConfig(sv);
+    return { result, next };
   };
 
-  send = (from: string, event: Exclude<ToEvents<E>, string>) => {
-    const sends = this._send(from, event);
+  send = (event: Exclude<ToEvents<E>, string>) => {
+    const sends = this._send(event);
+
     const check1 = sends === undefined;
-
     if (check1) return;
-    const { result, next } = sends;
-    const check2 = next !== undefined;
+    this.#event = event;
+    this.#status = 'sending';
 
-    this.#pContext = deepmerge(this.#pContext, result.pContext) as any;
-    this.#context = deepmerge(this.#context, result.context) as any;
+    const {
+      result: { context, pContext },
+      next,
+    } = sends;
+    this.#pContext = deepmerge(this.#pContext, pContext) as any;
+    this.#context = deepmerge(this.#context, context) as any;
 
-    if (check2) {
-      this.#config = next;
-      this.#performConfig();
-    }
+    this.#config = next;
+    this.#performConfig();
+    this.#status = 'started';
   };
 
   #proposedNextSV = (target: string) => nextSV(this.#value, target);
@@ -779,8 +1063,8 @@ export class Interpreter<
       }
     });
     // #endregion
-
-    return { next: _next, diffEntries, diffExits };
+    const sv = this.#proposedNextSV(target);
+    return { sv, diffEntries, diffExits };
   };
 
   // #region to review
