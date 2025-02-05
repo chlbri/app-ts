@@ -1134,6 +1134,8 @@ export class Interpreter<
     return toPromiseSrc({ src, events, promises, mode }) as any;
   };
 
+  //TODO retrieve options for all can be undefined
+
   toDelay: ToDelay_F<E, Pc, Tc> = delay => {
     const events = this.#machine.eventsMap;
     const delays = this.#machine.delays;
