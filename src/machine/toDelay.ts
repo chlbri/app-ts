@@ -3,14 +3,12 @@ import { defaultReturn } from '~utils';
 import { reduceFnMap } from './reduceFnMap';
 import type { ToDelay_F } from './types';
 
-export const toDelay: ToDelay_F = ({ delays, delay, mode, events }) => {
-  const strict = mode !== 'normal';
-  const value = () => 100;
+export const toDelay: ToDelay_F = ({ delays, delay, events }) => {
   const out = (error: Error, _return?: any) => {
     return defaultReturn({
       config: {
-        strict,
-        value,
+        strict: false,
+        value: undefined,
       },
       _return,
       error,
@@ -23,9 +21,7 @@ export const toDelay: ToDelay_F = ({ delays, delay, mode, events }) => {
   const check = typeof fn === 'number';
   if (check) return () => fn;
 
-  const func = fn
-    ? reduceFnMap({ events, _default: value, mode, fn })
-    : undefined;
+  const func = fn ? reduceFnMap({ events, fn }) : undefined;
 
   return out(ERRORS.delay.notProvided.error, func);
 };

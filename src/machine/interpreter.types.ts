@@ -79,7 +79,7 @@ export type ToDelay_F<
   E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (delay?: string) => Fn<[Pc, Tc, ToEvents<E>], number>;
+> = (delay?: string) => Fn<[Pc, Tc, ToEvents<E>], number> | undefined;
 
 export type PerformDelay_F<
   E extends EventsMap = EventsMap,

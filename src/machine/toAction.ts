@@ -1,3 +1,4 @@
+import { isDefined } from '@bemedev/basifun';
 import { ERRORS } from '~constants';
 import { isDescriber } from '~types';
 import { defaultReturn, nothing as value } from '~utils';
@@ -21,21 +22,17 @@ export const toAction: ToAction_F = ({
     });
   };
 
-  if (!action) return out(ERRORS.action.notDefined.error);
+  if (!isDefined(action)) return out(ERRORS.action.notDefined.error);
 
   if (isDescriber(action)) {
     const fn = actions?.[action.name];
-    const func = fn
-      ? reduceFnMap({ events, _default: value as any, mode, fn })
-      : undefined;
+    const func = fn ? reduceFnMap({ events, fn }) : undefined;
     return out(ERRORS.action.notDescribed.error, func);
   }
 
   const fn = actions?.[action];
 
-  const func = fn
-    ? reduceFnMap({ events, _default: value as any, mode, fn })
-    : undefined;
+  const func = fn ? reduceFnMap({ events, fn }) : undefined;
 
   return out(ERRORS.action.notProvided.error, func);
 };

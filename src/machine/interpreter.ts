@@ -193,6 +193,10 @@ export class Interpreter<
     return this.#value;
   }
 
+  get context() {
+    return this.#context;
+  }
+
   #startStatus = (): WorkingStatus => (this.#status = 'started');
 
   start = async () => {
@@ -281,7 +285,10 @@ export class Interpreter<
     const promises: (() => Promise<Contexts<Pc, Tc> | undefined>)[] = [];
 
     entries.forEach(([_delay, _activity]) => {
-      const delay = this.#executeDelay(this.toDelay(_delay));
+      const delayF = this.toDelay(_delay);
+      const check0 = !isDefined(delayF);
+      if (check0) return;
+      const delay = this.#executeDelay(delayF);
 
       const check1 = delay < MIN_ACTIVITY_TIME;
       if (check1) {
@@ -334,17 +341,16 @@ export class Interpreter<
     let check1 = !this.#sending && this.#isInsideValue(from);
 
     while (check1) {
-      activities = await this.#_executeActivities(_activities);
-      check1 = !this.#sending && this.#isInsideValue(from);
-      if (!check1 || !activities) return;
-
       this.#pContext = deepmerge(
         this.#pContext,
         activities.pContext,
       ) as any;
 
       this.#context = deepmerge(this.#context, activities.context) as any;
+
+      activities = await this.#_executeActivities(_activities);
       check1 = !this.#sending && this.#isInsideValue(from);
+      if (!activities) return;
     }
   };
 
@@ -524,7 +530,10 @@ export class Interpreter<
 
         const check = isDefined(maxS);
         if (check) {
-          const max = this.#performDelay(this.toDelay(maxS));
+          const delayF = this.toDelay(maxS);
+          const check6 = !isDefined(delayF);
+          if (check6) return;
+          const max = this.#performDelay(delayF);
           _promises.push(
             sleepU(max).then(() => ({
               event,
@@ -597,7 +606,11 @@ export class Interpreter<
     const remains: Remaininigs<Pc, Tc> = [];
 
     entries.forEach(([_delay, transition]) => {
-      const delay = this.#executeDelay(this.toDelay(_delay));
+      const delayF = this.toDelay(_delay);
+      const check0 = !isDefined(delayF);
+      if (check0) return;
+
+      const delay = this.#executeDelay(delayF);
 
       const check1 = delay < MAX_TIME_PROMISE;
       if (check1) {
@@ -965,7 +978,6 @@ export class Interpreter<
     flat.forEach(([from, transitions]) => {
       const check1 = !this.#isInsideValue(from);
       if (check1) return;
-
       transitions.forEach(transition => {
         const { target, result: _result } =
           this.#performTransitions(transition);
@@ -1034,7 +1046,7 @@ export class Interpreter<
   #diffNext = (target: string) => {
     const _next = this.proposedNextConfig(target);
     const next = _next as NodeConfig;
-    const flatNext = flatMap(next);
+    const flatNext = flatMap(next, false);
     const entriesCurrent = Object.entries(this.#flat);
     const keysNext = Object.keys(flatNext);
     const keys = entriesCurrent.map(([key]) => key);
@@ -1125,9 +1137,8 @@ export class Interpreter<
   toDelay: ToDelay_F<E, Pc, Tc> = delay => {
     const events = this.#machine.eventsMap;
     const delays = this.#machine.delays;
-    const mode = this.#mode;
 
-    return toDelay({ delay, events, delays, mode });
+    return toDelay({ delay, events, delays });
   };
 
   toMachine = (machine: ActionConfig) => {

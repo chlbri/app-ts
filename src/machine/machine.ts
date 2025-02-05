@@ -247,7 +247,9 @@ class Machine<
   provideInitials = (initials: Mo['initials']) =>
     this.#renew('initials', initials);
 
-  addActions = (actions?: Mo['actions']) => (this.#actions = actions);
+  addActions = (actions?: Mo['actions']) => {
+    this.#actions = actions;
+  };
 
   provideActions = (actions?: Mo['actions']) =>
     this.#renew('actions', actions);
@@ -272,13 +274,11 @@ class Machine<
     this.#renew('machines', machines);
 
   addOptions = (options?: NOmit<Mo, 'initials'>) => {
-    const out = this.#renew();
-
-    out.addActions(options?.actions);
-    out.addGuards(options?.predicates);
-    out.addDelays(options?.delays);
-    out.addPromises(options?.promises);
-    out.addMachines(options?.machines);
+    this.addActions(options?.actions);
+    this.addGuards(options?.predicates);
+    this.addDelays(options?.delays);
+    this.addPromises(options?.promises);
+    this.addMachines(options?.machines);
   };
 
   provideOptions = (
@@ -542,7 +542,7 @@ export type AnyMachine = Machine<
 >;
 
 type CreateMachine_F = <
-  C extends Config = Config,
+  const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends EventsMap = EventsMap,
@@ -560,16 +560,16 @@ export const createMachine: CreateMachine_F = (
   initials,
   options,
 ) => {
-  const out = new Machine(config);
-  out.addInitials(initials);
+  const out1 = new Machine(config);
+  out1.addInitials(initials);
 
-  out
+  const out2 = out1
     .provideEvents(eventsMap)
     .providePrivateContext(pContext)
-    .provideContext(context)
-    .addOptions(options);
+    .provideContext(context);
+  out2.addOptions(options);
 
-  return out as any;
+  return out2 as any;
 };
 
 export const DEFAULT_MACHINE: AnyMachine = new Machine({

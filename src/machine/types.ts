@@ -210,6 +210,12 @@ type _GetKeyActionsFromFlat<Flat extends FlatMapN> = {
     | ExtractActionsFromTransitions<Extract<Flat[key], TransitionsConfig>>
     | ExtractActionsFromActivity<
         Extract<Flat[key], { activities: ActivityConfig }>
+      >
+    | FromActionConfig<
+        ReduceArray<Extract<Flat[key], { entry: any }>['entry']>
+      >
+    | FromActionConfig<
+        ReduceArray<Extract<Flat[key], { exit: any }>['exit']>
       > extends infer V
     ? unknown extends V
       ? never
@@ -707,7 +713,6 @@ export type toDelayParams<
   events: E;
   delay?: string;
   delays?: DelayMap<E, Pc, Tc>;
-  mode: Mode;
 };
 
 export type ToDelay_F = <
@@ -716,7 +721,7 @@ export type ToDelay_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   params: toDelayParams<E, Pc, Tc>,
-) => Fn<[Pc, Tc, ToEvents<E>], number>;
+) => Fn<[Pc, Tc, ToEvents<E>], number> | undefined;
 
 export type MachineMap<
   Pc = any,

@@ -1,11 +1,6 @@
 import { isFunction, type ReduceFnMap_F } from '~types';
 
-export const reduceFnMap: ReduceFnMap_F = ({
-  events,
-  fn,
-  mode,
-  _default,
-}) => {
+export const reduceFnMap: ReduceFnMap_F = ({ events, fn }) => {
   const check1 = isFunction(fn);
   if (check1) return fn;
 
@@ -13,7 +8,7 @@ export const reduceFnMap: ReduceFnMap_F = ({
 
   return (pContext, context, event) => {
     const check5 = typeof event === 'string';
-    if (check5) return _default();
+    if (check5) return;
 
     const { payload, type } = event;
     const _else = fn.else;
@@ -29,7 +24,6 @@ export const reduceFnMap: ReduceFnMap_F = ({
 
     if (_else) return _else(pContext, context, event);
 
-    if (mode === 'normal') return _default();
-    throw 'not';
+    return;
   };
 };

@@ -305,8 +305,6 @@ export const getInitialSimpleState: GetInitialSimpleState_F = body => {
 export const getInitialStateValue: GetInitialStateValue_F = _body => {
   const body = getInitialStateConfig(_body);
 
-  console.log(JSON.stringify(body, null, 2));
-
   return nodeToValue(body);
 };
 
@@ -414,8 +412,6 @@ export const nodeToValue: NodeToValue_F = body => {
       const length = entries.length;
       const __id = body.initial;
       const initial = body.states[__id];
-
-      console.log(__id, initial);
 
       const check3 = length === 1;
       const check4 = isAtomic(initial);
