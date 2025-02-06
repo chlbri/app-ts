@@ -39,17 +39,13 @@ const _toPredicate: _ToPredicateF = ({
 
   if (isDescriber(guard)) {
     const fn = predicates?.[guard.name];
-    const func = fn
-      ? reduceFnMap({ events, fn, mode, _default: returnTrue })
-      : undefined;
+    const func = fn ? reduceFnMap({ events, fn }) : undefined;
     return out(ERRORS.guard.notDescribed.error, func);
   }
 
   if (isString(guard)) {
     const fn = predicates?.[guard];
-    const func = fn
-      ? reduceFnMap({ events, fn, mode, _default: returnTrue })
-      : undefined;
+    const func = fn ? reduceFnMap({ events, fn }) : undefined;
     return out(ERRORS.guard.notProvided.error, func);
   }
 

@@ -32,16 +32,12 @@ export const toMachine: ToMachine_F = ({
 
   if (isDescriber(machine)) {
     const fn = machines?.[machine.name];
-    const func = fn
-      ? reduceFnMap({ events, _default: value as any, mode, fn })
-      : undefined;
+    const func = fn ? reduceFnMap({ events, fn }) : undefined;
     return out(ERRORS.action.notDescribed.error, func);
   }
 
   const fn = machines?.[machine];
-  const func = fn
-    ? reduceFnMap({ events, _default: value as any, mode, fn })
-    : undefined;
+  const func = fn ? reduceFnMap({ events, fn }) : undefined;
 
   return out(ERRORS.action.notProvided.error, func);
 };

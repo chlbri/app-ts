@@ -1,10 +1,19 @@
-import type { Fn, NOmit, Require } from '@bemedev/types';
-import type { PrimitiveObject } from 'src/types/primitives';
+import type {
+  Fn,
+  NOmit,
+  NotUndefined,
+  ReduceArray,
+  Require,
+} from '@bemedev/types';
+import type {
+  PrimitiveObject,
+  SingleOrArrayL,
+} from 'src/types/primitives';
 import type { ActionConfig } from '~actions';
 import type { MachineOptions } from '~config';
 import type { EventObject } from '~events';
 import type {
-  ExtractActionsFromDelayed,
+  ExtractActionsFromMap,
   ExtractGuardsFromDelayed,
   SingleOrArrayT,
   Transition,
@@ -47,10 +56,17 @@ export type PromiseConfig = {
   readonly finally?: FinallyConfig;
 };
 
+type _ExtractActionsFromMap<T> = ExtractActionsFromMap<
+  Extract<
+    ReduceArray<NotUndefined<T>>,
+    { actions: SingleOrArrayL<ActionConfig> }
+  >
+>;
+
 export type ExtractActionsFromPromise<T extends PromiseConfig> =
-  | ExtractActionsFromDelayed<T['then']>
-  | ExtractActionsFromDelayed<T['catch']>
-  | ExtractActionsFromDelayed<T['finally']>;
+  | _ExtractActionsFromMap<T['then']>
+  | _ExtractActionsFromMap<T['catch']>
+  | _ExtractActionsFromMap<T['finally']>;
 
 export type ExtractSrcFromPromise<T extends { src: string }> = T['src'];
 

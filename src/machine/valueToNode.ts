@@ -10,7 +10,7 @@ import type { NodeConfig } from './types';
 import type { ValueToConfig_F } from './valueToNode.type';
 
 export const valueToConfig: ValueToConfig_F = (body, from) => {
-  const flatBody = flatMap(body as NodeConfig, false);
+  const flatBody = flatMap(body as NodeConfig);
   const keysB = Object.keys(flatBody);
   const check1 = isString(from);
   if (check1) {

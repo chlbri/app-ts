@@ -27,17 +27,17 @@ type _TransitionConfigMap = {
   readonly description?: string;
 };
 
-type _ExtractActionsFromMap<
+export type ExtractActionsFromMap<
   T extends { actions: SingleOrArrayL<ActionConfig> },
 > =
   ReduceArray<T['actions']> extends infer R extends ActionConfig
     ? FromActionConfig<R>
     : never;
 
-type _ExtractGuardsFromMap<
+export type ExtractGuardsFromMap<
   T extends { guards: SingleOrArrayL<GuardConfig> },
 > =
-  ReduceArray<T['guards']> extends infer R extends ActionConfig
+  ReduceArray<T['guards']> extends infer R extends GuardConfig
     ? FromGuard<R>
     : never;
 
@@ -76,11 +76,11 @@ export type AlwaysConfig =
 
 export type DelayedTransitions = RecordS<SingleOrArrayT>;
 
-export type ExtractActionsFromDelayed<T> = _ExtractActionsFromMap<
+export type ExtractActionsFromDelayed<T> = ExtractActionsFromMap<
   Extract<T[keyof T], { actions: SingleOrArrayL<ActionConfig> }>
 >;
 
-export type ExtractGuardsFromDelayed<T> = _ExtractGuardsFromMap<
+export type ExtractGuardsFromDelayed<T> = ExtractGuardsFromMap<
   Extract<T[keyof T], { guards: SingleOrArrayL<GuardConfig> }>
 >;
 
@@ -100,7 +100,7 @@ export type ExtractDelaysFromTransitions<T extends TransitionsConfig> =
 export type ExtractActionsFromTransitions<T extends TransitionsConfig> =
   | ExtractActionsFromDelayed<T['on']>
   | ExtractActionsFromDelayed<T['after']>
-  | _ExtractActionsFromMap<
+  | ExtractActionsFromMap<
       Extract<
         ReduceArray<T['always']>,
         { actions: SingleOrArrayL<ActionConfig> }
@@ -111,7 +111,7 @@ export type ExtractActionsFromTransitions<T extends TransitionsConfig> =
 export type ExtractGuardsFromTransitions<T extends TransitionsConfig> =
   | ExtractGuardsFromDelayed<T['on']>
   | ExtractGuardsFromDelayed<T['after']>
-  | _ExtractGuardsFromMap<
+  | ExtractGuardsFromMap<
       Extract<
         ReduceArray<T['always']>,
         { guards: SingleOrArrayL<GuardConfig> }

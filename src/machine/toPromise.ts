@@ -30,9 +30,7 @@ export const toPromiseSrc: ToPromiseSrc_F = ({
     const func = fn
       ? reduceFnMap({
           events,
-          _default: asyncNothing,
           fn,
-          mode,
         })
       : undefined;
     return out(ERRORS.promise.notDescribed.error, func);
@@ -43,9 +41,7 @@ export const toPromiseSrc: ToPromiseSrc_F = ({
   const func = fn
     ? reduceFnMap({
         events,
-        _default: asyncNothing,
         fn,
-        mode,
       })
     : undefined;
 

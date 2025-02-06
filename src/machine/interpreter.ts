@@ -27,6 +27,7 @@ import {
   THEN_EVENT_TYPE,
 } from './constants';
 import { flatMap } from './flatMap';
+import { getInitialNodeConfig } from './getInitialNodeConfig';
 import {
   performRemaining,
   possibleEvents,
@@ -57,7 +58,7 @@ import {
   type WorkingStatus,
 } from './interpreter.types';
 import { nodeToValue } from './nodeToValue';
-import { resolveNode } from './resolveState';
+import { resolveNode } from './resolveNode';
 import { toAction } from './toAction';
 import { toDelay } from './toDelay';
 import { toMachine } from './toMachine';
@@ -135,7 +136,7 @@ export class Interpreter<
     this.#value = nodeToValue(this.#config);
     this.#node = this.#resolveNode(this.#config) as any;
     const configForFlat = this.#config as NodeConfig;
-    this.#flat = flatMap(configForFlat, false) as any;
+    this.#flat = flatMap(configForFlat) as any;
     this.#possibleEvents = possibleEvents(this.#flat);
   };
 
@@ -202,6 +203,10 @@ export class Interpreter<
   start = async () => {
     this.#startStatus();
     this.#startInitialEntries();
+    this.nextStart();
+  };
+
+  protected nextStart = () => {
     this.#performActivities();
     this.#performStartTransitions();
   };
@@ -349,8 +354,8 @@ export class Interpreter<
       this.#context = deepmerge(this.#context, activities.context) as any;
 
       activities = await this.#_executeActivities(_activities);
-      check1 = !this.#sending && this.#isInsideValue(from);
       if (!activities) return;
+      check1 = !this.#sending && this.#isInsideValue(from);
     }
   };
 
@@ -962,7 +967,7 @@ export class Interpreter<
     let result: PR['result'] = this.#contexts;
     let sv = this.#value;
     const entriesFlat = Object.entries(this.#flat);
-    const flat: [from: string, tarnsitions: TransitionConfig[]][] = [];
+    const flat: [from: string, transitions: TransitionConfig[]][] = [];
     const targets: string[] = [];
 
     entriesFlat.forEach(([from, node]) => {
@@ -1010,7 +1015,8 @@ export class Interpreter<
     const check4 = equal(this.#value, sv); //If no changes in state value
     if (check4) return; // Return nothing
 
-    const next = this.#machine.valueToConfig(sv);
+    const next1 = this.#machine.valueToConfig(sv);
+    const next = getInitialNodeConfig(next1);
     return { result, next };
   };
 
@@ -1032,6 +1038,7 @@ export class Interpreter<
     this.#config = next;
     this.#performConfig();
     this.#status = 'started';
+    this.nextStart();
   };
 
   #proposedNextSV = (target: string) => nextSV(this.#value, target);

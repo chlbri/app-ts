@@ -197,7 +197,7 @@ class Machine<
   // #region Providers
   addInitials = (initials: Mo['initials']) => {
     this.#initials = initials;
-    const entries = Object.entries(this.#initials!);
+    const entries = Object.entries(this.#initials);
     const flat: any = structuredClone(this.#flat);
     entries.forEach(([key, initial]) => {
       flat[key] = { ...flat[key], initial };
@@ -297,7 +297,7 @@ class Machine<
 
   start = () => {};
 
-  get #elements(): Elements<C, Pc, Tc, Mo> {
+  get #elements(): Elements<C, E, Pc, Tc, Mo> {
     const config = structuredClone(this.#config);
     const initials = structuredClone(this.#initials);
     const pContext = cloneDeep(this.#pContext);
@@ -307,6 +307,7 @@ class Machine<
     const delays = cloneDeep(this.#delays);
     const promises = cloneDeep(this.#promises);
     const machines = cloneDeep(this.#machines);
+    const events = cloneDeep(this.#eventsMap);
 
     return {
       config,
@@ -318,13 +319,14 @@ class Machine<
       delays,
       promises,
       machines,
+      events,
     };
   }
 
   #provideElements = <T extends keyof Elements>(
     key?: T,
-    value?: Elements<C, Pc, Tc, Mo>[T],
-  ): Elements<C, Pc, Tc, Mo> => {
+    value?: Elements<C, E, Pc, Tc, Mo>[T],
+  ): Elements<C, E, Pc, Tc, Mo> => {
     const out = this.#elements;
     const check = isDefined(key);
 
@@ -338,7 +340,7 @@ class Machine<
 
   #renew = <T extends keyof Elements>(
     key?: T,
-    value?: Elements<C, Pc, Tc, Mo>[T],
+    value?: Elements<C, E, Pc, Tc, Mo>[T],
   ): Machine<C, Pc, Tc, E, Mo> => {
     const {
       config,
@@ -350,6 +352,7 @@ class Machine<
       delays,
       promises,
       machines,
+      events,
     } = this.#provideElements(key, value);
 
     const out = new Machine<C, Pc, Tc, E, Mo>(config);
@@ -358,6 +361,7 @@ class Machine<
 
     out.#pContext = pContext;
     out.#context = context;
+    out.#eventsMap = events;
 
     out.addGuards(guards);
     out.addActions(actions);
@@ -377,7 +381,7 @@ class Machine<
    */
 
   providePrivateContext = <T>(pContext: T) => {
-    const { context, initials, config } = this.#elements;
+    const { context, initials, config, events } = this.#elements;
 
     const out = new Machine<C, T, Tc, E>(config);
 
@@ -386,6 +390,7 @@ class Machine<
 
     out.#context = context;
     out.#pContext = pContext;
+    out.#eventsMap = events;
 
     return out;
   };
@@ -394,7 +399,7 @@ class Machine<
    * Reset all options
    */
   provideContext = <T extends PrimitiveObject>(context: T) => {
-    const { pContext, initials, config } = this.#elements;
+    const { pContext, initials, config, events } = this.#elements;
 
     const out = new Machine<C, Pc, T, E>(config);
     const check1 = isDefined(initials);
@@ -402,6 +407,7 @@ class Machine<
 
     out.#pContext = pContext;
     out.#context = context;
+    out.#eventsMap = events;
 
     return out;
   };

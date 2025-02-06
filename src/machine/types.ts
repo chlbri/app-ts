@@ -18,11 +18,10 @@ import type {
 import type { AllowedNames, SubType } from 'src/types/subtype';
 import type { ActionConfig, FromActionConfig } from '~actions';
 import type { EventsMap, ToEvents } from '~events';
-import type { GuardConfig } from '~guards';
+import type { FromGuard, GuardConfig } from '~guards';
 import type { AnyMachine } from '~machine';
 import type { PromiseConfig } from '~promises';
 import type {
-  ExtractActionsFromDelayed,
   ExtractActionsFromTransitions,
   ExtractDelaysFromTransitions,
   ExtractGuardsFromTransitions,
@@ -62,15 +61,31 @@ export type ActivityArray = SingleOrArrayL<ActivityMap>;
 export type ActivityConfig = Record<string, ActivityArray>;
 
 export type ActionsFromActivity<TS extends ActivityArray> = TS extends any
-  ? TS extends { actions: SingleOrArrayL<ActionConfig> }
-    ? ExtractActionsFromDelayed<TS>
-    : FromActionConfig<ReduceArray<Extract<TS, ActionConfig>>>
+  ? ReduceArray<TS> extends infer TR
+    ? TR extends { actions: SingleOrArrayL<ActionConfig> }
+      ? FromGuard<ReduceArray<TR['actions']>>
+      : FromActionConfig<ReduceArray<Extract<TR, ActionConfig>>>
+    : never
+  : never;
+
+export type GuardsFromActivity<TS extends ActivityArray> = TS extends any
+  ? ReduceArray<TS> extends infer TR
+    ? TR extends { guards: SingleOrArrayL<GuardConfig> }
+      ? FromGuard<ReduceArray<TR['guards']>>
+      : never
+    : never
   : never;
 
 export type ExtractActionsFromActivity<
   T extends { activities: ActivityConfig },
 > = T['activities'] extends infer TA extends ActivityConfig
   ? { [key in keyof TA]: ActionsFromActivity<TA[key]> }[keyof TA]
+  : never;
+
+export type ExtractGuardsFromActivity<
+  T extends { activities: ActivityConfig },
+> = T['activities'] extends infer TA extends ActivityConfig
+  ? { [key in keyof TA]: GuardsFromActivity<TA[key]> }[keyof TA]
   : never;
 
 export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T
@@ -224,9 +239,11 @@ type _GetKeyActionsFromFlat<Flat extends FlatMapN> = {
 }[keyof Flat];
 
 type _GetKeyGuardsFromFlat<Flat extends FlatMapN> = {
-  [key in keyof Flat]: ExtractGuardsFromTransitions<
-    Extract<Flat[key], TransitionsConfig>
-  > extends infer V
+  [key in keyof Flat]:
+    | ExtractGuardsFromTransitions<Extract<Flat[key], TransitionsConfig>>
+    | ExtractGuardsFromActivity<
+        Extract<Flat[key], { activities: ActivityConfig }>
+      > extends infer V
     ? unknown extends V
       ? never
       : V

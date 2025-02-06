@@ -1,4 +1,5 @@
 import type { PrimitiveObject } from 'src/types/primitives';
+import type { EventsMap } from '~events';
 import type { Machine } from '~machine';
 import type {
   Config,
@@ -20,6 +21,7 @@ export type _ProvideActions_F<T> = (actions: T) => void;
 
 export type Elements<
   C extends Config = Config,
+  E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
@@ -27,6 +29,7 @@ export type Elements<
   config: C;
   initials?: Mo['initials'];
   pContext: Pc;
+  events: E;
   context: Tc;
   actions?: Mo['actions'];
   guards?: Mo['predicates'];

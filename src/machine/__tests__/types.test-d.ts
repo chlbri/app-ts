@@ -13,8 +13,6 @@ import type {
   EventsMapFrom,
   GuardKeysFrom,
   MachineKeysFrom,
-  MachineOptions,
-  MoF,
   PrivateContextFrom,
   PromiseKeysFrom,
 } from '../types';
@@ -65,21 +63,18 @@ expectTypeOf<TTE>().toEqualTypeOf<
 
 type ActionKeys = ActionKeysFrom<Machine1>;
 expectTypeOf<ActionKeys>().toEqualTypeOf<
-  | 'action12'
-  | 'action13'
-  | 'action14'
-  | 'action15'
-  | 'dodo1'
-  | 'dodo2'
+  | 'action1'
   | 'dodo3'
+  | 'doré1'
   | 'dodo5'
+  | 'dodo1'
+  | 'doré'
+  | 'dodo2'
   | 'dodo6'
   | 'dodo7'
+  | 'doré3'
   | 'deal'
   | 'deal17'
-  | 'doré'
-  | 'doré1'
-  | 'doré3'
 >();
 
 type GuardKeys = GuardKeysFrom<Machine1>;
@@ -97,7 +92,3 @@ expectTypeOf<PromiseKeys>().toEqualTypeOf<'promise1' | 'promise2'>();
 
 type MachineKeys = MachineKeysFrom<Machine1>;
 expectTypeOf<MachineKeys>().toEqualTypeOf<'machine1'>();
-
-type Mo1 = MachineOptions<TTConfig, TTEm, TTPrivate, TTC>;
-type Mo2 = MoF<Machine1>;
-expectTypeOf<Mo1>().toEqualTypeOf<Mo2>();

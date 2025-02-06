@@ -398,17 +398,20 @@ type Tr1 = {
 type EAFD1 = ExtractActionsFromTransitions<Tr1>;
 
 expectTypeOf<EAFD1>().toEqualTypeOf<
-  | 'action12'
-  | 'action13'
+  | 'dodo7'
+  | 'dodo6'
+  | 'doré3'
+  | 'doré1'
+  | 'action1'
   | 'action14'
+  | 'action13'
+  | 'action4'
+  | 'action3'
   | 'action15'
-  | 'dodo1'
-  | 'dodo2'
+  | 'action12'
   | 'dodo3'
   | 'dodo5'
-  | 'dodo6'
-  | 'dodo7'
+  | 'dodo1'
   | 'doré'
-  | 'doré1'
-  | 'doré3'
+  | 'dodo2'
 >();
