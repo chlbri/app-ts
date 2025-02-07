@@ -34,7 +34,7 @@ export type EventArg<T extends EventsMap> =
       ? To
       : To extends EventObject
         ? object extends To['payload']
-          ? To['type']|To
+          ? To['type'] | To
           : To
         : never
     : never;
