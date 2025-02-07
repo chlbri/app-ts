@@ -1,4 +1,4 @@
-import { decompose, recompose } from '@bemedev/decompose';
+import { decomposeKeys } from '@bemedev/decompose';
 import { isString } from 'src/types/primitives';
 import { DEFAULT_DELIMITER } from '~constants';
 import { replaceAll } from '~utils';
@@ -10,7 +10,7 @@ import type { NodeConfig } from './types';
 import type { ValueToConfig_F } from './valueToNode.type';
 
 export const valueToConfig: ValueToConfig_F = (body, from) => {
-  const flatBody = flatMap(body as NodeConfig);
+  const flatBody = flatMap(body as NodeConfig, false);
   const keysB = Object.keys(flatBody);
   const check1 = isString(from);
   if (check1) {
@@ -33,36 +33,27 @@ export const valueToConfig: ValueToConfig_F = (body, from) => {
     return {};
   }
 
-  const flatFrom = decompose(from);
-
-  const entries1 = Object.entries<string>(flatFrom as any);
+  const flatFrom = decomposeKeys(from);
 
   const out1: any = {};
 
-  entries1.forEach(([_key, value]) => {
-    let key1 = _key;
-    const check3 = !(Object.keys(value).length === 0);
-
-    if (check3) {
-      key1 += `.${value}`;
-    }
-
+  flatFrom.forEach(key1 => {
     const key2 = replaceAll({
       entry: key1,
       match: '.',
       replacement: DEFAULT_DELIMITER,
     });
 
-    const check4 = keysB.includes(key2);
+    const check4 = keysB.includes(`/${key2}`);
 
     if (check4) {
       const all = getParents(key2);
-      all.forEach(key => {
-        out1[key] = (flatBody as any)[key];
+      all.forEach(_key => {
+        out1[`/${_key}`] = (flatBody as any)[`/${_key}`];
       });
     }
   });
 
-  const out2 = recompose(out1);
+  const out2 = recomposeNode(out1);
   return out2;
 };

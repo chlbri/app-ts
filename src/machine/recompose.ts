@@ -15,14 +15,12 @@ export function recomposeObjectUrl<T>(shape: string, value: T) {
 
   if (keys.length <= 1) {
     const key = keys.shift()!;
-
     obj.states = {};
     obj.states[key] = value;
   } else {
     const key = keys.shift()!;
     const _value = recomposeObjectUrl(keys.join(DEFAULT_DELIMITER), value);
 
-    // obj = rest;
     obj.states = {};
 
     obj.states[key] = _value;

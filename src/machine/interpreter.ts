@@ -33,30 +33,31 @@ import {
   possibleEvents,
   sleepU,
 } from './interpreter.helpers';
-import {
-  INIT_EVENT,
-  type _Send_F,
-  type Contexts,
-  type ExecuteActivities_F,
-  type Interpreter_F,
-  type Mode,
-  type PerformAction_F,
-  type PerformAfter_F,
-  type PerformAlway_F,
-  type PerformDelay_F,
-  type PerformPredicate_F,
-  type PerformPromise_F,
-  type PerformPromisees_F,
-  type PerformTransition_F,
-  type PerformTransitions_F,
-  type PromiseeResult,
-  type Remaininigs,
-  type ToAction_F,
-  type ToDelay_F,
-  type ToPredicate_F,
-  type ToPromiseSrc_F,
-  type WorkingStatus,
+import type {
+  _Send_F,
+  Contexts,
+  ExecuteActivities_F,
+  Interpreter_F,
+  Mode,
+  PerformAction_F,
+  PerformAfter_F,
+  PerformAlway_F,
+  PerformDelay_F,
+  PerformPredicate_F,
+  PerformPromise_F,
+  PerformPromisees_F,
+  PerformTransition_F,
+  PerformTransitions_F,
+  PromiseeResult,
+  Remaininigs,
+  ToAction_F,
+  ToDelay_F,
+  ToPredicate_F,
+  ToPromiseSrc_F,
+  WorkingStatus,
 } from './interpreter.types';
+import { INIT_EVENT } from './interpreter.types';
+import { setInterval2, type IntervalTimer } from './interval';
 import { nodeToValue } from './nodeToValue';
 import { resolveNode } from './resolveNode';
 import { toAction } from './toAction';
@@ -207,8 +208,9 @@ export class Interpreter<
   };
 
   #rinitIntervals = () => {
-    this.#intervals.forEach(clearInterval);
-    this.#intervals = [];
+    this.#intervals.forEach(f => f.pause());
+
+    // this.#intervals = [];
   };
 
   protected nextStart = () => {
@@ -228,8 +230,7 @@ export class Interpreter<
   #executeAction: PerformAction_F<E, Pc, Tc> = action => {
     this.#makeBusy();
     const { pContext, context } = this.#performAction(action);
-
-    this.#status = 'started';
+    this.#makeWork();
     return { pContext, context };
   };
 
@@ -240,13 +241,17 @@ export class Interpreter<
     };
   }
 
-  #performActions = (...actions: ActionConfig[]) => {
+  #performActions = (
+    contexts: Contexts<Pc, Tc>,
+    ...actions: ActionConfig[]
+  ) => {
     return actions
       .map(this.toAction)
       .map(this.#executeAction)
       .reduce((acc, value) => {
-        return deepmerge(acc, value) as any;
-      }, this.#contexts);
+        const out = deepmerge(acc, value) as any;
+        return out;
+      }, contexts);
   };
 
   #performPredicate: PerformPredicate_F<E, Pc, Tc> = predicate => {
@@ -291,9 +296,9 @@ export class Interpreter<
     return out;
   };
 
-  #executeActivities: ExecuteActivities_F = _activities => {
+  #executeActivities: ExecuteActivities_F = (from, _activities) => {
     const entries = Object.entries(_activities);
-    const promises: (() => NodeJS.Timeout)[] = [];
+    const promises: IntervalTimer[] = [];
 
     for (const [_delay, _activity] of entries) {
       const delayF = this.toDelay(_delay);
@@ -307,49 +312,68 @@ export class Interpreter<
         return [];
       }
 
+      const _interval = this.#intervals.find(
+        f => f.id === `${from}::${_delay}`,
+      );
+      console.log('initial', _interval?.id);
+
+      if (_interval) {
+        _interval.start();
+        continue;
+      }
+
       const activities = toArray.typed(_activity);
-      const promise = () => {
-        const interval = setInterval(() => {
-          for (const activity of activities) {
-            const check2 = typeof activity === 'string';
-            const check3 =
-              typeof activity === 'object' && 'name' in activity;
 
-            const check4 = check2 || check3;
+      const id = `${from}::${_delay}`;
+      const interval = delay;
+      const callback = () => {
+        for (const activity of activities) {
+          const check2 = typeof activity === 'string';
+          const check3 =
+            typeof activity === 'object' && 'name' in activity;
 
-            if (check4) {
-              const { context, pContext } = this.#performActions(activity);
-              this.#pContext = deepmerge(this.#pContext, pContext) as any;
-              this.#context = deepmerge(this.#context, context) as any;
-              return;
-            }
+          const check4 = check2 || check3;
 
-            const check5 = this.#performGuards(
-              ...toArray<GuardConfig>(activity.guards),
+          if (check4) {
+            const { context, pContext } = this.#performActions(
+              this.#contexts,
+              activity,
             );
-            if (check5) {
-              const actions = toArray.typed(activity.actions);
-              const { context, pContext } = this.#performActions(
-                ...actions,
-              );
-              this.#pContext = deepmerge(this.#pContext, pContext) as any;
-              this.#context = deepmerge(this.#context, context) as any;
-              return;
-            }
+            this.#pContext = deepmerge(this.#pContext, pContext) as any;
+            this.#context = deepmerge(this.#context, context) as any;
+            return;
           }
-        }, delay);
 
-        this.#intervals.push(interval);
-        return interval;
+          const check5 = this.#performGuards(
+            ...toArray<GuardConfig>(activity.guards),
+          );
+          if (check5) {
+            const actions = toArray.typed(activity.actions);
+            const { context, pContext } = this.#performActions(
+              this.#contexts,
+              ...actions,
+            );
+            this.#pContext = deepmerge(this.#pContext, pContext) as any;
+            this.#context = deepmerge(this.#context, context) as any;
+            return;
+          }
+        }
       };
+      const promise = setInterval2({
+        callback,
+        interval,
+        id,
+      });
 
       promises.push(promise);
     }
 
+    this.#intervals.push(...promises);
+
     return promises;
   };
 
-  #intervals: NodeJS.Timeout[] = [];
+  #intervals: IntervalTimer[] = [];
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';
@@ -359,6 +383,7 @@ export class Interpreter<
     const response = this.#performGuards(...toArray<GuardConfig>(guards));
     if (response) {
       const result = this.#performActions(
+        this.#contexts,
         ...toArray<ActionConfig>(actions),
       );
       return { target, result };
@@ -400,13 +425,14 @@ export class Interpreter<
 
       const check4 = check2 || check3;
       if (check4) {
-        const result = this.#performActions(final);
+        const result = this.#performActions(this.#contexts, final);
         return result;
       }
 
       const response = this.#performGuards(...toArray.typed(final.guards));
       if (response) {
         const result = this.#performActions(
+          this.#contexts,
           ...toArray.typed(final.actions),
         );
         return result;
@@ -676,13 +702,14 @@ export class Interpreter<
   }
 
   get #collectedActivities() {
-    const entriesFlat = Object.values(this.#flat);
-    const entries: ActivityConfig[] = [];
+    const entriesFlat = Object.entries(this.#flat);
 
-    entriesFlat.forEach(node => {
+    const entries: [from: string, activities: ActivityConfig][] = [];
+
+    entriesFlat.forEach(([from, node]) => {
       const activities = node.activities;
       if (activities) {
-        entries.push(activities);
+        entries.push([from, activities]);
       }
     });
 
@@ -752,12 +779,12 @@ export class Interpreter<
     const check = collected.length < 1;
     if (check) return;
 
-    const activities: (() => NodeJS.Timeout)[] = [];
+    const activities: IntervalTimer[] = [];
     for (const args of this.#collectedActivities) {
-      activities.push(...this.#executeActivities(args));
+      activities.push(...this.#executeActivities(...args));
     }
 
-    return activities.forEach(p => p());
+    return activities.forEach(p => p.start());
   };
 
   #performAfters = async () => {
@@ -841,7 +868,10 @@ export class Interpreter<
   };
 
   #startInitialEntries = () =>
-    this.#performActions(...getEntries(this.#initialConfig));
+    this.#performActions(
+      this.#contexts,
+      ...getEntries(this.#initialConfig),
+    );
 
   // #finishExists = () => this.#performIO(...getExits(this.#currentConfig));
 
@@ -975,17 +1005,18 @@ export class Interpreter<
     flat.forEach(([from, transitions]) => {
       const check1 = !this.#isInsideValue(from);
       if (check1) return;
-      transitions.forEach(transition => {
-        const { target, result: _result } =
-          this.#performTransitions(transition);
 
-        const check2 = target !== undefined;
-        if (check2) {
-          targets.push(target);
-        }
+      const { target, result: _result } = this.#performTransitions(
+        ...toArray.typed(transitions),
+      );
 
-        result = deepmerge(result, _result);
-      });
+      const check2 = target !== undefined;
+
+      if (check2) {
+        targets.push(target);
+      }
+
+      result = deepmerge(result, _result);
     });
 
     // #region Use targets to perform entry and exit actions
@@ -998,8 +1029,8 @@ export class Interpreter<
       sv = nextSV(sv, target);
       result = deepmerge(
         result,
-        this.#performActions(...diffExits),
-        this.#performActions(...diffEntries),
+        this.#performActions(result, ...diffExits),
+        this.#performActions(result, ...diffEntries),
       ) as any;
     });
     // #endregion
@@ -1009,27 +1040,36 @@ export class Interpreter<
 
     const next1 = this.#machine.valueToConfig(sv);
     const next = getInitialNodeConfig(next1);
+    console.log('next', next);
     return { result, next };
   };
 
   send = (event: Exclude<ToEvents<E>, string>) => {
-    const sends = this._send(event);
-
-    const check1 = sends === undefined;
-    if (check1) return;
+    const previous = structuredClone(this.#event);
     this.#event = event;
+
     this.#status = 'sending';
+    const sends = this._send(event);
+    const check1 = sends === undefined;
+
+    if (check1) {
+      this.#event = previous;
+      this.#makeWork();
+
+      return;
+    }
 
     const {
       result: { context, pContext },
       next,
     } = sends;
+
     this.#pContext = deepmerge(this.#pContext, pContext) as any;
     this.#context = deepmerge(this.#context, context) as any;
 
     this.#config = next;
     this.#performConfig();
-    this.#status = 'started';
+    this.#makeWork();
     this.nextStart();
   };
 

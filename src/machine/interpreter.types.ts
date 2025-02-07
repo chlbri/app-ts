@@ -11,6 +11,7 @@ import type {
 } from '~transitions';
 import type { PrimitiveObject } from '~types';
 import type { Interpreter } from './interpreter';
+import type { IntervalTimer } from './interval';
 import type {
   Action2,
   ActionResult,
@@ -94,8 +95,9 @@ export type PerformPromise_F<
 > = (promise: PromiseFunction2<E, Pc, Tc>) => Promise<any>;
 
 export type ExecuteActivities_F = (
+  from: string,
   activity: ActivityConfig,
-) => (() => NodeJS.Timeout)[];
+) => IntervalTimer[];
 
 export type PerformAfter_F<
   Pc = any,

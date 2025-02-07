@@ -1,6 +1,7 @@
 import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
 import { interpret } from '../interpreter';
+import { fakeDB } from './activities.test.data';
 
 const fakeWaiter = (ms = 0, times = 1) => {
   const waiterTime = ms * times;
@@ -136,6 +137,7 @@ describe('#2 => Complex', () => {
                   on: {
                     WRITE: {
                       actions: 'write',
+                      target: '/working/ui/input',
                     },
                   },
                 },
@@ -147,11 +149,14 @@ describe('#2 => Complex', () => {
                     },
                   },
                   on: {
-                    WRITE: {
-                      guards: 'isInputNotEmpty',
-                      actions: 'write',
-                      target: '/working/ui/final',
-                    },
+                    WRITE: [
+                      {
+                        guards: 'isInputNotEmpty',
+                        actions: 'write',
+                        target: '/working/ui/idle',
+                      },
+                      '/working/ui/final',
+                    ],
                   },
                 },
                 final: {},
@@ -224,7 +229,7 @@ describe('#2 => Complex', () => {
       },
       promises: {
         fetch: async (_, { input }) => {
-          return input;
+          return fakeDB.filter(item => item.name.includes(input));
         },
       },
     },
@@ -247,7 +252,6 @@ describe('#2 => Complex', () => {
 
   test('#2 => Send Next', () => {
     service2.send({ type: 'NEXT', payload: {} });
-    console.log(service2.context.iterator);
   });
 
   test('#3 => Await twice delays -> iterator = 5', async () => {
@@ -256,9 +260,27 @@ describe('#2 => Complex', () => {
   });
 
   test('#4 => Await four delays -> iterator = 13', async ({ expect }) => {
-    // Group all activities
     await fakeWaiter(DELAY, 4);
-
     expect(service2.context.iterator).toBe(13);
+  });
+
+  test('#5 => Send WRITE', () => {
+    service2.send({ type: 'WRITE', payload: { value: 'a' } });
+  });
+
+  describe('#6 => Context input is modified', () => {
+    test('#1 => input is not empty', () => {
+      expect(service2.context.input).toBeDefined();
+      expect(service2.context.input).not.toBe('');
+    });
+
+    test('#2 => input = a', () => {
+      expect(service2.context.input).toBe('a');
+    });
+  });
+
+  test.todo('#4 => Await four delays -> iterator = 13', async () => {
+    await fakeWaiter(DELAY, 4);
+    expect(service2.context.iterator).toBe(21);
   });
 });
