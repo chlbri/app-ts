@@ -1,8 +1,9 @@
-import { decomposeSV } from '@bemedev/decompose';
-import type { StateValue } from '~states';
+import { setInterval } from 'node:timers/promises';
 
-const sv = { data: 'ert' } satisfies StateValue;
-const dec = decomposeSV(sv);
-
-console.log(dec);
-console.log('/state'.substring(1));
+const interval = 100;
+let nnow = Date.now();
+for await (const startTime of setInterval(interval, (nnow += 100))) {
+  const now = Date.now();
+  console.log(now);
+  if (now - startTime > 1000) break;
+}

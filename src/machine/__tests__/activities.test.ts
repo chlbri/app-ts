@@ -1,14 +1,15 @@
-import sleep from '@bemedev/sleep';
 import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
 import { interpret } from '../interpreter';
 
-//TODO add to @bemedev/sleep
-const sleep2 = async (ms = 0, times = 1) => {
-  for (let i = 0; i < times; i++) await sleep(ms);
+const fakeWaiter = (ms = 0, times = 1) => {
+  const waiterTime = ms * times;
+  return vi.advanceTimersByTimeAsync(waiterTime);
 };
 
 const DELAY = 170;
+
+vi.useFakeTimers();
 
 describe('#1 => First state has activity', () => {
   const machine1 = createMachine(
@@ -57,28 +58,28 @@ describe('#1 => First state has activity', () => {
   });
 
   test('#1 => Await one delay -> iterator = 1', async () => {
-    await sleep2(DELAY);
+    await fakeWaiter(DELAY);
     expect(service1.context.iterator).toBe(1);
   });
 
   test('#2 => Await one delay -> iterator = 2', async () => {
-    await sleep2(DELAY);
+    await fakeWaiter(DELAY);
     expect(service1.context.iterator).toBe(2);
   });
 
   test('#3 => Await twice delay -> iterator = 4', async () => {
-    await sleep2(DELAY, 2);
+    await fakeWaiter(DELAY, 2);
     expect(service1.context.iterator).toBe(4);
   });
 
   test('#4 => Await six times delay -> iterator = 10', async () => {
-    await sleep2(DELAY, 6);
+    await fakeWaiter(DELAY, 6);
     expect(service1.context.iterator).toBe(10);
   });
 
   test('#5 => Send NEXT and await 3 times -> iterator = 10, remains the same', async () => {
     service1.send({ type: 'NEXT', payload: {} });
-    await sleep2(DELAY, 3);
+    await fakeWaiter(DELAY, 3);
     expect(service1.context.iterator).toBe(10);
   });
 });
@@ -240,23 +241,24 @@ describe('#2 => Complex', () => {
   });
 
   test('#1 => Await one delay -> iterator = 1', async () => {
-    await sleep2(DELAY);
+    await fakeWaiter(DELAY);
     expect(service2.context.iterator).toBe(1);
   });
 
   test('#2 => Send Next', () => {
     service2.send({ type: 'NEXT', payload: {} });
+    console.log(service2.context.iterator);
   });
 
   test('#3 => Await twice delays -> iterator = 5', async () => {
-    await sleep2(DELAY, 2);
+    await fakeWaiter(DELAY, 2);
     expect(service2.context.iterator).toBe(5);
   });
 
-  test('#4 => Await four delays -> iterator = 13', async () => {
+  test('#4 => Await four delays -> iterator = 13', async ({ expect }) => {
     // Group all activities
-    await sleep2(DELAY, 4);
-    // service2.send({ type: 'FINISH', payload: {} });
+    await fakeWaiter(DELAY, 4);
+
     expect(service2.context.iterator).toBe(13);
-  }, 1_500);
+  });
 });

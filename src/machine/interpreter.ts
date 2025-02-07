@@ -206,7 +206,13 @@ export class Interpreter<
     this.nextStart();
   };
 
+  #rinitIntervals = () => {
+    this.#intervals.forEach(clearInterval);
+    this.#intervals = [];
+  };
+
   protected nextStart = () => {
+    this.#rinitIntervals();
     this.#performActivities();
     this.#performStartTransitions();
   };
@@ -285,79 +291,65 @@ export class Interpreter<
     return out;
   };
 
-  #_executeActivities: ExecuteActivities_F<Pc, Tc> = async _activities => {
+  #executeActivities: ExecuteActivities_F = _activities => {
     const entries = Object.entries(_activities);
-    const promises: (() => Promise<Contexts<Pc, Tc> | undefined>)[] = [];
+    const promises: (() => NodeJS.Timeout)[] = [];
 
-    entries.forEach(([_delay, _activity]) => {
+    for (const [_delay, _activity] of entries) {
       const delayF = this.toDelay(_delay);
       const check0 = !isDefined(delayF);
-      if (check0) return;
+      if (check0) return [];
       const delay = this.#executeDelay(delayF);
 
       const check1 = delay < MIN_ACTIVITY_TIME;
       if (check1) {
         this.addWarning(`${_delay} is too short`);
-        return;
+        return [];
       }
 
       const activities = toArray.typed(_activity);
-      const promise = async () => {
-        await sleep(delay);
-        for (const activity of activities) {
-          const check2 = typeof activity === 'string';
-          const check3 =
-            typeof activity === 'object' && 'name' in activity;
+      const promise = () => {
+        const interval = setInterval(() => {
+          for (const activity of activities) {
+            const check2 = typeof activity === 'string';
+            const check3 =
+              typeof activity === 'object' && 'name' in activity;
 
-          const check4 = check2 || check3;
+            const check4 = check2 || check3;
 
-          if (check4) return this.#performActions(activity);
+            if (check4) {
+              const { context, pContext } = this.#performActions(activity);
+              this.#pContext = deepmerge(this.#pContext, pContext) as any;
+              this.#context = deepmerge(this.#context, context) as any;
+              return;
+            }
 
-          const check5 = this.#performGuards(
-            ...toArray<GuardConfig>(activity.guards),
-          );
-          if (check5) {
-            const actions = toArray.typed(activity.actions);
-            return this.#performActions(...actions);
+            const check5 = this.#performGuards(
+              ...toArray<GuardConfig>(activity.guards),
+            );
+            if (check5) {
+              const actions = toArray.typed(activity.actions);
+              const { context, pContext } = this.#performActions(
+                ...actions,
+              );
+              this.#pContext = deepmerge(this.#pContext, pContext) as any;
+              this.#context = deepmerge(this.#context, context) as any;
+              return;
+            }
           }
-        }
-        return;
+        }, delay);
+
+        this.#intervals.push(interval);
+        return interval;
       };
 
       promises.push(promise);
-    });
-
-    return Promise.all(promises.map(promise => promise())).then(values => {
-      return values.reduce(
-        (acc, value) => deepmerge(acc, value) as any,
-        this.#contexts,
-      );
-    });
-  };
-
-  #executeActivities = async (
-    from: string,
-    _activities: ActivityConfig,
-  ) => {
-    // Loop while inside from
-    let activities = await this.#_executeActivities(_activities);
-    if (!activities) return;
-
-    let check1 = !this.#sending && this.#isInsideValue(from);
-
-    while (check1) {
-      this.#pContext = deepmerge(
-        this.#pContext,
-        activities.pContext,
-      ) as any;
-
-      this.#context = deepmerge(this.#context, activities.context) as any;
-
-      activities = await this.#_executeActivities(_activities);
-      if (!activities) return;
-      check1 = !this.#sending && this.#isInsideValue(from);
     }
+
+    return promises;
   };
+
+  #intervals: NodeJS.Timeout[] = [];
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';
@@ -684,13 +676,13 @@ export class Interpreter<
   }
 
   get #collectedActivities() {
-    const entriesFlat = Object.entries(this.#flat);
-    const entries: [from: string, activities: ActivityConfig][] = [];
+    const entriesFlat = Object.values(this.#flat);
+    const entries: ActivityConfig[] = [];
 
-    entriesFlat.forEach(([from, node]) => {
+    entriesFlat.forEach(node => {
       const activities = node.activities;
       if (activities) {
-        entries.push([from, activities]);
+        entries.push(activities);
       }
     });
 
@@ -760,12 +752,12 @@ export class Interpreter<
     const check = collected.length < 1;
     if (check) return;
 
-    return Promise.all(
-      this.#collectedActivities.map(args => {
-        const promise = this.#executeActivities(...args);
-        return promise;
-      }),
-    ).then(() => undefined);
+    const activities: (() => NodeJS.Timeout)[] = [];
+    for (const args of this.#collectedActivities) {
+      activities.push(...this.#executeActivities(args));
+    }
+
+    return activities.forEach(p => p());
   };
 
   #performAfters = async () => {

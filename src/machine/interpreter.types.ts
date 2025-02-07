@@ -93,10 +93,9 @@ export type PerformPromise_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (promise: PromiseFunction2<E, Pc, Tc>) => Promise<any>;
 
-export type ExecuteActivities_F<
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = (activity: ActivityConfig) => Promise<Contexts<Pc, Tc> | undefined>;
+export type ExecuteActivities_F = (
+  activity: ActivityConfig,
+) => (() => NodeJS.Timeout)[];
 
 export type PerformAfter_F<
   Pc = any,
