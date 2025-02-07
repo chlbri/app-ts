@@ -272,11 +272,15 @@ export type FnMap<
       [key in keyof E]: (pContext: Pc, context: Tc, payload: E[key]) => R;
     } & {
       else?: (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R;
+      machine$$then: (pContext: Pc, context: Tc, events: any) => R;
+      machine$$catch: (pContext: Pc, context: Tc, events: any) => R;
     })
   | ({
       [key in keyof E]?: (pContext: Pc, context: Tc, payload: E[key]) => R;
     } & {
       else: (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R;
+      machine$$then?: (pContext: Pc, context: Tc, events: any) => R;
+      machine$$catch?: (pContext: Pc, context: Tc, events: any) => R;
     });
 
 export type ReduceFnMap_F = <

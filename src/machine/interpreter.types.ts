@@ -28,6 +28,7 @@ export type WorkingStatus =
   | 'idle'
   | 'starting'
   | 'started'
+  | 'paused'
   | 'working'
   | 'sending'
   | 'stopped'

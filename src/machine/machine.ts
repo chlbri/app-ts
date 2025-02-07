@@ -513,8 +513,9 @@ export const isParallel = (
 // #endregion
 
 export const getIO: GetIO_F = (node, key) => {
-  const out = toArray<string>(node[key]);
+  const out = toArray<string>(node?.[key]);
 
+  if (!node) return [];
   if (isAtomic(node)) {
     return out;
   }

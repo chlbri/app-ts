@@ -6,7 +6,12 @@ import { deepmerge } from 'deepmerge-ts';
 import equal from 'fast-deep-equal';
 import type { ActionConfig } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
-import type { EventsMap, ToEvents } from '~events';
+import {
+  transformEventArg,
+  type EventArg,
+  type EventsMap,
+  type ToEvents,
+} from '~events';
 import type { GuardConfig } from '~guards';
 import { getEntries, getExits, type Machine } from '~machine';
 import type { PromiseConfig } from '~promises';
@@ -107,7 +112,7 @@ export class Interpreter<
   #context!: Tc;
 
   get #canBeStoped() {
-    return this.#status === 'started';
+    return this.#status === 'working';
   }
 
   get #idle() {
@@ -208,15 +213,15 @@ export class Interpreter<
   };
 
   #rinitIntervals = () => {
-    this.#intervals.forEach(f => f.pause());
+    this.#cachedIntervals.forEach(f => f.pause());
 
     // this.#intervals = [];
   };
 
-  protected nextStart = () => {
+  protected nextStart = async () => {
     this.#rinitIntervals();
-    this.#performActivities();
-    this.#performStartTransitions();
+    await this.#performStartTransitions();
+    return this.#performActivities();
   };
 
   #performAction: PerformAction_F<E, Pc, Tc> = action => {
@@ -312,10 +317,9 @@ export class Interpreter<
         return [];
       }
 
-      const _interval = this.#intervals.find(
+      const _interval = this.#cachedIntervals.find(
         f => f.id === `${from}::${_delay}`,
       );
-      console.log('initial', _interval?.id);
 
       if (_interval) {
         _interval.start();
@@ -368,12 +372,12 @@ export class Interpreter<
       promises.push(promise);
     }
 
-    this.#intervals.push(...promises);
+    this.#cachedIntervals.push(...promises);
 
     return promises;
   };
 
-  #intervals: IntervalTimer[] = [];
+  #cachedIntervals: IntervalTimer[] = [];
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';
@@ -484,7 +488,6 @@ export class Interpreter<
   ) => {
     type PR = PromiseeResult<E, Pc, Tc>;
     type Events = PR['event'];
-    let event: Events = this.#event;
 
     // #region Checker for reentering
     const key = this.#produceKeyRemainPromise(from);
@@ -492,7 +495,7 @@ export class Interpreter<
     const check = remain !== undefined;
     if (check) {
       const out = remain();
-      return { ...out, event };
+      return { ...out, event: this.#event };
     }
     // #endregion
 
@@ -505,14 +508,14 @@ export class Interpreter<
 
         const _promises: Promise<PR | undefined>[] = [
           DEFAULT_MAX_PROMISE.then(() => ({
-            event,
+            event: this.#event,
             result: this.#contexts,
           })),
         ];
 
         const handlePromise = (type: 'then' | 'catch', payload: any) => {
           const out = () => {
-            event = {
+            this.#event = {
               type: type === 'then' ? THEN_EVENT_TYPE : CATCH_EVENT_TYPE,
               payload,
             };
@@ -520,8 +523,8 @@ export class Interpreter<
             const transitions = toArray.typed(
               type === 'then' ? then : _catch,
             );
-            const transition = this.#performTransitions(...transitions);
 
+            const transition = this.#performTransitions(...transitions);
             const target = transition.target;
             const result = deepmerge(
               this.#contexts,
@@ -529,7 +532,7 @@ export class Interpreter<
               this.#performFinally(_finally),
             );
 
-            return { event, result, target };
+            return { event: this.#event, result, target };
           };
 
           const check = this.#sending || !this.#isInsideValue(from);
@@ -559,7 +562,7 @@ export class Interpreter<
           const max = this.#performDelay(delayF);
           _promises.push(
             sleepU(max).then(() => ({
-              event,
+              event: this.#event,
               result: this.#contexts,
             })),
           );
@@ -753,15 +756,6 @@ export class Interpreter<
     );
   }
 
-  get #_performAfters() {
-    return Promise.race(
-      this.#collectedAfters.map(args => {
-        const promise = this.#performAfter(...args);
-        return promise;
-      }),
-    );
-  }
-
   get #_performAlways() {
     const collected = this.#collectedAlways;
     const check = collected.length < 1;
@@ -774,7 +768,7 @@ export class Interpreter<
       .reduce((acc, value) => deepmerge(acc, value));
   }
 
-  #performActivities = () => {
+  #performActivities = async () => {
     const collected = this.#collectedActivities;
     const check = collected.length < 1;
     if (check) return;
@@ -787,20 +781,31 @@ export class Interpreter<
     return activities.forEach(p => p.start());
   };
 
-  #performAfters = async () => {
-    const resultAfter = await this.#_performAfters;
+  #performAfters = (
+    ...afters: [from: string, after: DelayedTransitions][]
+  ) => {
+    const out = async () => {
+      const resultAfter = await Promise.race(
+        afters.map(args => {
+          const promise = this.#performAfter(...args);
+          return promise;
+        }),
+      );
 
-    if (resultAfter) {
-      const { target, result } = resultAfter;
+      if (resultAfter) {
+        const { target, result } = resultAfter;
 
-      this.#pContext = deepmerge(this.#pContext, result.pContext) as any;
-      this.#context = deepmerge(this.#context, result.context) as any;
+        this.#pContext = deepmerge(this.#pContext, result.pContext) as any;
+        this.#context = deepmerge(this.#context, result.context) as any;
 
-      if (target) {
-        this.#config = this.proposedNextConfig(target);
-        this.#performConfig();
+        if (target) {
+          this.#config = this.proposedNextConfig(target);
+          this.#performConfig();
+        }
       }
-    }
+    };
+
+    return out;
   };
 
   #performAlways = () => {
@@ -856,15 +861,18 @@ export class Interpreter<
 
   #performStartTransitions = async () => {
     this.#status = 'busy';
-    const promises = [this.#performPromisees, this.#performAfters];
-    const always = this.#performAlways();
-    const check = always !== undefined;
+    const promises = [this.#performPromisees];
 
-    if (check) {
-      promises.push(always);
+    const check1 = this.#collectedAfters.length > 0;
+    if (check1) {
+      promises.push(this.#performAfters(...this.#collectedAfters));
     }
 
-    return Promise.race(promises.map(p => p())).finally(this.#makeWork);
+    this.#performAlways();
+
+    await Promise.race(promises.map(p => p())).finally(() => {
+      return this.#makeWork();
+    });
   };
 
   #startInitialEntries = () =>
@@ -875,8 +883,25 @@ export class Interpreter<
 
   // #finishExists = () => this.#performIO(...getExits(this.#currentConfig));
 
+  pause = () => {
+    if (this.#canBeStoped) {
+      this.#status = 'paused';
+      this.#rinitIntervals();
+    }
+  };
+
+  resume = () => {
+    if (this.#status === 'paused') {
+      this.#status = 'working';
+      this.#performActivities();
+    }
+  };
+
   stop = () => {
-    if (this.#canBeStoped) this.#status = 'stopped';
+    if (this.#canBeStoped) {
+      this.#status = 'stopped';
+      this.#rinitIntervals();
+    }
   };
 
   #makeBusy = (): WorkingStatus => (this.#status = 'busy');
@@ -1025,7 +1050,6 @@ export class Interpreter<
 
       const check3 = equal(this.#value, _sv);
       if (check3) return;
-
       sv = nextSV(sv, target);
       result = deepmerge(
         result,
@@ -1037,18 +1061,22 @@ export class Interpreter<
 
     const check4 = equal(this.#value, sv); //If no changes in state value
     if (check4) return; // Return nothing
-
     const next1 = this.#machine.valueToConfig(sv);
     const next = getInitialNodeConfig(next1);
-    console.log('next', next);
     return { result, next };
   };
 
-  send = (event: Exclude<ToEvents<E>, string>) => {
+  send = (_event: EventArg<E>) => {
+    const event = transformEventArg(_event);
     const previous = structuredClone(this.#event);
     this.#event = event;
 
     this.#status = 'sending';
+    const check0 = typeof event === 'string';
+    if (check0) {
+      this.#makeWork();
+      return;
+    }
     const sends = this._send(event);
     const check1 = sends === undefined;
 
@@ -1110,7 +1138,7 @@ export class Interpreter<
       const check2 = !keysNext.includes(key);
 
       if (check2) {
-        diffExits.push(...getExits(node as any));
+        diffExits.push(...getExits(node));
       }
     });
     // #endregion

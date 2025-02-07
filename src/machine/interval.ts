@@ -1,7 +1,5 @@
 class IntervalTimer {
   private timerId: NodeJS.Timeout | null = null;
-  private startTime: number = 0;
-  private remaining: number = 0;
   private state: 'idle' | 'running' | 'paused' = 'idle';
 
   constructor(config: {
@@ -19,30 +17,15 @@ class IntervalTimer {
   private interval: number;
 
   start = () => {
-    if (this.state === 'paused') {
-      setTimeout(this.timeoutCallback.bind(this), this.remaining);
-    } else {
-      this.startTime = Date.now();
-      this.timerId = setInterval(this.callback, this.interval);
-    }
+    this.timerId = setInterval(this.callback, this.interval);
     this.state = 'running';
   };
 
   pause(): void {
     if (this.state !== 'running') return;
 
-    this.remaining = this.interval - (Date.now() - this.startTime);
     if (this.timerId) clearInterval(this.timerId);
     this.state = 'paused';
-  }
-
-  private timeoutCallback(): void {
-    if (this.state !== 'paused') return;
-    this.callback();
-
-    this.startTime = Date.now();
-    this.timerId = setInterval(this.callback, this.interval);
-    this.state = 'idle';
   }
 }
 

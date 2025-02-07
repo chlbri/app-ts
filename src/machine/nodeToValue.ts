@@ -20,6 +20,14 @@ export const nodeToValue: NodeToValue_F = body => {
     const check5 = check3 && check4;
 
     if (check5) return __id;
+    const keys = Object.keys(body.states);
+    const check6 = keys.length === 1;
+    if (check6) {
+      const key = keys[0];
+      const value = body.states[key];
+      const check7 = isAtomic(value);
+      if (check7) return key;
+    }
   }
 
   const entries2 = entries.map(([key, value]) => {

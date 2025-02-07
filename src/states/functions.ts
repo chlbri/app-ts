@@ -484,7 +484,7 @@ export const nextSV: NextStateValue_F = (from, target) => {
 
   const target2 = deleteFirst(_target2, '.');
   const keysD = decomposeKeys(from);
-  const check5 = keysD.includes(target2);
+  const check5 = keysD.includes(target2 as any);
 
   if (check5) {
     decomposed[target2] = target.substring(last + 1);

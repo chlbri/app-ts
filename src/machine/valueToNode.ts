@@ -1,4 +1,4 @@
-import { decomposeKeys } from '@bemedev/decompose';
+import { decomposeSV } from '@bemedev/decompose';
 import { isString } from 'src/types/primitives';
 import { DEFAULT_DELIMITER } from '~constants';
 import { replaceAll } from '~utils';
@@ -33,23 +33,29 @@ export const valueToConfig: ValueToConfig_F = (body, from) => {
     return {};
   }
 
-  const flatFrom = decomposeKeys(from);
+  const flatFrom = decomposeSV(from)
+    .map(key =>
+      replaceAll({
+        entry: key,
+        match: '.',
+        replacement: DEFAULT_DELIMITER,
+      }),
+    )
+    .map(key => `/${key}`);
 
   const out1: any = {};
 
   flatFrom.forEach(key1 => {
-    const key2 = replaceAll({
-      entry: key1,
-      match: '.',
-      replacement: DEFAULT_DELIMITER,
-    });
-
-    const check4 = keysB.includes(`/${key2}`);
+    const check4 = keysB.includes(key1);
 
     if (check4) {
-      const all = getParents(key2);
-      all.forEach(_key => {
-        out1[`/${_key}`] = (flatBody as any)[`/${_key}`];
+      const children = getChildren(key1, ...keysB).filter(key =>
+        flatFrom.includes(key),
+      );
+
+      out1[key1] = (flatBody as any)[key1];
+      children.forEach(key2 => {
+        out1[key2] = (flatBody as any)[key2];
       });
     }
   });
