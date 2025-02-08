@@ -2,6 +2,7 @@ import type { EventsMap } from '~events';
 import type { PrimitiveObject } from '~types';
 import { Interpreter } from './interpreter';
 import type { InterpreterTest_F } from './interpreterTest.types';
+import { createInterval, type CreateInterval2_F } from './interval';
 import type {
   Config,
   MachineOptions,
@@ -14,7 +15,22 @@ class InterpreterTest<
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = EventsMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
-> extends Interpreter<C, Pc, Tc, E, Mo> {}
+> extends Interpreter<C, Pc, Tc, E, Mo> {
+  protected createInterval: CreateInterval2_F = ({
+    callback,
+    id,
+    interval,
+  }) => {
+    const out = createInterval({
+      callback,
+      id,
+      interval,
+      forTest: true,
+    });
+
+    return out;
+  };
+}
 
 export type { InterpreterTest };
 

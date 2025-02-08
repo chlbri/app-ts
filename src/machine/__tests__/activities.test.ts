@@ -1,4 +1,4 @@
-import { interpret } from '../interpreter';
+import { interpretTest } from '../interpreterTest';
 import { DELAY, fakeDB, machine1, machine2 } from './activities.test.data';
 import { fakeWaiter } from './fixtures';
 
@@ -9,7 +9,7 @@ beforeAll(() => {
 });
 
 describe('#1 => First state has activity', () => {
-  const service = interpret(machine1, {
+  const service = interpretTest(machine1, {
     pContext: {},
     context: { iterator: 0 },
   });
@@ -47,7 +47,7 @@ describe('#1 => First state has activity', () => {
 });
 
 describe('#2 => Complex', () => {
-  const service = interpret(machine2, {
+  const service = interpretTest(machine2, {
     pContext: {},
     context: { iterator: 0, input: '', data: [] },
   });

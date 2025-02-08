@@ -62,7 +62,11 @@ import type {
   WorkingStatus,
 } from './interpreter.types';
 import { INIT_EVENT } from './interpreter.types';
-import { setInterval2, type IntervalTimer } from './interval';
+import {
+  createInterval,
+  type CreateInterval2_F,
+  type IntervalTimer,
+} from './interval';
 import { nodeToValue } from './nodeToValue';
 import { resolveNode } from './resolveNode';
 import { toAction } from './toAction';
@@ -213,7 +217,7 @@ export class Interpreter<
   };
 
   #rinitIntervals = () => {
-    this.#cachedIntervals.forEach(f => f.pause());
+    this.cachedIntervals.forEach(f => f.pause());
 
     // this.#intervals = [];
   };
@@ -317,7 +321,7 @@ export class Interpreter<
         return [];
       }
 
-      const _interval = this.#cachedIntervals.find(
+      const _interval = this.cachedIntervals.find(
         f => f.id === `${from}::${_delay}`,
       );
 
@@ -363,7 +367,7 @@ export class Interpreter<
           }
         }
       };
-      const promise = setInterval2({
+      const promise = this.createInterval({
         callback,
         interval,
         id,
@@ -372,12 +376,27 @@ export class Interpreter<
       promises.push(promise);
     }
 
-    this.#cachedIntervals.push(...promises);
+    this.cachedIntervals.push(...promises);
 
     return promises;
   };
 
-  #cachedIntervals: IntervalTimer[] = [];
+  protected createInterval: CreateInterval2_F = ({
+    callback,
+    id,
+    interval,
+  }) => {
+    const out = createInterval({
+      callback,
+      id,
+      interval,
+      forTest: false,
+    });
+
+    return out;
+  };
+
+  protected cachedIntervals: IntervalTimer[] = [];
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';
