@@ -57,7 +57,9 @@ class IntervalTimer {
 
   start = () => {
     if (this.canStart) {
-      const check = this.#state === 'paused' && this.isTest;
+      const check =
+        (this.#state === 'paused' && this.#forTest === undefined) ||
+        this.#forTest === false;
 
       if (check) sleep(this.#remaining).then(this.#build);
       else this.#build();

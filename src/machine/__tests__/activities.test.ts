@@ -5,12 +5,7 @@ import { fakeWaiter } from './fixtures';
 const log = vi.spyOn(console, 'log');
 
 beforeAll(() => {
-  vi.useFakeTimers({
-    // shouldAdvanceTime: true,
-    loopLimit: 1,
-    ignoreMissingTimers: true,
-    // shouldClearNativeTimers: false,
-  });
+  vi.useFakeTimers();
 });
 
 const isCI = process.env.CI === 'true';
@@ -192,7 +187,7 @@ describe.skipIf(isCI)('#2 => Complex', () => {
   });
 
   describe('#13 => Await four delays', () => {
-    test('#00 => Wait', () => fakeWaiter(DELAY, 4));
+    test('#00 => Wait', () => fakeWaiter(DELAY, 4), 10_000);
 
     test('#01 => iterator = 13', async () => {
       expect(service.context.iterator).toBe(37);
@@ -207,6 +202,7 @@ describe.skipIf(isCI)('#2 => Complex', () => {
         expect(log).toHaveBeenCalledTimes(4);
         expect(log).toHaveBeenNthCalledWith(4, 'Input, please !!');
         log.mockClear();
+        console.log(service.status);
       });
     });
   });

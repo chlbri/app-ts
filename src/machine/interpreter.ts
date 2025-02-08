@@ -901,10 +901,11 @@ export class Interpreter<
   // #finishExists = () => this.#performIO(...getExits(this.#currentConfig));
 
   pause = () => {
-    if (this.#canBeStoped) {
-      this.#status = 'paused';
-      this.#rinitIntervals();
-    }
+    // if (this.#canBeStoped) {
+    console.log('this.#status', this.#canBeStoped);
+    this.#status = 'paused';
+    this.#rinitIntervals();
+    // }
   };
 
   resume = () => {
@@ -915,10 +916,10 @@ export class Interpreter<
   };
 
   stop = () => {
-    if (this.#canBeStoped) {
-      this.#status = 'stopped';
-      this.#rinitIntervals();
-    }
+    // if (this.#canBeStoped) {
+    this.#status = 'stopped';
+    this.#rinitIntervals();
+    // }
   };
 
   #makeBusy = (): WorkingStatus => (this.#status = 'busy');
