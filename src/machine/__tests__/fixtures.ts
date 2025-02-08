@@ -95,10 +95,6 @@ export const machine1 = createMachine(
   },
   { '/': 'state1', '/state1': 'state11', '/state1/state11': 'state111' },
 );
-// .provideActions({})
-// .provideGuards({})
-// .provideDelays({})
-// .providePromises({});
 
 export type Machine1 = typeof machine1;
 
