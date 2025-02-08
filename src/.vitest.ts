@@ -38,6 +38,7 @@ const commonTest = {
     all: true,
     provider: 'v8',
   },
+  environment: 'node',
 } satisfies Inline;
 
 type ConfigType = 'typecheck' | 'typecheckOnly' | 'noTypeCheck';
