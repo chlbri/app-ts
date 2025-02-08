@@ -2,7 +2,6 @@
   "include": ["src/**/*", "src/vitest..common.ts", "src/.vitest.ts"],
   "compilerOptions": {
     "module": "esnext",
-    "module": "esnext",
     "lib": ["dom", "esnext"],
     "importHelpers": true,
     "target": "ESNext",
