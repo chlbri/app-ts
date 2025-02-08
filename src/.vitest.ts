@@ -13,9 +13,12 @@ const plugins = [
     ignoreCoverageFiles: [
       '**/index.ts',
       '**/types.ts',
+      '**/*.example.ts',
+      '**/*.types.ts',
       '**/*.typegen.ts',
       '**/*.fixtures.ts',
       '**/fixtures.ts',
+      '**/fixture.ts',
       '**/*.fixture.ts',
     ],
   }),

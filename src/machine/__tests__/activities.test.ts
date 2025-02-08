@@ -5,7 +5,12 @@ import { fakeWaiter } from './fixtures';
 const log = vi.spyOn(console, 'log');
 
 beforeAll(() => {
-  vi.useFakeTimers();
+  // vi.useFakeTimers({
+  //   // shouldAdvanceTime: true,
+  //   loopLimit: 1,
+  //   ignoreMissingTimers: true,
+  //   // shouldClearNativeTimers: false,
+  // });
 });
 
 describe('#1 => First state has activity', () => {

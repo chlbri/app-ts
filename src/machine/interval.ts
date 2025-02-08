@@ -8,11 +8,12 @@ type Params = {
 };
 
 class IntervalTimer {
-  #timerId: NodeJS.Timeout | null = null;
+  #timerId: NodeJS.Timeout | undefined = undefined;
 
   #state: 'idle' | 'running' | 'paused' = 'idle';
 
   #remaining = 0;
+  #startTime!: number;
 
   #ticks = 0;
 
@@ -50,13 +51,16 @@ class IntervalTimer {
     return this.#forTest === undefined || this.#forTest === false;
   }
 
-  start = () => {
-    const check = this.#state === 'paused' && this.isTest;
+  get canStart() {
+    return this.#state === 'idle' || this.#state === 'paused';
+  }
 
-    if (check) {
-      sleep(this.#remaining).then(this.#build);
-    } else {
-      this.#build();
+  start = () => {
+    if (this.canStart) {
+      const check = this.#state === 'paused' && this.isTest;
+
+      if (check) sleep(this.#remaining).then(this.#build);
+      else this.#build();
     }
   };
 
@@ -66,6 +70,8 @@ class IntervalTimer {
       this.#ticks += 1;
     }, this.#interval);
 
+    this.#startTime = Date.now();
+    this.#ticks = 0;
     this.#state = 'running';
   };
 
@@ -73,12 +79,24 @@ class IntervalTimer {
     if (this.#state !== 'running') return;
 
     if (this.#timerId) clearInterval(this.#timerId);
-    this.#remaining = Date.now() - this.#ticks * this.#interval;
+    this.#remaining =
+      Date.now() - this.#ticks * this.#interval - this.#startTime;
+
+    console.error('this.#remaining', this.#remaining);
+    console.warn('this.#interval', this.#interval);
     this.#state = 'paused';
   }
+
+  [Symbol.asyncDispose] = () => {
+    if (this.#timerId) clearInterval(this.#timerId);
+  };
+
+  [Symbol.dispose] = () => {
+    if (this.#timerId) clearInterval(this.#timerId);
+  };
 }
 
-export type { IntervalTimer };
+export type { IntervalTimer as IntervalTimer };
 
 export type CreateInterval_F = (config: {
   callback: () => void;

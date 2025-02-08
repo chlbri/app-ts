@@ -394,7 +394,7 @@ export class Interpreter<
     return out;
   };
 
-  protected cachedIntervals: IntervalTimer[] = [];
+  cachedIntervals: IntervalTimer[] = [];
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';

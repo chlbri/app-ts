@@ -1,4 +1,4 @@
-import { merge } from 'ts-deepmerge';
+import { deepmerge } from 'deepmerge-ts';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { NodeConfig, NodeConfigCompoundWithInitials } from './types';
 
@@ -37,6 +37,6 @@ export function recomposeNode<
     arr.push(recomposeObjectUrl(key, value));
   });
 
-  const output = merge(...arr);
+  const output = deepmerge(...arr);
   return output as any;
 }

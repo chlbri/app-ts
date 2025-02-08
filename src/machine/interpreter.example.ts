@@ -1,9 +1,15 @@
-import { setInterval } from 'node:timers/promises';
+import { machine1 } from './__tests__/activities.test.data';
+import { interpretTest } from './interpreterTest';
 
-const interval = 100;
-let nnow = Date.now();
-for await (const startTime of setInterval(interval, (nnow += 100))) {
-  const now = Date.now();
-  console.log(now);
-  if (now - startTime > 1000) break;
-}
+const service = interpretTest(machine1, {
+  pContext: {},
+  context: { iterator: 0 },
+});
+
+console.log('service', service.status);
+
+// service.resume();
+
+// await sleep(1000).then(() => {
+//   console.log('service.context.iterator', service.context.iterator);
+// });

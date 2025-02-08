@@ -1,5 +1,5 @@
 import type { Ru } from '@bemedev/types';
-import { merge } from 'ts-deepmerge';
+import { deepmerge } from 'deepmerge-ts';
 import { DEFAULT_DELIMITER } from '~constants';
 
 export function recomposeObjectUrl<T>(shape: string, value: T) {
@@ -37,6 +37,6 @@ export function recomposeNode(shape: Ru) {
     arr.push(recomposeObjectUrl(key, value));
   });
 
-  const output = merge(...arr);
+  const output = deepmerge(...arr);
   return output;
 }
