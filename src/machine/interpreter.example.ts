@@ -1,12 +1,14 @@
 import { machine1 } from './__tests__/activities.test.data';
 import { interpretTest } from './interpreterTest';
 
-const service = interpretTest(machine1, {
-  pContext: {},
-  context: { iterator: 0 },
-});
+{
+  using service = interpretTest(machine1, {
+    pContext: {},
+    context: { iterator: 0 },
+  });
 
-console.log('service', service.status);
+  console.log('service', service.status);
+}
 
 // service.resume();
 

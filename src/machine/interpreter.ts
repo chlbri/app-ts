@@ -1234,6 +1234,10 @@ export class Interpreter<
 
     return toMachine({ machine, events, machines, mode });
   };
+
+  [Symbol.dispose] = () => {
+    this.stop();
+  };
 }
 
 export type AnyInterpreter = Interpreter<
