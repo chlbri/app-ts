@@ -299,8 +299,6 @@ export class Interpreter<
     this.#makeBusy();
     const out = this.#performDelay(delay);
 
-    //TODO some verifs
-
     this.#status = 'started';
     return out;
   };
