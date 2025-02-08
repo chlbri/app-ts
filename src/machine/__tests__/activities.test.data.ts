@@ -1,3 +1,6 @@
+import { t } from '@bemedev/types';
+import { createMachine } from '~machine';
+
 export const fakeDB = [
   { _id: '01', name: 'Alice' },
   { _id: '02', name: 'Bob' },
@@ -26,3 +29,195 @@ export const fakeDB = [
   { _id: '25', name: 'Yara' },
   { _id: '26', name: 'Zane' },
 ];
+
+export const DELAY = 170;
+
+export const machine1 = createMachine(
+  {
+    states: {
+      idle: {
+        activities: {
+          DELAY: 'inc',
+        },
+        on: {
+          NEXT: '/final',
+        },
+      },
+      final: {},
+    },
+  },
+  {
+    eventsMap: {
+      NEXT: {},
+    },
+    context: t.buildObject({ iterator: t.number }),
+    pContext: t.object,
+  },
+  { '/': 'idle' },
+  {
+    actions: {
+      inc: (pContext, context) => {
+        context.iterator++;
+        return { context, pContext };
+      },
+    },
+    delays: {
+      DELAY,
+    },
+  },
+);
+
+export const machine2 = createMachine(
+  {
+    states: {
+      idle: {
+        activities: {
+          DELAY: 'inc',
+        },
+        on: {
+          NEXT: '/working',
+        },
+      },
+      working: {
+        type: 'parallel',
+        activities: {
+          DELAY2: 'inc2',
+        },
+        on: {
+          FINISH: '/final',
+        },
+        states: {
+          fetch: {
+            states: {
+              idle: {
+                activities: {
+                  DELAY: 'sendPanelToUser',
+                },
+                on: {
+                  FETCH: {
+                    guards: 'isInputNotEmpty',
+                    target: '/working/fetch/fetch',
+                  },
+                },
+              },
+              fetch: {
+                promises: {
+                  src: 'fetch',
+                  then: {
+                    actions: 'insertData',
+                    target: '/working/fetch/idle',
+                  },
+                  catch: '/working/fetch/idle',
+                },
+              },
+            },
+          },
+          ui: {
+            states: {
+              idle: {
+                on: {
+                  WRITE: {
+                    actions: 'write',
+                    target: '/working/ui/input',
+                  },
+                },
+              },
+              input: {
+                activities: {
+                  DELAY: {
+                    guards: 'isInputEmpty',
+                    actions: 'askUsertoInput',
+                  },
+                },
+                on: {
+                  WRITE: [
+                    {
+                      guards: 'isInputNotEmpty',
+                      actions: 'write',
+                      target: '/working/ui/idle',
+                    },
+                    '/working/ui/final',
+                  ],
+                },
+              },
+              final: {},
+            },
+          },
+        },
+      },
+      final: {},
+    },
+  },
+  {
+    eventsMap: {
+      NEXT: {},
+      FETCH: {},
+      WRITE: { value: t.string },
+      FINISH: {},
+    },
+    context: t.buildObject({
+      iterator: t.number,
+      input: t.string,
+      data: t.array(t.string),
+    }),
+    pContext: t.object,
+  },
+  { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
+  {
+    actions: {
+      inc: (pContext, context) => {
+        context.iterator++;
+        return { context, pContext };
+      },
+      inc2: (pContext, context) => {
+        context.iterator += 4;
+        return { context, pContext };
+      },
+      sendPanelToUser: (pContext, context) => {
+        console.log('sendPanelToUser');
+        return { context, pContext };
+      },
+      write: {
+        WRITE: (pContext, context, { value }) => {
+          context.input = value;
+          return { context, pContext };
+        },
+        else: (pContext, context) => ({ pContext, context }),
+      },
+      askUsertoInput: (pContext, context) => {
+        console.log('Input, please !!');
+        return {
+          pContext,
+          context,
+        };
+      },
+      insertData: (pContext, context, eventsMap) => {
+        const check =
+          typeof eventsMap === 'object' &&
+          eventsMap.type === 'machine$$then';
+
+        if (check) {
+          context.data.push(...eventsMap.payload);
+        }
+        return { context, pContext };
+      },
+    },
+    predicates: {
+      isInputNotEmpty: (_, context) => {
+        return context.input !== '';
+      },
+      isInputEmpty: (_, context) => {
+        return context.input === '';
+      },
+    },
+    delays: {
+      DELAY,
+      DELAY2: 2 * DELAY,
+    },
+    promises: {
+      fetch: async (_, { input }) => {
+        return fakeDB.filter(item => item.name.includes(input));
+      },
+    },
+  },
+);

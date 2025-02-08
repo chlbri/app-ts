@@ -1,3 +1,4 @@
+import sleep from '@bemedev/sleep';
 import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
 import { createConfig } from '../create';
@@ -106,3 +107,11 @@ export type Config1 = typeof config1;
 export type Flat1 = FlatMapN<Config1>;
 
 export type FlatKeys1 = keyof Flat1;
+
+export const fakeWaiter = async (ms = 0, times = 1) => {
+  const check = vi.isFakeTimers();
+  for (let i = 0; i < times; i++) {
+    if (check) await vi.advanceTimersByTimeAsync(ms);
+    else await sleep(ms);
+  }
+};
