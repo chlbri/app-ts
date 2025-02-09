@@ -202,7 +202,6 @@ describe.skipIf(isCI)('#2 => Complex', () => {
         expect(log).toHaveBeenCalledTimes(4);
         expect(log).toHaveBeenNthCalledWith(4, 'Input, please !!');
         log.mockClear();
-        console.log(service.status);
       });
     });
   });
