@@ -10,8 +10,8 @@ export const sleepContexts: SleepContexts_F = async ms => {
   return {};
 };
 
-export const sleepU = async (ms = 0) => {
-  await sleep(ms);
+export const sleepU = async (ms = 0, times = 1) => {
+  for (let i = 0; i < times; i++) await sleep(ms);
   return undefined;
 };
 

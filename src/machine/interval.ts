@@ -84,8 +84,6 @@ class IntervalTimer {
     this.#remaining =
       Date.now() - this.#ticks * this.#interval - this.#startTime;
 
-    console.error('this.#remaining', this.#remaining);
-    console.warn('this.#interval', this.#interval);
     this.#state = 'paused';
   }
 

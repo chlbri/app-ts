@@ -136,7 +136,7 @@ export const machine2 = createMachine(
                       actions: 'write',
                       target: '/working/ui/idle',
                     },
-                    '/working/ui/final',
+                    '/working/ui/idle',
                   ],
                 },
               },

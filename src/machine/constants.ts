@@ -22,4 +22,4 @@ export const MAX_TIME_PROMISE = 100_000;
 
 export const MIN_ACTIVITY_TIME = 150;
 
-export const DEFAULT_MAX_PROMISE = sleepU(MAX_TIME_PROMISE);
+export const DEFAULT_MAX_PROMISE = () => sleepU(MAX_TIME_PROMISE);

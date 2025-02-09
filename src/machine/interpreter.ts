@@ -217,7 +217,7 @@ export class Interpreter<
   };
 
   #rinitIntervals = () => {
-    this.cachedIntervals.forEach(f => f.pause());
+    if (this.#canBeStoped) this.cachedIntervals.forEach(f => f.pause());
 
     // this.#intervals = [];
   };
@@ -523,11 +523,12 @@ export class Interpreter<
       ({ src, then, catch: _catch, finally: _finally, max: maxS }) => {
         const promiseF = this.toPromiseSrc(src);
 
-        const _promises: Promise<PR | undefined>[] = [
-          DEFAULT_MAX_PROMISE.then(() => ({
-            event: this.#event,
-            result: this.#contexts,
-          })),
+        const _promises: (() => Promise<PR | undefined>)[] = [
+          () =>
+            DEFAULT_MAX_PROMISE().then(() => ({
+              event: this.#event,
+              result: this.#contexts,
+            })),
         ];
 
         const handlePromise = (type: 'then' | 'catch', payload: any) => {
@@ -565,9 +566,10 @@ export class Interpreter<
           return out();
         };
 
-        const _promise = this.#performPromiseSrc(promiseF)
-          .then(partialCall(handlePromise, 'then'))
-          .catch(partialCall(handlePromise, 'catch'));
+        const _promise = () =>
+          this.#performPromiseSrc(promiseF)
+            .then(partialCall(handlePromise, 'then'))
+            .catch(partialCall(handlePromise, 'catch'));
 
         _promises.push(_promise);
 
@@ -577,7 +579,7 @@ export class Interpreter<
           const check6 = !isDefined(delayF);
           if (check6) return;
           const max = this.#performDelay(delayF);
-          _promises.push(
+          _promises.push(() =>
             sleepU(max).then(() => ({
               event: this.#event,
               result: this.#contexts,
@@ -585,7 +587,7 @@ export class Interpreter<
           );
         }
 
-        const promise = Promise.race(_promises);
+        const promise = Promise.race(_promises.map(f => f()));
 
         promises.push(promise);
       },
@@ -902,7 +904,6 @@ export class Interpreter<
 
   pause = () => {
     // if (this.#canBeStoped) {
-    console.log('this.#status', this.#canBeStoped);
     this.#status = 'paused';
     this.#rinitIntervals();
     // }
