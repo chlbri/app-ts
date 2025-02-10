@@ -17,7 +17,7 @@ describe.skipIf(isCI)(TEST_1, () => {
   beforeAll(() => {
     log.mockClear();
   });
-  
+
   const service = interpretTest(machine1, {
     pContext: {},
     context: { iterator: 0 },
