@@ -30,7 +30,7 @@ export const fakeDB = [
   { _id: '26', name: 'Zane' },
 ];
 
-export const DELAY = 170;
+export const DELAY = 70;
 
 export const machine1 = createMachine(
   {

@@ -10,51 +10,69 @@ beforeAll(() => {
 
 const isCI = process.env.CI === 'true';
 
-describe.skipIf(isCI)('#1 => First state has activity', () => {
+const TEST_1 = '#1 => First state has activity';
+const TEST_2 = '#2 => Complex';
+
+describe.skipIf(isCI)(TEST_1, () => {
+  beforeAll(() => {
+    log.mockClear();
+  });
+  
   const service = interpretTest(machine1, {
     pContext: {},
     context: { iterator: 0 },
   });
 
-  test('#0 => start the service', () => {
+  test('#00 => start the service', () => {
+    console.time(TEST_1);
     service.start();
     expect(service.context.iterator).toBe(0);
   });
 
-  test('#1 => Await one delay -> iterator = 1', async () => {
+  test('#01 => Await one delay -> iterator = 1', async () => {
     await fakeWaiter(DELAY);
     expect(service.context.iterator).toBe(1);
   });
 
-  test('#2 => Await one delay -> iterator = 2', async () => {
+  test('#02 => Await one delay -> iterator = 2', async () => {
     await fakeWaiter(DELAY);
     expect(service.context.iterator).toBe(2);
   });
 
-  test('#3 => Await twice delay -> iterator = 4', async () => {
+  test('#03 => Await twice delay -> iterator = 4', async () => {
     await fakeWaiter(DELAY, 2);
     expect(service.context.iterator).toBe(4);
   });
 
-  test('#4 => Await six times delay -> iterator = 10', async () => {
+  test('#04 => Await six times delay -> iterator = 10', async () => {
     await fakeWaiter(DELAY, 6);
     expect(service.context.iterator).toBe(10);
   });
 
-  test('#5 => Send NEXT and await 3 times -> iterator = 10, remains the same', async () => {
+  test('#05 => Send NEXT and await 3 times -> iterator = 10, remains the same', async () => {
     service.send({ type: 'NEXT', payload: {} });
     await fakeWaiter(DELAY, 3);
     expect(service.context.iterator).toBe(10);
   });
+
+  test('#06 => Pause the service', () => {
+    service.pause();
+    console.timeEnd(TEST_1);
+  });
 });
 
-describe.skipIf(isCI)('#2 => Complex', () => {
+describe.skipIf(isCI)(TEST_2, () => {
+  beforeAll(() => {
+    log.mockClear();
+  });
+
   const service = interpretTest(machine2, {
     pContext: {},
     context: { iterator: 0, input: '', data: [] },
   });
 
   test('#00 => start the service', () => {
+    console.time(TEST_2);
     service.start();
     expect(service.context.iterator).toBe(0);
   });
@@ -202,11 +220,14 @@ describe.skipIf(isCI)('#2 => Complex', () => {
         expect(log).toHaveBeenCalledTimes(4);
         expect(log).toHaveBeenNthCalledWith(4, 'Input, please !!');
         log.mockClear();
+        console.time('close');
       });
     });
   });
 
   test('#14 => Pause the service', () => {
     service.pause();
+    console.timeEnd(TEST_2);
+    console.timeEnd('close');
   });
 });

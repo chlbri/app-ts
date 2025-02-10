@@ -46,22 +46,34 @@ import { interpretTest } from './interpreterTest';
   await sleepU(DELAY, 12).then(() => {
     console.log('service.context.iterator', service.context.iterator);
     console.log('state', '=>', service.value);
-  });
-
-  service.send({ type: 'WRITE', payload: { value: 'a' } });
-
-  await sleepU(DELAY, 6).then(() => {
-    console.log('service.context.iterator', service.context.iterator);
-    console.log('state', '=>', service.value);
+    console.log('service.context.input', '=>', service.context.input);
   });
 
   service.send({ type: 'WRITE', payload: { value: '' } });
+
+  await sleepU(DELAY, 6).then(() => {
+    console.log('service.context.iterator', service.context.iterator);
+    console.log('service.context.input', '=>', service.context.input);
+    console.log('state', '=>', service.value);
+  });
+
+  service.send({ type: 'WRITE', payload: { value: 'a' } });
   console.log('state', '=>', service.value);
 
   await sleepU(DELAY, 12).then(() => {
     console.log('service.context.iterator', service.context.iterator);
     console.log('state', '=>', service.value);
+    console.log('service.context.input', '=>', service.context.input);
   });
+
+  service.send('FETCH');
+
+  await sleepU().then(() => {
+    console.log('service.context.data', '=>', service.context.data.length);
+  });
+
+  service.pause();
+  console.log('pause');
 
   const workingTime = DELAY * 60;
   const endTime = Date.now();
