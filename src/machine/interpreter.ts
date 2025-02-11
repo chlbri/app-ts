@@ -115,9 +115,9 @@ export class Interpreter<
   #pContext!: Pc;
   #context!: Tc;
 
-  get #canBeStoped() {
-    return this.#status === 'working';
-  }
+  // get #canBeStoped() {
+  //   return this.#status === 'working';
+  // }
 
   get #idle() {
     return this.#status === 'idle';
@@ -217,7 +217,7 @@ export class Interpreter<
   };
 
   #rinitIntervals = () => {
-    if (this.#canBeStoped) this.cachedIntervals.forEach(f => f.pause());
+    this.cachedIntervals.forEach(f => f.pause());
 
     // this.#intervals = [];
   };
@@ -881,7 +881,12 @@ export class Interpreter<
 
   #performStartTransitions = async () => {
     this.#status = 'busy';
-    const promises = [this.#performPromisees];
+    const promises: (() => Promise<void>)[] = [];
+
+    const check0 = this.#collectedPromisees.length > 0;
+    if (check0) {
+      promises.push(this.#performPromisees);
+    }
 
     const check1 = this.#collectedAfters.length > 0;
     if (check1) {
@@ -903,10 +908,8 @@ export class Interpreter<
   // #finishExists = () => this.#performIO(...getExits(this.#currentConfig));
 
   pause = () => {
-    if (this.#canBeStoped) {
-      this.#rinitIntervals();
-      this.#status = 'paused';
-    }
+    this.#rinitIntervals();
+    this.#status = 'paused';
   };
 
   resume = () => {

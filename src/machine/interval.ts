@@ -55,6 +55,10 @@ class IntervalTimer {
     return this.#state === 'idle' || this.#state === 'paused';
   }
 
+  get state() {
+    return this.#state;
+  }
+
   start = () => {
     if (this.canStart) {
       const check = this.#state === 'paused' && !this.isTest;

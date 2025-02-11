@@ -68,12 +68,15 @@ import { interpretTest } from './interpreterTest';
 
   service.send('FETCH');
 
-  await sleepU().then(() => {
+  await sleepU(DELAY, 4).then(() => {
     console.log('service.context.data', '=>', service.context.data.length);
   });
 
   service.pause();
-  console.log('pause');
+  console.log(
+    'pause',
+    service.cachedIntervals.every(x => x.state === 'paused'),
+  );
 
   const workingTime = DELAY * 60;
   const endTime = Date.now();
