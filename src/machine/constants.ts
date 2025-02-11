@@ -1,4 +1,4 @@
-import { sleepU } from './interpreter.helpers';
+import sleep from '@bemedev/sleep';
 
 export const THEN_EVENT_TYPE = 'machine$$then';
 
@@ -22,4 +22,4 @@ export const MAX_TIME_PROMISE = 100_000;
 
 export const MIN_ACTIVITY_TIME = 50;
 
-export const DEFAULT_MAX_PROMISE = () => sleepU(MAX_TIME_PROMISE);
+export const DEFAULT_MAX_PROMISE = () => sleep(MAX_TIME_PROMISE);

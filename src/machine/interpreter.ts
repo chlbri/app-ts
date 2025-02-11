@@ -808,10 +808,12 @@ export class Interpreter<
   ) => {
     const out = async () => {
       const resultAfter = await Promise.race(
-        afters.map(args => {
-          const promise = this.#performAfter(...args);
-          return promise;
-        }),
+        afters
+          .map(args => {
+            const promise = () => this.#performAfter(...args);
+            return promise;
+          })
+          .map(f => f()),
       );
 
       if (resultAfter) {
