@@ -68,7 +68,7 @@ import { interpretTest } from './interpreterTest';
 
   service.send('FETCH');
 
-  await sleepU(DELAY, 4).then(() => {
+  await sleepU().then(() => {
     console.log('service.context.data', '=>', service.context.data.length);
   });
 
