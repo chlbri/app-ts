@@ -1,6 +1,7 @@
 import { isDefined, partialCall } from '@bemedev/basifun';
 import { decomposeSV } from '@bemedev/decompose';
 import sleep from '@bemedev/sleep';
+import { t } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import { deepmerge } from 'deepmerge-ts';
 import equal from 'fast-deep-equal';
@@ -25,19 +26,13 @@ import { isDescriber, type PrimitiveObject } from '~types';
 import { replaceAll, toArray } from '~utils';
 import {
   CATCH_EVENT_TYPE,
-  DEFAULT_MAX_PROMISE,
-  MAX_EXCEEDED_EVENT_TYPE,
   MAX_TIME_PROMISE,
   MIN_ACTIVITY_TIME,
   THEN_EVENT_TYPE,
 } from './constants';
 import { flatMap } from './flatMap';
 import { getInitialNodeConfig } from './getInitialNodeConfig';
-import {
-  performRemaining,
-  possibleEvents,
-  sleepU,
-} from './interpreter.helpers';
+import { performRemaining, possibleEvents } from './interpreter.helpers';
 import type {
   _Send_F,
   Contexts,
@@ -69,6 +64,7 @@ import {
 } from './interval';
 import { nodeToValue } from './nodeToValue';
 import { resolveNode } from './resolveNode';
+import { Scheduler } from './scheduler';
 import { toAction } from './toAction';
 import { toDelay } from './toDelay';
 import { toMachine } from './toMachine';
@@ -90,6 +86,7 @@ import type {
   RecordS,
   SimpleMachineOptions2,
 } from './types';
+import { withTimeout } from './withTimeout';
 
 export class Interpreter<
   const C extends Config = Config,
@@ -114,6 +111,7 @@ export class Interpreter<
   #initialContext!: Tc;
   #pContext!: Pc;
   #context!: Tc;
+  #scheduler: Scheduler;
 
   // get #canBeStoped() {
   //   return this.#status === 'working';
@@ -140,6 +138,7 @@ export class Interpreter<
     this.#config = this.#initialConfig;
 
     this.#performConfig();
+    this.#scheduler = new Scheduler();
   }
 
   #performConfig = () => {
@@ -212,20 +211,33 @@ export class Interpreter<
 
   start = async () => {
     this.#startStatus();
-    this.#startInitialEntries();
-    this.nextStart();
+    this.#scheduler.initialize(this.#startInitialEntries);
+    await this.next();
   };
 
   #rinitIntervals = () => {
-    this.cachedIntervals.forEach(f => f.pause());
-
-    // this.#intervals = [];
+    this.cachedIntervals.forEach(f => {
+      const check = f.state === 'active';
+      if (check) this.#scheduler.schedule(f.pause.bind(f));
+    });
   };
 
-  protected nextStart = async () => {
+  protected next = async () => {
+    const previousValue = this.#config;
+    console.warn('previousValue', previousValue);
+
     this.#rinitIntervals();
     this.#performActivities();
-    this.#performStartTransitions();
+    await this.#performStartTransitions();
+
+    const currentConfig = this.#config;
+
+    // const check = !equal(previousValue, currentConfig);
+    console.warn('current', currentConfig);
+
+    // if (check) {
+    //   await this.next.bind(this)();
+    // }
   };
 
   #performAction: PerformAction_F<E, Pc, Tc> = action => {
@@ -275,7 +287,7 @@ export class Interpreter<
     this.#makeBusy();
     const out = this.#performPredicate(predicate);
 
-    this.#status = 'started';
+    this.#status = 'working';
     return out;
   };
 
@@ -305,7 +317,7 @@ export class Interpreter<
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
     const entries = Object.entries(_activities);
-    const promises: IntervalTimer[] = [];
+    const outs: string[] = [];
 
     for (const [_delay, _activity] of entries) {
       const delayF = this.toDelay(_delay);
@@ -324,18 +336,16 @@ export class Interpreter<
         return [];
       }
 
-      const _interval = this.cachedIntervals.find(
-        f => f.id === `${from}::${_delay}`,
-      );
+      const id = `${from}::${_delay}`;
+      const _interval = this.cachedIntervals.find(f => f.id === id);
 
       if (_interval) {
-        _interval.start();
+        outs.push(id);
         continue;
       }
 
       const activities = toArray.typed(_activity);
 
-      const id = `${from}::${_delay}`;
       const interval = delay;
       const callback = () => {
         for (const activity of activities) {
@@ -376,12 +386,11 @@ export class Interpreter<
         id,
       });
 
-      promises.push(promise);
+      this.cachedIntervals.push(promise);
+      outs.push(id);
     }
 
-    this.cachedIntervals.push(...promises);
-
-    return promises;
+    return outs;
   };
 
   protected createInterval: CreateInterval2_F = ({
@@ -504,37 +513,26 @@ export class Interpreter<
     this.#remaining[key] = remain;
   };
 
-  #performPromisees0: PerformPromisees_F<E, Pc, Tc> = async (
+  #performPromisees0: PerformPromisees_F<E, Pc, Tc> = (
     from,
     ...promisees
   ) => {
     type PR = PromiseeResult<E, Pc, Tc>;
-    type Events = PR['event'];
+    // type Events = PR['event'];
 
     // #region Checker for reentering
     const key = this.#produceKeyRemainPromise(from);
     const remain = this.#remaining[key];
     const check = remain !== undefined;
-    if (check) {
-      const out = remain();
-      return { ...out, event: this.#event };
-    }
+    if (check) return undefined;
     // #endregion
 
-    const promises: Promise<PR | undefined>[] = [];
+    const promises: (() => Promise<PR | undefined>)[] = [];
     const remains: Remaininigs<Pc, Tc> = [];
 
     promisees.forEach(
       ({ src, then, catch: _catch, finally: _finally, max: maxS }) => {
         const promiseF = this.toPromiseSrc(src);
-
-        const _promises: (() => Promise<PR | undefined>)[] = [
-          () =>
-            DEFAULT_MAX_PROMISE().then(() => ({
-              event: this.#event,
-              result: this.#contexts,
-            })),
-        ];
 
         const handlePromise = (type: 'then' | 'catch', payload: any) => {
           const out = () => {
@@ -576,23 +574,19 @@ export class Interpreter<
             .then(partialCall(handlePromise, 'then'))
             .catch(partialCall(handlePromise, 'catch'));
 
-        _promises.push(_promise);
+        const MAX_POMS = [MAX_TIME_PROMISE];
 
         const check = isDefined(maxS);
+        let max: number;
         if (check) {
           const delayF = this.toDelay(maxS);
           const check6 = !isDefined(delayF);
-          if (check6) return;
-          const max = this.#performDelay(delayF);
-          _promises.push(() =>
-            sleepU(max).then(() => ({
-              event: this.#event,
-              result: this.#contexts,
-            })),
-          );
+          if (check6) return undefined;
+          max = this.#performDelay(delayF);
+          MAX_POMS.push(max);
         }
 
-        const promise = Promise.race(_promises.map(f => f()));
+        const promise = withTimeout(_promise, ...MAX_POMS);
 
         promises.push(promise);
       },
@@ -603,23 +597,7 @@ export class Interpreter<
       this.#addRemainingPromise(from, remaining);
     };
 
-    return Promise.all(promises)
-      .then(values => {
-        let event: Events = MAX_EXCEEDED_EVENT_TYPE;
-        let result: Contexts<Pc, Tc> = this.#contexts;
-        let target: string | undefined = undefined;
-
-        values.forEach(value => {
-          if (value) {
-            event = value.event;
-            result = deepmerge(result, value.result) as any;
-            target = value.target;
-          }
-        });
-
-        return { event, result, target };
-      })
-      .finally(finalize);
+    return { promises, finalize };
   };
 
   get possibleEvents() {
@@ -773,7 +751,7 @@ export class Interpreter<
 
   get #_performPromisees() {
     return this.#collectedPromisees.map(args => {
-      const out = () => this.#performPromisees0(...args);
+      const out = this.#performPromisees0(...args);
       return out;
     });
   }
@@ -790,17 +768,21 @@ export class Interpreter<
       .reduce((acc, value) => deepmerge(acc, value));
   }
 
-  #performActivities = async () => {
+  #performActivities = () => {
     const collected = this.#collectedActivities;
     const check = collected.length < 1;
     if (check) return;
 
-    const activities: IntervalTimer[] = [];
+    const ids: string[] = [];
     for (const args of this.#collectedActivities) {
-      activities.push(...this.#executeActivities(...args));
+      ids.push(...this.#executeActivities(...args));
     }
 
-    return activities.forEach(p => p.start());
+    return this.cachedIntervals
+      .filter(({ id }) => ids.includes(id))
+      .forEach(f => {
+        this.#scheduler.schedule(f.start.bind(f));
+      });
   };
 
   #performAfters = (
@@ -817,15 +799,22 @@ export class Interpreter<
       );
 
       if (resultAfter) {
-        const { target, result } = resultAfter;
+        const cb = () => {
+          const { target, result } = resultAfter;
 
-        this.#pContext = deepmerge(this.#pContext, result.pContext) as any;
-        this.#context = deepmerge(this.#context, result.context) as any;
+          this.#pContext = deepmerge(
+            this.#pContext,
+            result.pContext,
+          ) as any;
+          this.#context = deepmerge(this.#context, result.context) as any;
 
-        if (target) {
-          this.#config = this.proposedNextConfig(target);
-          this.#performConfig();
-        }
+          if (target) {
+            this.#config = this.proposedNextConfig(target);
+            this.#performConfig();
+          }
+        };
+
+        this.#scheduler.schedule(cb);
       }
     };
 
@@ -836,7 +825,7 @@ export class Interpreter<
     const resultAlways = this.#_performAlways;
 
     if (resultAlways) {
-      const out = async () => {
+      const out = () => {
         this.#status = 'busy';
         const { target, result } = resultAlways;
 
@@ -850,39 +839,75 @@ export class Interpreter<
         this.#status = 'started';
       };
 
-      return out;
+      this.#scheduler.schedule(out);
     }
-    return undefined;
   };
 
   #performPromisees = async () => {
-    const values = await Promise.all(
-      this.#_performPromisees.map(f => f()),
+    const values = this.#_performPromisees.filter(
+      val => val !== undefined,
     );
 
-    let target: string | undefined = undefined;
+    const finalize = values.reduce(
+      (acc, value) => {
+        const { finalize } = value;
+        return () => {
+          acc();
+          finalize();
+        };
+      },
+      () => {},
+    );
 
-    values.forEach(value => {
-      if (value) {
-        this.#pContext = deepmerge(
-          this.#pContext,
-          value.result.pContext,
-        ) as any;
+    const toPromises = values
+      .map(({ promises }) => {
+        const check = promises.length < 1;
+        if (check) return undefined;
+        return promises;
+      })
+      .filter(f => f !== undefined)
+      .flat()
+      .map(f => f());
 
-        this.#context = deepmerge(
-          this.#context,
-          value.result.context,
-        ) as any;
+    const check1 = toPromises.length < 1;
 
-        this.#event = value.event;
-        target = value.target;
-      }
-    });
-
-    if (target) {
-      this.#config = this.proposedNextConfig(target);
-      this.#performConfig();
+    if (check1) {
+      console.log('no promises');
+      return this.#scheduler.schedule(finalize);
     }
+
+    const promises = await Promise.all(toPromises);
+
+    const cb = () => {
+      let target = t.union(t.string, t.undefined);
+
+      console.warn('promises', promises.length);
+      promises.forEach(value => {
+        if (value) {
+          this.#pContext = deepmerge(
+            this.#pContext,
+            value.result.pContext,
+          ) as any;
+
+          this.#context = deepmerge(
+            this.#context,
+            value.result.context,
+          ) as any;
+
+          this.#event = value.event;
+          target = value.target;
+        }
+      });
+
+      if (target) {
+        this.#config = this.proposedNextConfig(target);
+        this.#performConfig();
+      }
+    };
+
+    this.#scheduler.schedule(cb);
+    this.#scheduler.schedule(finalize);
+    // this.nextStart(true);
   };
 
   #performStartTransitions = async () => {
@@ -901,7 +926,7 @@ export class Interpreter<
 
     this.#performAlways();
 
-    await Promise.race(promises.map(p => p())).finally(() => {
+    await Promise.all(promises.map(p => p())).finally(() => {
       return this.#makeWork();
     });
   };
@@ -1074,10 +1099,8 @@ export class Interpreter<
 
     // #region Use targets to perform entry and exit actions
     targets.forEach(target => {
-      const { diffEntries, diffExits, sv: _sv } = this.#diffNext(target);
+      const { diffEntries, diffExits } = this.#diffNext(target);
 
-      const check3 = equal(this.#value, _sv);
-      if (check3) return;
       sv = nextSV(sv, target);
       result = deepmerge(
         result,
@@ -1088,13 +1111,13 @@ export class Interpreter<
     // #endregion
 
     const check4 = equal(this.#value, sv); //If no changes in state value
-    if (check4) return; // Return nothing
-    const next1 = this.#machine.valueToConfig(sv);
-    const next = getInitialNodeConfig(next1);
+    const next = check4
+      ? this.#config
+      : getInitialNodeConfig(this.#machine.valueToConfig(sv));
     return { result, next };
   };
 
-  send = (_event: EventArg<E>) => {
+  send = async (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
     const previous = structuredClone(this.#event);
     this.#event = event;
@@ -1123,10 +1146,14 @@ export class Interpreter<
     this.#pContext = deepmerge(this.#pContext, pContext) as any;
     this.#context = deepmerge(this.#context, context) as any;
 
-    this.#config = next;
-    this.#performConfig();
-    this.#makeWork();
-    this.nextStart();
+    const check2 = !equal(this.#config, next);
+
+    if (check2) {
+      this.#config = next;
+      this.#makeWork();
+      this.#performConfig();
+      await this.next();
+    }
   };
 
   #proposedNextSV = (target: string) => nextSV(this.#value, target);

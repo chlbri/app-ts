@@ -71,6 +71,13 @@ console.log('state', '=>', service.value);
 await sleepU().then(() => {
   console.log('service.context.data', '=>', service.context.data.length);
   console.log('state', '=>', service.value);
+  console.log('service.context.iterator', service.context.iterator);
+});
+
+await sleepU(DELAY, 10).then(() => {
+  console.log('service.context.data', '=>', service.context.data.length);
+  console.log('state', '=>', service.value);
+  console.log('service.context.iterator', service.context.iterator);
 });
 
 service.pause();

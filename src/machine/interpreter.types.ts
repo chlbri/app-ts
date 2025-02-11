@@ -11,7 +11,6 @@ import type {
 } from '~transitions';
 import type { PrimitiveObject } from '~types';
 import type { Interpreter } from './interpreter';
-import type { IntervalTimer } from './interval';
 import type {
   Action2,
   ActionResult,
@@ -98,7 +97,7 @@ export type PerformPromise_F<
 export type ExecuteActivities_F = (
   from: string,
   activity: ActivityConfig,
-) => IntervalTimer[];
+) => string[];
 
 export type PerformAfter_F<
   Pc = any,
@@ -150,7 +149,12 @@ export type PerformPromisees_F<
 > = (
   from: string,
   ...promisees: PromiseConfig[]
-) => Promise<PromiseeResult<E, Pc, Tc> | undefined>;
+) =>
+  | {
+      finalize: () => void;
+      promises: (() => Promise<PromiseeResult<E, Pc, Tc> | undefined>)[];
+    }
+  | undefined;
 
 export type Contexts<
   Pc = any,

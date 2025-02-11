@@ -1,3 +1,5 @@
+import type { Fn } from '@bemedev/types';
+
 interface SchedulerOptions {
   deferEvents: boolean;
 }
@@ -6,10 +8,28 @@ const defaultOptions: SchedulerOptions = {
   deferEvents: false,
 };
 
+type Cb = Fn<[], void>;
+
+type Status = 'idle' | 'initialized' | 'processing' | 'paused' | 'working';
+
 export class Scheduler {
-  private processingEvent: boolean = false;
-  private queue: Array<() => void> = [];
-  private initialized = false;
+  #queue: Array<Cb> = [];
+
+  #performeds = 0;
+
+  get performeds() {
+    return this.#performeds;
+  }
+
+  #status: Status = 'idle';
+
+  get status() {
+    return this.#status;
+  }
+
+  get #isEmpty() {
+    return this.#queue.length === 0;
+  }
 
   // deferred feature
   private options: SchedulerOptions;
@@ -18,8 +38,8 @@ export class Scheduler {
     this.options = { ...defaultOptions, ...options };
   }
 
-  public initialize(callback?: () => void): void {
-    this.initialized = true;
+  initialize = (callback?: Cb) => {
+    this.#status = 'initialized';
 
     if (callback) {
       if (!this.options.deferEvents) {
@@ -27,51 +47,70 @@ export class Scheduler {
         return;
       }
 
-      this.process(callback);
+      this.#process(callback);
     }
 
-    this.flushEvents();
+    this.#flushEvents();
+  };
+
+  get processing() {
+    return this.#status === 'processing';
   }
 
-  public schedule(task: () => void): void {
-    if (!this.initialized || this.processingEvent) {
-      this.queue.push(task);
+  schedule = (task: Cb) => {
+    const check1 =
+      this.processing ||
+      this.#status === 'idle' ||
+      this.#status === 'paused';
+
+    if (check1) {
+      this.#queue.push(task);
       return;
     }
 
-    if (this.queue.length !== 0) {
+    if (!this.#isEmpty) {
       throw new Error(
         'Event queue should be empty when it is not processing events',
       );
     }
 
-    this.process(task);
-    this.flushEvents();
-  }
+    this.#process(task);
+    this.#flushEvents();
+  };
 
-  public clear(): void {
-    this.queue = [];
-  }
+  pause = () => {
+    this.#status = 'paused';
+  };
 
-  private flushEvents() {
-    let nextCallback: (() => void) | undefined = this.queue.shift();
+  clear = () => {
+    this.#queue = [];
+  };
+
+  #flushEvents = () => {
+    let nextCallback = this.#queue.shift();
     while (nextCallback) {
-      this.process(nextCallback);
-      nextCallback = this.queue.shift();
+      this.#process(nextCallback);
+      nextCallback = this.#queue.shift();
     }
-  }
+  };
 
-  private process(callback: () => void) {
-    this.processingEvent = true;
-    try {
-      callback();
-    } catch (e) {
-      // there is no use to keep the future events
-      // as the situation is not anymore the same
-      this.clear();
-      throw e;
-    } finally {
-      this.processingEvent = false;
+  #process = (callback: Cb) => {
+    const check =
+      this.#status === 'working' || this.#status === 'initialized';
+
+    if (check) {
+      this.#status = 'processing';
+      try {
+        callback();
+        this.#performeds++;
+      } catch (e) {
+        // there is no use to keep the future events
+        // as the situation is not anymore the same
+        this.clear();
+        throw e;
+      } finally {
+        this.#status = 'working';
+      }
     }
-  }
+  };
 }
