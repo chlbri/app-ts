@@ -420,7 +420,6 @@ export class Interpreter<
 
       const check2 = typeof transition === 'object';
       if (check2) {
-        console.warn('checked');
         return transition;
       }
     }
@@ -1063,8 +1062,6 @@ export class Interpreter<
         targets.push(target);
       }
 
-      console.warn('result', _result?.context);
-
       result = deepmerge(result, _result);
     });
 
@@ -1094,7 +1091,6 @@ export class Interpreter<
     const event = transformEventArg(_event);
     const previous = structuredClone(this.#event);
     this.#event = event;
-    console.warn('event', event);
 
     this.#status = 'sending';
     const check0 = typeof event === 'string';
