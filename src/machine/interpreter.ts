@@ -224,8 +224,8 @@ export class Interpreter<
 
   protected nextStart = async () => {
     this.#rinitIntervals();
-    await this.#performStartTransitions();
-    return this.#performActivities();
+    this.#performActivities();
+    this.#performStartTransitions();
   };
 
   #performAction: PerformAction_F<E, Pc, Tc> = action => {
@@ -319,6 +319,11 @@ export class Interpreter<
         return [];
       }
 
+      const check2 = this.#sending || !this.#isInsideValue(from);
+      if (check2) {
+        return [];
+      }
+
       const _interval = this.cachedIntervals.find(
         f => f.id === `${from}::${_delay}`,
       );
@@ -351,7 +356,7 @@ export class Interpreter<
           }
 
           const check5 = this.#performGuards(
-            ...toArray<GuardConfig>(activity.guards),
+            ...toArray.typed(activity.guards),
           );
           if (check5) {
             const actions = toArray.typed(activity.actions);
@@ -715,7 +720,7 @@ export class Interpreter<
 
     entriesFlat.forEach(([from, node]) => {
       const promisees = toArray.typed(node.promises);
-      if (promisees) {
+      if (node.promises) {
         entries.push([from, ...promisees]);
       }
     });
@@ -767,12 +772,10 @@ export class Interpreter<
   }
 
   get #_performPromisees() {
-    return Promise.all(
-      this.#collectedPromisees.map(args => {
-        const out = this.#performPromisees0(...args);
-        return out;
-      }),
-    );
+    return this.#collectedPromisees.map(args => {
+      const out = () => this.#performPromisees0(...args);
+      return out;
+    });
   }
 
   get #_performAlways() {
@@ -851,7 +854,9 @@ export class Interpreter<
   };
 
   #performPromisees = async () => {
-    const values = await this.#_performPromisees;
+    const values = await Promise.all(
+      this.#_performPromisees.map(f => f()),
+    );
 
     let target: string | undefined = undefined;
 

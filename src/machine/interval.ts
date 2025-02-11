@@ -10,7 +10,7 @@ type Params = {
 class IntervalTimer {
   #timerId: NodeJS.Timeout | undefined = undefined;
 
-  #state: 'idle' | 'running' | 'paused' = 'idle';
+  #state: 'idle' | 'active' | 'paused' = 'idle';
 
   #remaining = 0;
   #startTime!: number;
@@ -69,18 +69,20 @@ class IntervalTimer {
   };
 
   #build = () => {
-    this.#timerId = setInterval(() => {
+    const callback = () => {
       this.#callback();
-      this.#ticks += 1;
-    }, this.#interval);
+      ++this.#ticks;
+    };
+
+    this.#timerId = setInterval(callback, this.#interval);
 
     this.#startTime = Date.now();
     this.#ticks = 0;
-    this.#state = 'running';
+    this.#state = 'active';
   };
 
   pause(): void {
-    if (this.#state !== 'running') return;
+    if (this.#state !== 'active') return;
 
     if (this.#timerId) clearInterval(this.#timerId);
     this.#remaining =

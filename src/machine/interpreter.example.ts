@@ -2,84 +2,84 @@ import { DELAY, machine2 } from './__tests__/activities.test.data';
 import { sleepU } from './interpreter.helpers';
 import { interpretTest } from './interpreterTest';
 
-{
-  const startTime = Date.now();
-  using service = interpretTest(machine2, {
-    pContext: {},
-    context: { iterator: 0, input: '', data: [] },
-  });
+const startTime = Date.now();
+const service = interpretTest(machine2, {
+  pContext: {},
+  context: { iterator: 0, input: '', data: [] },
+});
 
-  service.start();
+service.start();
 
-  console.log('service', service.status);
-  await sleepU(DELAY, 6).then(() => {
-    console.log('service.context.iterator', service.context.iterator);
-    console.log('state', '=>', service.value);
-  });
-
-  service.send({ type: 'NEXT', payload: {} });
-
-  await sleepU(DELAY, 6).then(() => {
-    console.log('service.context.iterator', service.context.iterator);
-    console.log('state', '=>', service.value);
-  });
-
-  service.pause();
-  console.log('pause');
-
-  await sleepU(DELAY, 6).then(() => {
-    console.log('service.context.iterator', service.context.iterator);
-    console.log('state', '=>', service.value);
-  });
-
-  service.resume();
-  console.log('resume');
-
-  await sleepU(DELAY, 12).then(() => {
-    console.log('service.context.iterator', service.context.iterator);
-    console.log('state', '=>', service.value);
-  });
-
-  service.send({ type: 'WRITE', payload: { value: '' } });
+console.log('service', service.status);
+await sleepU(DELAY, 6).then(() => {
+  console.log('service.context.iterator', service.context.iterator);
   console.log('state', '=>', service.value);
+});
 
-  await sleepU(DELAY, 12).then(() => {
-    console.log('service.context.iterator', service.context.iterator);
-    console.log('state', '=>', service.value);
-    console.log('service.context.input', '=>', service.context.input);
-  });
+service.send({ type: 'NEXT', payload: {} });
 
-  service.send({ type: 'WRITE', payload: { value: '' } });
-
-  await sleepU(DELAY, 6).then(() => {
-    console.log('service.context.iterator', service.context.iterator);
-    console.log('service.context.input', '=>', service.context.input);
-    console.log('state', '=>', service.value);
-  });
-
-  service.send({ type: 'WRITE', payload: { value: 'a' } });
+await sleepU(DELAY, 6).then(() => {
+  console.log('service.context.iterator', service.context.iterator);
   console.log('state', '=>', service.value);
+});
 
-  await sleepU(DELAY, 12).then(() => {
-    console.log('service.context.iterator', service.context.iterator);
-    console.log('state', '=>', service.value);
-    console.log('service.context.input', '=>', service.context.input);
-  });
+service.pause();
+console.log('pause');
 
-  service.send('FETCH');
+await sleepU(DELAY, 6).then(() => {
+  console.log('service.context.iterator', service.context.iterator);
+  console.log('state', '=>', service.value);
+});
 
-  await sleepU().then(() => {
-    console.log('service.context.data', '=>', service.context.data.length);
-  });
+service.resume();
+console.log('resume');
 
-  service.pause();
-  console.log(
-    'pause',
-    service.cachedIntervals.every(x => x.state === 'paused'),
-  );
+await sleepU(DELAY, 12).then(() => {
+  console.log('service.context.iterator', service.context.iterator);
+  console.log('state', '=>', service.value);
+});
 
-  const workingTime = DELAY * 60;
-  const endTime = Date.now();
-  console.log('full-time', endTime - startTime);
-  console.log('remain', endTime - startTime - workingTime);
-}
+service.send({ type: 'WRITE', payload: { value: '' } });
+console.log('state', '=>', service.value);
+
+await sleepU(DELAY, 12).then(() => {
+  console.log('service.context.iterator', service.context.iterator);
+  console.log('state', '=>', service.value);
+  console.log('service.context.input', '=>', service.context.input);
+});
+
+service.send({ type: 'WRITE', payload: { value: '' } });
+
+await sleepU(DELAY, 6).then(() => {
+  console.log('service.context.iterator', service.context.iterator);
+  console.log('service.context.input', '=>', service.context.input);
+  console.log('state', '=>', service.value);
+});
+
+service.send({ type: 'WRITE', payload: { value: 'a' } });
+console.log('state', '=>', service.value);
+
+await sleepU(DELAY, 12).then(() => {
+  console.log('service.context.iterator', service.context.iterator);
+  console.log('state', '=>', service.value);
+  console.log('service.context.input', '=>', service.context.input);
+});
+
+service.send('FETCH');
+console.log('state', '=>', service.value);
+
+await sleepU().then(() => {
+  console.log('service.context.data', '=>', service.context.data.length);
+  console.log('state', '=>', service.value);
+});
+
+service.pause();
+console.log(
+  'pause',
+  service.cachedIntervals.every(x => x.state === 'paused'),
+);
+
+const workingTime = DELAY * 60;
+const endTime = Date.now();
+console.log('full-time', endTime - startTime);
+console.log('remain', endTime - startTime - workingTime);

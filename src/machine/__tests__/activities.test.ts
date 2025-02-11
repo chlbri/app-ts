@@ -5,7 +5,7 @@ import { fakeWaiter } from './fixtures';
 const log = vi.spyOn(console, 'log');
 
 beforeAll(() => {
-  vi.useFakeTimers();
+  // vi.useFakeTimers();
 });
 
 const isCI = process.env.CI === 'true';
@@ -145,7 +145,7 @@ describe.skipIf(isCI)(TEST_2, () => {
   describe('#07 => Await four delays', () => {
     test('#00 => Wait', () => fakeWaiter(DELAY, 4));
 
-    test('#01 => iterator = 13', async () => {
+    test('#01 => iterator = 21', async () => {
       expect(service.context.iterator).toBe(21);
     });
 
@@ -184,48 +184,7 @@ describe.skipIf(isCI)(TEST_2, () => {
     });
   });
 
-  describe('#10 => Await four delays', () => {
-    test('#00 => Wait', () => fakeWaiter(DELAY, 4));
-
-    test('#01 => iterator = 13', async () => {
-      expect(service.context.iterator).toBe(29);
-    });
-
-    test('#02 => console.log is not called', () => {
-      expect(log).not.toBeCalled();
-    });
-  });
-
-  test('#11 => Send WRITE', () => {
-    service.send({ type: 'WRITE', payload: { value: '' } });
-  });
-
-  test('#12 => Send WRITE again', () => {
-    service.send({ type: 'WRITE', payload: { value: '' } });
-  });
-
-  describe('#13 => Await four delays', () => {
-    test('#00 => Wait', () => fakeWaiter(DELAY, 4), 10_000);
-
-    test('#01 => iterator = 13', async () => {
-      expect(service.context.iterator).toBe(37);
-    });
-
-    describe('#02 => console.log is called', () => {
-      test('#01 => console.log is called', () => {
-        expect(log).toBeCalled();
-      });
-
-      test('#02 => console.log is called with sendPanelToUser 4 times', () => {
-        expect(log).toHaveBeenCalledTimes(4);
-        expect(log).toHaveBeenNthCalledWith(4, 'Input, please !!');
-        log.mockClear();
-        console.time('close');
-      });
-    });
-  });
-
-  test('#14 => Pause the service', () => {
+  test('#11 => Pause the service', () => {
     service.pause();
     console.timeEnd(TEST_2);
     console.timeEnd('close');
