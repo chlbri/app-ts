@@ -11,6 +11,7 @@ import type {
 } from '~transitions';
 import type { PrimitiveObject } from '~types';
 import type { Interpreter } from './interpreter';
+import type { TimeoutPromise } from './promises/withTimeout';
 import type {
   Action2,
   ActionResult,
@@ -105,13 +106,18 @@ export type PerformAfter_F<
 > = (
   from: string,
   after: DelayedTransitions,
-) => Promise<
+) =>
   | {
-      result: Contexts<Pc, Tc>;
-      target?: string;
+      promise: TimeoutPromise<
+        | {
+            target?: string;
+            result: Contexts<Pc, Tc>;
+          }
+        | undefined
+      >;
+      finalize: () => void;
     }
-  | undefined
->;
+  | undefined;
 
 export type PerformAlway_F<
   Pc = any,
@@ -152,7 +158,7 @@ export type PerformPromisees_F<
 ) =>
   | {
       finalize: () => void;
-      promises: (() => Promise<PromiseeResult<E, Pc, Tc> | undefined>)[];
+      promise: TimeoutPromise<PromiseeResult<E, Pc, Tc> | undefined>;
     }
   | undefined;
 

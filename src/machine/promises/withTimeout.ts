@@ -1,14 +1,34 @@
+export interface TimeoutPromise<T = any> {
+  (): Promise<T>;
+  abort: () => void;
+  id: string;
+}
+
+export type TypeFromTimeout<T extends TimeoutPromise> =
+  T extends TimeoutPromise<infer U> ? U : never;
+
+export type TypeFromTimeouts<T extends TimeoutPromise[]> = TypeFromTimeout<
+  T[number]
+>;
+
 export const withTimeout = <T = any>(
   promise: () => Promise<T>,
+  id: string,
   ...timeouts: number[]
-): (() => Promise<T>) => {
+): TimeoutPromise<T> => {
   const timeoutPids = Array.from(
     { length: timeouts.length },
     () => undefined as NodeJS.Timeout | undefined,
   );
 
+  const controller = new AbortController();
+
   const timeoutPromises = timeouts.map((millis, i) => {
     return new Promise((_, reject) => {
+      controller.signal.addEventListener('abort', () => {
+        reject('Aborted.');
+      });
+
       return (timeoutPids[i] = setTimeout(
         () => reject(`Timed out after ${millis} ms.`),
         millis,
@@ -16,7 +36,7 @@ export const withTimeout = <T = any>(
     });
   });
 
-  return () =>
+  const out = () =>
     Promise.race([promise(), ...timeoutPromises]).finally(() => {
       timeoutPids.forEach(pid => {
         if (pid) {
@@ -24,4 +44,9 @@ export const withTimeout = <T = any>(
         }
       });
     }) as any;
+
+  out.abort = () => controller.abort();
+  out.id = id;
+
+  return out;
 };
