@@ -3,7 +3,7 @@ import { decomposeSV } from '@bemedev/decompose';
 import sleep from '@bemedev/sleep';
 import { t } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
-import { deepmerge } from 'deepmerge-ts';
+import { deepmergeCustom } from 'deepmerge-ts';
 import equal from 'fast-deep-equal';
 import type { ActionConfig } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
@@ -87,6 +87,10 @@ import type {
   SimpleMachineOptions2,
 } from './types';
 import { withTimeout } from './withTimeout';
+
+const merge = deepmergeCustom({
+  mergeArrays: false,
+});
 
 export class Interpreter<
   const C extends Config = Config,
@@ -223,14 +227,14 @@ export class Interpreter<
   };
 
   protected next = async () => {
-    const previousValue = this.#config;
+    const previousValue = this.#value;
     console.warn('previousValue', previousValue);
 
     this.#rinitIntervals();
     this.#performActivities();
     await this.#performStartTransitions();
 
-    const currentConfig = this.#config;
+    const currentConfig = this.#value;
 
     // const check = !equal(previousValue, currentConfig);
     console.warn('current', currentConfig);
@@ -270,7 +274,7 @@ export class Interpreter<
       .map(this.toAction)
       .map(this.#executeAction)
       .reduce((acc, value) => {
-        const out = deepmerge(acc, value) as any;
+        const out = merge(acc, value) as any;
         return out;
       }, contexts);
   };
@@ -360,8 +364,8 @@ export class Interpreter<
               this.#contexts,
               activity,
             );
-            this.#pContext = deepmerge(this.#pContext, pContext) as any;
-            this.#context = deepmerge(this.#context, context) as any;
+            this.#pContext = merge(this.#pContext, pContext) as any;
+            this.#context = merge(this.#context, context) as any;
             return;
           }
 
@@ -374,8 +378,8 @@ export class Interpreter<
               this.#contexts,
               ...actions,
             );
-            this.#pContext = deepmerge(this.#pContext, pContext) as any;
-            this.#context = deepmerge(this.#context, context) as any;
+            this.#pContext = merge(this.#pContext, pContext) as any;
+            this.#context = merge(this.#context, context) as any;
             return;
           }
         }
@@ -547,7 +551,7 @@ export class Interpreter<
 
             const transition = this.#performTransitions(...transitions);
             const target = transition.target;
-            const result = deepmerge(
+            const result = merge(
               this.#contexts,
               transition.result,
               this.#performFinally(_finally),
@@ -686,7 +690,7 @@ export class Interpreter<
 
     const out = this.#performTransitions(...(always as any));
     const target = out.target;
-    const result = deepmerge(this.#contexts, out.result);
+    const result = merge(this.#contexts, out.result);
     if (target) return { target, result };
 
     return;
@@ -765,7 +769,7 @@ export class Interpreter<
         const out = this.#performAlway(...args);
         return out;
       })
-      .reduce((acc, value) => deepmerge(acc, value));
+      .reduce((acc, value) => merge(acc, value));
   }
 
   #performActivities = () => {
@@ -802,11 +806,8 @@ export class Interpreter<
         const cb = () => {
           const { target, result } = resultAfter;
 
-          this.#pContext = deepmerge(
-            this.#pContext,
-            result.pContext,
-          ) as any;
-          this.#context = deepmerge(this.#context, result.context) as any;
+          this.#pContext = merge(this.#pContext, result.pContext) as any;
+          this.#context = merge(this.#context, result.context) as any;
 
           if (target) {
             this.#config = this.proposedNextConfig(target);
@@ -829,8 +830,8 @@ export class Interpreter<
         this.#status = 'busy';
         const { target, result } = resultAlways;
 
-        this.#pContext = deepmerge(this.#pContext, result.pContext) as any;
-        this.#context = deepmerge(this.#context, result.context) as any;
+        this.#pContext = merge(this.#pContext, result.pContext) as any;
+        this.#context = merge(this.#context, result.context) as any;
 
         if (target) {
           this.#config = this.proposedNextConfig(target);
@@ -884,12 +885,12 @@ export class Interpreter<
       console.warn('promises', promises.length);
       promises.forEach(value => {
         if (value) {
-          this.#pContext = deepmerge(
+          this.#pContext = merge(
             this.#pContext,
             value.result.pContext,
           ) as any;
 
-          this.#context = deepmerge(
+          this.#context = merge(
             this.#context,
             value.result.context,
           ) as any;
@@ -1094,7 +1095,7 @@ export class Interpreter<
         targets.push(target);
       }
 
-      result = deepmerge(result, _result);
+      result = merge(result, _result);
     });
 
     // #region Use targets to perform entry and exit actions
@@ -1102,7 +1103,7 @@ export class Interpreter<
       const { diffEntries, diffExits } = this.#diffNext(target);
 
       sv = nextSV(sv, target);
-      result = deepmerge(
+      result = merge(
         result,
         this.#performActions(result, ...diffExits),
         this.#performActions(result, ...diffEntries),
@@ -1143,8 +1144,8 @@ export class Interpreter<
       next,
     } = sends;
 
-    this.#pContext = deepmerge(this.#pContext, pContext) as any;
-    this.#context = deepmerge(this.#context, context) as any;
+    this.#pContext = merge(this.#pContext, pContext) as any;
+    this.#context = merge(this.#context, context) as any;
 
     const check2 = !equal(this.#config, next);
 
