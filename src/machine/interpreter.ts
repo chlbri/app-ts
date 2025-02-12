@@ -897,20 +897,16 @@ export class Interpreter<
     const finalize = () => values.forEach(({ finalize }) => finalize());
 
     const toPromises = values
-      .map(({ promise }) => {
-        const check = promise == undefined;
-        if (check) return undefined;
-
-        return promise;
-      })
-      .filter(f => f !== undefined);
-    // .flat()
+      .map(({ promise }) => promise)
+      .filter(isDefined);
 
     const check1 = toPromises.length < 1;
 
     if (check1) return this.#scheduler.schedule(finalize);
 
-    const promises = await Promise.all(toPromises.map(p => p()));
+    const promises = await Promise.all(toPromises.map(p => p())).finally(
+      finalize,
+    );
 
     const cb = () => {
       let target = t.union(t.string, t.undefined);
@@ -939,7 +935,6 @@ export class Interpreter<
     };
 
     this.#scheduler.schedule(cb);
-    this.#scheduler.schedule(finalize);
     // this.nextStart(true);
   };
 
