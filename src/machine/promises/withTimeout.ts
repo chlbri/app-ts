@@ -14,8 +14,10 @@ export type TypeFromTimeouts<T extends TimeoutPromise[]> = TypeFromTimeout<
 export const withTimeout = <T = any>(
   promise: () => Promise<T>,
   id: string,
-  ...timeouts: number[]
+  ..._timeouts: number[]
 ): TimeoutPromise<T> => {
+  const timeouts = [..._timeouts, Number.POSITIVE_INFINITY];
+
   const timeoutPids = Array.from(
     { length: timeouts.length },
     () => undefined as NodeJS.Timeout | undefined,
