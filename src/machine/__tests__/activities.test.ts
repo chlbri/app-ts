@@ -5,7 +5,7 @@ import { fakeWaiter } from './fixtures';
 const log = vi.spyOn(console, 'log');
 
 beforeAll(() => {
-  // vi.useFakeTimers();
+  vi.useFakeTimers();
 });
 
 const isCI = process.env.CI === 'true';

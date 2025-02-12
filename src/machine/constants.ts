@@ -1,5 +1,3 @@
-import sleep from '@bemedev/sleep';
-
 export const THEN_EVENT_TYPE = 'machine$$then';
 
 export type ThenEvent = {
@@ -21,5 +19,3 @@ export type MaxExceededEvent = typeof MAX_EXCEEDED_EVENT_TYPE;
 export const MAX_TIME_PROMISE = 100_000;
 
 export const MIN_ACTIVITY_TIME = 50;
-
-export const DEFAULT_MAX_PROMISE = () => sleep(MAX_TIME_PROMISE);

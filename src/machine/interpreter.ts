@@ -239,7 +239,7 @@ export class Interpreter<
   };
 
   #rinitIntervals = () => {
-    this.cachedIntervals.forEach(f => {
+    this._cachedIntervals.forEach(f => {
       const check = f.state === 'active';
       if (check) this.#scheduler.schedule(f.pause.bind(f));
     });
@@ -257,7 +257,7 @@ export class Interpreter<
     const check = !equal(previousValue, currentConfig);
 
     if (check) {
-      await sleep(0);
+      // await sleep(0);
       await this.next.bind(this)();
     }
   };
@@ -359,7 +359,7 @@ export class Interpreter<
       }
 
       const id = `${from}::${_delay}`;
-      const _interval = this.cachedIntervals.find(f => f.id === id);
+      const _interval = this._cachedIntervals.find(f => f.id === id);
 
       if (_interval) {
         outs.push(id);
@@ -408,7 +408,7 @@ export class Interpreter<
         id,
       });
 
-      this.cachedIntervals.push(promise);
+      this._cachedIntervals.push(promise);
       outs.push(id);
     }
 
@@ -430,7 +430,7 @@ export class Interpreter<
     return out;
   };
 
-  cachedIntervals: IntervalTimer[] = [];
+  protected _cachedIntervals: IntervalTimer[] = [];
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';
@@ -806,7 +806,7 @@ export class Interpreter<
       ids.push(...this.#executeActivities(...args));
     }
 
-    return this.cachedIntervals
+    return this._cachedIntervals
       .filter(({ id }) => ids.includes(id))
       .forEach(f => {
         this.#scheduler.schedule(f.start.bind(f));
@@ -935,7 +935,6 @@ export class Interpreter<
     };
 
     this.#scheduler.schedule(cb);
-    // this.nextStart(true);
   };
 
   #performStartTransitions = async () => {

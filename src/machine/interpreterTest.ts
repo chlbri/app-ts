@@ -30,6 +30,10 @@ class InterpreterTest<
 
     return out;
   };
+
+  get intervalsArePaused() {
+    return this._cachedIntervals.every(({ state }) => state === 'paused');
+  }
 }
 
 export type { InterpreterTest };

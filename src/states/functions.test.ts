@@ -5,7 +5,7 @@ describe('NextSV', () => {
   const { success } = createTests(nextSV);
 
   describe(
-    'SUcc',
+    'success',
     success(
       {
         invite: 'to perform #1',

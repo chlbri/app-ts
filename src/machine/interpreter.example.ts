@@ -105,10 +105,7 @@ import { interpretTest } from './interpreterTest';
   });
 
   service.pause();
-  console.log(
-    'pause',
-    service.cachedIntervals.every(x => x.state === 'paused'),
-  );
+  console.log('pause', service.intervalsArePaused);
 
   const workingTime = DELAY * 60;
   const endTime = Date.now();
