@@ -49,17 +49,18 @@ export const defaultReturn: DefaultReturn = ({
   throw error;
 };
 
-// @ts-expect-error no need to return
 export const nothing = () => {
   if (IS_TEST) {
     console.log(`${DEFAULT_NOTHING} call ${DEFAULT_NOTHING}`);
     return DEFAULT_NOTHING;
   }
+  return;
 };
 
 const env = process.env.NODE_ENV;
 
 export const IS_TEST = env === 'test';
+
 export const IS_PRODUCTION = env === 'production';
 
 export const ERRORS = {

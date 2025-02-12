@@ -7,7 +7,6 @@ import type {
   SingleOrArrayL,
 } from 'src/types/primitives';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
-import type { MachineOptions } from '~config';
 import type { EventObject } from '~events';
 import type { FromGuard, GuardConfig, Predicate } from '~guards';
 import type {
@@ -144,15 +143,6 @@ export type Transition<
   readonly description?: string;
   readonly in: string[];
 };
-
-export type ToTransition_F = <
-  TC extends PrimitiveObject,
-  TE extends EventObject = EventObject,
->(
-  transition: TransitionConfig,
-  options?: Pick<MachineOptions<TC, TE>, 'guards' | 'actions'>,
-  strict?: boolean,
-) => Transition<TC, TE>;
 
 export type Transitions<
   TC extends PrimitiveObject,

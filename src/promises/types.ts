@@ -10,7 +10,6 @@ import type {
   SingleOrArrayL,
 } from 'src/types/primitives';
 import type { ActionConfig } from '~actions';
-import type { MachineOptions } from '~config';
 import type { EventObject } from '~events';
 import type {
   ExtractActionsFromMap,
@@ -26,11 +25,6 @@ export type PromiseFunction<
   Te extends EventObject = EventObject,
   R = any,
 > = Fn<[Pc, Tc, Te], Promise<R>>;
-
-export type PromiseMap<
-  Tc extends PrimitiveObject,
-  Te extends EventObject,
-> = Record<string, PromiseFunction<Tc, Te>>;
 
 export type FinallyConfig =
   NOmit<TransitionConfigMapA, 'target'> extends infer F extends NOmit<
@@ -88,21 +82,3 @@ export type Promisee<
   readonly catch: Transition<TC, TE>[];
   readonly finally: Transition<TC, TE>[];
 };
-
-export type ToPromiseSrc_F = <
-  TC extends PrimitiveObject = PrimitiveObject,
-  TE extends EventObject = EventObject,
->(params: {
-  src: ActionConfig;
-  promises?: MachineOptions<TC, TE>['promises'];
-  strict?: boolean;
-}) => PromiseFunction<TC, TE>;
-
-export type ToPromise_F = <
-  TC extends PrimitiveObject,
-  TE extends EventObject = EventObject,
->(params: {
-  promise: PromiseConfig;
-  options?: NOmit<MachineOptions<TC, TE>, 'children' | 'delays'>;
-  strict?: boolean;
-}) => Promisee<TC, TE>;
