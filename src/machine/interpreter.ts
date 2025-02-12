@@ -88,7 +88,25 @@ import type {
 } from './types';
 import { withTimeout } from './withTimeout';
 
-const merge = deepmergeCustom({
+declare module 'deepmerge-ts' {
+  interface DeepMergeFunctionURItoKind<
+    Ts extends Readonly<ReadonlyArray<unknown>>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Fs extends DeepMergeFunctionsURIs,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    M,
+  > {
+    readonly FilterUndefined: FilterOut<Ts, null | undefined>;
+  }
+}
+
+const merge = deepmergeCustom<
+  unknown,
+  {
+    DeepMergeArraysURI: 'DeepMergeLeafURI';
+    DeepMergeFilterValuesURI: 'FilterUndefined';
+  }
+>({
   mergeArrays: false,
 });
 
