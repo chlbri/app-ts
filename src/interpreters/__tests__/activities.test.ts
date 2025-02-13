@@ -8,12 +8,11 @@ beforeAll(() => {
   vi.useFakeTimers();
 });
 
-const isCI = process.env.CI === 'true';
 
 const TEST_1 = '#1 => First state has activity';
 const TEST_2 = '#2 => Complex';
 
-describe.skipIf(isCI)(TEST_1, () => {
+describe(TEST_1, () => {
   beforeAll(() => {
     log.mockClear();
   });
@@ -61,7 +60,7 @@ describe.skipIf(isCI)(TEST_1, () => {
   });
 });
 
-describe.skipIf(isCI)(TEST_2, () => {
+describe(TEST_2, () => {
   beforeAll(() => {
     log.mockClear();
   });
