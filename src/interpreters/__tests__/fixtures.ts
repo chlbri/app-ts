@@ -1,8 +1,8 @@
 import sleep from '@bemedev/sleep';
 import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
-import type { FlatMapN } from '../../machine/types';
-import { createConfig } from '../../states/functions/create';
+import { createConfig } from '~machines';
+import type { FlatMapN } from '~states';
 
 export const config1 = createConfig({
   description: 'cdd',
