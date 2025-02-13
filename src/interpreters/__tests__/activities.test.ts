@@ -8,7 +8,6 @@ beforeAll(() => {
   vi.useFakeTimers();
 });
 
-
 const TEST_1 = '#1 => First state has activity';
 const TEST_2 = '#2 => Complex';
 
