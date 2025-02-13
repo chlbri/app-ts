@@ -276,7 +276,7 @@ type CfmT = {
   ) => number;
 };
 
-expectTypeOf<Cfm>().toMatchTypeOf<CfmT>();
+expectTypeOf<Cfm>().branded.toEqualTypeOf<CfmT>();
 expectTypeOf<keyof Cfm>().toEqualTypeOf<
   | 'event1&&event3'
   | 'event1&&event4'
