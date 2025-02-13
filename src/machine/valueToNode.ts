@@ -1,13 +1,18 @@
-import { decomposeSV } from '@bemedev/decompose';
+import { decomposeSV, type StateValue } from '@bemedev/decompose';
 import { isString } from 'src/types/primitives';
 import { DEFAULT_DELIMITER } from '~constants';
 import { replaceAll } from '~utils';
 import { flatMap } from './flatMap';
-import { getChildren } from './getChildren';
-import { getParents } from './getParents';
+import { getChildren } from '../states/functions/getChildren';
+import { getParents } from '../states/functions/getParents';
 import { recomposeNode } from './recompose';
-import type { NodeConfig } from './types';
-import type { ValueToConfig_F } from './valueToNode.type';
+import type { NodeConfig, NodeConfigWithInitials } from './types';
+
+export type ValueToConfig_F = <T extends StateValue>(
+  body: NodeConfigWithInitials,
+  from: T,
+  initial?: boolean,
+) => NodeConfigWithInitials;
 
 export const valueToConfig: ValueToConfig_F = (body, from) => {
   const flatBody = flatMap(body as NodeConfig, false);

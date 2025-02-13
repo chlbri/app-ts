@@ -1,7 +1,9 @@
 import { DEFAULT_DELIMITER } from '~constants';
 import { isStringEmpty } from '~utils';
 
-export const getParents = (value: string) => {
+export type GetParents_F = (value: string) => string[];
+
+export const getParents:GetParents_F = value => {
   const last = value.lastIndexOf(DEFAULT_DELIMITER);
   if (last === -1) return [];
   const out = ['/', value];

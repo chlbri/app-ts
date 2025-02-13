@@ -1,4 +1,8 @@
-import type { StateType_F } from './types';
+import type { Fn } from "@bemedev/types";
+import type { NodeConfig, NodeConfigWithInitials } from "src/machine/types";
+import type { StateType } from "../types";
+
+export  type StateType_F = Fn<[state: NodeConfig | NodeConfigWithInitials], StateType>;
 
 export const stateType: StateType_F = config => {
   const type = config.type;

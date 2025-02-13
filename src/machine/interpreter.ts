@@ -24,6 +24,8 @@ import type {
 } from '~transitions';
 import { isDescriber, type PrimitiveObject } from '~types';
 import { replaceAll, toArray } from '~utils';
+import { racePromises } from '../promises/functions/race';
+import { withTimeout, type TimeoutPromise } from '../promises/functions/withTimeout';
 import {
   CATCH_EVENT_TYPE,
   MAX_TIME_PROMISE,
@@ -63,8 +65,6 @@ import {
   type IntervalTimer,
 } from './interval';
 import { nodeToValue } from './nodeToValue';
-import { racePromises } from './promises/race';
-import { withTimeout, type TimeoutPromise } from './promises/withTimeout';
 import { resolveNode } from './resolveNode';
 import { Scheduler } from './scheduler';
 import { toAction } from './toAction';

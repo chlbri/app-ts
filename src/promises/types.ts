@@ -40,9 +40,7 @@ export type PromiseConfig = {
   readonly src: string;
   readonly id?: string;
 
-  // #region To perform
-  // readonly autoForward?: boolean;
-  // #endregion
+  // Max wait time to perform the promise
   readonly max?: string;
   readonly description?: string;
   readonly then: SingleOrArrayT;

@@ -1,9 +1,14 @@
 import { isDefined } from '@bemedev/basifun';
-import { t } from '@bemedev/types';
+import { t, type Fn } from '@bemedev/types';
+import { stateType } from 'src/states/functions/stateType';
 import type { ActionConfig } from '~actions';
 import { toArray, toDescriber } from '~utils';
-import { stateType } from './getStateType';
-import type { ToSimple_F } from './types';
+import type { NodeConfig, NodeConfigWithInitials, SimpleStateConfig } from './types';
+
+export type ToSimple_F = Fn<
+  [state: NodeConfig | NodeConfigWithInitials],
+  SimpleStateConfig
+>;
 
 export const toSimple: ToSimple_F = config => {
   const type = stateType(config);

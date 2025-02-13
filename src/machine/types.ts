@@ -536,10 +536,7 @@ export type SimpleStateConfig = {
   tags: string[];
 };
 
-export type ToSimple_F = Fn<
-  [state: NodeConfig | NodeConfigWithInitials],
-  SimpleStateConfig
->;
+
 
 type ResoleStateParams<
   E extends EventsMap = EventsMap,

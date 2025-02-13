@@ -10,8 +10,8 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import type { PrimitiveObject } from '~types';
+import type { TimeoutPromise } from '../promises/functions/withTimeout';
 import type { Interpreter } from './interpreter';
-import type { TimeoutPromise } from './promises/withTimeout';
 import type {
   Action2,
   ActionResult,
