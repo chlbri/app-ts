@@ -1,5 +1,10 @@
-import type { NodeConfigParallel } from "src/machine/types";
+import type {
+  NodeConfigParallel,
+  NodeConfigParallelWithInitials,
+} from '../../types';
 
-export function isParallel(arg: unknown): arg is NodeConfigParallel {
+export function isParallel(
+  arg: unknown,
+): arg is NodeConfigParallelWithInitials | NodeConfigParallel {
   return (arg as any).type === 'parallel';
 }

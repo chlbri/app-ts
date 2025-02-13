@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "src/vitest..common.ts", "src/.vitest.ts"],
+  "include": ["src/**/*", "src/.vitest.ts"],
   "compilerOptions": {
     "module": "esnext",
     "lib": ["dom", "esnext"],
@@ -28,17 +28,20 @@
     "paths": {
       "~types": ["src/types/index.ts"],
       "~fixtures": ["src/fixtures.ts"],
-      "~utils": ["src/utils.ts"],
+      "~utils": ["src/utils/index.ts"],
       "~constants": ["src/constants/index.ts"],
       "~promises": ["src/promises/index.ts"],
       "~children": ["src/children/index.ts"],
       "~delays": ["src/delays/index.ts"],
       "~states": ["src/states/index.ts"],
+      "~interpreters": ["src/interpreters/index.ts"],
+      "~interpreter": ["src/interpreters/interpreter.ts"],
       "~guards": ["src/guards/index.ts"],
       "~actions": ["src/actions/index.ts"],
       "~events": ["src/events/index.ts"],
       "~transitions": ["src/transitions/index.ts"],
       "~machine": ["src/machine/machine.ts"],
+      "~machines": ["src/machine/index.ts"],
       "~config": ["src/config/index.ts"]
     }
   }

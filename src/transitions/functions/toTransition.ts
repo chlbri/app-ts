@@ -1,0 +1,42 @@
+import { toAction } from '~actions';
+import type { EventsMap } from '~events';
+import { toPredicate, type GuardConfig } from '~guards';
+import type { SimpleMachineOptions2 } from '~machines';
+import type { Transition, TransitionConfig } from '~transitions';
+import { isString, type PrimitiveObject } from '~types';
+import { toArray } from '~utils';
+
+export type ToTransition_F = <
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+>(
+  events: E,
+  config: TransitionConfig,
+  options?: Pick<SimpleMachineOptions2, 'actions' | 'predicates'>,
+) => Transition<E, Pc, Tc>;
+
+export const toTransition: ToTransition_F = (events, config, options) => {
+  const __id = (config as any).__id;
+  if (isString(config)) {
+    const target = toArray<string>(config);
+    return { target, actions: [], guards: [], in: [] };
+  }
+
+  const { description } = config;
+  const target = toArray<string>(config.target);
+
+  const actions = toArray
+    .typed(config.actions)
+    .map(action => toAction(events, action, options?.actions));
+  const guards = toArray<GuardConfig>(config.guards).map(guard =>
+    toPredicate(events, guard, options?.predicates),
+  );
+
+  const out = { target, actions, guards } as any;
+
+  if (description) out.description = description;
+  if (__id) out.__id = __id;
+
+  return out;
+};

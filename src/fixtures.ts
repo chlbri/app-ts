@@ -1,4 +1,4 @@
-import type { ChangeProperty } from 'src/types/primitives';
+import type { ChangeProperty } from '~types';
 
 export type TC = {
   val1?: string;

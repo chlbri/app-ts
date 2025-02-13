@@ -1,9 +1,11 @@
+import type { DeepPartial, Fn } from '@bemedev/types';
+import type { EventsMap, ToEvents } from '~events';
 import type {
   Describer,
+  FnMap,
   FromDescriber,
   PrimitiveObject,
-} from 'src/types/primitives';
-import type { EventObject } from '~events';
+} from '~types';
 
 export type ActionConfig = string | Describer;
 
@@ -12,32 +14,27 @@ export type FromActionConfig<T extends ActionConfig> = T extends Describer
   : T;
 
 export type Action<
+  E extends EventsMap,
   Pc = any,
-  TC extends PrimitiveObject = PrimitiveObject,
-  TE extends EventObject = EventObject,
-  R = any,
-> = (privateContext: Pc, context: TC, event: TE) => R;
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = FnMap<E, Pc, Tc, ActionResult<Pc, Tc>>;
 
 export type ActionMap<
+  E extends EventsMap,
   Pc = any,
-  TC extends PrimitiveObject = PrimitiveObject,
-  TE extends EventObject = EventObject,
-> = Partial<Record<string, Action<Pc, TC, TE>>>;
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = Partial<Record<string, Action<E, Pc, Tc>>>;
 
-export type toActionParams<
-  TC extends PrimitiveObject,
-  TE extends EventObject,
-> = {
-  action?: ActionConfig;
-  actions?: ActionMap<TC, TE>;
-  strict?: boolean;
-};
+export type ActionResult<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = DeepPartial<{
+  pContext: Pc;
+  context: Tc;
+}>;
 
-export type ToAction_F = <
-  TC extends PrimitiveObject,
-  TE extends EventObject,
->(
-  params: toActionParams<TC, TE>,
-) => Action<TC, TE>;
-
-export type ReduceAction_F = (action: ActionConfig) => string;
+export type Action2<
+  E extends EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = Fn<[Pc, Tc, ToEvents<E>], ActionResult<Pc, Tc>>;

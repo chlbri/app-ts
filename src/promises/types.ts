@@ -5,12 +5,8 @@ import type {
   ReduceArray,
   Require,
 } from '@bemedev/types';
-import type {
-  PrimitiveObject,
-  SingleOrArrayL,
-} from 'src/types/primitives';
-import type { ActionConfig } from '~actions';
-import type { EventObject } from '~events';
+import type { ActionConfig, ActionResult } from '~actions';
+import type { EventsMap, ToEvents } from '~events';
 import type {
   ExtractActionsFromMap,
   ExtractGuardsFromDelayed,
@@ -18,13 +14,13 @@ import type {
   Transition,
   TransitionConfigMapA,
 } from '~transitions';
+import type { FnMap, PrimitiveObject, SingleOrArrayL } from '~types';
 
 export type PromiseFunction<
+  E extends EventsMap = EventsMap,
   Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  Te extends EventObject = EventObject,
-  R = any,
-> = Fn<[Pc, Tc, Te], Promise<R>>;
+  TC extends PrimitiveObject = PrimitiveObject,
+> = FnMap<E, Pc, TC, Promise<any>>;
 
 export type FinallyConfig =
   NOmit<TransitionConfigMapA, 'target'> extends infer F extends NOmit<
@@ -70,13 +66,29 @@ export type ExtractGuardsFromPromise<T extends PromiseConfig> =
   | ExtractGuardsFromDelayed<T['finally']>;
 
 export type Promisee<
-  TC extends PrimitiveObject,
-  TE extends EventObject = EventObject,
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  TC extends PrimitiveObject = PrimitiveObject,
 > = {
-  readonly src: PromiseFunction<TC, TE>;
-  readonly id?: string;
-  readonly description?: string;
-  readonly then: Transition<TC, TE>[];
-  readonly catch: Transition<TC, TE>[];
-  readonly finally: Transition<TC, TE>[];
+  src: PromiseFunction2<E, Pc, TC>;
+  description?: string;
+  then: Transition<E, Pc, TC>[];
+  catch: Transition<E, Pc, TC>[];
+  finally: Transition<E, Pc, TC>[];
+};
+
+export type PromiseFunction2<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  TC extends PrimitiveObject = PrimitiveObject,
+> = Fn<[Pc, TC, ToEvents<E>], Promise<any>>;
+
+export type PromiseeResult<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  event: ToEvents<E>;
+  result: ActionResult<Pc, Tc>;
+  target?: string;
 };

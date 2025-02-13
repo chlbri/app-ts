@@ -2,12 +2,9 @@ import type {
   CatchEvent,
   MaxExceededEvent,
   ThenEvent,
-} from 'src/machine/constants';
-import type {
-  AlwaysEvent,
-  InitEvent,
-} from 'src/machine/interpreter.types';
-import type { ToEvents } from './types';
+} from 'src/constants/events';
+
+import type { AlwaysEvent, InitEvent, ToEvents } from './types';
 
 type TT1 = ToEvents<{
   AUTH: { userName: string; password: string };

@@ -1,6 +1,6 @@
 export type GetChildren_F = (str: string, ...keys: string[]) => string[];
 
-export const getChildren:GetChildren_F = (str, ...keys) => {
+export const getChildren: GetChildren_F = (str, ...keys) => {
   const check1 = keys.length > 0;
   const out: string[] = [];
   if (check1) {

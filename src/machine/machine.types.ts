@@ -5,9 +5,9 @@ import type {
   Config,
   ConfigWithInitials,
   MachineOptions,
-  NodeConfigWithInitials,
   SimpleMachineOptions2,
 } from './types';
+import type { NodeConfigWithInitials } from '~states';
 
 export type _ProvideInitials_F<C extends Config> = (
   initials: MachineOptions<C>['initials'],

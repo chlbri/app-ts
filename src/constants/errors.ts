@@ -1,5 +1,4 @@
 import type { UnionToIntersection } from '@bemedev/types';
-import type { Simplify } from 'src/types/primitives';
 import type { STR } from './types';
 
 const action = {
@@ -71,7 +70,7 @@ const produceErrors = <const T extends STR[]>(...types: T) => {
       : never
     : never;
 
-  return out as Simplify<UnionToIntersection<Out>>;
+  return out as UnionToIntersection<Out>;
 };
 
 export const ERRORS = produceErrors(

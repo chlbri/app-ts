@@ -1,4 +1,4 @@
-import { GuardConfig, type FromGuard } from './types';
+import type { FromGuard, GuardConfig } from './types';
 
 type TT1 = 'exists';
 

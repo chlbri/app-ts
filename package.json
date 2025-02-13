@@ -63,6 +63,7 @@
     "rm:lib": "rm -rf lib",
     "rollup": "rollup -c",
     "test": "pnpm run test:coverage --no-coverage",
+    "test:only": "pnpm run test:coverage --no-coverage",
     "test:coverage": "vitest run",
     "test:machine": "vitest run ./src/machine/**/*.ts",
     "test:no-type": "pnpm run test:coverage -c \"vitest.config.notype.ts\" --no-coverage",

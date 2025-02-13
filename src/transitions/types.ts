@@ -1,13 +1,6 @@
 import type { NotUndefined, Require } from '@bemedev/types';
-import type { RecordS } from 'src/machine/types';
-import type {
-  Identitfy,
-  PrimitiveObject,
-  ReduceArray,
-  SingleOrArrayL,
-} from 'src/types/primitives';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
-import type { EventObject } from '~events';
+import type { EventsMap } from '~events';
 import type { FromGuard, GuardConfig, Predicate } from '~guards';
 import type {
   ExtractActionsFromPromise,
@@ -17,6 +10,13 @@ import type {
   PromiseConfig,
   Promisee,
 } from '~promises';
+import type {
+  Identitfy,
+  PrimitiveObject,
+  RecordS,
+  ReduceArray,
+  SingleOrArrayL,
+} from '~types';
 
 type _TransitionConfigMap = {
   readonly target?: string;
@@ -132,24 +132,25 @@ export type ExtractTargetsFromConfig<T> = _ExtractTargetsFromConfig<
 >;
 
 export type Transition<
+  E extends EventsMap,
   Pc = any,
-  TC extends PrimitiveObject = PrimitiveObject,
-  TE extends EventObject = EventObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   readonly target: string[];
   // readonly internal?: boolean;
-  readonly actions: Action<Pc, TC, TE>[];
-  readonly guards: Predicate<Pc, TC, TE>[];
+  readonly actions: Action<E, Pc, Tc>[];
+  readonly guards: Predicate<E, Pc, Tc>[];
   readonly description?: string;
   readonly in: string[];
 };
 
 export type Transitions<
-  TC extends PrimitiveObject,
-  TE extends EventObject = EventObject,
+  E extends EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  on: Identitfy<Transition<TC, TE>>[];
-  always: Transition<TC, TE>[];
-  after: Identitfy<Transition<TC, TE>>[];
-  promises: Promisee<TC, TE>[];
+  on: Identitfy<Transition<E, Pc, Tc>>[];
+  always: Transition<E, Pc, Tc>[];
+  after: Identitfy<Transition<E, Pc, Tc>>[];
+  promises: Promisee<E, Pc, Tc>[];
 };

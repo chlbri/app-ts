@@ -1,6 +1,12 @@
 export * from './checks';
+export * from './create';
+export * from './flatMap';
 export * from './getChildren';
 export * from './getParents';
+export * from './initialNode';
 export * from './nextSV';
+export * from './nodeToValue';
+export * from './recompose';
+export * from './resolveNode';
 export * from './stateType';
-
+export * from './valueToNode';

@@ -1,43 +1,115 @@
-import { ERRORS } from '~constants';
-import { DEFAULT_MACHINE } from '~machine';
-import { isDescriber } from '~types';
-import { defaultReturn, nothing } from '~utils';
-import { reduceFnMap } from './reduceFnMap';
-import type { Child2, ToMachine_F } from './types';
+import type { Fn } from '@bemedev/types';
+import type { ActionConfig } from '~actions';
+import type { EventsMap, ToEvents } from '~events';
+import type { AnyMachine } from '~machine';
+import {
+  isDescriber,
+  isFunction,
+  MAP_CONCATENER,
+  type PrimitiveObject,
+} from '~types';
+import type { Child, MachineMap } from './types';
 
-export const toMachine: ToMachine_F = ({
-  events,
-  mode,
-  machine,
-  machines,
+export type ToMachine_F = <
+  E extends EventsMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+>(
+  events: E,
+  machine?: ActionConfig,
+  machines?: MachineMap<E, Tc>,
+) => ((context: Tc, event1: ToEvents<E>) => Tc | undefined) | undefined;
+
+export type ReducerMachine_F = <
+  E extends EventsMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends AnyMachine = AnyMachine,
+>({
+  subscriber,
+  service,
+  eventsMap,
+}: Child<E, Tc, T> & {
+  eventsMap: E;
+}) => (context: Tc, event1: ToEvents<E>) => Tc | undefined;
+
+export const reducerMachine: ReducerMachine_F = ({
+  subscriber,
+  service,
+  eventsMap,
 }) => {
-  const strict = mode !== 'normal';
-  const value: Child2 = () => ({
-    machine: DEFAULT_MACHINE,
-    subscriber: nothing,
-  });
+  const check1 = isFunction(subscriber);
 
-  const out = (error: Error, _return?: any) => {
-    return defaultReturn({
-      config: {
-        strict,
-        value,
-      },
-      _return,
-      error,
-    });
-  };
+  if (check1) {
+    return (context, event) => {
+      const _context = (subscriber as Fn)(
+        [service.context, context],
+        [service.event, event],
+      );
 
-  if (!machine) return out(ERRORS.machine.notDefined.error);
-
-  if (isDescriber(machine)) {
-    const fn = machines?.[machine.name];
-    const func = fn ? reduceFnMap({ events, fn }) : undefined;
-    return out(ERRORS.action.notDescribed.error, func);
+      return _context;
+    };
   }
 
-  const fn = machines?.[machine];
-  const func = fn ? reduceFnMap({ events, fn }) : undefined;
+  const keys1 = Object.keys(service.eventsMap);
+  const keys2 = Object.keys(eventsMap);
 
-  return out(ERRORS.action.notProvided.error, func);
+  const keys: string[] = [];
+  for (const key1 of keys1) {
+    for (const key2 of keys2) {
+      keys.push(`${key1}${MAP_CONCATENER}${key2}`);
+    }
+  }
+
+  return (context, event1) => {
+    const check5 = typeof event1 === 'string';
+    if (check5) return;
+
+    const event2 = service.event;
+    const check6 = typeof event2 === 'string';
+    if (check6) return;
+
+    const { payload, type } = event1;
+    const _else = subscriber.else!;
+
+    for (const key of keys) {
+      const check2 =
+        type === key.substring(0, key.indexOf(MAP_CONCATENER));
+      const func = (subscriber as any)[key];
+      const check3 = !!func;
+
+      const check4 = check2 && check3;
+      if (check4)
+        return func([service.context, context], [payload, event2.payload]);
+    }
+
+    return (_else as Fn)(
+      [service.context, context],
+      [payload, event2.payload],
+    );
+  };
+};
+
+export const toMachine: ToMachine_F = (eventsMap, machine, machines) => {
+  if (!machine) return undefined;
+
+  if (isDescriber(machine)) {
+    const child = machines?.[machine.name];
+    if (!child) return;
+
+    const { service, subscriber } = child;
+    const func = subscriber
+      ? reducerMachine({ service, subscriber, eventsMap })
+      : undefined;
+
+    return func;
+  }
+
+  const child = machines?.[machine];
+  if (!child) return;
+
+  const { service, subscriber } = child;
+  const func = subscriber
+    ? reducerMachine({ service, subscriber, eventsMap })
+    : undefined;
+
+  return func;
 };

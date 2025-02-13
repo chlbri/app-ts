@@ -1,33 +1,32 @@
 import { isDefined, toArray } from '@bemedev/basifun';
 import { t, type NOmit } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
+import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
+import type { Delay } from '~delays';
 import type { EventsMap, ToEvents } from '~events';
-import { stateType, type StateValue } from '~states';
-import type { PrimitiveObject } from '~types';
-import { flatMap } from './flatMap';
-import { getInitialNodeConfig } from './getInitialNodeConfig';
+import type { PredicateS } from '~guards';
+import type { PromiseFunction } from '~promises';
+import {
+  flatMap,
+  initialNode,
+  isAtomic,
+  isCompound,
+  nodeToValue,
+  recomposeNode,
+  valueToNode,
+  type FlatMapN,
+  type NodeConfig,
+  type NodeConfigWithInitials,
+  type StateValue,
+} from '~states';
+import type { PrimitiveObject, RecordS } from '~types';
 import type { Elements, GetIO2_F, GetIO_F } from './machine.types';
-import { nodeToValue } from './nodeToValue';
-import { recomposeNode } from './recompose';
-import { toSimple } from './toSimple';
 import type {
-  Action,
   Config,
-  Delay,
-  FlatMapN,
   MachineOptions,
-  NodeConfig,
-  NodeConfigAtomic,
-  NodeConfigCompoundWithInitials,
-  NodeConfigParallelWithInitials,
-  NodeConfigWithInitials,
-  PredicateS,
-  PromiseFunction,
-  RecordS,
   SimpleMachineOptions2,
 } from './types';
-import { valueToConfig } from './valueToNode';
 
 class Machine<
   const C extends Config = Config,
@@ -203,7 +202,7 @@ class Machine<
     });
 
     this.#postConfig = recomposeNode(flat);
-    this.#initialConfig = getInitialNodeConfig(this.#postConfig);
+    this.#initialConfig = initialNode(this.#postConfig);
 
     this.#getInitialKeys();
 
@@ -211,7 +210,7 @@ class Machine<
   };
 
   #getInitialKeys = () => {
-    const postConfig = this.#postConfig as unknown as NodeConfig;
+    const postConfig = this.#postConfig as NodeConfig;
     this.#postFlat = flatMap(postConfig) as any;
 
     const entries = Object.entries(this.#postFlat);
@@ -429,18 +428,11 @@ class Machine<
     return out;
   };
 
-  get simple() {
-    if (this.#postConfig) return toSimple(this.#postConfig);
-
-    this.#addError('"postConfig" is not defined');
-    return t.notUndefined(this.#postConfig);
-  }
-
   valueToConfig = (from: StateValue) => {
     const config = this.#postConfig;
     const check = isDefined(config);
 
-    if (check) return valueToConfig(config, from);
+    if (check) return valueToNode(config, from);
 
     this.#addError('The machine is not configured');
     return t.notUndefined(config);
@@ -494,21 +486,7 @@ class Machine<
 }
 
 // #region Checkers
-export const isAtomic = (arg: any): arg is NodeConfigAtomic => {
-  return stateType(arg) === 'atomic';
-};
 
-export const isCompound = (
-  arg: any,
-): arg is NodeConfigCompoundWithInitials => {
-  return stateType(arg) === 'compound';
-};
-
-export const isParallel = (
-  arg: any,
-): arg is NodeConfigParallelWithInitials => {
-  return stateType(arg) === 'parallel';
-};
 // #endregion
 
 export const getIO: GetIO_F = (node, key) => {

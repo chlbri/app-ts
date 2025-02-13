@@ -3,7 +3,7 @@ import { isStringEmpty } from '~utils';
 
 export type GetParents_F = (value: string) => string[];
 
-export const getParents:GetParents_F = value => {
+export const getParents: GetParents_F = value => {
   const last = value.lastIndexOf(DEFAULT_DELIMITER);
   if (last === -1) return [];
   const out = ['/', value];

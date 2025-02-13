@@ -3,18 +3,20 @@ import type {
   CatchEvent,
   MaxExceededEvent,
   ThenEvent,
-} from 'src/machine/constants';
-import type {
-  AlwaysEvent,
-  InitEvent,
-} from 'src/machine/interpreter.types';
+} from 'src/constants/events';
+
+import type { PrimitiveObject } from '~types';
+import type { ALWAYS_EVENT, INIT_EVENT } from './constants';
 
 export type EventObject<T = any> = {
   type: string;
   payload?: T;
 };
 
-export type EventsMap = Record<string, any>;
+export type EventsMap = Record<string, PrimitiveObject>;
+
+export type InitEvent = typeof INIT_EVENT;
+export type AlwaysEvent = typeof ALWAYS_EVENT;
 
 export type ToEvents<T extends EventsMap> =
   | (Unionize<T> extends infer U

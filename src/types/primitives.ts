@@ -6,11 +6,11 @@ import type {
   NotUndefined,
   Primitive,
   TuplifyUnion,
+  Unionize,
   UnionToIntersection,
-  ValuesOf,
 } from '@bemedev/types';
 import type { EventObject, EventsMap, ToEvents } from '~events';
-import type { StateValue } from '~states';
+import type { StateType, StateValue } from '~states';
 import { checkKeys } from '~utils';
 
 type isArray_F = <T>(value: unknown) => value is T[];
@@ -261,13 +261,48 @@ export type ReduceArray<T> = T extends readonly (infer U1)[]
     ? U2
     : T;
 
-export type FnMap<
-  E extends EventsMap,
+type _ConcatKeys<T extends object, U extends object> =
+  Unionize<T> extends infer TT
+    ? TT extends Record<infer S1 extends string | number, infer R1>
+      ? Unionize<U> extends infer UU
+        ? UU extends Record<infer S2 extends string | number, infer R2>
+          ? Record<`${S1}&&${S2}`, [R1, R2]>
+          : never
+        : never
+      : never
+    : never;
+
+export type ConcatKeys<
+  T extends object,
+  U extends object,
+> = UnionToIntersection<_ConcatKeys<T, U>>;
+
+export type FnMap2<
+  E extends EventsMap = EventsMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  R = any,
+> =
+  | ({
+      [key in keyof E]: (context: Tc, payload: E[key]) => R;
+    } & {
+      else?: (context: Tc, eventsMap: ToEvents<E>) => R;
+      machine$$then: (context: Tc, events: any) => R;
+      machine$$catch: (context: Tc, events: any) => R;
+    })
+  | ({
+      [key in keyof E]?: (context: Tc, payload: E[key]) => R;
+    } & {
+      else: (context: Tc, eventsMap: ToEvents<E>) => R;
+      machine$$then?: (context: Tc, events: any) => R;
+      machine$$catch?: (context: Tc, events: any) => R;
+    });
+
+type _FnMap<
+  E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > =
-  | ((pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R)
   | ({
       [key in keyof E]: (pContext: Pc, context: Tc, payload: E[key]) => R;
     } & {
@@ -283,12 +318,83 @@ export type FnMap<
       machine$$catch?: (pContext: Pc, context: Tc, events: any) => R;
     });
 
-export type ReduceFnMap_F = <
-  const E extends EventsMap,
+export const MAP_CONCATENER = '&&';
+
+export type MapConcatener = typeof MAP_CONCATENER;
+
+type _ConcatFnMap<T extends object, U extends object> =
+  Unionize<T> extends infer TT
+    ? TT extends Record<
+        infer S1 extends string | number,
+        (context: infer Tc1, eventsMap: infer E1) => infer R
+      >
+      ? Unionize<U> extends infer UU
+        ? UU extends Record<
+            infer S2 extends string | number,
+            (context: infer Tc2, eventsMap: infer E2) => any
+          >
+          ? Record<
+              `${S1}${MapConcatener}${S2}`,
+              (contexts: [Tc1, Tc2], map: [E1, E2]) => R
+            >
+          : never
+        : never
+      : never
+    : never;
+
+type ConcatFnMap2<
+  T extends object,
+  U extends object,
+> = UnionToIntersection<_ConcatFnMap<T, U>>;
+
+export type ConcatFnMap<T extends object, U extends object> =
+  ConcatFnMap2<T, U> extends infer TU
+    ? Omit<
+        TU,
+        | `else&&${string}`
+        | `${string}&&else`
+        | `machine$$then&&${string}`
+        | `${string}&&machine$$then`
+        | `machine$$catch&&${string}`
+        | `${string}&&machine$$catch`
+      > & {
+        else: `else&&else` extends keyof TU ? TU[`else&&else`] : never;
+      }
+    : never;
+
+export type FnMap<
+  E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
->(params: {
-  events: E;
-  fn: FnMap<E, Pc, Tc, R>;
-}) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R | undefined;
+> =
+  | ((pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R)
+  | _FnMap<E, Pc, Tc, R>;
+
+export type EventsMapFromFn<F extends FnMap> =
+  F extends FnMap<infer P> ? P : never;
+
+export type ExtractPrivateFromFn<F extends FnMap> =
+  F extends FnMap<any, infer Pc> ? Pc : never;
+
+export type ExtractContextFromFn<F extends FnMap> =
+  F extends FnMap<any, any, infer Tc> ? Tc : never;
+
+export type ExtractReturnFromFn<F extends FnMap> =
+  F extends FnMap<any, any, any, infer R> ? R : never;
+
+export type RecordS<T> = Record<string, T>;
+
+export type Keys<T> = keyof NotUndefined<T>;
+
+export type ValuesOf<T> = NotUndefined<
+  NotUndefined<T>[keyof NotUndefined<T>]
+>;
+
+export type StateMap = {
+  states?: Record<string, StateMap>;
+  type: StateType;
+  id: string;
+};
+
+export type KeyU<S extends string> = Record<S, unknown>;
