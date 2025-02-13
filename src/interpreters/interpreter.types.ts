@@ -20,8 +20,9 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '~transitions';
-import type { FnMap, PrimitiveObject } from '~types';
+import type { FnMapReduced, PrimitiveObject } from '~types';
 import type { Interpreter } from './interpreter';
+import type { Subscriber } from './subscriber';
 
 export type WorkingStatus =
   | 'idle'
@@ -197,6 +198,5 @@ export type _Send_F<
 
 export type AddSubscriber_F<
   E extends EventsMap = EventsMap,
-  Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (...subscribers: FnMap<E, Pc, Tc>[]) => void;
+> = (subscriber: FnMapReduced<E, Tc>) => Subscriber<E, Tc>;

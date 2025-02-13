@@ -1,5 +1,6 @@
 import { t } from '@bemedev/types';
 import type { StateValue } from '~states';
+import { nothing } from '~utils';
 import { interpretTest } from '../interpreterTest';
 import { DELAY, fakeDB, machine2 } from './activities.test.data';
 import { fakeWaiter } from './fixtures';
@@ -11,9 +12,17 @@ beforeAll(() => {
 const TEXT = 'Activities Integration Test';
 
 describe(TEXT, () => {
+  // #region Config
+
   const service = interpretTest(machine2, {
     pContext: {},
     context: { iterator: 0, input: '', data: [] },
+  });
+
+  const subscriber = service.addSubscriber({
+    WRITE: (_, { value }) => console.log('WRITE with', ':', `"${value}"`),
+    NEXT: () => console.log('NEXT time, you will see!!'),
+    else: nothing,
   });
 
   const log = vi.spyOn(console, 'log');
@@ -22,12 +31,15 @@ describe(TEXT, () => {
     console.time(TEXT);
   });
 
-  // #region Hooks
   type SE = Parameters<typeof service.send>[0];
 
   const INPUT = 'a';
 
   const FAKES = fakeDB.filter(({ name }) => name.includes(INPUT));
+
+  const strings: (string | string[])[] = [];
+
+  // #region Hooks
 
   const useSend = (event: SE, index: number) => {
     const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
@@ -91,6 +103,38 @@ describe(TEXT, () => {
 
     return t.tuple(invite, func);
   };
+
+  const useConsole = (
+    index: number,
+    ..._strings: (string | string[])[]
+  ) => {
+    const inviteStrict = `#02 => Check strict string`;
+
+    const strict = () => {
+      const calls = strings.map(data => [data].flat());
+      const check = _strings.length > 0;
+      if (check) {
+        expect(log.mock.calls).toStrictEqual(calls);
+      }
+    };
+
+    const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
+
+    const length = () => {
+      strings.push(..._strings);
+      expect(log.mock.calls.length).toBe(strings.length);
+    };
+
+    const invite = `#${index < 10 ? '0' + index : index} => Check the console`;
+    const func = () => {
+      test(inviteLength, length);
+      test(inviteStrict, strict);
+    };
+
+    return t.tuple(invite, func);
+  };
+  // #endregion
+
   // #endregion
 
   test('#00 => Start the machine', () => {
@@ -102,11 +146,12 @@ describe(TEXT, () => {
   describe('#02 => Check the service', () => {
     test(...useState('idle', 1));
     test(...useIterator(6, 2));
+    describe(...useConsole(3));
   });
 
   test(...useSend('NEXT', 3));
 
-  describe('#04 => Check the service', () => {
+  describe('#05 => Check the service', () => {
     test(
       ...useState(
         {
@@ -120,11 +165,17 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(6, 2));
+
+    describe(...useConsole(3, 'NEXT time, you will see!!'));
   });
 
   test(...useWaiter(6, 5));
 
-  test(...useIterator(18, 6));
+  describe('#06 => Check the service', () => {
+    test(...useIterator(18, 1));
+
+    describe(...useConsole(2, ...Array(6).fill('sendPanelToUser')));
+  });
 
   test('#07 => pause', service.pause.bind(service));
 
@@ -142,6 +193,8 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(18, 2));
+
+    describe(...useConsole(3));
   });
 
   test(...useWaiter(6, 9));
@@ -160,6 +213,8 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(18, 2));
+
+    describe(...useConsole(3));
   });
 
   test('#11 => resume', service.resume.bind(service));
@@ -180,6 +235,8 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(42, 2));
+
+    describe(...useConsole(3, ...Array(12).fill('sendPanelToUser')));
   });
 
   test(...useWrite('', 14));
@@ -200,6 +257,8 @@ describe(TEXT, () => {
     test(...useIterator(42, 2));
 
     test(...useInput('', 3));
+
+    describe(...useConsole(4, ['WRITE with', ':', '""']));
   });
 
   test(...useWaiter(12, 16));
@@ -220,6 +279,18 @@ describe(TEXT, () => {
     test(...useIterator(66, 2));
 
     test(...useInput('', 3));
+
+    describe(
+      ...useConsole(
+        4,
+        ...Array(24)
+          .fill(0)
+          .map((_, index) => {
+            const isEven = index % 2 === 0;
+            return isEven ? 'sendPanelToUser' : 'Input, please !!';
+          }),
+      ),
+    );
   });
 
   test(...useWrite(INPUT, 18));
@@ -240,6 +311,8 @@ describe(TEXT, () => {
     test(...useIterator(66, 2));
 
     test(...useInput('', 3));
+
+    describe(...useConsole(4, ['WRITE with', ':', `"${INPUT}"`]));
   });
 
   test(...useWaiter(12, 20));
@@ -260,11 +333,15 @@ describe(TEXT, () => {
     test(...useIterator(90, 2));
 
     test(...useInput('', 3));
+
+    describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
   });
 
-  test(...useWrite(INPUT, 22));
+  test('#22 => Close the subscriber', subscriber.close.bind(subscriber));
 
-  describe('#23 => Check the service', () => {
+  test(...useWrite(INPUT, 23));
+
+  describe('#24 => Check the service', () => {
     test(
       ...useState(
         {
@@ -280,11 +357,13 @@ describe(TEXT, () => {
     test(...useIterator(90, 2));
 
     test(...useInput(INPUT, 3));
+
+    describe(...useConsole(4, 'nothing call nothing'));
   });
 
-  test(...useWaiter(6, 24));
+  test(...useWaiter(6, 25));
 
-  describe('#25 => Check the service', () => {
+  describe('#26 => Check the service', () => {
     test(
       ...useState(
         {
@@ -302,11 +381,11 @@ describe(TEXT, () => {
     test(...useInput(INPUT, 3));
 
     describe(...useData(4));
+
+    describe(...useConsole(5, ...Array(6).fill('sendPanelToUser')));
   });
 
-  test(...useSend('FETCH', 26));
-
-  test('#27 => Await the fetch', () => fakeWaiter());
+  test(...useSend('FETCH', 27));
 
   describe('#28 => Check the service', () => {
     test(
@@ -326,11 +405,37 @@ describe(TEXT, () => {
     test(...useInput(INPUT, 3));
 
     describe(...useData(4, ...FAKES));
+
+    describe(...useConsole(5, ...Array(2).fill('nothing call nothing')));
   });
 
-  test(...useWaiter(6, 29));
+  test('#29 => Await the fetch', () => fakeWaiter());
 
   describe('#30 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'input',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(102, 2));
+
+    test(...useInput(INPUT, 3));
+
+    describe(...useData(4, ...FAKES));
+
+    describe(...useConsole(5));
+  });
+
+  test(...useWaiter(6, 31));
+
+  describe('#32 => Check the service', () => {
     test(
       ...useState(
         {
@@ -348,13 +453,29 @@ describe(TEXT, () => {
     test(...useInput(INPUT, 3));
 
     describe(...useData(4, ...FAKES));
+
+    describe(...useConsole(5, ...Array(6).fill('sendPanelToUser')));
   });
 
-  test('#31 => Close the service', async () => {
-    service.pause();
-    expect(service.intervalsArePaused).toBe(true);
+  describe('#33 => Close the service', async () => {
+    test('#01 => Pause the service', service.pause.bind(service));
 
-    expect(log).toBeCalledTimes(66);
-    console.timeEnd(TEXT);
+    test('#02 => All intervals are paused', () => {
+      expect(service.intervalsArePaused).toBe(true);
+    });
+
+    describe('#02 => Calls of log', () => {
+      test('#01 => Length of calls of log is the same of length of strings', () => {
+        expect(log).toBeCalledTimes(strings.length);
+      });
+
+      test('#02 => Log is called "72" times', () => {
+        expect(log).toBeCalledTimes(72);
+      });
+    });
+
+    test('#03 => Log the time of all tests', () => {
+      console.timeEnd(TEXT);
+    });
   });
 });

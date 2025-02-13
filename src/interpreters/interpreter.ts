@@ -1,7 +1,7 @@
 import { isDefined, partialCall } from '@bemedev/basifun';
 import { decomposeSV } from '@bemedev/decompose';
 import sleep from '@bemedev/sleep';
-import { t, type Fn } from '@bemedev/types';
+import { t } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import { deepmergeCustom } from 'deepmerge-ts';
 import equal from 'fast-deep-equal';
@@ -79,7 +79,6 @@ import {
 } from '~types';
 import {
   createInterval,
-  reduceFnMap,
   replaceAll,
   toArray,
   type CreateInterval2_F,
@@ -105,6 +104,7 @@ import type {
   WorkingStatus,
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
+import { createSubscriber, type Subscriber } from './subscriber';
 
 declare module 'deepmerge-ts' {
   interface DeepMergeFunctionURItoKind<
@@ -269,8 +269,19 @@ export class Interpreter<
     });
   };
 
+  flushSubscribers = () => {
+    const context = cloneDeep(this.#context);
+    const event = structuredClone(this.#event);
+    this.#subscribers.values().forEach(f => {
+      const callback = () => f.reduced(context, event);
+
+      this.#scheduler.schedule(callback);
+    });
+  };
+
   protected next = async () => {
     const previousValue = this.#value;
+    this.flushSubscribers();
 
     this.#rinitIntervals();
     this.#performActivities();
@@ -1091,15 +1102,15 @@ export class Interpreter<
     }
   };
 
-  #subscribers = new Set<Fn<[Pc, Tc, ToEvents<E>]>>();
+  #subscribers = new Set<Subscriber<E, Tc>>();
 
-  addSubscriber: AddSubscriber_F<E, Pc, Tc> = (...subscribers) => {
+  addSubscriber: AddSubscriber_F<E, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
 
-    subscribers.forEach(subscriber => {
-      const func = reduceFnMap(eventsMap, subscriber);
-      this.#subscribers.add(func);
-    });
+    const subcriber = createSubscriber(eventsMap, _subscriber);
+    this.#subscribers.add(subcriber);
+
+    return subcriber;
   };
   // #endregion
 

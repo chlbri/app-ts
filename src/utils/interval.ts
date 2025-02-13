@@ -7,10 +7,12 @@ type Params = {
   forTest?: boolean;
 };
 
+export type TimerState = 'idle' | 'active' | 'paused';
+
 class IntervalTimer {
   #timerId: NodeJS.Timeout | undefined = undefined;
 
-  #state: 'idle' | 'active' | 'paused' = 'idle';
+  #state: TimerState = 'idle';
 
   #remaining = 0;
   #startTime!: number;

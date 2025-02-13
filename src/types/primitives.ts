@@ -318,6 +318,26 @@ type _FnMap<
       machine$$catch?: (pContext: Pc, context: Tc, events: any) => R;
     });
 
+export type _FnMapR<
+  E extends EventsMap = EventsMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  R = any,
+> =
+  | ({
+      [key in keyof E]: (context: Tc, payload: E[key]) => R;
+    } & {
+      else?: (context: Tc, eventsMap: ToEvents<E>) => R;
+      machine$$then: (context: Tc, events: any) => R;
+      machine$$catch: (context: Tc, events: any) => R;
+    })
+  | ({
+      [key in keyof E]?: (context: Tc, payload: E[key]) => R;
+    } & {
+      else: (context: Tc, eventsMap: ToEvents<E>) => R;
+      machine$$then?: (context: Tc, events: any) => R;
+      machine$$catch?: (context: Tc, events: any) => R;
+    });
+
 export const MAP_CONCATENER = '&&';
 
 export type MapConcatener = typeof MAP_CONCATENER;
@@ -370,6 +390,12 @@ export type FnMap<
 > =
   | ((pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R)
   | _FnMap<E, Pc, Tc, R>;
+
+export type FnMapReduced<
+  E extends EventsMap = EventsMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  R = any,
+> = ((context: Tc, eventsMap: ToEvents<E>) => R) | _FnMapR<E, Tc, R>;
 
 export type EventsMapFromFn<F extends FnMap> =
   F extends FnMap<infer P> ? P : never;

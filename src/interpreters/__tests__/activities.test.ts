@@ -1,3 +1,4 @@
+import { nothing } from '~utils';
 import { interpretTest } from '../interpreterTest';
 import { DELAY, fakeDB, machine1, machine2 } from './activities.test.data';
 import { fakeWaiter } from './fixtures';
@@ -19,6 +20,11 @@ describe(TEST_1, () => {
   const service = interpretTest(machine1, {
     pContext: {},
     context: { iterator: 0 },
+  });
+
+  service.addSubscriber({
+    NEXT: () => console.log('Subscribe to my channel !!'),
+    else: nothing,
   });
 
   test('#00 => start the service', () => {
@@ -53,7 +59,23 @@ describe(TEST_1, () => {
     expect(service.context.iterator).toBe(10);
   });
 
-  test('#06 => Pause the service', () => {
+  test('#06 => Send NEXT again and await 3 times -> iterator = 10, remains the same', async () => {
+    service.send('NEXT');
+    await fakeWaiter(DELAY, 3);
+    expect(service.context.iterator).toBe(10);
+  });
+
+  describe('#08 => Log is only call one time', () => {
+    test('#01 => console.log is called', () => {
+      expect(log).toBeCalledTimes(1);
+    });
+
+    test('#03 => console.log is called with "Subscribe to my channel !!"', () => {
+      expect(log).toHaveBeenNthCalledWith(1, 'Subscribe to my channel !!');
+    });
+  });
+
+  test('#07 => Pause the service', () => {
     service.pause();
     console.timeEnd(TEST_1);
   });
