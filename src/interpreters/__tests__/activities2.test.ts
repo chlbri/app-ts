@@ -1,12 +1,12 @@
 import { t } from '@bemedev/types';
 import type { StateValue } from '~states';
-import { nothing } from '~utils';
+import { isCI, nothing } from '~utils';
 import { interpretTest } from '../interpreterTest';
 import { DELAY, fakeDB, machine2 } from './activities.test.data';
 import { fakeWaiter } from './fixtures';
 
 beforeAll(() => {
-  vi.useFakeTimers();
+  if (!isCI) vi.useFakeTimers();
 });
 
 const TEXT = 'Activities Integration Test';
