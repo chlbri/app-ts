@@ -286,7 +286,8 @@ export class Interpreter<
   };
 
   flushSubscribers = () => {
-    this.#subscribers.values().forEach(this.#scheduleSubscriber);
+    const subscribers = Array.from(this.#subscribers);
+    subscribers.forEach(this.#scheduleSubscriber);
   };
 
   protected next = async () => {
