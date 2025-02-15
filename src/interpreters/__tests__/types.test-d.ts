@@ -34,25 +34,36 @@ expectTypeOf<TTC>().toEqualTypeOf<{
 
 type TTEm = EventsMapFrom<Machine1>;
 expectTypeOf<TTEm>().toEqualTypeOf<{
-  AUTH: {
+  EVENT: {
     password: string;
     username: string;
   };
-  SEND: string;
+  EVENT2: boolean;
+  EVENT3: {
+    login: string;
+    pwd: string;
+  };
 }>();
 
 type TTE = EventsFrom<Machine1>;
 expectTypeOf<TTE>().toEqualTypeOf<
   | {
-      type: 'AUTH';
+      type: 'EVENT';
       payload: {
         password: string;
         username: string;
       };
     }
   | {
-      type: 'SEND';
-      payload: string;
+      type: 'EVENT3';
+      payload: {
+        login: string;
+        pwd: string;
+      };
+    }
+  | {
+      type: 'EVENT2';
+      payload: boolean;
     }
   | InitEvent
   | AlwaysEvent

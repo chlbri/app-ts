@@ -1,9 +1,15 @@
-import type { Fn, NotUndefined } from '@bemedev/types';
+import type { Decompose } from '@bemedev/decompose';
+import type {
+  DeepPartial,
+  Fn,
+  NotUndefined,
+  Primitive,
+  Ru,
+} from '@bemedev/types';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
 import type { Delay } from '~delays';
 import type { EventsMap, ToEvents } from '~events';
 import type { PredicateS } from '~guards';
-import type { InterpreterFrom } from '~interpreters';
 import type { AnyMachine } from '~machine';
 import type {
   ActivityConfig,
@@ -26,12 +32,15 @@ import type {
 } from '~transitions';
 import type {
   ConcatFnMap,
+  Describer,
   FnMap,
   FnMap2,
   KeyU,
   PrimitiveObject,
+  PrimitiveObjectMap,
   RecordS,
   ReduceArray,
+  SingleOrArrayL,
   SingleOrArrayR,
   SubType,
 } from '~types';
@@ -42,8 +51,10 @@ export type ConfigNodeWithInitials =
   | NodeConfigCompoundWithInitials
   | NodeConfigParallelWithInitials;
 
+export type MachineConfig = (Describer & { id?: string }) | string;
+
 export type Config = ConfigNode & {
-  readonly machines?: SingleOrArrayR<ActionConfig>;
+  readonly machines?: SingleOrArrayL<MachineConfig>;
   readonly strict?: boolean;
 };
 
@@ -104,6 +115,10 @@ type _GetKeySrcFromFlat<Flat extends FlatMapN> = {
     : never;
 }[keyof Flat];
 
+type _GetEventsFromFlat<Flat extends FlatMapN> = {
+  [key in keyof Flat]: Flat[key] extends { on: infer V } ? keyof V : never;
+}[keyof Flat];
+
 type _GetKeyDelaysFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]:
     | ExtractDelaysFromTransitions<Extract<Flat[key], TransitionsConfig>>
@@ -142,9 +157,78 @@ export type GetDelaysFromFlat<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Record<_GetKeyDelaysFromFlat<Flat>, Delay<E, Pc, Tc>>;
 
+export type GetEventsFromFlat<Flat extends FlatMapN> = Record<
+  _GetEventsFromFlat<Flat>,
+  PrimitiveObject
+>;
+
+export type GetEventsFromConfig<C extends Config> = GetEventsFromFlat<
+  FlatMapN<C>
+>;
+
+export type GetEventsFromMachine<T extends KeyU<'preConfig'>> =
+  GetEventsFromConfig<ConfigFrom<T>>;
+
 export type GetMachineKeysFromConfig<C extends Config> = FromActionConfig<
   ReduceArray<NotUndefined<C['machines']>>
 >;
+
+type _KeysMatchingContext<T extends PrimitiveObjectMap> = T extends object
+  ? Decompose<T>
+  : T;
+
+export type KeysMatchingContext<T extends PrimitiveObjectMap> = Extract<
+  _KeysMatchingContext<T>,
+  string | number
+>;
+
+type HeritageMap<U extends Ru, Tc extends Ru> =
+  Decompose<U> extends infer KU extends object
+    ? {
+        [key in keyof KU]?: Decompose<Tc> extends infer KT extends object
+          ? SingleOrArrayL<keyof SubType<KT, KU[key]>>
+          : never;
+      }
+    : never;
+
+export type Subscriber<
+  E extends EventsMap = EventsMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  U extends KeyU<'preConfig' | 'context'> = AnyMachine,
+> = {
+  events:
+    | SingleOrArrayL<{
+        [key in keyof GetEventsFromMachine<U>]?: SingleOrArrayL<keyof E>;
+      }>
+    | 'allEvents'
+    | 'full';
+  contexts: ContextFrom<U> extends infer CU
+    ? CU extends Ru
+      ? Tc extends Ru
+        ? SingleOrArrayL<HeritageMap<CU, Tc>>
+        : never
+      : CU extends Primitive
+        ? Tc extends CU
+          ? true
+          : Tc extends infer Tc1 extends Ru
+            ? SingleOrArrayL<keyof SubType<Decompose<Tc1>, CU>>
+            : never
+        : never
+    : never;
+};
+
+export type ChildS<
+  E extends EventsMap = EventsMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends AnyMachine = AnyMachine,
+> = {
+  machine: T;
+  initials: {
+    pContext: PrivateContextFrom<T>;
+    context: ContextFrom<T>;
+  };
+  subscribers: SingleOrArrayL<Subscriber<E, Tc, T>>;
+};
 
 export type Subscriber2<
   E extends EventsMap = EventsMap,
@@ -153,15 +237,19 @@ export type Subscriber2<
     'eventsMap' | 'pContext' | 'context'
   >,
 > =
-  | ConcatFnMap<FnMap2<E, Tc, Tc>, FnMapFrom2<U>>
-  | ConcatFnMap<FnMap2<E, Tc, Tc>, FnMapFrom2<U>>['else'];
+  | ConcatFnMap<FnMap2<E, Tc, DeepPartial<Tc>>, FnMapFrom2<U>>
+  | ConcatFnMap<FnMap2<E, Tc, DeepPartial<Tc>>, FnMapFrom2<U>>['else'];
 
 export type Child<
   E extends EventsMap = EventsMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends AnyMachine = AnyMachine,
 > = {
-  service: InterpreterFrom<T>;
+  machine: T;
+  initials: {
+    pContext: PrivateContextFrom<T>;
+    context: ContextFrom<T>;
+  };
   subscriber: Subscriber2<E, Tc, T>;
 };
 
@@ -188,7 +276,7 @@ export type GetMachinesFromConfig<
   C extends Config,
   E extends EventsMap = EventsMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<GetMachineKeysFromConfig<C>, Child<E, Tc>>;
+> = Record<GetMachineKeysFromConfig<C>, ChildS<E, Tc>>;
 
 export type MachineOptions<
   C extends Config = Config,
@@ -202,20 +290,32 @@ export type MachineOptions<
   predicates?: Partial<GetGuardsFromFlat<Flat, E, Pc, Tc>>;
   promises?: Partial<GetSrcFromFlat<Flat, E, Pc, Tc>>;
   delays?: Partial<GetDelaysFromFlat<Flat, E, Pc, Tc>>;
-  services?: Partial<GetMachinesFromConfig<C, E, Tc>>;
+  machines?: Partial<GetMachinesFromConfig<C, E, Tc>>;
 };
 
-export type MachineOptionsFrom<T extends KeyU<'mo'>> = T['mo'];
+export type MachineOptionsFrom<T extends KeyU<'mo'>> = Extract<
+  T['mo'],
+  SimpleMachineOptions2
+>;
 
 export type MoF<T extends KeyU<'mo'>> = MachineOptionsFrom<T>;
 
-export type ConfigFrom<T extends KeyU<'preConfig'>> = T['preConfig'];
+export type ConfigFrom<T extends KeyU<'preConfig'>> = Extract<
+  T['preConfig'],
+  Config
+>;
 
 export type PrivateContextFrom<T extends KeyU<'pContext'>> = T['pContext'];
 
-export type ContextFrom<T extends KeyU<'context'>> = T['context'];
+export type ContextFrom<T extends KeyU<'context'>> = Extract<
+  T['context'],
+  PrimitiveObject
+>;
 
-export type EventsMapFrom<T extends KeyU<'eventsMap'>> = T['eventsMap'];
+export type EventsMapFrom<T extends KeyU<'eventsMap'>> = Extract<
+  T['eventsMap'],
+  EventsMap
+>;
 
 export type EventsFrom<T extends KeyU<'events'>> = T['events'];
 
@@ -273,7 +373,7 @@ export type SimpleMachineOptions<
   predicates?: Partial<RecordS<PredicateS<E, Pc, Tc>>>;
   promises?: Partial<RecordS<PromiseFunction<E, Pc, Tc>>>;
   delays?: Partial<RecordS<Delay<E, Pc, Tc>>>;
-  services?: Partial<RecordS<any>>;
+  machines?: Partial<RecordS<any>>;
 };
 
 export type SimpleMachineOptions2 = {
@@ -282,7 +382,7 @@ export type SimpleMachineOptions2 = {
   predicates?: any;
   promises?: any;
   delays?: any;
-  services?: any;
+  machines?: any;
 };
 
 export type PromiseFunction<
@@ -300,4 +400,4 @@ export type PromiseFunction2<
 export type MachineMap<
   E extends EventsMap = EventsMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<Record<string, Child<E, Tc>>>;
+> = Partial<Record<string, ChildS<E, Tc>>>;

@@ -35,7 +35,7 @@ export type Elements<
   guards?: Mo['predicates'];
   delays?: Mo['delays'];
   promises?: Mo['promises'];
-  machines?: Mo['services'];
+  machines?: Mo['machines'];
 };
 
 export type GetIO_F = (

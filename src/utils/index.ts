@@ -3,6 +3,7 @@ export * from './asyncNothing';
 export * from './describer';
 export * from './environment';
 export * from './interval';
+export * from './merge';
 export * from './nothing';
 export * from './objects';
 export * from './reduceFnMap';

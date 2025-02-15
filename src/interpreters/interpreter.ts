@@ -1,9 +1,9 @@
 import { isDefined, partialCall } from '@bemedev/basifun';
+import type { SingleOrArray } from '@bemedev/boolean-recursive';
 import { decomposeSV } from '@bemedev/decompose';
 import sleep from '@bemedev/sleep';
-import { t } from '@bemedev/types';
+import { t, type Fn } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
-import { deepmergeCustom } from 'deepmerge-ts';
 import equal from 'fast-deep-equal';
 import {
   toAction,
@@ -34,12 +34,17 @@ import {
   type Machine,
 } from '~machine';
 import {
+  getByKey,
+  mergeByKey,
+  reduceEvents,
   toMachine,
   type Child,
+  type ChildS,
   type Config,
   type ConfigFrom,
   type ContextFrom,
   type EventsMapFrom,
+  type GetEventsFromConfig,
   type MachineOptions,
   type MachineOptionsFrom,
   type PrivateContextFrom,
@@ -79,6 +84,7 @@ import {
 } from '~types';
 import {
   createInterval,
+  merge,
   replaceAll,
   toArray,
   type CreateInterval2_F,
@@ -106,33 +112,11 @@ import type {
 import { Scheduler } from './scheduler';
 import { createSubscriber, type Subscriber } from './subscriber';
 
-declare module 'deepmerge-ts' {
-  interface DeepMergeFunctionURItoKind<
-    Ts extends Readonly<ReadonlyArray<unknown>>,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Fs extends DeepMergeFunctionsURIs,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    M,
-  > {
-    readonly FilterUndefined: FilterOut<Ts, null | undefined>;
-  }
-}
-
-const merge = deepmergeCustom<
-  unknown,
-  {
-    DeepMergeArraysURI: 'DeepMergeLeafURI';
-    DeepMergeFilterValuesURI: 'FilterUndefined';
-  }
->({
-  mergeArrays: false,
-});
-
 export class Interpreter<
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  E extends EventsMap = EventsMap,
+  E extends EventsMap = GetEventsFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
 > {
   #machine: Machine<C, Pc, Tc, E, Mo>;
@@ -152,10 +136,29 @@ export class Interpreter<
   #pContext!: Pc;
   #context!: Tc;
   #scheduler: Scheduler;
+  get #childrenMachines() {
+    const _machines = toArray.typed(this.#machine.preConfig.machines);
+    return _machines.map(this.toMachine).filter(isDefined);
+  }
+  #childrenServices: AnyInterpreter[] = [];
+
+  id?: string;
 
   // get #canBeStoped() {
   //   return this.#status === 'working';
   // }
+
+  // #region Type getters
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
+  get mo() {
+    return this.#machine.mo;
+  }
+
+  // #endregion
 
   get mode() {
     return this.#mode;
@@ -259,6 +262,7 @@ export class Interpreter<
   start = async () => {
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
+    this.#performMachines();
     await this.next();
   };
 
@@ -983,6 +987,16 @@ export class Interpreter<
     this.#scheduler.schedule(cb);
   };
 
+  #performMachines = () => {
+    this.#childrenMachines.forEach(child => {
+      this.#reduceSubscribe(child);
+    });
+
+    this.#childrenServices.forEach(child => {
+      child.start();
+    });
+  };
+
   #performStartTransitions = async () => {
     this.#status = 'busy';
     const promises: (() => Promise<void>)[] = [];
@@ -1102,10 +1116,10 @@ export class Interpreter<
     }
   };
 
-  addServices = (key: Keys<Mo['services']>, machine: Child<E, Tc>) => {
+  addMachine = (key: Keys<Mo['machines']>, machine: Child<E, Tc>) => {
     if (this.#canAct) {
       const out = { [key]: machine };
-      this.#machine.addServices(out);
+      this.#machine.addMachines(out);
     }
   };
 
@@ -1346,10 +1360,101 @@ export class Interpreter<
   };
 
   toMachine = (machine: ActionConfig) => {
-    const eventsMap = this.#machine.eventsMap;
     const machines = this.#machine.machines;
 
-    return toMachine(eventsMap, machine, machines);
+    return toMachine<E, Tc>(machine, machines);
+  };
+
+  protected createChild: Fn = interpret;
+
+  #reduceSubscribe = <T extends AnyMachine = AnyMachine>(
+    { subscribers, machine, initials }: ChildS<E, Tc, T>,
+    id?: string,
+  ) => {
+    let service = t.anify<InterpreterFrom<T>>(
+      this.#childrenServices.find(f => f.id === id),
+    );
+
+    if (!service) {
+      service = this.createChild(machine as any, initials);
+
+      if (id) service.id = id;
+    }
+
+    // const service;
+
+    this.#childrenServices.push(service as any);
+    // const _subscribers = toArray.typed(subscribers);
+
+    const subscriber = this.addSubscriber((_, events1) => {
+      const check1 = typeof events1 === 'string';
+      if (check1) return;
+
+      // const event = events1.type;
+
+      let callback = t.anify<() => void>();
+      const _subscribers = toArray.typed(subscribers);
+      _subscribers.forEach(({ contexts, events }) => {
+        const checkContexts = contexts === true;
+
+        const events2 = service.event;
+        const check2 = typeof events2 === 'string';
+        if (check2) return;
+
+        const checkEvents = reduceEvents(
+          events as any,
+          events2.type,
+          events1.type,
+        );
+
+        if (checkEvents) {
+          if (checkContexts) {
+            callback = () => (this.#context = service.context as any);
+          } else {
+            const _contexts = contexts as SingleOrArray<
+              string | Record<string, string | string[]>
+            >;
+            const contexts2 = toArray.typed(_contexts);
+
+            contexts2.forEach(context => {
+              if (typeof context === 'string') {
+                const merger = mergeByKey(this.#context)(
+                  context,
+                  service.context,
+                );
+                callback = () =>
+                  (this.#context = merge(this.#context, merger) as any);
+              } else {
+                const entries = Object.entries(context).map(
+                  ([key, value]) => {
+                    const values = toArray.typed(value);
+                    return t.tuple(key, values);
+                  },
+                );
+
+                entries.forEach(([key, values]) => {
+                  values.forEach(value => {
+                    const merger = mergeByKey(this.#context)(
+                      key,
+                      getByKey(service.context, value),
+                    );
+                    callback = () =>
+                      (this.#context = merge(
+                        this.#context,
+                        merger,
+                      ) as any);
+                  });
+                });
+              }
+            });
+          }
+        }
+      });
+
+      if (callback) this.#scheduler.schedule(callback);
+    });
+
+    return subscriber;
   };
 
   [Symbol.dispose] = () => {
@@ -1357,13 +1462,54 @@ export class Interpreter<
   };
 }
 
-export type AnyInterpreter = Interpreter<
-  Config,
-  any,
-  PrimitiveObject,
-  any,
-  SimpleMachineOptions2
->;
+export type AnyInterpreter = {
+  mode: Mode;
+  event: ToEvents<any>;
+  eventsMap: EventsMap;
+  initialNode: Node<any, any, any>;
+  node: Node<any, any, any>;
+  makeStrict: () => void;
+  makeStrictest: () => void;
+  status: WorkingStatus;
+  initialConfig: NodeConfigWithInitials;
+  initialValue: StateValue;
+  config: NodeConfigWithInitials;
+  renew: Interpreter<any, any, any, any, any>;
+  value: StateValue;
+  context: any;
+  start: () => Promise<void>;
+  pause: () => void;
+  resume: () => void;
+  stop: () => void;
+  providePrivateContext: (pContext: any) => AnyMachine;
+  ppC: (pContext: any) => AnyMachine;
+  provideContext: (context: any) => AnyMachine;
+  addAction: (key: string, action: Action<any, any, any>) => void;
+  addGuard: (key: string, guard: PredicateS<any, any, any>) => void;
+  addPromise: (
+    key: string,
+    promise: PromiseFunction<any, any, any>,
+  ) => void;
+  addDelay: (key: string, delay: Delay<any, any, any>) => void;
+  addMachine: (key: string, machine: Child<any, any>) => void;
+  addSubscriber: AddSubscriber_F<any, any>;
+  errorsCollector: Set<string>;
+  warningsCollector: Set<string>;
+  send: (event: EventArg<any>) => Promise<void>;
+  canEvent: (eventS: string) => boolean;
+  possibleEvents: string[];
+  flushSubscribers: () => void;
+  toAction: (action: ActionConfig) => Action<any, any, any> | undefined;
+  toPredicate: (
+    guard: GuardConfig,
+  ) => PredicateS<any, any, any> | undefined;
+  toPromiseSrc: (
+    src: string,
+  ) => PromiseFunction<any, any, any> | undefined;
+  toDelay: (delay?: string) => Delay<any, any, any> | undefined;
+  toMachine: (machine: ActionConfig) => AnyMachine | undefined;
+  id?: string;
+};
 
 export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   ConfigFrom<M>,

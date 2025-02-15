@@ -1,6 +1,17 @@
 import type { Fn } from '@bemedev/types';
-import type { machine2 } from 'src/interpreters/__tests__/activities.test.data';
-import type { FnMapFrom2, Subscriber2 } from './types';
+import type {
+  machine1,
+  machine2,
+} from 'src/interpreters/__tests__/activities.test.data';
+import type { PrimitiveObject, Simplify, SingleOrArrayL } from '~types';
+import type {
+  ContextFrom,
+  EventsMapFrom,
+  FnMapFrom2,
+  GetEventsFromMachine,
+  Subscriber,
+  Subscriber2,
+} from './types';
 
 type TT2 = keyof FnMapFrom2<typeof machine2>;
 expectTypeOf<TT2>().toEqualTypeOf<
@@ -87,6 +98,39 @@ expectTypeOf<FT>().toMatchTypeOf<
       ),
     ],
   ) => {
-    data: string;
+    data?: string;
   }
 >();
+
+type GEFC1 = GetEventsFromMachine<typeof machine2>;
+expectTypeOf<GEFC1>().toMatchTypeOf<{
+  NEXT: PrimitiveObject;
+  FINISH: PrimitiveObject;
+  FETCH: PrimitiveObject;
+  WRITE: PrimitiveObject;
+}>();
+
+type Sub1 = Subscriber<
+  EventsMapFrom<typeof machine2>,
+  ContextFrom<typeof machine2>,
+  typeof machine1
+>;
+expectTypeOf<Sub1>().toEqualTypeOf<{
+  events:
+    | 'allEvents'
+    | 'full'
+    | SingleOrArrayL<{
+        NEXT?: SingleOrArrayL<'NEXT' | 'FINISH' | 'FETCH' | 'WRITE'>;
+      }>;
+  contexts: SingleOrArrayL<{
+    iterator?: SingleOrArrayL<'iterator'>;
+  }>;
+}>();
+
+type Sub2 = Simplify<
+  Subscriber<{}, string, { preConfig: unknown; context: string }>
+>;
+expectTypeOf<Sub2>().toEqualTypeOf<{
+  events: 'allEvents' | 'full' | SingleOrArrayL<{}>;
+  contexts: true;
+}>();

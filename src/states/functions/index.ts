@@ -1,4 +1,4 @@
-export * from '../../machine/create';
+export * from '../../machine/functions/create';
 export * from './checks';
 export * from './flatMap';
 export * from './getChildren';

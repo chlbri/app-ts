@@ -5,6 +5,7 @@ import type { GuardConfig, PredicateS2 } from '~guards';
 import type { Machine } from '~machine';
 import type {
   Config,
+  GetEventsFromConfig,
   MachineOptions,
   PromiseFunction2,
   SimpleMachineOptions2,
@@ -40,7 +41,7 @@ export type Interpreter_F = <
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  E extends EventsMap = EventsMap,
+  E extends EventsMap = GetEventsFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
 >(
   machine: Machine<C, Pc, Tc, E, Mo>,

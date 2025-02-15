@@ -93,7 +93,7 @@ export type Define<T, U> = T extends undefined
     ? NotUndefined<T>
     : T;
 
-interface PrimitiveObjectMap {
+export interface PrimitiveObjectMap {
   readonly [key: string]: SingleOrArray<PrimitiveObject>;
 }
 
@@ -423,4 +423,6 @@ export type StateMap = {
   id: string;
 };
 
-export type KeyU<S extends string> = Record<S, unknown>;
+export type KeyU<S extends string, R = unknown> = Record<S, R>;
+
+export type KeyO<S extends string, R = unknown> = Partial<KeyU<S, R>>;

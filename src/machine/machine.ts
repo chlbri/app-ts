@@ -20,10 +20,11 @@ import {
   type NodeConfigWithInitials,
   type StateValue,
 } from '~states';
-import type { PrimitiveObject, RecordS } from '~types';
+import type { KeyU, PrimitiveObject, RecordS } from '~types';
 import type { Elements, GetIO2_F, GetIO_F } from './machine.types';
 import type {
   Config,
+  GetEventsFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
 } from './types';
@@ -32,10 +33,11 @@ class Machine<
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  E extends EventsMap = EventsMap,
+  E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
 > {
   #config: C;
+
   #flat: FlatMapN<C, true>;
   #eventsMap!: E;
 
@@ -118,7 +120,7 @@ class Machine<
 
   #promises?: Mo['promises'];
 
-  #machines?: Mo['services'];
+  #machines?: Mo['machines'];
 
   #initials!: Mo['initials'];
 
@@ -266,9 +268,9 @@ class Machine<
   providePromises = (promises?: Mo['promises']) =>
     this.#renew('promises', promises);
 
-  addServices = (machines?: Mo['services']) => (this.#machines = machines);
+  addMachines = (machines?: Mo['machines']) => (this.#machines = machines);
 
-  provideMachines = (machines?: Mo['services']) =>
+  provideMachines = (machines?: Mo['machines']) =>
     this.#renew('machines', machines);
 
   addOptions = (options?: NOmit<Mo, 'initials'>) => {
@@ -276,7 +278,7 @@ class Machine<
     this.addGuards(options?.predicates);
     this.addDelays(options?.delays);
     this.addPromises(options?.promises);
-    this.addServices(options?.services);
+    this.addMachines(options?.machines);
   };
 
   provideOptions = (
@@ -287,7 +289,7 @@ class Machine<
     out.addGuards(options?.predicates);
     out.addDelays(options?.delays);
     out.addPromises(options?.promises);
-    out.addServices(options?.services);
+    out.addMachines(options?.machines);
 
     return out;
   };
@@ -365,7 +367,7 @@ class Machine<
     out.addActions(actions);
     out.addDelays(delays);
     out.addPromises(promises);
-    out.addServices(machines);
+    out.addMachines(machines);
 
     return out;
   };
@@ -517,19 +519,75 @@ export const getExits: GetIO2_F = node => getIO(node, 'exit');
 
 export type { Machine };
 
-export type AnyMachine = Machine<
-  Config,
-  any,
-  PrimitiveObject,
-  any,
-  SimpleMachineOptions2
+// #region type AnyMachine
+export type AnyMachine = KeyU<
+  | 'eventsMap'
+  | 'mo'
+  | 'events'
+  | 'action'
+  | 'actionParams'
+  | 'guard'
+  | 'delay'
+  | 'promise'
+  | 'machine'
+  | 'actions'
+  | 'predicates'
+  | 'delays'
+  | 'promises'
+  | 'machines'
+  | 'initials'
+  | 'context'
+  | 'pContext'
+  | 'postConfig'
+  | 'postFlat'
+  | 'initialConfig'
+  | 'preConfig'
+  | 'preflat'
+  | 'postConfig'
+  | 'initials'
+  | 'context'
+  | 'pContext'
+  | 'actions'
+  | 'predicates'
+  | 'delays'
+  | 'promises'
+  | 'machines'
+  | 'postFlat'
+  | 'initialConfig'
+  | 'initialValue'
+  | 'errorsCollector'
+  | 'options'
+  | 'renew'
+  | 'providePrivateContext'
+  | 'provideContext'
+  | 'provideEvents'
+  | 'valueToConfig'
+  | 'toNode'
+  | 'start'
+  | 'addInitials'
+  | 'isInitial'
+  | 'retrieveParentFromInitial'
+  | 'provideInitials'
+  | 'addActions'
+  | 'provideActions'
+  | 'addGuards'
+  | 'provideGuards'
+  | 'addDelays'
+  | 'provideDelays'
+  | 'addPromises'
+  | 'providePromises'
+  | 'addMachines'
+  | 'provideMachines'
+  | 'addOptions'
+  | 'provideOptions'
 >;
+// #endregion
 
 type CreateMachine_F = <
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  EventM extends EventsMap = EventsMap,
+  EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, EventM, Pc, Tc>,
 >(
   config: C,

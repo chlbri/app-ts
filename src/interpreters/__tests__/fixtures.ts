@@ -86,11 +86,9 @@ export const machine1 = createMachine(
     pContext: { data: t.string },
     context: { age: t.number },
     eventsMap: {
-      AUTH: t.buildObject({
-        password: t.string,
-        username: t.string,
-      }),
-      SEND: t.string,
+      EVENT: { password: t.string, username: t.string },
+      EVENT2: t.boolean,
+      EVENT3: { login: t.string, pwd: t.string },
     },
   },
   { '/': 'state1', '/state1': 'state11', '/state1/state11': 'state111' },
