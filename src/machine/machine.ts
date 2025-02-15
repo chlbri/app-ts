@@ -118,7 +118,7 @@ class Machine<
 
   #promises?: Mo['promises'];
 
-  #machines?: Mo['machines'];
+  #machines?: Mo['services'];
 
   #initials!: Mo['initials'];
 
@@ -266,9 +266,9 @@ class Machine<
   providePromises = (promises?: Mo['promises']) =>
     this.#renew('promises', promises);
 
-  addMachines = (machines?: Mo['machines']) => (this.#machines = machines);
+  addServices = (machines?: Mo['services']) => (this.#machines = machines);
 
-  provideMachines = (machines?: Mo['machines']) =>
+  provideMachines = (machines?: Mo['services']) =>
     this.#renew('machines', machines);
 
   addOptions = (options?: NOmit<Mo, 'initials'>) => {
@@ -276,7 +276,7 @@ class Machine<
     this.addGuards(options?.predicates);
     this.addDelays(options?.delays);
     this.addPromises(options?.promises);
-    this.addMachines(options?.machines);
+    this.addServices(options?.services);
   };
 
   provideOptions = (
@@ -287,7 +287,7 @@ class Machine<
     out.addGuards(options?.predicates);
     out.addDelays(options?.delays);
     out.addPromises(options?.promises);
-    out.addMachines(options?.machines);
+    out.addServices(options?.services);
 
     return out;
   };
@@ -365,7 +365,7 @@ class Machine<
     out.addActions(actions);
     out.addDelays(delays);
     out.addPromises(promises);
-    out.addMachines(machines);
+    out.addServices(machines);
 
     return out;
   };

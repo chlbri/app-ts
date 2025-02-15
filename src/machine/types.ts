@@ -202,7 +202,7 @@ export type MachineOptions<
   predicates?: Partial<GetGuardsFromFlat<Flat, E, Pc, Tc>>;
   promises?: Partial<GetSrcFromFlat<Flat, E, Pc, Tc>>;
   delays?: Partial<GetDelaysFromFlat<Flat, E, Pc, Tc>>;
-  machines?: Partial<GetMachinesFromConfig<C, E, Tc>>;
+  services?: Partial<GetMachinesFromConfig<C, E, Tc>>;
 };
 
 export type MachineOptionsFrom<T extends KeyU<'mo'>> = T['mo'];
@@ -273,7 +273,7 @@ export type SimpleMachineOptions<
   predicates?: Partial<RecordS<PredicateS<E, Pc, Tc>>>;
   promises?: Partial<RecordS<PromiseFunction<E, Pc, Tc>>>;
   delays?: Partial<RecordS<Delay<E, Pc, Tc>>>;
-  machines?: Partial<RecordS<any>>;
+  services?: Partial<RecordS<any>>;
 };
 
 export type SimpleMachineOptions2 = {
@@ -282,7 +282,7 @@ export type SimpleMachineOptions2 = {
   predicates?: any;
   promises?: any;
   delays?: any;
-  machines?: any;
+  services?: any;
 };
 
 export type PromiseFunction<

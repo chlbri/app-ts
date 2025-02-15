@@ -1,13 +1,13 @@
 import type { PrimitiveObject } from 'src/types/primitives';
 import type { EventsMap } from '~events';
 import type { Machine } from '~machine';
+import type { NodeConfigWithInitials } from '~states';
 import type {
   Config,
   ConfigWithInitials,
   MachineOptions,
   SimpleMachineOptions2,
 } from './types';
-import type { NodeConfigWithInitials } from '~states';
 
 export type _ProvideInitials_F<C extends Config> = (
   initials: MachineOptions<C>['initials'],
@@ -35,7 +35,7 @@ export type Elements<
   guards?: Mo['predicates'];
   delays?: Mo['delays'];
   promises?: Mo['promises'];
-  machines?: Mo['machines'];
+  machines?: Mo['services'];
 };
 
 export type GetIO_F = (

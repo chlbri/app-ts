@@ -269,32 +269,38 @@ export class Interpreter<
     });
   };
 
-  flushSubscribers = () => {
+  get #schedule() {
+    return this.#scheduler.schedule;
+  }
+
+  #produceSubscriberCallback = (subscriber: Subscriber<E, Tc>) => {
     const context = cloneDeep(this.#context);
     const event = structuredClone(this.#event);
-    this.#subscribers.values().forEach(f => {
-      const callback = () => f.reduced(context, event);
+    const callback = () => subscriber.reduced(context, event);
+    return callback;
+  };
 
-      this.#scheduler.schedule(callback);
-    });
+  #scheduleSubscriber = (subscriber: Subscriber<E, Tc>) => {
+    const callback = this.#produceSubscriberCallback(subscriber);
+    this.#schedule(callback);
+  };
+
+  flushSubscribers = () => {
+    this.#subscribers.values().forEach(this.#scheduleSubscriber);
   };
 
   protected next = async () => {
     const previousValue = this.#value;
-    this.flushSubscribers();
 
+    this.flushSubscribers();
     this.#rinitIntervals();
     this.#performActivities();
     await this.#performStartTransitions();
 
     const currentConfig = this.#value;
-
     const check = !equal(previousValue, currentConfig);
 
-    if (check) {
-      // await sleep(0);
-      await this.next.bind(this)();
-    }
+    if (check) await this.next.bind(this)();
   };
 
   #performAction: PerformAction_F<E, Pc, Tc> = action => {
@@ -1095,10 +1101,10 @@ export class Interpreter<
     }
   };
 
-  addMachine = (key: Keys<Mo['machines']>, machine: Child<E, Tc>) => {
+  addServices = (key: Keys<Mo['services']>, machine: Child<E, Tc>) => {
     if (this.#canAct) {
       const out = { [key]: machine };
-      this.#machine.addMachines(out);
+      this.#machine.addServices(out);
     }
   };
 
@@ -1109,7 +1115,6 @@ export class Interpreter<
 
     const subcriber = createSubscriber(eventsMap, _subscriber);
     this.#subscribers.add(subcriber);
-
     return subcriber;
   };
   // #endregion
