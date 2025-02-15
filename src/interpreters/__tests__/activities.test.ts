@@ -1,4 +1,4 @@
-import { nothing } from '~utils';
+import { isCI, nothing } from '~utils';
 import { interpretTest } from '../interpreterTest';
 import { DELAY, fakeDB, machine1, machine2 } from './activities.test.data';
 import { fakeWaiter } from './fixtures';
@@ -6,7 +6,7 @@ import { fakeWaiter } from './fixtures';
 const log = vi.spyOn(console, 'log');
 
 beforeAll(() => {
-  vi.useFakeTimers();
+  if (!isCI) vi.useFakeTimers();
 });
 
 const TEST_1 = '#1 => First state has activity';
