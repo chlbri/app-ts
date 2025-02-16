@@ -1,7 +1,7 @@
 import type { EventsMap, ToEvents } from '~events';
 import { PrimitiveObject } from '~types';
 import { nothing, reduceFnMap2, type TimerState } from '~utils';
-import { type FnMapReduced } from './../types/primitives';
+import { type FnMapReduced } from '../types/primitives';
 
 export type SubscriberMap<
   E extends EventsMap,
@@ -51,6 +51,10 @@ class Subscriber<
 
   close() {
     this.#state = 'paused';
+  }
+
+  open() {
+    this.#state = 'active';
   }
 }
 

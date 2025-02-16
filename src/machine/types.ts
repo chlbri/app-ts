@@ -1,5 +1,6 @@
 import type { Decompose } from '@bemedev/decompose';
 import type {
+  DeepNotUndefined,
   DeepPartial,
   Fn,
   NotUndefined,
@@ -182,10 +183,12 @@ export type KeysMatchingContext<T extends PrimitiveObjectMap> = Extract<
   string | number
 >;
 
+export type Decompose2<T extends Ru> = Decompose<DeepNotUndefined<T>>;
+
 type HeritageMap<U extends Ru, Tc extends Ru> =
-  Decompose<U> extends infer KU extends object
+  Decompose2<U> extends infer KU extends object
     ? {
-        [key in keyof KU]?: Decompose<Tc> extends infer KT extends object
+        [key in keyof KU]?: Decompose2<Tc> extends infer KT extends object
           ? SingleOrArrayL<keyof SubType<KT, KU[key]>>
           : never;
       }
@@ -194,7 +197,7 @@ type HeritageMap<U extends Ru, Tc extends Ru> =
 export type Subscriber<
   E extends EventsMap = EventsMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-  U extends KeyU<'preConfig' | 'context'> = AnyMachine,
+  U extends KeyU<'preConfig' | 'context'> = KeyU<'preConfig' | 'context'>,
 > = {
   events:
     | SingleOrArrayL<{
@@ -220,14 +223,16 @@ export type Subscriber<
 export type ChildS<
   E extends EventsMap = EventsMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-  T extends AnyMachine = AnyMachine,
+  T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
+    'preConfig' | 'context' | 'pContext'
+  >,
 > = {
   machine: T;
   initials: {
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
   };
-  subscribers: SingleOrArrayL<Subscriber<E, Tc, T>>;
+  subscribers: SingleOrArrayL<Subscriber<E, Tc, NoInfer<T>>>;
 };
 
 export type Subscriber2<
@@ -400,4 +405,4 @@ export type PromiseFunction2<
 export type MachineMap<
   E extends EventsMap = EventsMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<Record<string, ChildS<E, Tc>>>;
+> = Partial<RecordS<ChildS<E, Tc>>>;

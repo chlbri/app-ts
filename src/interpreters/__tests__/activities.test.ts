@@ -1,12 +1,12 @@
-import { isCI, nothing } from '~utils';
+import { nothing } from '~utils';
 import { interpretTest } from '../interpreterTest';
-import { DELAY, fakeDB, machine1, machine2 } from './activities.test.data';
 import { fakeWaiter } from './fixtures';
+import { DELAY, fakeDB, machine1, machine2 } from './test.data';
 
 const log = vi.spyOn(console, 'log');
 
 beforeAll(() => {
-  if (!isCI) vi.useFakeTimers();
+  vi.useFakeTimers();
 });
 
 const TEST_1 = '#1 => First state has activity';
@@ -205,6 +205,7 @@ describe(TEST_2, () => {
   });
 
   test('#11 => Pause the service', () => {
+    console.time('close');
     service.pause();
     console.timeEnd(TEST_2);
     console.timeEnd('close');

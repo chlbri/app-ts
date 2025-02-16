@@ -84,12 +84,12 @@ import {
 } from '~types';
 import {
   createInterval,
-  merge,
   replaceAll,
   toArray,
   type CreateInterval2_F,
   type IntervalTimer,
 } from '~utils';
+import { merge } from './../utils/merge';
 import { performRemaining, possibleEvents } from './interpreter.helpers';
 import type {
   _Send_F,
@@ -386,6 +386,16 @@ export class Interpreter<
     return out;
   };
 
+  #merge = ({ pContext, context }: ActionResult<Pc, Tc>) => {
+    this.#pContext = merge(this.#pContext, pContext) as any;
+    this.#context = merge(this.#context, context) as any;
+
+    this.#fullSubscribers.forEach(f => {
+      const callback = () => f.reduced(this.#context, this.#event);
+      this.#schedule(callback);
+    });
+  };
+
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
     const entries = Object.entries(_activities);
     const outs: string[] = [];
@@ -419,37 +429,33 @@ export class Interpreter<
 
       const interval = delay;
       const callback = () => {
-        for (const activity of activities) {
-          const check2 = typeof activity === 'string';
-          const check3 =
-            typeof activity === 'object' && 'name' in activity;
+        const cb = () => {
+          for (const activity of activities) {
+            const check2 = typeof activity === 'string';
+            const check3 =
+              typeof activity === 'object' && 'name' in activity;
 
-          const check4 = check2 || check3;
+            const check4 = check2 || check3;
 
-          if (check4) {
-            const { context, pContext } = this.#performActions(
-              this.#contexts,
-              activity,
+            if (check4) {
+              return this.#merge(
+                this.#performActions(this.#contexts, activity),
+              );
+            }
+
+            const check5 = this.#performGuards(
+              ...toArray.typed(activity.guards),
             );
-            this.#pContext = merge(this.#pContext, pContext) as any;
-            this.#context = merge(this.#context, context) as any;
-            return;
+            if (check5) {
+              const actions = toArray.typed(activity.actions);
+              return this.#merge(
+                this.#performActions(this.#contexts, ...actions),
+              );
+            }
           }
+        };
 
-          const check5 = this.#performGuards(
-            ...toArray.typed(activity.guards),
-          );
-          if (check5) {
-            const actions = toArray.typed(activity.actions);
-            const { context, pContext } = this.#performActions(
-              this.#contexts,
-              ...actions,
-            );
-            this.#pContext = merge(this.#pContext, pContext) as any;
-            this.#context = merge(this.#context, context) as any;
-            return;
-          }
-        }
+        this.#scheduler.schedule(cb);
       };
       const promise = this.createInterval({
         callback,
@@ -901,8 +907,7 @@ export class Interpreter<
 
       const cb = () => {
         resultAfters.forEach(({ result, target }) => {
-          this.#pContext = merge(this.#pContext, result.pContext) as any;
-          this.#context = merge(this.#context, result.context) as any;
+          this.#merge(result);
 
           if (target) {
             this.#config = this.proposedNextConfig(target);
@@ -924,9 +929,7 @@ export class Interpreter<
       const out = () => {
         this.#status = 'busy';
         const { target, result } = resultAlways;
-
-        this.#pContext = merge(this.#pContext, result.pContext) as any;
-        this.#context = merge(this.#context, result.context) as any;
+        this.#merge(result);
 
         if (target) {
           this.#config = this.proposedNextConfig(target);
@@ -963,15 +966,7 @@ export class Interpreter<
 
       promises.forEach(value => {
         if (value) {
-          this.#pContext = merge(
-            this.#pContext,
-            value.result.pContext,
-          ) as any;
-
-          this.#context = merge(
-            this.#context,
-            value.result.context,
-          ) as any;
+          this.#merge(value.result);
 
           this.#event = value.event;
           target = value.target;
@@ -989,7 +984,7 @@ export class Interpreter<
 
   #performMachines = () => {
     this.#childrenMachines.forEach(child => {
-      this.#reduceSubscribe(child);
+      this.#reduceSubscribe(child as any);
     });
 
     this.#childrenServices.forEach(child => {
@@ -1027,6 +1022,12 @@ export class Interpreter<
 
   pause = () => {
     this.#rinitIntervals();
+    this.#fullSubscribers.forEach(f => {
+      f.close();
+    });
+    this.#childrenServices.forEach(child => {
+      child.pause();
+    });
     this.#status = 'paused';
   };
 
@@ -1034,6 +1035,12 @@ export class Interpreter<
     if (this.#status === 'paused') {
       this.#status = 'working';
       this.#performActivities();
+      this.#fullSubscribers.forEach(f => {
+        f.open();
+      });
+      this.#childrenServices.forEach(child => {
+        child.resume();
+      });
     }
   };
 
@@ -1124,12 +1131,21 @@ export class Interpreter<
   };
 
   #subscribers = new Set<Subscriber<E, Tc>>();
+  #fullSubscribers = new Set<Subscriber<E, Tc>>();
 
   addSubscriber: AddSubscriber_F<E, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
 
     const subcriber = createSubscriber(eventsMap, _subscriber);
     this.#subscribers.add(subcriber);
+    return subcriber;
+  };
+
+  addFullSubscriber: AddSubscriber_F<E, Tc> = _subscriber => {
+    const eventsMap = this.#machine.eventsMap;
+
+    const subcriber = createSubscriber(eventsMap, _subscriber);
+    this.#fullSubscribers.add(subcriber);
     return subcriber;
   };
   // #endregion
@@ -1235,14 +1251,8 @@ export class Interpreter<
       return;
     }
 
-    const {
-      result: { context, pContext },
-      next,
-    } = sends;
-
-    this.#pContext = merge(this.#pContext, pContext) as any;
-    this.#context = merge(this.#context, context) as any;
-
+    const { result, next } = sends;
+    this.#merge(result);
     const check2 = !equal(this.#config, next);
 
     if (check2) {
@@ -1386,31 +1396,36 @@ export class Interpreter<
     this.#childrenServices.push(service as any);
     // const _subscribers = toArray.typed(subscribers);
 
-    const subscriber = this.addSubscriber((_, events1) => {
-      const check1 = typeof events1 === 'string';
-      if (check1) return;
-
+    const subscriber = service.addFullSubscriber((_, events1) => {
       // const event = events1.type;
+      // console.warn('service.context', service.context);
 
       let callback = t.anify<() => void>();
       const _subscribers = toArray.typed(subscribers);
+      console.warn('subscribers', _subscribers.length);
       _subscribers.forEach(({ contexts, events }) => {
         const checkContexts = contexts === true;
+        // console.warn('reached here');
+
+        const check1 = typeof events1 === 'string';
 
         const events2 = service.event;
         const check2 = typeof events2 === 'string';
-        if (check2) return;
 
-        const checkEvents = reduceEvents(
-          events as any,
-          events2.type,
-          events1.type,
-        );
+        const check3 = check1 || check2;
+        // const check35 = check1 && check2 ;
+
+        const checkEvents =
+          check3 ||
+          reduceEvents(events as any, events1.type, events2.type);
+
+        console.warn('checkEvents', checkEvents);
 
         if (checkEvents) {
           if (checkContexts) {
             callback = () => (this.#context = service.context as any);
           } else {
+            console.warn('reached here');
             const _contexts = contexts as SingleOrArray<
               string | Record<string, string | string[]>
             >;
@@ -1422,8 +1437,9 @@ export class Interpreter<
                   context,
                   service.context,
                 );
-                callback = () =>
-                  (this.#context = merge(this.#context, merger) as any);
+                // console.warn('merger', merger);
+
+                callback = () => this.#merge({ context: merger });
               } else {
                 const entries = Object.entries(context).map(
                   ([key, value]) => {
@@ -1432,17 +1448,14 @@ export class Interpreter<
                   },
                 );
 
-                entries.forEach(([key, values]) => {
-                  values.forEach(value => {
+                entries.forEach(([key, paths]) => {
+                  paths.forEach(path => {
                     const merger = mergeByKey(this.#context)(
-                      key,
-                      getByKey(service.context, value),
+                      path,
+                      getByKey(service.context, key),
                     );
-                    callback = () =>
-                      (this.#context = merge(
-                        this.#context,
-                        merger,
-                      ) as any);
+                    console.warn('merger', merger);
+                    callback = () => this.#merge({ context: merger });
                   });
                 });
               }

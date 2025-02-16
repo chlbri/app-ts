@@ -1,12 +1,12 @@
 import { t } from '@bemedev/types';
 import type { StateValue } from '~states';
-import { isCI, nothing } from '~utils';
+import { nothing } from '~utils';
 import { interpretTest } from '../interpreterTest';
-import { DELAY, fakeDB, machine2 } from './activities.test.data';
 import { fakeWaiter } from './fixtures';
+import { DELAY, fakeDB, machine2 } from './test.data';
 
 beforeAll(() => {
-  if (!isCI) vi.useFakeTimers();
+  vi.useFakeTimers();
 });
 
 const TEXT = 'Activities Integration Test';
@@ -72,6 +72,13 @@ describe(TEXT, () => {
     const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
     return t.tuple(invite, async () => {
       expect(service.context.iterator).toBe(num);
+    });
+  };
+
+  const useIteratorC = (num: number, index: number) => {
+    const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
+    return t.tuple(invite, async () => {
+      expect(service.context.children?.iterator).toBe(num);
     });
   };
 
@@ -146,7 +153,8 @@ describe(TEXT, () => {
   describe('#02 => Check the service', () => {
     test(...useState('idle', 1));
     test(...useIterator(6, 2));
-    describe(...useConsole(3));
+    test(...useIteratorC(6, 3));
+    describe(...useConsole(4));
   });
 
   test(...useSend('NEXT', 3));
@@ -165,16 +173,17 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(6, 2));
+    test(...useIteratorC(6, 3));
 
-    describe(...useConsole(3, 'NEXT time, you will see!!'));
+    describe(...useConsole(4, 'NEXT time, you will see!!'));
   });
 
   test(...useWaiter(6, 5));
 
   describe('#06 => Check the service', () => {
     test(...useIterator(18, 1));
-
-    describe(...useConsole(2, ...Array(6).fill('sendPanelToUser')));
+    test(...useIteratorC(12, 2));
+    describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
   });
 
   test('#07 => pause', service.pause.bind(service));
@@ -193,8 +202,9 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(18, 2));
+    test(...useIteratorC(12, 3));
 
-    describe(...useConsole(3));
+    describe(...useConsole(4));
   });
 
   test(...useWaiter(6, 9));
@@ -213,8 +223,9 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(18, 2));
+    test(...useIteratorC(12, 3));
 
-    describe(...useConsole(3));
+    describe(...useConsole(4));
   });
 
   test('#11 => resume', service.resume.bind(service));
@@ -235,8 +246,9 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(42, 2));
+    test(...useIteratorC(24, 3));
 
-    describe(...useConsole(3, ...Array(12).fill('sendPanelToUser')));
+    describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
   });
 
   test(...useWrite('', 14));
@@ -255,10 +267,9 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(42, 2));
-
-    test(...useInput('', 3));
-
-    describe(...useConsole(4, ['WRITE with', ':', '""']));
+    test(...useIteratorC(24, 3));
+    test(...useInput('', 4));
+    describe(...useConsole(5, ['WRITE with', ':', '""']));
   });
 
   test(...useWaiter(12, 16));
@@ -277,12 +288,12 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(66, 2));
-
-    test(...useInput('', 3));
+    test(...useIteratorC(36, 3));
+    test(...useInput('', 4));
 
     describe(
       ...useConsole(
-        4,
+        5,
         ...Array(24)
           .fill(0)
           .map((_, index) => {
@@ -309,10 +320,9 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(66, 2));
-
-    test(...useInput('', 3));
-
-    describe(...useConsole(4, ['WRITE with', ':', `"${INPUT}"`]));
+    test(...useIteratorC(36, 3));
+    test(...useInput('', 4));
+    describe(...useConsole(5, ['WRITE with', ':', `"${INPUT}"`]));
   });
 
   test(...useWaiter(12, 20));
@@ -331,10 +341,9 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(90, 2));
-
-    test(...useInput('', 3));
-
-    describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
+    test(...useIteratorC(48, 3));
+    test(...useInput('', 4));
+    describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
   });
 
   test('#22 => Close the subscriber', subscriber.close.bind(subscriber));
@@ -355,10 +364,9 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(90, 2));
-
-    test(...useInput(INPUT, 3));
-
-    describe(...useConsole(4, 'nothing call nothing'));
+    test(...useIteratorC(48, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useConsole(5, 'nothing call nothing'));
   });
 
   test(...useWaiter(6, 25));
@@ -377,12 +385,10 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(102, 2));
-
-    test(...useInput(INPUT, 3));
-
-    describe(...useData(4));
-
-    describe(...useConsole(5, ...Array(6).fill('sendPanelToUser')));
+    test(...useIteratorC(54, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useData(5));
+    describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
   });
 
   test(...useSend('FETCH', 27));
@@ -401,12 +407,10 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(102, 2));
-
-    test(...useInput(INPUT, 3));
-
-    describe(...useData(4, ...FAKES));
-
-    describe(...useConsole(5, ...Array(2).fill('nothing call nothing')));
+    test(...useIteratorC(54, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useData(5, ...FAKES));
+    describe(...useConsole(6, ...Array(2).fill('nothing call nothing')));
   });
 
   test('#29 => Await the fetch', () => fakeWaiter());
@@ -425,11 +429,9 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(102, 2));
-
-    test(...useInput(INPUT, 3));
-
-    describe(...useData(4, ...FAKES));
-
+    test(...useIteratorC(54, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useData(5, ...FAKES));
     describe(...useConsole(5));
   });
 
@@ -449,12 +451,10 @@ describe(TEXT, () => {
     );
 
     test(...useIterator(114, 2));
-
-    test(...useInput(INPUT, 3));
-
-    describe(...useData(4, ...FAKES));
-
-    describe(...useConsole(5, ...Array(6).fill('sendPanelToUser')));
+    test(...useIteratorC(60, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useData(5, ...FAKES));
+    describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
   });
 
   describe('#33 => Close the service', async () => {
@@ -471,6 +471,14 @@ describe(TEXT, () => {
 
       test('#02 => Log is called "72" times', () => {
         expect(log).toBeCalledTimes(72);
+      });
+
+      test('#03 => Log the private', () => {
+        console.warn(
+          'service.context.children?.iterator',
+          '=>',
+          service.context.children?.iterator,
+        );
       });
     });
 

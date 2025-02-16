@@ -1,5 +1,6 @@
 import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
+import { createChildS } from '~machines';
 
 export const fakeDB = [
   { _id: '01', name: 'Alice' },
@@ -67,8 +68,44 @@ export const machine1 = createMachine(
   },
 );
 
+export const machine3 = createMachine(
+  {
+    states: {
+      idle: {
+        activities: {
+          DELAY: 'inc',
+        },
+        on: {
+          NEXT: '/final',
+        },
+      },
+      final: {},
+    },
+  },
+  {
+    eventsMap: {
+      NEXT: {},
+    },
+    context: t.buildObject({ iterator: t.number }),
+    pContext: t.object,
+  },
+  { '/': 'idle' },
+  {
+    actions: {
+      inc: (pContext, context) => {
+        context.iterator++;
+        return { context, pContext };
+      },
+    },
+    delays: {
+      DELAY,
+    },
+  },
+);
+
 export const machine2 = createMachine(
   {
+    machines: 'machine1',
     states: {
       idle: {
         activities: {
@@ -155,11 +192,14 @@ export const machine2 = createMachine(
       WRITE: { value: t.string },
       FINISH: {},
     },
-    context: t.buildObject({
-      iterator: t.number,
-      input: t.string,
-      data: t.array(t.string),
-    }),
+    context: {} as {
+      iterator: number;
+      input: string;
+      data: string[];
+      children?: {
+        iterator: number;
+      };
+    },
     pContext: t.object,
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
@@ -219,5 +259,20 @@ export const machine2 = createMachine(
         return fakeDB.filter(item => item.name.includes(input));
       },
     },
+    machines: {
+      machine1: createChildS(
+        machine1,
+        {
+          pContext: {},
+          context: { iterator: 0 },
+        },
+        {
+          events: 'allEvents',
+          contexts: { iterator: 'children.iterator' },
+        },
+      ),
+    },
   },
 );
+
+// type TT = ContextFrom<typeof machine1> extends Ru ? true : false;

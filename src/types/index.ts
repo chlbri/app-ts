@@ -1,2 +1,2 @@
 export * from './primitives';
-export * from './subtype';
+export * from './subtype.types';

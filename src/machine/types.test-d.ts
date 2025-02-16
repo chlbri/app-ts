@@ -2,7 +2,7 @@ import type { Fn } from '@bemedev/types';
 import type {
   machine1,
   machine2,
-} from 'src/interpreters/__tests__/activities.test.data';
+} from 'src/interpreters/__tests__/test.data';
 import type { PrimitiveObject, Simplify, SingleOrArrayL } from '~types';
 import type {
   ContextFrom,
@@ -123,7 +123,7 @@ expectTypeOf<Sub1>().toEqualTypeOf<{
         NEXT?: SingleOrArrayL<'NEXT' | 'FINISH' | 'FETCH' | 'WRITE'>;
       }>;
   contexts: SingleOrArrayL<{
-    iterator?: SingleOrArrayL<'iterator'>;
+    iterator?: SingleOrArrayL<'iterator' | 'children.iterator'>;
   }>;
 }>();
 

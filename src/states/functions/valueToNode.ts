@@ -3,11 +3,11 @@ import { isString } from 'src/types/primitives';
 import { DEFAULT_DELIMITER } from '~constants';
 import { replaceAll } from '~utils';
 
+import type { NodeConfig, NodeConfigWithInitials } from '../types';
 import { flatMap } from './flatMap';
 import { getChildren } from './getChildren';
 import { getParents } from './getParents';
 import { recomposeNode } from './recompose';
-import type { NodeConfig, NodeConfigWithInitials } from '../types';
 
 export type ValueToNode_F = <T extends StateValue>(
   body: NodeConfigWithInitials,

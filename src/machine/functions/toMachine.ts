@@ -11,13 +11,13 @@ export type ToMachine_F = <
   machines?: MachineMap<E, Tc>,
 ) => ChildS<E, Tc> | undefined;
 
-export const toMachine: ToMachine_F = (_machine, machines) => {
-  if (!_machine) return;
+export const toMachine: ToMachine_F = (machine, machines) => {
+  if (!machine) return;
 
-  if (isDescriber(_machine)) {
-    return machines?.[_machine.name];
+  if (isDescriber(machine)) {
+    return machines?.[machine.name];
   }
 
-  const child = machines?.[_machine];
+  const child = machines?.[machine];
   return child;
 };

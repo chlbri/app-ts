@@ -25,6 +25,7 @@ import type { Elements, GetIO2_F, GetIO_F } from './machine.types';
 import type {
   Config,
   GetEventsFromConfig,
+  GetMachinesFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
 } from './types';
@@ -588,7 +589,9 @@ type CreateMachine_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, EventM, Pc, Tc>,
+  Mo extends NOmit<SimpleMachineOptions2, 'machines'> & {
+    machines?: Partial<GetMachinesFromConfig<C, EventM, Tc>>;
+  } = MachineOptions<C, EventM, Pc, Tc>,
 >(
   config: C,
   types: { pContext: Pc; context: Tc; eventsMap: EventM },
