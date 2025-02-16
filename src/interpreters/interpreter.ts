@@ -1429,19 +1429,19 @@ export class Interpreter<
             const _contexts = contexts as SingleOrArray<
               string | Record<string, string | string[]>
             >;
-            const contexts2 = toArray.typed(_contexts);
+            const paths = toArray.typed(_contexts);
 
-            contexts2.forEach(context => {
-              if (typeof context === 'string') {
+            paths.forEach(path => {
+              if (typeof path === 'string') {
                 const merger = mergeByKey(this.#context)(
-                  context,
+                  path,
                   service.context,
                 );
                 // console.warn('merger', merger);
 
                 callback = () => this.#merge({ context: merger });
               } else {
-                const entries = Object.entries(context).map(
+                const entries = Object.entries(path).map(
                   ([key, value]) => {
                     const values = toArray.typed(value);
                     return t.tuple(key, values);
