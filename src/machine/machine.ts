@@ -552,14 +552,16 @@ class Machine<
   ) => createChildS(machine, initials, ...subscribers);
 
   isValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
-    return isValue(path, ...values);
+    return isValue<E, Pc, Tc>(path, ...values);
   };
 
   isNotValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
-    return isNotValue(path, ...values);
+    return isNotValue<E, Pc, Tc>(path, ...values);
   };
 
-  isDefined = (path: DefinedValue<E, Pc, Tc>) => isDefinedS(path);
+  isDefined = (path: DefinedValue<E, Pc, Tc>) => {
+    return isDefinedS<E, Pc, Tc>(path);
+  };
 }
 
 export const getIO: GetIO_F = (node, key) => {
