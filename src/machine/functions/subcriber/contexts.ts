@@ -1,6 +1,6 @@
 import { decompose, type Recompose, type Ru } from '@bemedev/decompose';
 import { type Fn } from '@bemedev/types';
-import type { Decompose2 } from 'src/machine/types';
+import type { Decompose2 } from '../../types';
 
 // #region type AssignByBey_F
 export type AssignByBey_F = <

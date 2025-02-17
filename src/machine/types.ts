@@ -11,7 +11,6 @@ import type { Action, ActionConfig, FromActionConfig } from '~actions';
 import type { Delay } from '~delays';
 import type { EventsMap, ToEvents } from '~events';
 import type { PredicateS } from '~guards';
-import type { AnyMachine } from '~machine';
 import type {
   ActivityConfig,
   ExtractActionsFromActivity,
@@ -45,6 +44,7 @@ import type {
   SingleOrArrayR,
   SubType,
 } from '~types';
+import type { AnyMachine } from './machine.types';
 
 export type ConfigNode = NodeConfigCompound | NodeConfigParallel;
 
