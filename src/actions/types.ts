@@ -14,7 +14,7 @@ export type FromActionConfig<T extends ActionConfig> = T extends Describer
   : T;
 
 export type Action<
-  E extends EventsMap,
+  E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = FnMap<E, Pc, Tc, ActionResult<Pc, Tc>>;

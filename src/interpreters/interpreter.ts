@@ -27,17 +27,13 @@ import {
   type ToEvents,
 } from '~events';
 import { toPredicate, type GuardConfig, type PredicateS } from '~guards';
-import {
-  getEntries,
-  getExits,
-  type AnyMachine,
-  type Machine,
-} from '~machine';
+import { getEntries, getExits, type Machine } from '~machine';
 import {
   getByKey,
   mergeByKey,
   reduceEvents,
   toMachine,
+  type AnyMachine,
   type Child,
   type ChildS,
   type Config,
@@ -95,6 +91,7 @@ import { performRemaining, possibleEvents } from './interpreter.helpers';
 import type {
   _Send_F,
   AddSubscriber_F,
+  AnyInterpreter,
   ExecuteActivities_F,
   Interpreter_F,
   Mode,
@@ -120,7 +117,8 @@ export class Interpreter<
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
-> {
+> implements AnyInterpreter<E, Pc, Tc>
+{
   #machine: Machine<C, Pc, Tc, E, Mo>;
   #status: WorkingStatus = 'idle';
   #config: NodeConfigWithInitials;
@@ -1127,7 +1125,7 @@ export class Interpreter<
   ) => {
     if (this.#canAct) {
       const out = { [key]: guard };
-      this.#machine.addGuards(out);
+      this.#machine.addPredicates(out);
     }
   };
 
@@ -1368,21 +1366,21 @@ export class Interpreter<
     const events = this.#machine.eventsMap;
     const actions = this.#machine.actions;
 
-    return toAction(events, action, actions);
+    return toAction<E, Pc, Tc>(events, action, actions);
   };
 
   toPredicate = (guard: GuardConfig) => {
     const events = this.#machine.eventsMap;
     const predicates = this.#machine.predicates;
 
-    return toPredicate(events, guard, predicates);
+    return toPredicate<E, Pc, Tc>(events, guard, predicates);
   };
 
   toPromiseSrc = (src: string) => {
     const events = this.#machine.eventsMap;
     const promises = this.#machine.promises;
 
-    return toPromiseSrc(events, src, promises);
+    return toPromiseSrc<E, Pc, Tc>(events, src, promises);
   };
 
   //TODO retrieve options for all can be undefined
@@ -1391,7 +1389,7 @@ export class Interpreter<
     const events = this.#machine.eventsMap;
     const delays = this.#machine.delays;
 
-    return toDelay(events, delay, delays);
+    return toDelay<E, Pc, Tc>(events, delay, delays);
   };
 
   toMachine = (machine: ActionConfig) => {
@@ -1484,55 +1482,6 @@ export class Interpreter<
     this.stop();
   };
 }
-
-export type AnyInterpreter = {
-  mode: Mode;
-  event: ToEvents<any>;
-  eventsMap: EventsMap;
-  initialNode: Node<any, any, any>;
-  node: Node<any, any, any>;
-  makeStrict: () => void;
-  makeStrictest: () => void;
-  status: WorkingStatus;
-  initialConfig: NodeConfigWithInitials;
-  initialValue: StateValue;
-  config: NodeConfigWithInitials;
-  renew: Interpreter<any, any, any, any, any>;
-  value: StateValue;
-  context: any;
-  start: () => Promise<void>;
-  pause: () => void;
-  resume: () => void;
-  stop: () => void;
-  providePrivateContext: (pContext: any) => AnyMachine;
-  ppC: (pContext: any) => AnyMachine;
-  provideContext: (context: any) => AnyMachine;
-  addAction: (key: string, action: Action<any, any, any>) => void;
-  addGuard: (key: string, guard: PredicateS<any, any, any>) => void;
-  addPromise: (
-    key: string,
-    promise: PromiseFunction<any, any, any>,
-  ) => void;
-  addDelay: (key: string, delay: Delay<any, any, any>) => void;
-  addMachine: (key: string, machine: Child<any, any>) => void;
-  addSubscriber: AddSubscriber_F<any, any>;
-  errorsCollector: Set<string>;
-  warningsCollector: Set<string>;
-  send: (event: EventArg<any>) => Promise<void>;
-  canEvent: (eventS: string) => boolean;
-  possibleEvents: string[];
-  flushSubscribers: () => void;
-  toAction: (action: ActionConfig) => Action<any, any, any> | undefined;
-  toPredicate: (
-    guard: GuardConfig,
-  ) => PredicateS<any, any, any> | undefined;
-  toPromiseSrc: (
-    src: string,
-  ) => PromiseFunction<any, any, any> | undefined;
-  toDelay: (delay?: string) => Delay<any, any, any> | undefined;
-  toMachine: (machine: ActionConfig) => AnyMachine | undefined;
-  id?: string;
-};
 
 export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   ConfigFrom<M>,

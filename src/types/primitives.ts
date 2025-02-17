@@ -428,3 +428,28 @@ export type KeyU<S extends string, R = unknown> = Record<S, R>;
 export type KeyO<S extends string, R = unknown> = Partial<KeyU<S, R>>;
 
 export type ExtractS<T> = Extract<T, string>;
+
+export type TrueObject = object & {
+  [Symbol.iterator]?: never;
+  //@ts-expect-error - 'SymbolConstructor' does not exist on type 'object'
+  [SymbolConstructor]?: never;
+};
+
+export type KeysMatching2<
+  T,
+  AddObjectKeys extends boolean = true,
+  Key extends keyof T = keyof T,
+> = T extends TrueObject
+  ? Key extends string
+    ? NotUndefined<T[Key]> extends TrueObject
+      ?
+          | `${Key}.${KeysMatching2<NotUndefined<T[Key]>, AddObjectKeys> & string}`
+          | (AddObjectKeys extends true ? Key : never)
+      : Key
+    : never
+  : T extends Primitive
+    ? `${T}`
+    : '';
+
+export type ToStringP<T = any> =
+  `${T extends Primitive ? `${T}` : T extends object ? KeysMatching2<T> : ''}`;

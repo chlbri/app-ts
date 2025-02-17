@@ -2,7 +2,13 @@ import type { Fn } from '@bemedev/types';
 import type { ActionConfig, FromActionConfig } from '~actions';
 import type { GUARD_TYPE } from '~constants';
 import type { EventsMap, ToEvents } from '~events';
-import type { FnMap, PrimitiveObject, RecordS, ReduceArray } from '~types';
+import type {
+  FnMap,
+  KeysMatching2,
+  PrimitiveObject,
+  RecordS,
+  ReduceArray,
+} from '~types';
 
 type gType = typeof GUARD_TYPE;
 type and = gType['and'];
@@ -29,7 +35,7 @@ export type FromGuard<T extends GuardConfig> = T extends ActionConfig
       : never;
 
 export type PredicateS<
-  E extends EventsMap,
+  E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = FnMap<E, Pc, Tc, boolean>;
@@ -79,3 +85,13 @@ export type PredicateMap<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Partial<RecordS<PredicateS<E, Pc, Tc>>>;
+
+export type DefinedValue<
+  E extends EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = KeysMatching2<{
+  events: E;
+  pContext: Pc;
+  context: Tc;
+}>;

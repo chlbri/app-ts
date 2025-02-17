@@ -1,6 +1,5 @@
 import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
-import { createChildS } from '~machines';
 
 export const fakeDB = [
   { _id: '01', name: 'Alice' },
@@ -33,6 +32,7 @@ export const fakeDB = [
 
 export const DELAY = 60;
 
+// #region machine1
 export const machine1 = createMachine(
   {
     states: {
@@ -55,19 +55,21 @@ export const machine1 = createMachine(
     pContext: t.object,
   },
   { '/': 'idle' },
-  {
-    actions: {
-      inc: (pContext, context) => {
-        context.iterator++;
-        return { context, pContext };
-      },
-    },
-    delays: {
-      DELAY,
-    },
-  },
 );
 
+machine1.addActions({
+  inc: (pContext, context) => {
+    context.iterator++;
+    return { context, pContext };
+  },
+});
+
+machine1.addDelays({
+  DELAY,
+});
+// #endregion
+
+// #region machine2
 export const machine2 = createMachine(
   {
     machines: 'machine1',
@@ -165,76 +167,73 @@ export const machine2 = createMachine(
     pContext: t.unknown<{ iterator: number }>(),
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
-  {
-    actions: {
-      inc: (pContext, context) => {
-        context.iterator++;
-        return { context, pContext };
-      },
-      inc2: (pContext, context) => {
-        context.iterator += 4;
-        return { context, pContext };
-      },
-      sendPanelToUser: (pContext, context) => {
-        console.log('sendPanelToUser');
-        return { context, pContext };
-      },
-      write: {
-        WRITE: (pContext, context, { value }) => {
-          context.input = value;
-          return { context, pContext };
-        },
-        else: (pContext, context) => ({ pContext, context }),
-      },
-      askUsertoInput: (pContext, context) => {
-        console.log('Input, please !!');
-        return {
-          pContext,
-          context,
-        };
-      },
-      insertData: (pContext, context, eventsMap) => {
-        const check =
-          typeof eventsMap === 'object' &&
-          eventsMap.type === 'machine$$then';
-
-        if (check) {
-          context.data.push(...eventsMap.payload);
-        }
-        return { context, pContext };
-      },
-    },
-    predicates: {
-      isInputNotEmpty: (_, context) => {
-        return context.input !== '';
-      },
-      isInputEmpty: (_, context) => {
-        return context.input === '';
-      },
-    },
-    delays: {
-      DELAY,
-      DELAY2: 2 * DELAY,
-    },
-    promises: {
-      fetch: async (_, { input }) => {
-        return fakeDB.filter(item => item.name.includes(input));
-      },
-    },
-    machines: {
-      machine1: createChildS(
-        machine1,
-        {
-          pContext: {},
-          context: { iterator: 0 },
-        },
-        {
-          events: 'full',
-          contexts: { iterator: 'iterator' },
-        },
-      ),
-    },
-  },
 );
 
-// type TT = ContextFrom<typeof machine1> extends Ru ? true : false;
+machine2.addActions({
+  inc: (pContext, context) => {
+    context.iterator++;
+    return { context, pContext };
+  },
+  inc2: (pContext, context) => {
+    context.iterator += 4;
+    return { context, pContext };
+  },
+  sendPanelToUser: (pContext, context) => {
+    console.log('sendPanelToUser');
+    return { context, pContext };
+  },
+  write: {
+    WRITE: (pContext, context, { value }) => {
+      context.input = value;
+      return { context, pContext };
+    },
+    else: (pContext, context) => ({ pContext, context }),
+  },
+  askUsertoInput: (pContext, context) => {
+    console.log('Input, please !!');
+    return {
+      pContext,
+      context,
+    };
+  },
+  insertData: (pContext, context, eventsMap) => {
+    const check =
+      typeof eventsMap === 'object' && eventsMap.type === 'machine$$then';
+
+    if (check) {
+      context.data.push(...eventsMap.payload);
+    }
+    return { context, pContext };
+  },
+});
+
+machine2.addPredicates({
+  isInputNotEmpty: machine2.isNotValue('context.input', ''),
+  isInputEmpty: machine2.isValue('context.input', ''),
+});
+
+machine2.addDelays({
+  DELAY,
+  DELAY2: 2 * DELAY,
+});
+
+machine2.addPromises({
+  fetch: async (_, { input }) => {
+    return fakeDB.filter(item => item.name.includes(input));
+  },
+});
+
+machine2.addMachines({
+  machine1: machine2.createChildS(
+    machine1,
+    {
+      pContext: {},
+      context: { iterator: 0 },
+    },
+    {
+      events: 'full',
+      contexts: { iterator: 'iterator' },
+    },
+  ),
+});
+// #endregion

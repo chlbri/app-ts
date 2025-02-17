@@ -1,9 +1,17 @@
 import type { Fn } from '@bemedev/types';
-import type { Action2, ActionConfig, ActionResult } from '~actions';
-import type { EventsMap, ToEvents } from '~events';
-import type { GuardConfig, PredicateS2 } from '~guards';
+import type {
+  Action,
+  Action2,
+  ActionConfig,
+  ActionResult,
+} from '~actions';
+import type { Delay } from '~delays';
+import type { EventArg, EventsMap, ToEvents } from '~events';
+import type { GuardConfig, PredicateS, PredicateS2 } from '~guards';
 import type { Machine } from '~machine';
 import type {
+  AnyMachine,
+  ChildS,
   Config,
   Decompose2,
   GetEventsFromConfig,
@@ -14,9 +22,15 @@ import type {
 import type {
   PromiseConfig,
   PromiseeResult,
+  PromiseFunction,
   TimeoutPromise,
 } from '~promises';
-import type { ActivityConfig, NodeConfigWithInitials } from '~states';
+import type {
+  ActivityConfig,
+  Node,
+  NodeConfigWithInitials,
+  StateValue,
+} from '~states';
 import type {
   AlwaysConfig,
   DelayedTransitions,
@@ -210,3 +224,51 @@ export type Selector_F<T = any> = <
 >(
   selctor: K,
 ) => R;
+
+export interface AnyInterpreter<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> {
+  mo: any;
+  mode: Mode;
+  event: ToEvents<E>;
+  eventsMap: EventsMap;
+  initialNode: Node<E, Pc, Tc>;
+  node: Node<E, Pc, Tc>;
+
+  makeStrict: () => void;
+  makeStrictest: () => void;
+  status: WorkingStatus;
+  initialConfig: NodeConfigWithInitials;
+  initialValue: StateValue;
+  config: NodeConfigWithInitials;
+  renew: Interpreter<any, any, any, any, any>;
+  value: StateValue;
+  context: any;
+  start: () => Promise<void>;
+  pause: () => void;
+  resume: () => void;
+  stop: () => void;
+  providePrivateContext: (pContext: Pc) => AnyMachine<E, Pc, Tc>;
+  ppC: (pContext: Pc) => AnyMachine<E, Pc, Tc>;
+  provideContext: (context: Tc) => AnyMachine<E, Pc, Tc>;
+  addAction: Fn;
+  addGuard: Fn;
+  addPromise: Fn;
+  addDelay: Fn;
+  addMachine: Fn;
+  addSubscriber: AddSubscriber_F<any, any>;
+  errorsCollector: Set<string>;
+  warningsCollector: Set<string>;
+  send: (event: EventArg<E>) => Promise<void>;
+  canEvent: (eventS: string) => boolean;
+  possibleEvents: string[];
+  flushSubscribers: () => void;
+  toAction: (action: ActionConfig) => Action<E, Pc, Tc> | undefined;
+  toPredicate: (guard: GuardConfig) => PredicateS<E, Pc, Tc> | undefined;
+  toPromiseSrc: (src: string) => PromiseFunction<E, Pc, Tc> | undefined;
+  toDelay: (delay?: string) => Delay<E, Pc, Tc> | undefined;
+  toMachine: (machine: ActionConfig) => ChildS<E, Tc> | undefined;
+  id?: string;
+}

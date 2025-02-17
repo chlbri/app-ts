@@ -5,7 +5,13 @@ import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { Delay } from '~delays';
 import type { EventsMap, ToEvents } from '~events';
-import type { PredicateS } from '~guards';
+import {
+  isDefinedS,
+  isNotValue,
+  isValue,
+  type DefinedValue,
+  type PredicateS,
+} from '~guards';
 import type { PromiseFunction } from '~promises';
 import {
   flatMap,
@@ -21,13 +27,23 @@ import {
   type StateValue,
 } from '~states';
 import type { KeyU, PrimitiveObject, RecordS } from '~types';
-import type { Elements, GetIO2_F, GetIO_F } from './machine.types';
+import { IS_TEST } from '~utils';
+import { createChildS } from './functions';
+import type {
+  AnyMachine,
+  Elements,
+  GetIO2_F,
+  GetIO_F,
+} from './machine.types';
 import type {
   Config,
+  ContextFrom,
   GetEventsFromConfig,
-  GetMachinesFromConfig,
+  InitialsFromConfig,
   MachineOptions,
+  PrivateContextFrom,
   SimpleMachineOptions2,
+  Subscriber,
 } from './types';
 
 class Machine<
@@ -36,7 +52,8 @@ class Machine<
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
-> {
+> implements AnyMachine<E, Pc, Tc>
+{
   #config: C;
 
   #flat: FlatMapN<C, true>;
@@ -249,34 +266,66 @@ class Machine<
     this.#renew('initials', initials);
 
   addActions = (actions?: Mo['actions']) => {
-    this.#actions = actions;
+    return (this.#actions = actions);
   };
 
-  provideActions = (actions?: Mo['actions']) =>
-    this.#renew('actions', actions);
+  /**
+   * @deprecated
+   * Just use for testing
+   */
+  provideActions = (actions?: Mo['actions']) => {
+    if (IS_TEST) return this.#renew('actions', actions);
+    return console.error('Only renew in test env');
+  };
 
-  addGuards = (guards?: Mo['predicates']) => (this.#predicates = guards);
+  addPredicates = (guards?: Mo['predicates']) =>
+    (this.#predicates = guards);
 
-  provideGuards = (guards?: Mo['predicates']) =>
-    this.#renew('guards', guards);
+  /**
+   * @deprecated
+   * Just use for testing
+   */
+  providePredicates = (guards?: Mo['predicates']) => {
+    if (IS_TEST) return this.#renew('guards', guards);
+    return console.error('Only renew in test env');
+  };
 
   addDelays = (delays?: Mo['delays']) => (this.#delays = delays);
 
-  provideDelays = (delays?: Mo['delays']) => this.#renew('delays', delays);
+  /**
+   * @deprecated
+   * Just use for testing
+   */
+  provideDelays = (delays?: Mo['delays']) => {
+    if (IS_TEST) return this.#renew('delays', delays);
+    return console.error('Only renew in test env');
+  };
 
   addPromises = (promises?: Mo['promises']) => (this.#promises = promises);
 
-  providePromises = (promises?: Mo['promises']) =>
-    this.#renew('promises', promises);
+  /**
+   * @deprecated
+   * Just use for testing
+   */
+  providePromises = (promises?: Mo['promises']) => {
+    if (IS_TEST) return this.#renew('promises', promises);
+    return console.error('Only renew in test env');
+  };
 
   addMachines = (machines?: Mo['machines']) => (this.#machines = machines);
 
-  provideMachines = (machines?: Mo['machines']) =>
-    this.#renew('machines', machines);
+  /**
+   * @deprecated
+   * Just use for testing
+   */
+  provideMachines = (machines?: Mo['machines']) => {
+    if (IS_TEST) return this.#renew('machines', machines);
+    return console.error('Only renew in test env');
+  };
 
   addOptions = (options?: NOmit<Mo, 'initials'>) => {
     this.addActions(options?.actions);
-    this.addGuards(options?.predicates);
+    this.addPredicates(options?.predicates);
     this.addDelays(options?.delays);
     this.addPromises(options?.promises);
     this.addMachines(options?.machines);
@@ -284,19 +333,21 @@ class Machine<
 
   provideOptions = (
     options?: NOmit<Mo, 'initials'>,
-  ): Machine<C, Pc, Tc, E, Mo> => {
-    const out = this.#renew('actions', options?.actions);
+  ): Machine<C, Pc, Tc, E, Mo> | void => {
+    if (IS_TEST) {
+      const out = this.#renew('actions', options?.actions);
 
-    out.addGuards(options?.predicates);
-    out.addDelays(options?.delays);
-    out.addPromises(options?.promises);
-    out.addMachines(options?.machines);
+      out.addPredicates(options?.predicates);
+      out.addDelays(options?.delays);
+      out.addPromises(options?.promises);
+      out.addMachines(options?.machines);
 
-    return out;
+      return out;
+    }
+
+    return console.error('Only renew in test env');
   };
   // #endregion
-
-  start = () => {};
 
   get #elements(): Elements<C, E, Pc, Tc, Mo> {
     const config = structuredClone(this.#config);
@@ -364,7 +415,7 @@ class Machine<
     out.#context = context;
     out.#eventsMap = events;
 
-    out.addGuards(guards);
+    out.addPredicates(guards);
     out.addActions(actions);
     out.addDelays(delays);
     out.addPromises(promises);
@@ -474,7 +525,7 @@ class Machine<
   }
 
   #addError = (error: string) => {
-    this.#errorsCollector.add(error);
+    return this.#errorsCollector.add(error);
   };
 
   get options() {
@@ -486,11 +537,30 @@ class Machine<
 
     return { guards, actions, delays, promises, machines };
   }
+
+  createChildS = <
+    const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
+      'preConfig' | 'context' | 'pContext'
+    >,
+  >(
+    machine: T,
+    initials: {
+      pContext: PrivateContextFrom<T>;
+      context: ContextFrom<T>;
+    },
+    ...subscribers: Subscriber<E, Tc, T>[]
+  ) => createChildS(machine, initials, ...subscribers);
+
+  isValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
+    return isValue(path, ...values);
+  };
+
+  isNotValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
+    return isNotValue(path, ...values);
+  };
+
+  isDefined = (path: DefinedValue<E, Pc, Tc>) => isDefinedS(path);
 }
-
-// #region Checkers
-
-// #endregion
 
 export const getIO: GetIO_F = (node, key) => {
   const out = toArray<string>(node?.[key]);
@@ -520,101 +590,29 @@ export const getExits: GetIO2_F = node => getIO(node, 'exit');
 
 export type { Machine };
 
-// #region type AnyMachine
-export type AnyMachine = KeyU<
-  | 'eventsMap'
-  | 'mo'
-  | 'events'
-  | 'action'
-  | 'actionParams'
-  | 'guard'
-  | 'delay'
-  | 'promise'
-  | 'machine'
-  | 'actions'
-  | 'predicates'
-  | 'delays'
-  | 'promises'
-  | 'machines'
-  | 'initials'
-  | 'context'
-  | 'pContext'
-  | 'postConfig'
-  | 'postFlat'
-  | 'initialConfig'
-  | 'preConfig'
-  | 'preflat'
-  | 'postConfig'
-  | 'initials'
-  | 'context'
-  | 'pContext'
-  | 'actions'
-  | 'predicates'
-  | 'delays'
-  | 'promises'
-  | 'machines'
-  | 'postFlat'
-  | 'initialConfig'
-  | 'initialValue'
-  | 'errorsCollector'
-  | 'options'
-  | 'renew'
-  | 'providePrivateContext'
-  | 'provideContext'
-  | 'provideEvents'
-  | 'valueToConfig'
-  | 'toNode'
-  | 'start'
-  | 'addInitials'
-  | 'isInitial'
-  | 'retrieveParentFromInitial'
-  | 'provideInitials'
-  | 'addActions'
-  | 'provideActions'
-  | 'addGuards'
-  | 'provideGuards'
-  | 'addDelays'
-  | 'provideDelays'
-  | 'addPromises'
-  | 'providePromises'
-  | 'addMachines'
-  | 'provideMachines'
-  | 'addOptions'
-  | 'provideOptions'
->;
-// #endregion
-
 type CreateMachine_F = <
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  Mo extends NOmit<SimpleMachineOptions2, 'machines'> & {
-    machines?: Partial<GetMachinesFromConfig<C, EventM, Pc>>;
-  } = MachineOptions<C, EventM, Pc, Tc>,
 >(
   config: C,
   types: { pContext: Pc; context: Tc; eventsMap: EventM },
-  initials: Mo['initials'],
-  options?: NOmit<Mo, 'initials'>,
-) => Machine<C, Pc, Tc, EventM, Mo>;
+  initials: InitialsFromConfig<C>,
+) => Machine<C, Pc, Tc, EventM>;
 
 export const createMachine: CreateMachine_F = (
   config,
   { eventsMap, pContext, context },
   initials,
-  options,
 ) => {
-  const out1 = new Machine(config);
-  out1.addInitials(initials);
-
-  const out2 = out1
+  const out = new Machine(config)
+    .provideInitials(initials)
     .provideEvents(eventsMap)
     .providePrivateContext(pContext)
     .provideContext(context);
-  out2.addOptions(options);
 
-  return out2 as any;
+  return out;
 };
 
 export const DEFAULT_MACHINE: AnyMachine = new Machine({

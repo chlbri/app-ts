@@ -1,7 +1,9 @@
+import type { Fn } from '@bemedev/types';
 import type { PrimitiveObject } from 'src/types/primitives';
-import type { EventsMap } from '~events';
+import type { Action } from '~actions';
+import type { EventsMap, ToEvents } from '~events';
 import type { Machine } from '~machine';
-import type { NodeConfigWithInitials } from '~states';
+import type { NodeConfigWithInitials, StateValue } from '~states';
 import type {
   Config,
   ConfigWithInitials,
@@ -44,3 +46,59 @@ export type GetIO_F = (
 ) => string[];
 
 export type GetIO2_F = (node: NodeConfigWithInitials) => string[];
+
+export interface AnyMachine<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> {
+  preConfig: Config;
+  postConfig: NodeConfigWithInitials;
+  initials: any;
+  context: Tc;
+  pContext: Pc;
+  eventsMap: E;
+  events: ToEvents<E>;
+  mo: any;
+  actions: any;
+  predicates: any;
+  delays: any;
+  promises: any;
+  machines: any;
+  action: Action<E, Pc, Tc>;
+  postFlat: NodeConfigWithInitials;
+  renew: any;
+  initialConfig: NodeConfigWithInitials;
+  initialValue: StateValue;
+  errorsCollector: string[];
+
+  addInitials: Fn<[any], any>;
+  provideInitials: Fn<[any], any>;
+
+  addActions: Fn<[any], any>;
+  provideActions: Fn<[any], any>;
+
+  addPredicates: Fn<[any], any>;
+  providePredicates: Fn<[any], any>;
+
+  addDelays: Fn<[any], any>;
+  provideDelays: Fn<[any], any>;
+
+  addPromises: Fn<[any], any>;
+  providePromises: Fn<[any], any>;
+
+  addMachines: Fn<[any], any>;
+  provideMachines: Fn<[any], any>;
+
+  providePrivateContext: Fn<[any], any>;
+  provideContext: Fn<[any], any>;
+  provideEvents: Fn<[any], any>;
+
+  isInitial: Fn<[string], boolean>;
+  retrieveParentFromInitial: Fn<[string], NodeConfigWithInitials>;
+  toNode: Fn<[StateValue], NodeConfigWithInitials>;
+
+  isValue: Fn;
+  isNotValue: Fn;
+  isDefined: Fn;
+}

@@ -76,6 +76,10 @@ export type GetInititalsFromFlat<Flat extends FlatMapN = FlatMapN> =
       }
     : never;
 
+export type InitialsFromConfig<C extends Config> = GetInititalsFromFlat<
+  FlatMapN<C>
+>;
+
 type _GetKeyActionsFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]:
     | ExtractActionsFromTransitions<Extract<Flat[key], TransitionsConfig>>

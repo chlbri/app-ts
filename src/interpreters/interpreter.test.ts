@@ -1,6 +1,7 @@
 import { t } from '@bemedev/types';
 import { machine1 } from './__tests__/fixtures';
-import { interpret, type AnyInterpreter } from './interpreter';
+import { interpret } from './interpreter';
+import type { AnyInterpreter } from './interpreter.types';
 
 describe('Interpreter', () => {
   describe('#1 => Status', () => {
