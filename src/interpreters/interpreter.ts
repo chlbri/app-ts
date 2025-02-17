@@ -84,6 +84,7 @@ import {
 } from '~types';
 import {
   createInterval,
+  IS_TEST,
   replaceAll,
   toArray,
   type CreateInterval2_F,
@@ -255,6 +256,17 @@ export class Interpreter<
 
   get context() {
     return this.#context;
+  }
+
+  /**
+   * @deprecated
+   * Just use for testing
+   * Call in production will return nothing
+   */
+  get pContext() {
+    if (IS_TEST) return this.#pContext;
+    console.error('pContext is not available in production');
+    return;
   }
 
   #startStatus = (): WorkingStatus => (this.#status = 'started');
@@ -1386,45 +1398,31 @@ export class Interpreter<
 
     if (!service) {
       service = this.createChild(machine as any, initials);
-
       if (id) service.id = id;
     }
 
-    // const service;
-
     this.#childrenServices.push(service as any);
-    // const _subscribers = toArray.typed(subscribers);
 
     const subscriber = service.addFullSubscriber((_, events1) => {
-      // const event = events1.type;
-      // console.warn('service.context', service.context);
-
-      let callback = t.anify<() => void>();
       const _subscribers = toArray.typed(subscribers);
-      console.warn('subscribers', _subscribers.length);
+
       _subscribers.forEach(({ contexts, events }) => {
-        const checkContexts = contexts === true;
-        // console.warn('reached here');
-
         const check1 = typeof events1 === 'string';
-
         const events2 = service.event;
         const check2 = typeof events2 === 'string';
-
         const check3 = check1 || check2;
-        // const check35 = check1 && check2 ;
 
         const checkEvents =
           check3 ||
           reduceEvents(events as any, events1.type, events2.type);
 
-        console.warn('checkEvents', checkEvents);
-
+        const checkContexts = contexts === true;
         if (checkEvents) {
           if (checkContexts) {
-            callback = () => (this.#context = service.context as any);
+            const pContext = service.#context as any;
+            const callback = () => this.#merge({ pContext });
+            this.#scheduler.schedule(callback);
           } else {
-            console.warn('reached here');
             const _contexts = contexts as SingleOrArray<
               string | Record<string, string | string[]>
             >;
@@ -1432,13 +1430,12 @@ export class Interpreter<
 
             paths.forEach(path => {
               if (typeof path === 'string') {
-                const merger = mergeByKey(this.#context)(
+                const pContext = mergeByKey(this.#pContext)(
                   path,
-                  service.context,
+                  service.#context,
                 );
-                // console.warn('merger', merger);
-
-                callback = () => this.#merge({ context: merger });
+                const callback = () => this.#merge({ pContext });
+                this.#scheduler.schedule(callback);
               } else {
                 const entries = Object.entries(path).map(
                   ([key, value]) => {
@@ -1449,12 +1446,12 @@ export class Interpreter<
 
                 entries.forEach(([key, paths]) => {
                   paths.forEach(path => {
-                    const merger = mergeByKey(this.#context)(
+                    const pContext = mergeByKey(this.#pContext)(
                       path,
-                      getByKey(service.context, key),
+                      getByKey(service.#context, key),
                     );
-                    console.warn('merger', merger);
-                    callback = () => this.#merge({ context: merger });
+                    const callback = () => this.#merge({ pContext });
+                    this.#scheduler.schedule(callback);
                   });
                 });
               }
@@ -1463,7 +1460,7 @@ export class Interpreter<
         }
       });
 
-      if (callback) this.#scheduler.schedule(callback);
+      // if (callback) this.#scheduler.schedule(callback);
     });
 
     return subscriber;

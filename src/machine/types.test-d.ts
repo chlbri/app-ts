@@ -117,13 +117,18 @@ type Sub1 = Subscriber<
 >;
 expectTypeOf<Sub1>().toEqualTypeOf<{
   events:
-    | 'allEvents'
     | 'full'
-    | SingleOrArrayL<{
-        NEXT?: SingleOrArrayL<'NEXT' | 'FINISH' | 'FETCH' | 'WRITE'>;
-      }>;
+    | SingleOrArrayL<
+        | {
+            NEXT?: SingleOrArrayL<'NEXT' | 'FINISH' | 'FETCH' | 'WRITE'>;
+          }
+        | 'NEXT'
+        | 'FINISH'
+        | 'FETCH'
+        | 'WRITE'
+      >;
   contexts: SingleOrArrayL<{
-    iterator?: SingleOrArrayL<'iterator' | 'children.iterator'>;
+    iterator?: SingleOrArrayL<'iterator'>;
   }>;
 }>();
 
@@ -131,6 +136,6 @@ type Sub2 = Simplify<
   Subscriber<{}, string, { preConfig: unknown; context: string }>
 >;
 expectTypeOf<Sub2>().toEqualTypeOf<{
-  events: 'allEvents' | 'full' | SingleOrArrayL<{}>;
+  events: 'full' | SingleOrArrayL<{}>;
   contexts: true;
 }>();

@@ -15,7 +15,9 @@ describe(TEXT, () => {
   // #region Config
 
   const service = interpretTest(machine2, {
-    pContext: {},
+    pContext: {
+      iterator: 0,
+    },
     context: { iterator: 0, input: '', data: [] },
   });
 
@@ -78,7 +80,7 @@ describe(TEXT, () => {
   const useIteratorC = (num: number, index: number) => {
     const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
     return t.tuple(invite, async () => {
-      expect(service.context.children?.iterator).toBe(num);
+      expect(service.pContext?.iterator).toBe(num);
     });
   };
 
@@ -471,14 +473,6 @@ describe(TEXT, () => {
 
       test('#02 => Log is called "72" times', () => {
         expect(log).toBeCalledTimes(72);
-      });
-
-      test('#03 => Log the private', () => {
-        console.warn(
-          'service.context.children?.iterator',
-          '=>',
-          service.context.children?.iterator,
-        );
       });
     });
 

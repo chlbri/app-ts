@@ -68,41 +68,6 @@ export const machine1 = createMachine(
   },
 );
 
-export const machine3 = createMachine(
-  {
-    states: {
-      idle: {
-        activities: {
-          DELAY: 'inc',
-        },
-        on: {
-          NEXT: '/final',
-        },
-      },
-      final: {},
-    },
-  },
-  {
-    eventsMap: {
-      NEXT: {},
-    },
-    context: t.buildObject({ iterator: t.number }),
-    pContext: t.object,
-  },
-  { '/': 'idle' },
-  {
-    actions: {
-      inc: (pContext, context) => {
-        context.iterator++;
-        return { context, pContext };
-      },
-    },
-    delays: {
-      DELAY,
-    },
-  },
-);
-
 export const machine2 = createMachine(
   {
     machines: 'machine1',
@@ -192,15 +157,12 @@ export const machine2 = createMachine(
       WRITE: { value: t.string },
       FINISH: {},
     },
-    context: {} as {
+    context: t.anify<{
       iterator: number;
       input: string;
       data: string[];
-      children?: {
-        iterator: number;
-      };
-    },
-    pContext: t.object,
+    }>(),
+    pContext: t.anify<{ iterator: number }>(),
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
   {
@@ -267,8 +229,8 @@ export const machine2 = createMachine(
           context: { iterator: 0 },
         },
         {
-          events: 'allEvents',
-          contexts: { iterator: 'children.iterator' },
+          events: 'full',
+          contexts: { iterator: 'iterator' },
         },
       ),
     },

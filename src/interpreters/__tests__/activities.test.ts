@@ -87,7 +87,7 @@ describe(TEST_2, () => {
   });
 
   const service = interpretTest(machine2, {
-    pContext: {},
+    pContext: { iterator: 0 },
     context: { iterator: 0, input: '', data: [] },
   });
 

@@ -196,24 +196,28 @@ type HeritageMap<U extends Ru, Tc extends Ru> =
 
 export type Subscriber<
   E extends EventsMap = EventsMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc = any,
   U extends KeyU<'preConfig' | 'context'> = KeyU<'preConfig' | 'context'>,
 > = {
   events:
-    | SingleOrArrayL<{
-        [key in keyof GetEventsFromMachine<U>]?: SingleOrArrayL<keyof E>;
-      }>
-    | 'allEvents'
+    | SingleOrArrayL<
+        | {
+            [key in keyof GetEventsFromMachine<U>]?: SingleOrArrayL<
+              keyof E
+            >;
+          }
+        | keyof E
+      >
     | 'full';
   contexts: ContextFrom<U> extends infer CU
     ? CU extends Ru
-      ? Tc extends Ru
-        ? SingleOrArrayL<HeritageMap<CU, Tc>>
+      ? Pc extends Ru
+        ? SingleOrArrayL<HeritageMap<CU, Pc>>
         : never
       : CU extends Primitive
-        ? Tc extends CU
+        ? Pc extends CU
           ? true
-          : Tc extends infer Tc1 extends Ru
+          : Pc extends infer Tc1 extends Ru
             ? SingleOrArrayL<keyof SubType<Decompose<Tc1>, CU>>
             : never
         : never
@@ -222,7 +226,7 @@ export type Subscriber<
 
 export type ChildS<
   E extends EventsMap = EventsMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc = any,
   T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
     'preConfig' | 'context' | 'pContext'
   >,
@@ -232,7 +236,7 @@ export type ChildS<
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
   };
-  subscribers: SingleOrArrayL<Subscriber<E, Tc, NoInfer<T>>>;
+  subscribers: SingleOrArrayL<Subscriber<E, Pc, NoInfer<T>>>;
 };
 
 export type Subscriber2<
@@ -280,8 +284,8 @@ export type FnMapFrom2<
 export type GetMachinesFromConfig<
   C extends Config,
   E extends EventsMap = EventsMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<GetMachineKeysFromConfig<C>, ChildS<E, Tc>>;
+  Pc = any,
+> = Record<GetMachineKeysFromConfig<C>, ChildS<E, Pc>>;
 
 export type MachineOptions<
   C extends Config = Config,
@@ -295,7 +299,7 @@ export type MachineOptions<
   predicates?: Partial<GetGuardsFromFlat<Flat, E, Pc, Tc>>;
   promises?: Partial<GetSrcFromFlat<Flat, E, Pc, Tc>>;
   delays?: Partial<GetDelaysFromFlat<Flat, E, Pc, Tc>>;
-  machines?: Partial<GetMachinesFromConfig<C, E, Tc>>;
+  machines?: Partial<GetMachinesFromConfig<C, E, Pc>>;
 };
 
 export type MachineOptionsFrom<T extends KeyU<'mo'>> = Extract<
@@ -404,5 +408,5 @@ export type PromiseFunction2<
 
 export type MachineMap<
   E extends EventsMap = EventsMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<RecordS<ChildS<E, Tc>>>;
+  Pc = any,
+> = Partial<RecordS<ChildS<E, Pc>>>;

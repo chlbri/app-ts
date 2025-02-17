@@ -590,7 +590,7 @@ type CreateMachine_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   Mo extends NOmit<SimpleMachineOptions2, 'machines'> & {
-    machines?: Partial<GetMachinesFromConfig<C, EventM, Tc>>;
+    machines?: Partial<GetMachinesFromConfig<C, EventM, Pc>>;
   } = MachineOptions<C, EventM, Pc, Tc>,
 >(
   config: C,

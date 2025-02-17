@@ -25,8 +25,6 @@ export const toAction: ToAction_F = (events, action, actions) => {
   }
 
   const fn = actions?.[action];
-
   const func = fn ? reduceFnMap(events, fn) : undefined;
-
   return func;
 };

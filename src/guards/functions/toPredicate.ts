@@ -1,21 +1,11 @@
 import { isDefined } from '@bemedev/basifun';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
-import { DEFAULT_NOTHING, GUARD_TYPE } from '~constants';
+import { GUARD_TYPE } from '~constants';
 import type { EventsMap, ToEvents } from '~events';
 import type { GuardConfig } from '~guards';
 import { isDescriber, isString, type PrimitiveObject } from '~types';
 import { reduceFnMap } from '~utils';
 import type { PredicateMap, PredicateS2 } from '../types';
-
-export const returnTrue = () => {
-  console.log(`${DEFAULT_NOTHING} call true`);
-  return true;
-};
-
-export const returnFalse = () => {
-  console.log(`${DEFAULT_NOTHING} call false`);
-  return false;
-};
 
 export type _ToPredicateF = <
   E extends EventsMap,

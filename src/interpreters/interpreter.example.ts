@@ -5,7 +5,7 @@ import { interpretTest } from './interpreterTest';
 {
   const startTime = Date.now();
   using service = interpretTest(machine2, {
-    pContext: {},
+    pContext: { iterator: 0 },
     context: { iterator: 0, input: '', data: [] },
   });
 
