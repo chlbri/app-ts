@@ -5,6 +5,7 @@ import type { GuardConfig, PredicateS2 } from '~guards';
 import type { Machine } from '~machine';
 import type {
   Config,
+  Decompose2,
   GetEventsFromConfig,
   MachineOptions,
   PromiseFunction2,
@@ -201,3 +202,11 @@ export type AddSubscriber_F<
   E extends EventsMap = EventsMap,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (subscriber: FnMapReduced<E, Tc>) => Subscriber<E, Tc>;
+
+export type Selector_F<T = any> = <
+  D extends Decompose2<T>,
+  K extends Extract<keyof D, string>,
+  R = D[K],
+>(
+  selctor: K,
+) => R;

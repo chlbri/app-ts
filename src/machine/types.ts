@@ -183,7 +183,11 @@ export type KeysMatchingContext<T extends PrimitiveObjectMap> = Extract<
   string | number
 >;
 
-export type Decompose2<T extends Ru> = Decompose<DeepNotUndefined<T>>;
+export type Decompose2<T> = T extends Ru
+  ? Decompose<DeepNotUndefined<T>>
+  : T extends Primitive
+    ? T
+    : never;
 
 type HeritageMap<U extends Ru, Tc extends Ru> =
   Decompose2<U> extends infer KU extends object

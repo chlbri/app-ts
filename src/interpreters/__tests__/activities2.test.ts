@@ -73,14 +73,14 @@ describe(TEXT, () => {
   const useIterator = (num: number, index: number) => {
     const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
     return t.tuple(invite, async () => {
-      expect(service.context.iterator).toBe(num);
+      expect(service.select('iterator')).toBe(num);
     });
   };
 
   const useIteratorC = (num: number, index: number) => {
     const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
     return t.tuple(invite, async () => {
-      expect(service.pContext?.iterator).toBe(num);
+      expect(service.pSelect('iterator')).toBe(num);
     });
   };
 

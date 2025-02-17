@@ -108,6 +108,7 @@ import type {
   PerformTransition_F,
   PerformTransitions_F,
   Remaininigs,
+  Selector_F,
   WorkingStatus,
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
@@ -268,6 +269,19 @@ export class Interpreter<
     console.error('pContext is not available in production');
     return;
   }
+
+  select: Selector_F<Tc> = selector => getByKey(this.#context, selector);
+
+  /**
+   * @deprecated
+   * Just use for testing
+   * Call in production will return nothing
+   */
+  pSelect: Selector_F<Pc> = selector => {
+    const pContext = this.pContext;
+    if (pContext) return getByKey(pContext, selector);
+    return;
+  };
 
   #startStatus = (): WorkingStatus => (this.#status = 'started');
 
@@ -995,7 +1009,7 @@ export class Interpreter<
 
   #performMachines = () => {
     this.#childrenMachines.forEach(child => {
-      this.#reduceSubscribe(child as any);
+      this.#reduceChild(child as any);
     });
 
     this.#childrenServices.forEach(child => {
@@ -1388,7 +1402,7 @@ export class Interpreter<
 
   protected createChild: Fn = interpret;
 
-  #reduceSubscribe = <T extends AnyMachine = AnyMachine>(
+  #reduceChild = <T extends AnyMachine = AnyMachine>(
     { subscribers, machine, initials }: ChildS<E, Tc, T>,
     id?: string,
   ) => {
@@ -1397,11 +1411,11 @@ export class Interpreter<
     );
 
     if (!service) {
-      service = this.createChild(machine as any, initials);
+      service = this.createChild(machine, initials);
       if (id) service.id = id;
     }
 
-    this.#childrenServices.push(service as any);
+    this.#childrenServices.push(t.anify(service));
 
     const subscriber = service.addFullSubscriber((_, events1) => {
       const _subscribers = toArray.typed(subscribers);
@@ -1414,12 +1428,12 @@ export class Interpreter<
 
         const checkEvents =
           check3 ||
-          reduceEvents(events as any, events1.type, events2.type);
+          reduceEvents(t.anify(events), events1.type, events2.type);
 
         const checkContexts = contexts === true;
         if (checkEvents) {
           if (checkContexts) {
-            const pContext = service.#context as any;
+            const pContext = t.anify<any>(service.#context);
             const callback = () => this.#merge({ pContext });
             this.#scheduler.schedule(callback);
           } else {
@@ -1439,16 +1453,16 @@ export class Interpreter<
               } else {
                 const entries = Object.entries(path).map(
                   ([key, value]) => {
-                    const values = toArray.typed(value);
-                    return t.tuple(key, values);
+                    const paths = toArray.typed(value);
+                    return t.tuple(key, paths);
                   },
                 );
 
-                entries.forEach(([key, paths]) => {
+                entries.forEach(([pathChild, paths]) => {
                   paths.forEach(path => {
                     const pContext = mergeByKey(this.#pContext)(
                       path,
-                      getByKey(service.#context, key),
+                      getByKey(service.#context, pathChild),
                     );
                     const callback = () => this.#merge({ pContext });
                     this.#scheduler.schedule(callback);

@@ -426,3 +426,5 @@ export type StateMap = {
 export type KeyU<S extends string, R = unknown> = Record<S, R>;
 
 export type KeyO<S extends string, R = unknown> = Partial<KeyU<S, R>>;
+
+export type ExtractS<T> = Extract<T, string>;
