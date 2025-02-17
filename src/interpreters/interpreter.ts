@@ -1331,21 +1331,11 @@ export class Interpreter<
     return { sv, diffEntries, diffExits };
   };
 
-  // #region to review
-  // protected nextSimple = (target: string) => {
-  //   const config = this.proposedNextConfig(target);
-  //   const out = toSimple(config);
-
-  //   return out;
-  // };
-  // #endregion
-
   #isInsideValue = (_state: string) => {
     const check1 = _state === '/';
     if (check1) return true;
 
     const values = decomposeSV(this.#value);
-
     const entry = _state.substring(1);
     const state = replaceAll({
       entry,
@@ -1356,9 +1346,7 @@ export class Interpreter<
     return values.includes(state);
   };
 
-  #makeWork = () => {
-    this.#status = 'working';
-  };
+  #makeWork = () => (this.#status = 'working');
 
   // #endregion
 
@@ -1382,8 +1370,6 @@ export class Interpreter<
 
     return toPromiseSrc<E, Pc, Tc>(events, src, promises);
   };
-
-  //TODO retrieve options for all can be undefined
 
   toDelay = (delay?: string) => {
     const events = this.#machine.eventsMap;

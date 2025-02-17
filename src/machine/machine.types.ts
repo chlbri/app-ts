@@ -1,14 +1,19 @@
-import type { Fn } from '@bemedev/types';
-import type { PrimitiveObject } from 'src/types/primitives';
+import type { Fn, NOmit } from '@bemedev/types';
 import type { Action } from '~actions';
 import type { EventsMap, ToEvents } from '~events';
+import type { DefinedValue } from '~guards';
 import type { Machine } from '~machine';
 import type { NodeConfigWithInitials, StateValue } from '~states';
+import type { KeyU, PrimitiveObject } from '~types';
 import type {
+  ChildS,
   Config,
   ConfigWithInitials,
+  ContextFrom,
   MachineOptions,
+  PrivateContextFrom,
   SimpleMachineOptions2,
+  Subscriber,
 } from './types';
 
 export type _ProvideInitials_F<C extends Config> = (
@@ -97,8 +102,51 @@ export interface AnyMachine<
   isInitial: Fn<[string], boolean>;
   retrieveParentFromInitial: Fn<[string], NodeConfigWithInitials>;
   toNode: Fn<[StateValue], NodeConfigWithInitials>;
-
-  isValue: Fn;
-  isNotValue: Fn;
-  isDefined: Fn;
 }
+
+export type AddOption_F<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  Mo extends NOmit<SimpleMachineOptions2, 'initials'> = NOmit<
+    SimpleMachineOptions2,
+    'initials'
+  >,
+> = (option: {
+  isDefined: (
+    path: DefinedValue<E, Pc, Tc>,
+  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
+  isNotDefined: (
+    path: DefinedValue<E, Pc, Tc>,
+  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
+  isValue: (
+    path: DefinedValue<E, Pc, Tc>,
+    ...values: any[]
+  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
+  isNotValue: (
+    path: DefinedValue<E, Pc, Tc>,
+    ...values: any[]
+  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
+  createChild: <
+    const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
+      'pContext' | 'context' | 'preConfig'
+    >,
+  >(
+    machine: T,
+    initials: {
+      pContext: PrivateContextFrom<T>;
+      context: ContextFrom<T>;
+    },
+    ...subscribers: Subscriber<E, Tc, T>[]
+  ) => ChildS<E, Tc, T>;
+}) => Mo | undefined;
+
+export type AddOptions_F<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  Mo extends NOmit<SimpleMachineOptions2, 'initials'> = NOmit<
+    SimpleMachineOptions2,
+    'initials'
+  >,
+> = (option: AddOption_F<E, Pc, Tc, Mo>) => void;

@@ -7,6 +7,7 @@ import type { Delay } from '~delays';
 import type { EventsMap, ToEvents } from '~events';
 import {
   isDefinedS,
+  isNotDefinedS,
   isNotValue,
   isValue,
   type DefinedValue,
@@ -30,6 +31,7 @@ import type { KeyU, PrimitiveObject, RecordS } from '~types';
 import { IS_TEST } from '~utils';
 import { createChildS } from './functions';
 import type {
+  AddOptions_F,
   AnyMachine,
   Elements,
   GetIO2_F,
@@ -278,8 +280,8 @@ class Machine<
     return console.error('Only renew in test env');
   };
 
-  addPredicates = (guards?: Mo['predicates']) =>
-    (this.#predicates = guards);
+  addPredicates = (predicates?: Mo['predicates']) =>
+    (this.#predicates = predicates);
 
   /**
    * @deprecated
@@ -321,14 +323,6 @@ class Machine<
   provideMachines = (machines?: Mo['machines']) => {
     if (IS_TEST) return this.#renew('machines', machines);
     return console.error('Only renew in test env');
-  };
-
-  addOptions = (options?: NOmit<Mo, 'initials'>) => {
-    this.addActions(options?.actions);
-    this.addPredicates(options?.predicates);
-    this.addDelays(options?.delays);
-    this.addPromises(options?.promises);
-    this.addMachines(options?.machines);
   };
 
   provideOptions = (
@@ -538,7 +532,7 @@ class Machine<
     return { guards, actions, delays, promises, machines };
   }
 
-  createChildS = <
+  #createChildS = <
     const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
       'preConfig' | 'context' | 'pContext'
     >,
@@ -549,18 +543,44 @@ class Machine<
       context: ContextFrom<T>;
     },
     ...subscribers: Subscriber<E, Tc, T>[]
-  ) => createChildS(machine, initials, ...subscribers);
+  ) => createChildS<E, Tc, T>(machine, initials, ...subscribers);
 
-  isValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
+  #isValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
     return isValue<E, Pc, Tc>(path, ...values);
   };
 
-  isNotValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
+  #isNotValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
     return isNotValue<E, Pc, Tc>(path, ...values);
   };
 
-  isDefined = (path: DefinedValue<E, Pc, Tc>) => {
+  #isDefined = (path: DefinedValue<E, Pc, Tc>) => {
     return isDefinedS<E, Pc, Tc>(path);
+  };
+
+  #isNotDefined = (path: DefinedValue<E, Pc, Tc>) => {
+    return isNotDefinedS<E, Pc, Tc>(path);
+  };
+
+  addOptions: AddOptions_F<E, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
+    const isValue = this.#isValue;
+    const isNotValue = this.#isNotValue;
+    const isDefined = this.#isDefined;
+    const isNotDefined = this.#isNotDefined;
+    const createChild = this.#createChildS;
+
+    const out = func({
+      isValue,
+      isNotValue,
+      isDefined,
+      isNotDefined,
+      createChild,
+    });
+
+    this.addActions(out?.actions);
+    this.addPredicates(out?.predicates);
+    this.addDelays(out?.delays);
+    this.addPromises(out?.promises);
+    this.addMachines(out?.machines);
   };
 }
 

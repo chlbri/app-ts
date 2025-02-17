@@ -57,16 +57,17 @@ export const machine1 = createMachine(
   { '/': 'idle' },
 );
 
-machine1.addActions({
-  inc: (pContext, context) => {
-    context.iterator++;
-    return { context, pContext };
+machine1.addOptions(() => ({
+  actions: {
+    inc: (pContext, context) => {
+      context.iterator++;
+      return { context, pContext };
+    },
   },
-});
-
-machine1.addDelays({
-  DELAY,
-});
+  delays: {
+    DELAY,
+  },
+}));
 // #endregion
 
 // #region machine2
@@ -169,71 +170,70 @@ export const machine2 = createMachine(
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
 );
 
-machine2.addActions({
-  inc: (pContext, context) => {
-    context.iterator++;
-    return { context, pContext };
-  },
-  inc2: (pContext, context) => {
-    context.iterator += 4;
-    return { context, pContext };
-  },
-  sendPanelToUser: (pContext, context) => {
-    console.log('sendPanelToUser');
-    return { context, pContext };
-  },
-  write: {
-    WRITE: (pContext, context, { value }) => {
-      context.input = value;
+machine2.addOptions(({ isNotValue, isValue, createChild }) => ({
+  actions: {
+    inc: (pContext, context) => {
+      context.iterator++;
       return { context, pContext };
     },
-    else: (pContext, context) => ({ pContext, context }),
-  },
-  askUsertoInput: (pContext, context) => {
-    console.log('Input, please !!');
-    return {
-      pContext,
-      context,
-    };
-  },
-  insertData: (pContext, context, eventsMap) => {
-    const check =
-      typeof eventsMap === 'object' && eventsMap.type === 'machine$$then';
-
-    if (check) {
-      context.data.push(...eventsMap.payload);
-    }
-    return { context, pContext };
-  },
-});
-
-machine2.addPredicates({
-  isInputNotEmpty: machine2.isNotValue('context.input', ''),
-  isInputEmpty: machine2.isValue('context.input', ''),
-});
-
-machine2.addDelays({
-  DELAY,
-  DELAY2: 2 * DELAY,
-});
-
-machine2.addPromises({
-  fetch: async (_, { input }) => {
-    return fakeDB.filter(item => item.name.includes(input));
-  },
-});
-
-machine2.addMachines({
-  machine1: machine2.createChildS(
-    machine1,
-    {
-      pContext: {},
-      context: { iterator: 0 },
+    inc2: (pContext, context) => {
+      context.iterator += 4;
+      return { context, pContext };
     },
-    {
-      events: 'full',
-      contexts: { iterator: 'iterator' },
+    sendPanelToUser: (pContext, context) => {
+      console.log('sendPanelToUser');
+      return { context, pContext };
     },
-  ),
-});
+    write: {
+      WRITE: (pContext, context, { value }) => {
+        context.input = value;
+        return { context, pContext };
+      },
+      else: (pContext, context) => ({ pContext, context }),
+    },
+    askUsertoInput: (pContext, context) => {
+      console.log('Input, please !!');
+      return {
+        pContext,
+        context,
+      };
+    },
+    insertData: (pContext, context, eventsMap) => {
+      const check =
+        typeof eventsMap === 'object' &&
+        eventsMap.type === 'machine$$then';
+
+      if (check) {
+        context.data.push(...eventsMap.payload);
+      }
+      return { context, pContext };
+    },
+  },
+  predicates: {
+    isInputNotEmpty: isNotValue('context.input', ''),
+    isInputEmpty: isValue('context.input', ''),
+  },
+  promises: {
+    fetch: async (_, { input }) => {
+      return fakeDB.filter(item => item.name.includes(input));
+    },
+  },
+  delays: {
+    DELAY,
+    DELAY2: 2 * DELAY,
+  },
+  machines: {
+    machine1: createChild(
+      machine1,
+      {
+        pContext: {},
+        context: { iterator: 0 },
+      },
+      {
+        events: 'full',
+        contexts: { iterator: 'iterator' },
+      },
+    ),
+  },
+}));
 // #endregion

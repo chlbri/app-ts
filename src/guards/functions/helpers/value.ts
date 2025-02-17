@@ -30,11 +30,15 @@ export const isValue: IsValueS_F = (path, ...values) => {
     if (checkEvent) {
       const key = path.replace('events.', '');
       const check1 = typeof event === 'object';
+
       if (check1) {
         const toValidate = getByKey(event, key);
         return values.some(value => toValidate === value);
       }
+
+      return false;
     }
+
     throw new Error('Invalid path');
   };
 };
@@ -57,11 +61,15 @@ export const isNotValue: IsValueS_F = (path, ...values) => {
     if (checkEvent) {
       const key = path.replace('events.', '');
       const check1 = typeof event === 'object';
+
       if (check1) {
         const toValidate = getByKey(event, key);
         return values.every(value => toValidate !== value);
       }
+
+      return false;
     }
+
     throw new Error('Invalid path');
   };
 };
