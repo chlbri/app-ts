@@ -157,12 +157,12 @@ export const machine2 = createMachine(
       WRITE: { value: t.string },
       FINISH: {},
     },
-    context: t.anify<{
+    context: t.unknown<{
       iterator: number;
       input: string;
       data: string[];
     }>(),
-    pContext: t.anify<{ iterator: number }>(),
+    pContext: t.unknown<{ iterator: number }>(),
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
   {

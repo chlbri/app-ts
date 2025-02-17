@@ -52,7 +52,7 @@ class Machine<
    * Just use for typing
    */
   get mo() {
-    return t.anify<Mo>();
+    return t.unknown<Mo>();
   }
 
   /**
@@ -60,7 +60,7 @@ class Machine<
    * Just use for typing
    */
   get events() {
-    return t.anify<ToEvents<E>>();
+    return t.unknown<ToEvents<E>>();
   }
 
   /**
@@ -68,7 +68,7 @@ class Machine<
    * Just use for typing
    */
   get action() {
-    return t.anify<Action<E, Pc, Tc>>();
+    return t.unknown<Action<E, Pc, Tc>>();
   }
 
   /**
@@ -76,7 +76,7 @@ class Machine<
    * Just use for typing
    */
   get actionParams() {
-    return t.anify<{ pContext: Pc; context: Tc; map: E }>();
+    return t.unknown<{ pContext: Pc; context: Tc; map: E }>();
   }
 
   /**
@@ -84,7 +84,7 @@ class Machine<
    * Just use for typing
    */
   get guard() {
-    return t.anify<PredicateS<E, Pc, Tc>>();
+    return t.unknown<PredicateS<E, Pc, Tc>>();
   }
 
   /**
@@ -92,7 +92,7 @@ class Machine<
    * Just use for typing
    */
   get delay() {
-    return t.anify<Delay<E, Pc, Tc>>();
+    return t.unknown<Delay<E, Pc, Tc>>();
   }
 
   /**
@@ -100,7 +100,7 @@ class Machine<
    * Just use for typing
    */
   get promise() {
-    return t.anify<PromiseFunction<E, Pc, Tc>>();
+    return t.unknown<PromiseFunction<E, Pc, Tc>>();
   }
 
   /**
@@ -108,7 +108,7 @@ class Machine<
    * Just use for typing
    */
   get machine() {
-    return t.anify<this>();
+    return t.unknown<this>();
   }
   // #endregion
 

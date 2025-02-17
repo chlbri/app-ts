@@ -1406,7 +1406,7 @@ export class Interpreter<
     { subscribers, machine, initials }: ChildS<E, Tc, T>,
     id?: string,
   ) => {
-    let service = t.anify<InterpreterFrom<T>>(
+    let service = t.unknown<InterpreterFrom<T>>(
       this.#childrenServices.find(f => f.id === id),
     );
 
@@ -1415,7 +1415,7 @@ export class Interpreter<
       if (id) service.id = id;
     }
 
-    this.#childrenServices.push(t.anify(service));
+    this.#childrenServices.push(t.any(service));
 
     const subscriber = service.addFullSubscriber((_, events1) => {
       const _subscribers = toArray.typed(subscribers);
@@ -1428,12 +1428,12 @@ export class Interpreter<
 
         const checkEvents =
           check3 ||
-          reduceEvents(t.anify(events), events1.type, events2.type);
+          reduceEvents(t.any(events), events1.type, events2.type);
 
         const checkContexts = contexts === true;
         if (checkEvents) {
           if (checkContexts) {
-            const pContext = t.anify<any>(service.#context);
+            const pContext = t.any(service.#context);
             const callback = () => this.#merge({ pContext });
             this.#scheduler.schedule(callback);
           } else {

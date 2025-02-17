@@ -48,7 +48,7 @@ export const resolveNode: ResolveNode_F = (events, config, options) => {
     toPromise(events, promise, options),
   );
 
-  const out = t.anify<any>({
+  const out = t.any({
     type,
     entry,
     exit,

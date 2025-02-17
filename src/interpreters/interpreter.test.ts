@@ -4,7 +4,7 @@ import { interpret, type AnyInterpreter } from './interpreter';
 
 describe('Interpreter', () => {
   describe('#1 => Status', () => {
-    let service = t.anify<AnyInterpreter>();
+    let service = t.unknown<AnyInterpreter>();
 
     test('#0 => Create the machine', () => {
       service = interpret(machine1, {
