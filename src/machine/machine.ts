@@ -494,22 +494,6 @@ class Machine<
     return t.notUndefined(config);
   };
 
-  //TODO handle errors
-
-  // #region TODO
-  // TODO : Use It
-
-  // #throw = () => {
-  //   const check = this.#errorsCollector.size > 0;
-  //   if (check) {
-  //     const errors = this.errorsCollector.join('\n');
-  //     const error = new Error(errors);
-
-  //     throw error;
-  //   }
-  // };
-  // #endregion
-
   get initialConfig() {
     return this.#initialConfig;
   }
