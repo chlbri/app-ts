@@ -13,7 +13,7 @@ declare module 'deepmerge-ts' {
   }
 }
 
-export const _merge = deepmergeCustom<
+const _merge = deepmergeCustom<
   unknown,
   {
     DeepMergeArraysURI: 'DeepMergeLeafURI';
