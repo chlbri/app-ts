@@ -464,7 +464,7 @@ class Machine<
 
   addContext = (context: Tc) => {
     this.#context = context;
-  }
+  };
 
   /**
    * Reset all options
