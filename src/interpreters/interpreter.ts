@@ -136,11 +136,12 @@ export class Interpreter<
   #pContext!: Pc;
   #context!: Tc;
   #scheduler: Scheduler;
+
+  #childrenServices: AnyInterpreter<E, Pc, Tc>[] = [];
   get #childrenMachines() {
     const _machines = toArray.typed(this.#machine.preConfig.machines);
     return _machines.map(this.toMachine).filter(isDefined);
   }
-  #childrenServices: AnyInterpreter[] = [];
 
   id?: string;
 
@@ -184,7 +185,7 @@ export class Interpreter<
     this.#machine = machine.renew;
 
     this.#initialConfig = this.#machine.initialConfig;
-    this.#initialNode = this.#resolveNode(this.#initialConfig) as any;
+    this.#initialNode = this.#resolveNode(this.#initialConfig);
     this.#mode = mode;
     this.#config = this.#initialConfig;
 
@@ -194,9 +195,10 @@ export class Interpreter<
 
   #performConfig = () => {
     this.#value = nodeToValue(this.#config);
-    this.#node = this.#resolveNode(this.#config) as any;
-    const configForFlat = this.#config as NodeConfig;
-    this.#flat = flatMap(configForFlat) as any;
+    this.#node = this.#resolveNode(this.#config);
+
+    const configForFlat = t.unknown<NodeConfig>(this.#config);
+    this.#flat = t.any(flatMap(configForFlat));
     this.#possibleEvents = possibleEvents(this.#flat);
   };
 
@@ -206,7 +208,7 @@ export class Interpreter<
     const options = this.#machine.options;
     const events = this.#machine.eventsMap;
 
-    return resolveNode(events, config, options);
+    return resolveNode<E, Pc, Tc>(events, config, options);
   };
 
   get initialNode() {
@@ -347,11 +349,11 @@ export class Interpreter<
     return { pContext, context };
   };
 
-  get #contexts(): ActionResult<Pc, Tc> {
-    return {
+  get #contexts() {
+    return t.unknown<ActionResult<Pc, Tc>>({
       pContext: cloneDeep(this.#pContext),
       context: structuredClone(this.#context),
-    } as any;
+    });
   }
 
   #performActions = (
@@ -361,9 +363,9 @@ export class Interpreter<
     return actions
       .map(this.toAction)
       .filter(f => f !== undefined)
-      .map(value => this.#executeAction(value as any))
+      .map(value => this.#executeAction(value))
       .reduce((acc, value) => {
-        const out = merge(acc, value) as any;
+        const out = merge(acc, value);
         return out;
       }, contexts);
   };
@@ -410,8 +412,8 @@ export class Interpreter<
   };
 
   #merge = ({ pContext, context }: ActionResult<Pc, Tc>) => {
-    this.#pContext = merge(this.#pContext, pContext) as any;
-    this.#context = merge(this.#context, context) as any;
+    this.#pContext = merge(this.#pContext, pContext);
+    this.#context = merge(this.#context, context);
 
     this.#fullSubscribers.forEach(f => {
       const callback = () => f.reduced(this.#context, this.#event);
@@ -432,6 +434,12 @@ export class Interpreter<
       const check1 = delay < MIN_ACTIVITY_TIME;
       if (check1) {
         this.addWarning(`${_delay} is too short`);
+        return [];
+      }
+
+      const check11 = delay > MAX_TIME_PROMISE;
+      if (check11) {
+        this.addWarning(`${_delay} is too long`);
         return [];
       }
 
@@ -688,8 +696,7 @@ export class Interpreter<
         }
 
         const promise = withTimeout(_promise, key, ...MAX_POMS);
-
-        promises.push(promise as any);
+        promises.push(promise);
       },
     );
 
@@ -789,14 +796,12 @@ export class Interpreter<
     const check1 = this.#sending || !this.#isInsideValue(from);
     if (check1) return;
 
-    const always = toArray.typed(alway);
-
-    const out = this.#performTransitions(...(always as any));
+    const always = toArray<TransitionConfig>(alway);
+    const out = this.#performTransitions(...always);
     const target = out.target;
+    if (!target) return;
     const result = merge(this.#contexts, out.result);
-    if (target) return { target, result };
-
-    return;
+    return { target, result };
   };
 
   get #collectedPromisees() {
@@ -923,9 +928,9 @@ export class Interpreter<
         finalizes.forEach(f => f());
       };
 
-      const promise = () => Promise.all(promises.map(p => p()));
-
-      const _resultAfters = await promise().finally(finalize);
+      const _resultAfters = await Promise.all(
+        promises.map(p => p()),
+      ).finally(finalize);
       const resultAfters = _resultAfters.filter(isDefined);
 
       const cb = () => {
@@ -949,8 +954,9 @@ export class Interpreter<
     const resultAlways = this.#_performAlways;
 
     if (resultAlways) {
-      const out = () => {
-        this.#status = 'busy';
+      const callback = () => {
+        this.#makeBusy();
+
         const { target, result } = resultAlways;
         this.#merge(result);
 
@@ -958,10 +964,11 @@ export class Interpreter<
           this.#config = this.proposedNextConfig(target);
           this.#performConfig();
         }
-        this.#status = 'started';
+
+        this.#makeWork();
       };
 
-      this.#scheduler.schedule(out);
+      this.#scheduler.schedule(callback);
     }
   };
 
@@ -1007,7 +1014,7 @@ export class Interpreter<
 
   #performMachines = () => {
     this.#childrenMachines.forEach(child => {
-      this.#reduceChild(child as any);
+      this.#reduceChild(t.any(child));
     });
 
     this.#childrenServices.forEach(child => {
@@ -1082,11 +1089,7 @@ export class Interpreter<
     this.#pContext = pContext;
     this.#makeBusy();
 
-    if (this.#idle) {
-      this.#machine = this.#machine.providePrivateContext(
-        this.#initialPpc,
-      ) as any;
-    }
+    if (this.#idle) this.#machine.addPrivateContext(this.#initialPpc);
 
     this.#status = 'starting';
     return this.#machine;
@@ -1099,11 +1102,7 @@ export class Interpreter<
     this.#context = context;
     this.#makeBusy();
 
-    if (this.#idle) {
-      this.#machine = this.#machine.provideContext(
-        this.#initialContext,
-      ) as any;
-    }
+    if (this.#idle) this.#machine.addContext(this.#initialContext);
 
     this.#status = 'starting';
     return this.#machine;
@@ -1242,7 +1241,7 @@ export class Interpreter<
         result,
         this.#performActions(result, ...diffExits),
         this.#performActions(result, ...diffEntries),
-      ) as any;
+      );
     });
     // #endregion
 
@@ -1296,11 +1295,12 @@ export class Interpreter<
   };
 
   #diffNext = (target: string) => {
-    const _next = this.proposedNextConfig(target);
-    const next = _next as NodeConfig;
+    const next = t.unknown<NodeConfig>(this.proposedNextConfig(target));
     const flatNext = flatMap(next, false);
+
     const entriesCurrent = Object.entries(this.#flat);
     const keysNext = Object.keys(flatNext);
+
     const keys = entriesCurrent.map(([key]) => key);
     const diffEntries: string[] = [];
     const diffExits: string[] = [];
@@ -1421,9 +1421,10 @@ export class Interpreter<
             const callback = () => this.#merge({ pContext });
             this.#scheduler.schedule(callback);
           } else {
-            const _contexts = contexts as SingleOrArray<
+            type _Contexts = SingleOrArray<
               string | Record<string, string | string[]>
             >;
+            const _contexts = t.unknown<_Contexts>(contexts);
             const paths = toArray.typed(_contexts);
 
             paths.forEach(path => {

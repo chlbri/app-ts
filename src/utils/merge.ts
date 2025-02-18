@@ -1,3 +1,4 @@
+import { DeepPartial, t } from '@bemedev/types';
 import { deepmergeCustom } from 'deepmerge-ts';
 
 declare module 'deepmerge-ts' {
@@ -12,7 +13,7 @@ declare module 'deepmerge-ts' {
   }
 }
 
-export const merge = deepmergeCustom<
+export const _merge = deepmergeCustom<
   unknown,
   {
     DeepMergeArraysURI: 'DeepMergeLeafURI';
@@ -21,3 +22,10 @@ export const merge = deepmergeCustom<
 >({
   mergeArrays: false,
 });
+
+export const merge = <T = any>(
+  value: T,
+  ...mergers: (DeepPartial<NoInfer<T>> | NoInfer<T> | undefined)[]
+): T => {
+  return t.any(_merge(value, ...mergers));
+};

@@ -441,6 +441,10 @@ class Machine<
     return out;
   };
 
+  addPrivateContext = (pContext: Pc) => {
+    this.#pContext = pContext;
+  };
+
   /**
    * Reset all options
    */
@@ -457,6 +461,10 @@ class Machine<
 
     return out;
   };
+
+  addContext = (context: Tc) => {
+    this.#context = context;
+  }
 
   /**
    * Reset all options
