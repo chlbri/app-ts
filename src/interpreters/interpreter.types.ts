@@ -268,7 +268,7 @@ export interface AnyInterpreter<
   toAction: (action: ActionConfig) => Action<E, Pc, Tc> | undefined;
   toPredicate: (guard: GuardConfig) => PredicateS<E, Pc, Tc> | undefined;
   toPromiseSrc: (src: string) => PromiseFunction<E, Pc, Tc> | undefined;
-  toDelay: (delay?: string) => Delay<E, Pc, Tc> | undefined;
+  toDelay: (delay: string) => Delay<E, Pc, Tc> | undefined;
   toMachine: (machine: ActionConfig) => ChildS<E, Tc> | undefined;
   id?: string;
 }

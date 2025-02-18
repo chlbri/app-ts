@@ -7,7 +7,7 @@ export type ToMachine_F = <
   E extends EventsMap,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
-  machine?: ActionConfig,
+  machine: ActionConfig,
   machines?: MachineMap<E, Tc>,
 ) => ChildS<E, Tc> | undefined;
 

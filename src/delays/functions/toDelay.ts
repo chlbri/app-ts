@@ -10,7 +10,7 @@ export type ToDelay_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
-  delay?: string,
+  delay: string,
   delays?: DelayMap<E, Pc, Tc>,
 ) => Fn<[Pc, Tc, ToEvents<E>], number> | undefined;
 

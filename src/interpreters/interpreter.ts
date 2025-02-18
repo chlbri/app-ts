@@ -6,6 +6,7 @@ import { t, type Fn } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
 import {
+  reduceAction,
   toAction,
   type Action,
   type ActionConfig,
@@ -200,27 +201,27 @@ export class Interpreter<
   }
 
   #throwing = () => {
-    if (this.isNormal) {
-      const check1 = this.#errorsCollector.size > 0;
-      if (check1) {
-        const errors = this.#displayConsole(this.#errorsCollector);
-        console.error(errors);
-      }
-
+    if (this.isStrict) {
       const check2 = this.#warningsCollector.size > 0;
       if (check2) {
         const warnings = this.#displayConsole(this.#warningsCollector);
         console.log(warnings);
       }
 
-      return;
-    }
-
-    if (this.isStrict) {
       const check1 = this.#errorsCollector.size > 0;
       if (check1) {
         const errors = this.#displayConsole(this.#errorsCollector);
         throw new Error(errors);
+      }
+
+      return;
+    }
+
+    if (this.isNormal) {
+      const check1 = this.#errorsCollector.size > 0;
+      if (check1) {
+        const errors = this.#displayConsole(this.#errorsCollector);
+        console.error(errors);
       }
 
       const check2 = this.#warningsCollector.size > 0;
@@ -334,7 +335,7 @@ export class Interpreter<
 
   #startStatus = (): WorkingStatus => (this.#status = 'started');
 
-  #displayConsole = (messages: Iterable<string>): string => {
+  #displayConsole = (messages: Iterable<string>) => {
     return Array.from(messages).join('\n');
   };
 
@@ -1239,12 +1240,12 @@ export class Interpreter<
     return this.#warningsCollector;
   }
 
-  protected _addError = (error: string) => {
-    this.#errorsCollector.add(error);
+  protected _addError = (...errors: string[]) => {
+    errors.forEach(error => this.#errorsCollector.add(error));
   };
 
-  protected _addWarning = (error: string) => {
-    this.#errorsCollector.add(error);
+  protected _addWarning = (...warnings: string[]) => {
+    warnings.forEach(warning => this.#warningsCollector.add(warning));
   };
 
   // #region Next
@@ -1405,11 +1406,14 @@ export class Interpreter<
 
   // #endregion
 
-  #returnWithWarning = <T = any>(out: T | undefined, message: string) => {
+  #returnWithWarning = <T = any>(
+    out: T | undefined,
+    ...messages: string[]
+  ) => {
     const check = isDefined(out);
     if (check) return out;
 
-    this._addWarning(message);
+    this._addWarning(...messages);
     return;
   };
 
@@ -1427,10 +1431,13 @@ export class Interpreter<
     const events = this.#machine.eventsMap;
     const predicates = this.#machine.predicates;
 
-    return this.#returnWithWarning(
-      toPredicate<E, Pc, Tc>(events, guard, predicates),
-      `Guard (${guard}) is not defined`,
+    const { predicate, errors } = toPredicate<E, Pc, Tc>(
+      events,
+      guard,
+      predicates,
     );
+
+    return this.#returnWithWarning(predicate, ...errors);
   };
 
   toPromiseSrc = (src: string) => {
@@ -1443,7 +1450,7 @@ export class Interpreter<
     );
   };
 
-  toDelay = (delay?: string) => {
+  toDelay = (delay: string) => {
     const events = this.#machine.eventsMap;
     const delays = this.#machine.delays;
 
@@ -1458,7 +1465,7 @@ export class Interpreter<
 
     return this.#returnWithWarning(
       toMachine<E, Tc>(machine, machines),
-      `Machine (${machine}) is not defined`,
+      `Machine (${reduceAction(machine)}) is not defined`,
     );
   };
 

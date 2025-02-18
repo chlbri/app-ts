@@ -13,9 +13,12 @@ export type _ToPredicateF = <
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
-  guard?: GuardConfig,
+  guard: GuardConfig,
   predicates?: PredicateMap<E, Pc, Tc>,
-) => GuardDefUnion<[Pc, Tc, ToEvents<E>]> | undefined;
+) => {
+  func?: GuardDefUnion<[Pc, Tc, ToEvents<E>]>;
+  errors: string[];
+};
 
 export type ToPredicate_F = <
   E extends EventsMap,
@@ -23,43 +26,54 @@ export type ToPredicate_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
-  guard?: GuardConfig,
+  guard: GuardConfig,
   predicates?: PredicateMap<E, Pc, Tc>,
-) => PredicateS2<E, Pc, Tc> | undefined;
+) => { predicate?: PredicateS2<E, Pc, Tc> | undefined; errors: string[] };
 
 const _toPredicate: _ToPredicateF = (events, guard, predicates) => {
-  if (!guard) return undefined;
+  const errors: string[] = [];
 
   if (isDescriber(guard)) {
     const fn = predicates?.[guard.name];
     const func = fn ? reduceFnMap(events, fn) : undefined;
-    return func;
+    if (!func) errors.push(`Predicate "${guard.name}" not found`);
+    return { func, errors };
   }
 
   if (isString(guard)) {
     const fn = predicates?.[guard];
     const func = fn ? reduceFnMap(events, fn) : undefined;
-    return func;
+    if (!func) errors.push(`Predicate "${guard}" not found`);
+    return { func, errors };
   }
 
   const makeArray = (guards: GuardConfig[]) => {
     return guards
       .map(guard => _toPredicate(events, guard, predicates))
+      .filter(({ errors }) => {
+        const check = errors.length > 0;
+        if (check) {
+          errors.push(...errors);
+          return false;
+        }
+        return true;
+      })
+      .map(({ func }) => func)
       .filter(isDefined);
   };
 
   if (GUARD_TYPE.and in guard) {
     const and = makeArray(guard.and);
-    return { and };
+    return { and, errors };
   }
 
   const or = makeArray(guard.or);
-  return { or };
+  return { func: { or }, errors };
 };
 
 export const toPredicate: ToPredicate_F = (events, guard, predicates) => {
-  const out1 = _toPredicate(events, guard, predicates);
-  if (!out1) return;
+  const { func, errors } = _toPredicate(events, guard, predicates);
+  if (!func) return { errors };
 
-  return recursive(out1);
+  return { predicate: recursive(func), errors };
 };

@@ -11,7 +11,7 @@ export type ToAction_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
-  action?: ActionConfig,
+  action: ActionConfig,
   actions?: ActionMap<E, Pc, Tc>,
 ) => Fn<[Pc, Tc, ToEvents<E>], ActionResult<Pc, Tc>> | undefined;
 
