@@ -37,7 +37,6 @@ import type {
   FnMap2,
   KeyU,
   PrimitiveObject,
-  PrimitiveObjectMap,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
@@ -176,15 +175,6 @@ export type GetEventsFromMachine<T extends KeyU<'preConfig'>> =
 
 export type GetMachineKeysFromConfig<C extends Config> = FromActionConfig<
   ReduceArray<NotUndefined<C['machines']>>
->;
-
-type _KeysMatchingContext<T extends PrimitiveObjectMap> = T extends object
-  ? Decompose<T>
-  : T;
-
-export type KeysMatchingContext<T extends PrimitiveObjectMap> = Extract<
-  _KeysMatchingContext<T>,
-  string | number
 >;
 
 export type Decompose2<T> = T extends Ru

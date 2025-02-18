@@ -1,70 +1,29 @@
-# @bemedev/app-ts
+# Changelog
 
-A TypeScript library for creating and managing state machines.
+All notable changes to this project will be documented in this file.
 
-<br/>
-
-## Installation
-
-```bash
-npm install @bemedev/app-ts
-# or
-yarn add @bemedev/app-ts
-```
+The format is based on
+[Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
-## Features
+## [0.1.0] - 2024-01-24
 
-- Typed state machine creation
-- Public and private context management
-- Support for actions, guards and delays
-- Transition and event handling
+### Added
+
+- Initial project setup
+- Core state machine functionality
+- TypeScript types for machine configuration
 - Support for nested machines
-
-<br/>
-
-## Usage
-
-```typescript
-import { createMachine } from '@bemedev/app-ts';
-
-const machine = createMachine({
-  initial: 'idle',
-  states: {
-    idle: {
-      on: {
-        START: 'running',
-      },
-    },
-    running: {
-      on: {
-        STOP: 'idle',
-      },
-    },
-  },
-});
-```
-
-<br/>
-
-## CHANGE_LOG
-
-<details>
-
-<summary>
-View changelog
-</summary>
-
-## [0.1.0] - Waiting for better coverage
-
-</details>
-
-<br/>
-
-## Contributing
-
-Contributions are welcome! Please read our contribution guide for details.
+- Event handling system
+- Guard and action implementations
+- Public and private context management
+- Base project structure
+- Core types for state machines
+- Basic machine creation functionality
+- Event handling system
+- Initial documentation
 
 <br/>
 
