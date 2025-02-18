@@ -145,12 +145,6 @@ export class Interpreter<
 
   id?: string;
 
-  // get #canBeStoped() {
-  //   return this.#status === 'working';
-  // }
-
-  // #region Type getters
-
   /**
    * @deprecated
    * Just use for typing
@@ -158,8 +152,6 @@ export class Interpreter<
   get mo() {
     return this.#machine.mo;
   }
-
-  // #endregion
 
   get mode() {
     return this.#mode;
@@ -191,7 +183,64 @@ export class Interpreter<
 
     this.#performConfig();
     this.#scheduler = new Scheduler();
+
+    this.#throwing();
   }
+
+  get isStrict() {
+    return this.#mode === 'strict';
+  }
+
+  get isNormal() {
+    return this.#mode === 'normal';
+  }
+
+  get isStrictest() {
+    return this.#mode === 'strictest';
+  }
+
+  #throwing = () => {
+    if (this.isNormal) {
+      const check1 = this.#errorsCollector.size > 0;
+      if (check1) {
+        const errors = this.#displayConsole(this.#errorsCollector);
+        console.error(errors);
+      }
+
+      const check2 = this.#warningsCollector.size > 0;
+      if (check2) {
+        const warnings = this.#displayConsole(this.#warningsCollector);
+        console.log(warnings);
+      }
+
+      return;
+    }
+
+    if (this.isStrict) {
+      const check1 = this.#errorsCollector.size > 0;
+      if (check1) {
+        const errors = this.#displayConsole(this.#errorsCollector);
+        throw new Error(errors);
+      }
+
+      const check2 = this.#warningsCollector.size > 0;
+      if (check2) {
+        const warnings = this.#displayConsole(this.#warningsCollector);
+        console.log(warnings);
+      }
+
+      return;
+    }
+
+    if (this.isStrictest) {
+      const errors = this.#displayConsole([
+        ...this.#errorsCollector,
+        ...this.#warningsCollector,
+      ]);
+
+      throw new Error(errors);
+    }
+  };
 
   #performConfig = () => {
     this.#value = nodeToValue(this.#config);
@@ -285,7 +334,23 @@ export class Interpreter<
 
   #startStatus = (): WorkingStatus => (this.#status = 'started');
 
+  #displayConsole = (messages: Iterable<string>): string => {
+    return Array.from(messages).join('\n');
+  };
+
+  #checkContexts = () => {
+    if (!this.#pContext) {
+      this._addError('No pContext provided');
+    }
+    if (!this.#context) {
+      this._addError('No context provided');
+    }
+  };
+
   start = async () => {
+    this.#checkContexts();
+    this.#throwing();
+
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#performMachines();
@@ -326,6 +391,8 @@ export class Interpreter<
     this.#rinitIntervals();
     this.#performActivities();
     await this.#performStartTransitions();
+
+    this.#throwing();
 
     const currentConfig = this.#value;
     const check = !equal(previousValue, currentConfig);
@@ -433,13 +500,13 @@ export class Interpreter<
 
       const check1 = delay < MIN_ACTIVITY_TIME;
       if (check1) {
-        this.addWarning(`${_delay} is too short`);
+        this._addWarning(`${_delay} is too short`);
         return [];
       }
 
       const check11 = delay > MAX_TIME_PROMISE;
       if (check11) {
-        this.addWarning(`${_delay} is too long`);
+        this._addWarning(`${_delay} is too long`);
         return [];
       }
 
@@ -626,7 +693,6 @@ export class Interpreter<
     ...promisees
   ) => {
     type PR = PromiseeResult<E, Pc, Tc>;
-    // type Events = PR['event'];
 
     // #region Checker for reentering
     const key = this.#produceKeyRemainPromise(from);
@@ -728,10 +794,6 @@ export class Interpreter<
     }
     // #endregion
 
-    // #region type Promises
-
-    // #endregion
-
     const entries = Object.entries(after);
     const promises: TimeoutPromise<
       | {
@@ -751,7 +813,7 @@ export class Interpreter<
 
       const check1 = delay < MAX_TIME_PROMISE;
       if (check1) {
-        this.addWarning(`${_delay} is too long`);
+        this._addWarning(`${_delay} is too long`);
         return;
       }
 
@@ -1048,8 +1110,6 @@ export class Interpreter<
     return this.#performActions(this.#contexts, ...actions);
   };
 
-  // #finishExists = () => this.#performIO(...getExits(this.#currentConfig));
-
   pause = () => {
     this.#rinitIntervals();
     this.#fullSubscribers.forEach(f => {
@@ -1075,15 +1135,12 @@ export class Interpreter<
   };
 
   stop = () => {
-    // if (this.#canBeStoped) {
     this.#status = 'stopped';
     this.#rinitIntervals();
-    // }
   };
 
   #makeBusy = (): WorkingStatus => (this.#status = 'busy');
 
-  // #region Types
   providePrivateContext = (pContext: Pc) => {
     this.#initialPpc = pContext;
     this.#pContext = pContext;
@@ -1107,7 +1164,6 @@ export class Interpreter<
     this.#status = 'starting';
     return this.#machine;
   };
-  // #endregion
 
   // #region Providers
 
@@ -1183,18 +1239,17 @@ export class Interpreter<
     return this.#warningsCollector;
   }
 
-  protected addError = (error: string) => {
+  protected _addError = (error: string) => {
     this.#errorsCollector.add(error);
   };
 
-  protected addWarning = (error: string) => {
+  protected _addWarning = (error: string) => {
     this.#errorsCollector.add(error);
   };
 
   // #region Next
 
   protected _send: _Send_F<E, Pc, Tc> = (
-    // from: string,
     event: Exclude<ToEvents<E>, string>,
   ) => {
     type PR = PromiseeResult<E, Pc, Tc>;
@@ -1350,38 +1405,61 @@ export class Interpreter<
 
   // #endregion
 
+  #returnWithWarning = <T = any>(out: T | undefined, message: string) => {
+    const check = isDefined(out);
+    if (check) return out;
+
+    this._addWarning(message);
+    return;
+  };
+
   toAction = (action: ActionConfig) => {
     const events = this.#machine.eventsMap;
     const actions = this.#machine.actions;
 
-    return toAction<E, Pc, Tc>(events, action, actions);
+    return this.#returnWithWarning(
+      toAction<E, Pc, Tc>(events, action, actions),
+      `Action (${action}) is not defined`,
+    );
   };
 
   toPredicate = (guard: GuardConfig) => {
     const events = this.#machine.eventsMap;
     const predicates = this.#machine.predicates;
 
-    return toPredicate<E, Pc, Tc>(events, guard, predicates);
+    return this.#returnWithWarning(
+      toPredicate<E, Pc, Tc>(events, guard, predicates),
+      `Guard (${guard}) is not defined`,
+    );
   };
 
   toPromiseSrc = (src: string) => {
     const events = this.#machine.eventsMap;
     const promises = this.#machine.promises;
 
-    return toPromiseSrc<E, Pc, Tc>(events, src, promises);
+    return this.#returnWithWarning(
+      toPromiseSrc<E, Pc, Tc>(events, src, promises),
+      `Promise (${src}) is not defined`,
+    );
   };
 
   toDelay = (delay?: string) => {
     const events = this.#machine.eventsMap;
     const delays = this.#machine.delays;
 
-    return toDelay<E, Pc, Tc>(events, delay, delays);
+    return this.#returnWithWarning(
+      toDelay<E, Pc, Tc>(events, delay, delays),
+      `Delay (${delay}) is not defined`,
+    );
   };
 
   toMachine = (machine: ActionConfig) => {
     const machines = this.#machine.machines;
 
-    return toMachine<E, Tc>(machine, machines);
+    return this.#returnWithWarning(
+      toMachine<E, Tc>(machine, machines),
+      `Machine (${machine}) is not defined`,
+    );
   };
 
   protected createChild: Fn = interpret;
@@ -1458,8 +1536,6 @@ export class Interpreter<
           }
         }
       });
-
-      // if (callback) this.#scheduler.schedule(callback);
     });
 
     return subscriber;
