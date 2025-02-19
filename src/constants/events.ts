@@ -15,7 +15,3 @@ export type CatchEvent = {
 export const MAX_EXCEEDED_EVENT_TYPE = 'machine$$exceeded';
 
 export type MaxExceededEvent = typeof MAX_EXCEEDED_EVENT_TYPE;
-
-export const MAX_TIME_PROMISE = 100_000;
-
-export const MIN_ACTIVITY_TIME = 50;

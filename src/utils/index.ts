@@ -1,6 +1,7 @@
 export * from './asyncfy';
 export * from './asyncNothing';
 export * from './describer';
+export * from './duration';
 export * from './environment';
 export * from './interval';
 export * from './merge';

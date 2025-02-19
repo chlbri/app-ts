@@ -15,6 +15,7 @@ import {
 import {
   CATCH_EVENT_TYPE,
   DEFAULT_DELIMITER,
+  MAX_SELF_TRANSITIONS,
   MAX_TIME_PROMISE,
   MIN_ACTIVITY_TIME,
   THEN_EVENT_TYPE,
@@ -82,6 +83,7 @@ import {
 import {
   createInterval,
   IS_TEST,
+  measureExecutionTime,
   replaceAll,
   toArray,
   type CreateInterval2_F,
@@ -174,7 +176,7 @@ export class Interpreter<
     return this.#machine.eventsMap;
   }
 
-  constructor(machine: Machine<C, Pc, Tc, E, Mo>, mode: Mode = 'normal') {
+  constructor(machine: Machine<C, Pc, Tc, E, Mo>, mode: Mode = 'strict') {
     this.#machine = machine.renew;
 
     this.#initialConfig = this.#machine.initialConfig;
@@ -385,20 +387,36 @@ export class Interpreter<
     this.#subscribers.forEach(this.#scheduleSubscriber);
   };
 
+  #selfTransitionsCounter = 0;
+
   protected next = async () => {
     const previousValue = this.#value;
+    const checkCounter =
+      this.#selfTransitionsCounter >= MAX_SELF_TRANSITIONS;
+
+    if (checkCounter) {
+      this._addError(
+        'Too much self transitions, exceeded 100 transitions',
+      );
+    }
+
+    this.#throwing();
 
     this.flushSubscribers();
     this.#rinitIntervals();
     this.#performActivities();
-    await this.#performStartTransitions();
+    await this.#performSelfTransitions();
 
-    this.#throwing();
+    this.#selfTransitionsCounter++;
 
     const currentConfig = this.#value;
     const check = !equal(previousValue, currentConfig);
 
-    if (check) await this.next.bind(this)();
+    if (check) {
+      const duration = await measureExecutionTime(this.next.bind(this));
+      const check2 = duration > MIN_ACTIVITY_TIME;
+      if (check2) this.#selfTransitionsCounter = 0;
+    } else this.#selfTransitionsCounter = 0;
   };
 
   #performAction: PerformAction_F<E, Pc, Tc> = action => {
@@ -1085,7 +1103,7 @@ export class Interpreter<
     });
   };
 
-  #performStartTransitions = async () => {
+  #performSelfTransitions = async () => {
     this.#status = 'busy';
     const promises: (() => Promise<void>)[] = [];
 
@@ -1101,9 +1119,12 @@ export class Interpreter<
 
     this.#performAlways();
 
-    await Promise.all(promises.map(p => p())).finally(() => {
-      return this.#makeWork();
-    });
+    const check2 = promises.length > 0;
+
+    if (check2) {
+      await Promise.all(promises.map(p => p()));
+    }
+    this.#makeWork();
   };
 
   #startInitialEntries = () => {
