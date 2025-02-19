@@ -1,5 +1,5 @@
+import { sleepU } from '~utils';
 import { DELAY, machine2 } from './__tests__/test.data';
-import { sleepU } from './interpreter.helpers';
 import { interpretTest } from './interpreterTest';
 
 {

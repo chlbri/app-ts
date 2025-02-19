@@ -1,14 +1,8 @@
 import { isDefined } from '@bemedev/basifun';
-import sleep from '@bemedev/sleep';
 import { deepmerge } from 'deepmerge-ts';
 import type { NodeConfigWithInitials } from '~states';
 import type { PrimitiveObject, RecordS } from '~types';
 import type { Contexts } from './interpreter.types';
-
-export const sleepU = async (ms = 0, times = 1) => {
-  for (let i = 0; i < times; i++) await sleep(ms);
-  return undefined;
-};
 
 export const performRemaining = <
   Pc = any,
