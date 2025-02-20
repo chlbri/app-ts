@@ -1,4 +1,5 @@
-import type { Fn } from '@bemedev/types';
+import type { Interval2, IntervalParams } from '@bemedev/interval2';
+import type { Fn, NOmit } from '@bemedev/types';
 import type {
   Action,
   Action2,
@@ -272,3 +273,7 @@ export interface AnyInterpreter<
   toMachine: (machine: ActionConfig) => ChildS<E, Tc> | undefined;
   id?: string;
 }
+
+export type CreateInterval2_F = (
+  config: NOmit<IntervalParams, 'exact'>,
+) => Interval2;

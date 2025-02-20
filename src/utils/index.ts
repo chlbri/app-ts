@@ -3,7 +3,6 @@ export * from './asyncNothing';
 export * from './describer';
 export * from './duration';
 export * from './environment';
-export * from './interval';
 export * from './merge';
 export * from './nothing';
 export * from './objects';

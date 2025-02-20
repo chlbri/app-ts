@@ -1,6 +1,7 @@
+import type { TimerState } from '@bemedev/interval2';
 import type { EventsMap, ToEvents } from '~events';
 import { PrimitiveObject } from '~types';
-import { nothing, reduceFnMap2, type TimerState } from '~utils';
+import { nothing, reduceFnMap2 } from '~utils';
 import { type FnMapReduced } from '../types/primitives';
 
 export type SubscriberMap<

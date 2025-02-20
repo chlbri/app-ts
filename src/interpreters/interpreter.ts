@@ -1,6 +1,7 @@
 import { isDefined, partialCall } from '@bemedev/basifun';
 import type { SingleOrArray } from '@bemedev/boolean-recursive';
 import { decomposeSV } from '@bemedev/decompose';
+import { createInterval, type Interval2 } from '@bemedev/interval2';
 import sleep from '@bemedev/sleep';
 import { t, type Fn } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
@@ -81,13 +82,10 @@ import {
   type RecordS,
 } from '~types';
 import {
-  createInterval,
   IS_TEST,
   measureExecutionTime,
   replaceAll,
   toArray,
-  type CreateInterval2_F,
-  type IntervalTimer,
 } from '~utils';
 import { merge } from './../utils/merge';
 import { performRemaining, possibleEvents } from './interpreter.helpers';
@@ -95,6 +93,7 @@ import type {
   _Send_F,
   AddSubscriber_F,
   AnyInterpreter,
+  CreateInterval2_F,
   ExecuteActivities_F,
   Interpreter_F,
   Mode,
@@ -596,13 +595,13 @@ export class Interpreter<
       callback,
       id,
       interval,
-      forTest: false,
+      exact: false,
     });
 
     return out;
   };
 
-  protected _cachedIntervals: IntervalTimer[] = [];
+  protected _cachedIntervals: Interval2[] = [];
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';

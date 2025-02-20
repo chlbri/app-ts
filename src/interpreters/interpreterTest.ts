@@ -1,3 +1,4 @@
+import { createInterval } from '@bemedev/interval2';
 import type { EventsMap } from '~events';
 import type {
   Config,
@@ -5,8 +6,8 @@ import type {
   SimpleMachineOptions2,
 } from '~machines';
 import type { PrimitiveObject } from '~types';
-import { createInterval, type CreateInterval2_F } from '~utils';
 import { Interpreter } from './interpreter';
+import type { CreateInterval2_F } from './interpreter.types';
 import type { InterpreterTest_F } from './interpreterTest.types';
 
 class InterpreterTest<
@@ -19,13 +20,13 @@ class InterpreterTest<
   protected createInterval: CreateInterval2_F = ({
     callback,
     id,
-    interval,
+    interval = 100,
   }) => {
     const out = createInterval({
       callback,
       id,
       interval,
-      forTest: true,
+      exact: true,
     });
 
     return out;
