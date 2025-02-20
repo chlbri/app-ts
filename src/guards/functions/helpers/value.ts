@@ -26,20 +26,15 @@ export const isValue: IsValueS_F = (path, ...values) => {
       return values.some(value => getByKey(pContext, key) === value);
     }
 
-    const checkEvent = path.startsWith('events.');
-    if (checkEvent) {
-      const key = path.replace('events.', '');
-      const check1 = typeof event === 'object';
+    const key = path.replace('events.', '');
+    const check1 = typeof event === 'object';
 
-      if (check1) {
-        const toValidate = getByKey(event, key);
-        return values.some(value => toValidate === value);
-      }
-
-      return false;
+    if (check1) {
+      const toValidate = getByKey(event, key);
+      return values.some(value => toValidate === value);
     }
 
-    throw new Error('Invalid path');
+    return false;
   };
 };
 
@@ -57,19 +52,14 @@ export const isNotValue: IsValueS_F = (path, ...values) => {
       return values.every(value => getByKey(pContext, key) !== value);
     }
 
-    const checkEvent = path.startsWith('events.');
-    if (checkEvent) {
-      const key = path.replace('events.', '');
-      const check1 = typeof event === 'object';
+    const key = path.replace('events.', '');
+    const check1 = typeof event === 'object';
 
-      if (check1) {
-        const toValidate = getByKey(event, key);
-        return values.every(value => toValidate !== value);
-      }
-
-      return false;
+    if (check1) {
+      const toValidate = getByKey(event, key);
+      return values.every(value => toValidate !== value);
     }
 
-    throw new Error('Invalid path');
+    return false;
   };
 };

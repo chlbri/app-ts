@@ -451,5 +451,4 @@ export type KeysMatching2<
     ? `${T}`
     : '';
 
-export type ToStringP<T = any> =
-  `${T extends Primitive ? `${T}` : T extends object ? KeysMatching2<T> : ''}`;
+export type NoValue = void | undefined | null;
