@@ -109,7 +109,10 @@ export const machine2 = createMachine(
                 promises: {
                   src: 'fetch',
                   then: {
-                    actions: 'insertData',
+                    actions: {
+                      name: 'insertData',
+                      description: 'Database insert',
+                    },
                     target: '/working/fetch/idle',
                   },
                   catch: '/working/fetch/idle',
