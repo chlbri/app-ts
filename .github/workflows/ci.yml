@@ -12,6 +12,8 @@ on:
     branches-ignore:
       - master
       - main
+      - canary
+      - beta
 
 jobs:
   test:
