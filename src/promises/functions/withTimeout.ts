@@ -16,7 +16,7 @@ export const withTimeout = <T = any>(
   id: string,
   ..._timeouts: number[]
 ): TimeoutPromise<T> => {
-  const timeouts = [..._timeouts, Number.POSITIVE_INFINITY];
+  const timeouts = [..._timeouts, 1_000_000];
 
   const timeoutPids = Array.from(
     { length: timeouts.length },

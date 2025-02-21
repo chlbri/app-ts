@@ -1,4 +1,9 @@
-import { isDefined, partialCall } from '@bemedev/basifun';
+import {
+  anyPromises,
+  isDefined,
+  partialCall,
+  racePromises,
+} from '@bemedev/basifun';
 import type { SingleOrArray } from '@bemedev/boolean-recursive';
 import { decomposeSV } from '@bemedev/decompose';
 import { createInterval, type Interval2 } from '@bemedev/interval2';
@@ -52,7 +57,6 @@ import {
 import {
   PromiseConfig,
   PromiseFunction,
-  racePromises,
   toPromiseSrc,
   withTimeout,
   type PromiseeResult,
@@ -349,14 +353,14 @@ export class Interpreter<
     }
   };
 
-  start = async () => {
+  start = () => {
     this.#checkContexts();
     this.#throwing();
 
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#performMachines();
-    await this.next();
+    return this.next();
   };
 
   #rinitIntervals = () => {
@@ -625,7 +629,7 @@ export class Interpreter<
       const check1 = typeof transition === 'string';
       if (check1) return { target: transition };
 
-      const check2 = typeof transition === 'object';
+      const check2 = transition !== false;
       if (check2) {
         return transition;
       }
@@ -825,11 +829,12 @@ export class Interpreter<
     entries.forEach(([_delay, transition]) => {
       const delayF = this.toDelay(_delay);
       const check0 = !isDefined(delayF);
+
       if (check0) return;
 
       const delay = this.#executeDelay(delayF);
 
-      const check1 = delay < MAX_TIME_PROMISE;
+      const check1 = delay > MAX_TIME_PROMISE;
       if (check1) {
         this._addWarning(`${_delay} is too long`);
         return;
@@ -837,24 +842,29 @@ export class Interpreter<
 
       const transitions = toArray.typed(transition);
 
-      const _promise = () =>
-        sleep(delay).then(() => {
-          const remain = () => {
-            const out = this.#performTransitions(...transitions);
-            const target = out.target;
-            const result = out.result ?? {};
+      const _promise = async () => {
+        await sleep(delay);
 
-            return { target, result };
-          };
+        const remain = () => {
+          const out = this.#performTransitions(...transitions);
+          const target = out.target;
+          const result = out.result ?? {};
 
-          const check2 = this.#sending || !this.#isInsideValue(from);
-          if (check2) {
-            remains.push(remain);
-            return;
-          }
+          return { target, result };
+        };
 
-          return remain();
-        });
+        const check2 = this.#sending || !this.#isInsideValue(from);
+        if (check2) {
+          remains.push(remain);
+          return;
+        }
+
+        const out = remain();
+        const check3 =
+          out.target === undefined && Object.keys(out.result).length < 1;
+        if (check3) return Promise.reject('No transitions reached !');
+        return out;
+      };
 
       const promise = withTimeout(_promise, key);
 
@@ -867,7 +877,7 @@ export class Interpreter<
       this.#addRemainingAfter(from, remaining);
     };
 
-    const out = { promise: racePromises(key, ...promises), finalize };
+    const out = { promise: anyPromises(key, ...promises), finalize };
 
     return out;
   };
@@ -997,7 +1007,9 @@ export class Interpreter<
         .filter(isDefined);
 
       const check1 = afters.length < 1;
-      if (check1) return;
+      if (check1) {
+        return;
+      }
 
       afters.forEach(({ finalize, promise }) => {
         finalizes.push(finalize);
@@ -1016,7 +1028,7 @@ export class Interpreter<
       const cb = () => {
         resultAfters.forEach(({ result, target }) => {
           this.#merge(result);
-
+          console.warn('target', target);
           if (target) {
             this.#config = this.proposedNextConfig(target);
             this.#performConfig();
@@ -1572,6 +1584,8 @@ export class Interpreter<
     this.stop();
   };
 }
+
+export type AnyInterpreter2 = Interpreter<any, any, any, any, any>;
 
 export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   ConfigFrom<M>,
