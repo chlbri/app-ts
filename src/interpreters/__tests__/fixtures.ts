@@ -1,6 +1,7 @@
 import sleep from '@bemedev/sleep';
 import { t } from '@bemedev/types';
-import type { AnyInterpreter2 } from '~interpreter';
+import type { EventArg, EventsMap } from '~events';
+import type { AnyInterpreter2, Interpreter } from '~interpreter';
 import { createMachine } from '~machine';
 import { createConfig } from '~machines';
 import type { FlatMapN, StateValue } from '~states';
@@ -135,6 +136,22 @@ export const constructValue: ConstructValue_F = service => {
 
     return t.tuple(invite, () => {
       expect(service.value).toEqual(value);
+    });
+  };
+};
+
+type ConstructSend_F = <T extends EventsMap>(
+  service: Interpreter<any, any, any, T, any>,
+) => (_event: EventArg<T>, index: number) => [string, () => void];
+
+export const constructSend: ConstructSend_F = service => {
+  return (_event, index) => {
+    const event = JSON.stringify(_event);
+    const _index = index < 10 ? '0' + index : index;
+    const invite = `#${_index}=> send ${event}`;
+
+    return t.tuple(invite, () => {
+      return service.send(_event);
     });
   };
 };

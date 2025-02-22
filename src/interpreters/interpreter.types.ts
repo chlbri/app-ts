@@ -262,7 +262,7 @@ export interface AnyInterpreter<
   addSubscriber: AddSubscriber_F<any, any>;
   errorsCollector: Set<string>;
   warningsCollector: Set<string>;
-  send: (event: EventArg<E>) => Promise<void>;
+  send: (event: EventArg<E>) => void;
   canEvent: (eventS: string) => boolean;
   possibleEvents: string[];
   flushSubscribers: () => void;

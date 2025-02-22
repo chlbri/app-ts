@@ -4,7 +4,7 @@ import type { NodeConfigWithInitials } from '~states';
 import type { PrimitiveObject, RecordS } from '~types';
 import type { Contexts } from './interpreter.types';
 
-export const performRemaining = <
+export const reduceRemainings = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
