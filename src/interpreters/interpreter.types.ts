@@ -118,30 +118,47 @@ export type PerformAfter_F<
   from: string,
   after: DelayedTransitions,
 ) =>
+  | TimeoutPromise<
+      | {
+          target?: string;
+          result: ActionResult<Pc, Tc>;
+        }
+      | undefined
+    >
+  | undefined;
+
+export type TransitionAfterResult<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> =
   | {
-      promise: TimeoutPromise<
-        | {
-            target?: string;
-            result: ActionResult<Pc, Tc>;
-          }
-        | undefined
-      >;
-      finalize: () => void;
+      result: ActionResult<Pc, Tc>;
+      target: string;
     }
   | undefined;
 
 export type PerformAlway_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (
-  from: string,
-  always: AlwaysConfig,
-) =>
-  | {
-      result: ActionResult<Pc, Tc>;
-      target: string;
-    }
-  | undefined;
+> = (always: AlwaysConfig) => TransitionAfterResult<Pc, Tc>;
+
+export type Collected0<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  after?:
+    | TimeoutPromise<
+        | {
+            target?: string;
+            result: ActionResult<Pc, Tc>;
+          }
+        | undefined
+      >
+    | undefined;
+  promisee?: TimeoutPromise<PromiseeResult<E, Pc, Tc> | undefined>;
+  always?: TransitionAfterResult<Pc, Tc>;
+};
 
 export type ToPromiseSrc_F<
   E extends EventsMap = EventsMap,
@@ -149,19 +166,14 @@ export type ToPromiseSrc_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (promise: string) => PromiseFunction2<E, Pc, Tc>;
 
-export type PerformPromisees_F<
+export type PerformPromisee_F<
   E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   from: string,
   ...promisees: PromiseConfig[]
-) =>
-  | {
-      finalize: () => void;
-      promise: TimeoutPromise<PromiseeResult<E, Pc, Tc> | undefined>;
-    }
-  | undefined;
+) => TimeoutPromise<PromiseeResult<E, Pc, Tc> | undefined> | undefined;
 
 export type Contexts<
   Pc = any,
@@ -196,11 +208,6 @@ export type SleepContexts_F = <
 >(
   ms?: number,
 ) => Promise<ActionResult<Pc, Tc>>;
-
-export type Remaininigs<
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = (() => { target?: string; result: ActionResult<Pc, Tc> })[];
 
 export type _Send_F<
   E extends EventsMap = EventsMap,
@@ -263,8 +270,6 @@ export interface AnyInterpreter<
   errorsCollector: Set<string>;
   warningsCollector: Set<string>;
   send: (event: EventArg<E>) => void;
-  canEvent: (eventS: string) => boolean;
-  possibleEvents: string[];
   flushSubscribers: () => void;
   toAction: (action: ActionConfig) => Action<E, Pc, Tc> | undefined;
   toPredicate: (guard: GuardConfig) => PredicateS<E, Pc, Tc> | undefined;

@@ -6,6 +6,10 @@ import { createMachine } from '~machine';
 import { createConfig } from '~machines';
 import type { FlatMapN, StateValue } from '~states';
 
+export const defaultC = { pContext: {}, context: {} };
+export const defaultT = { ...defaultC, eventsMap: {} };
+export const defaultI = { '/': 'idle' } as const;
+
 export const config1 = createConfig({
   description: 'cdd',
   states: {
