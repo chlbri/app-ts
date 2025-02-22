@@ -3,12 +3,7 @@ import type { Fn } from '@bemedev/types';
 import type { ActionConfig, FromActionConfig } from '~actions';
 import type { GUARD_TYPE } from '~constants';
 import type { EventsMap, ToEvents } from '~events';
-import type {
-  FnMap,
-  PrimitiveObject,
-  RecordS,
-  ReduceArray,
-} from '~types';
+import type { FnMap, PrimitiveObject, RecordS, ReduceArray } from '~types';
 
 type gType = typeof GUARD_TYPE;
 type and = gType['and'];
