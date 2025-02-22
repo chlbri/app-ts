@@ -8,12 +8,13 @@ import {
   constructSend,
   constructValue,
   constructWaiter,
+  defaultC,
+  defaultI,
+  defaultT,
 } from '../fixtures';
 
 const DELAY = 1000;
-const defaultC = { pContext: {}, context: {} };
-const defaultT = { ...defaultC, eventsMap: {} };
-const defaultI = { '/': 'idle' } as const;
+
 const useWaiter = constructWaiter(DELAY);
 
 describe('after', () => {
@@ -201,7 +202,7 @@ describe('after', () => {
     test(...useSend('NEXT', 8));
     test(...useValue('idle', 9));
     test(...useWaiter(1, 10));
-    test(...useValue('active', 11));
+    test(...useValue('idle', 11));
     test(...useWaiter(2, 12));
     test(...useSend('NEXT', 13));
     test(...useValue('idle', 14));
