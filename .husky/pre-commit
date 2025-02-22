@@ -1,1 +1,2 @@
 pnpm run ci
+git add .
