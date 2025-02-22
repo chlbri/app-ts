@@ -435,20 +435,4 @@ export type TrueObject = object & {
   [SymbolConstructor]?: never;
 };
 
-export type KeysMatching2<
-  T,
-  AddObjectKeys extends boolean = true,
-  Key extends keyof T = keyof T,
-> = T extends TrueObject
-  ? Key extends string
-    ? NotUndefined<T[Key]> extends TrueObject
-      ?
-          | `${Key}.${KeysMatching2<NotUndefined<T[Key]>, AddObjectKeys> & string}`
-          | (AddObjectKeys extends true ? Key : never)
-      : Key
-    : never
-  : T extends Primitive
-    ? `${T}`
-    : '';
-
 export type NoValue = void | undefined | null;

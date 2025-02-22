@@ -1,10 +1,10 @@
+import type { KeysMatching } from '@bemedev/decompose';
 import type { Fn } from '@bemedev/types';
 import type { ActionConfig, FromActionConfig } from '~actions';
 import type { GUARD_TYPE } from '~constants';
 import type { EventsMap, ToEvents } from '~events';
 import type {
   FnMap,
-  KeysMatching2,
   PrimitiveObject,
   RecordS,
   ReduceArray,
@@ -90,7 +90,7 @@ export type DefinedValue<
   E extends EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = KeysMatching2<{
+> = KeysMatching<{
   events: E;
   pContext: Pc;
   context: Tc;
