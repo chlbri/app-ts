@@ -1,4 +1,9 @@
-import { isDefined, partialCall } from '@bemedev/basifun';
+import {
+  anyPromises,
+  isDefined,
+  partialCall,
+  racePromises,
+} from '@bemedev/basifun';
 import type { SingleOrArray } from '@bemedev/boolean-recursive';
 import { decomposeSV } from '@bemedev/decompose';
 import { createInterval, type Interval2 } from '@bemedev/interval2';
@@ -52,7 +57,6 @@ import {
 import {
   PromiseConfig,
   PromiseFunction,
-  racePromises,
   toPromiseSrc,
   withTimeout,
   type PromiseeResult,
@@ -88,7 +92,7 @@ import {
   toArray,
 } from '~utils';
 import { merge } from './../utils/merge';
-import { performRemaining, possibleEvents } from './interpreter.helpers';
+import { possibleEvents, reduceRemainings } from './interpreter.helpers';
 import type {
   _Send_F,
   AddSubscriber_F,
@@ -183,7 +187,7 @@ export class Interpreter<
     this.#mode = mode;
     this.#config = this.#initialConfig;
 
-    this.#performConfig();
+    this.#performConfig(true);
     this.#scheduler = new Scheduler();
 
     this.#throwing();
@@ -244,13 +248,22 @@ export class Interpreter<
     }
   };
 
-  #performConfig = () => {
+  #_performConfig = () => {
     this.#value = nodeToValue(this.#config);
     this.#node = this.#resolveNode(this.#config);
 
     const configForFlat = t.unknown<NodeConfig>(this.#config);
     this.#flat = t.any(flatMap(configForFlat));
     this.#possibleEvents = possibleEvents(this.#flat);
+  };
+
+  #performConfig = (target?: string | true) => {
+    if (target === true) return this.#_performConfig();
+
+    if (target) {
+      this.#config = this.proposedNextConfig(target);
+      return this.#_performConfig();
+    }
   };
 
   protected iterate = () => this.#iterator++;
@@ -349,14 +362,14 @@ export class Interpreter<
     }
   };
 
-  start = async () => {
+  start = () => {
     this.#checkContexts();
     this.#throwing();
 
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#performMachines();
-    await this.next();
+    return this.next();
   };
 
   #rinitIntervals = () => {
@@ -625,7 +638,7 @@ export class Interpreter<
       const check1 = typeof transition === 'string';
       if (check1) return { target: transition };
 
-      const check2 = typeof transition === 'object';
+      const check2 = transition !== false;
       if (check2) {
         return transition;
       }
@@ -673,12 +686,13 @@ export class Interpreter<
     return this.#status === 'sending';
   }
 
-  #remaining: RecordS<
+  #remainings = new Map<
+    string,
     () => {
       target?: string;
       result: ActionResult<Pc, Tc>;
     }
-  > = {};
+  >();
 
   #produceKeyRemainPromise = (from: string) => `${from}::promise`;
 
@@ -690,8 +704,38 @@ export class Interpreter<
     },
   ) => {
     const key = this.#produceKeyRemainPromise(state);
-    this.#remaining[key] = remain;
+    this.#remainings.set(key, remain);
   };
+
+  protected performRemainings2 = (
+    _key: 'promise' | 'after',
+    ...froms: string[]
+  ) => {
+    froms.forEach(async from => {
+      const key =
+        _key === 'promise'
+          ? this.#produceKeyRemainPromise(from)
+          : this.#produceKeyRemainAfter(from);
+      const remain = this.#remainings.get(key);
+      if (remain) {
+        await sleep(0);
+        const callback = () => {
+          const { result, target } = remain();
+          this.#merge(result);
+          this.#performConfig(target);
+          this.#remainings.delete(key);
+        };
+
+        this.#schedule(callback);
+      }
+    });
+  };
+
+  //TO implements
+  // #performRemainingPromises = partialCall(
+  //   this.performRemainings2.bind(this),
+  //   'promise',
+  // );
 
   #produceKeyRemainAfter = (from: string) => `${from}::after`;
 
@@ -703,8 +747,13 @@ export class Interpreter<
     },
   ) => {
     const key = this.#produceKeyRemainAfter(state);
-    this.#remaining[key] = remain;
+    this.#remainings.set(key, remain);
   };
+
+  #performRemainingAfters = partialCall(
+    this.performRemainings2.bind(this),
+    'after',
+  );
 
   #performPromisees0: PerformPromisees_F<E, Pc, Tc> = (
     from,
@@ -714,9 +763,8 @@ export class Interpreter<
 
     // #region Checker for reentering
     const key = this.#produceKeyRemainPromise(from);
-    const remain = this.#remaining[key];
-    const check = remain !== undefined;
-    if (check) return undefined;
+    const check = this.#remainings.has(key);
+    if (check) return;
     // #endregion
 
     const promises: TimeoutPromise<PR | undefined>[] = [];
@@ -785,7 +833,7 @@ export class Interpreter<
     );
 
     const finalize = () => {
-      const remaining = performRemaining(...remains);
+      const remaining = reduceRemainings(...remains);
       this.#addRemainingPromise(from, remaining);
     };
 
@@ -805,11 +853,8 @@ export class Interpreter<
   #performAfter: PerformAfter_F<Pc, Tc> = (from, after) => {
     // #region Checker for reentering
     const key = this.#produceKeyRemainAfter(from);
-    const remain = this.#remaining[key];
-    const check = remain !== undefined;
-    if (check) {
-      return undefined;
-    }
+    const check = this.#remainings.has(key);
+    if (check) return;
     // #endregion
 
     const entries = Object.entries(after);
@@ -820,55 +865,64 @@ export class Interpreter<
         }
       | undefined
     >[] = [];
-    const remains: Remaininigs<Pc, Tc> = [];
 
     entries.forEach(([_delay, transition]) => {
       const delayF = this.toDelay(_delay);
       const check0 = !isDefined(delayF);
+
       if (check0) return;
 
       const delay = this.#executeDelay(delayF);
 
-      const check1 = delay < MAX_TIME_PROMISE;
+      const check1 = delay > MAX_TIME_PROMISE;
       if (check1) {
-        this._addWarning(`${_delay} is too long`);
+        this._addWarning(`Delay ${_delay} is too long`);
         return;
       }
 
       const transitions = toArray.typed(transition);
 
-      const _promise = () =>
-        sleep(delay).then(() => {
-          const remain = () => {
-            const out = this.#performTransitions(...transitions);
-            const target = out.target;
-            const result = out.result ?? {};
+      const _promise = async () => {
+        await sleep(delay);
 
-            return { target, result };
-          };
+        const remain = () => {
+          const out = this.#performTransitions(...transitions);
+          const target = out.target;
+          const result = out.result ?? {};
 
-          const check2 = this.#sending || !this.#isInsideValue(from);
-          if (check2) {
-            remains.push(remain);
+          return { target, result };
+        };
+
+        const check2 = this.#sending || !this.#isInsideValue(from);
+        if (check2) {
+          const _remain = this.#remainings.get(key);
+          if (_remain) {
+            const remaining = reduceRemainings(_remain, remain);
+            this.#addRemainingAfter(from, remaining);
             return;
           }
+          this.#addRemainingAfter(from, remain);
+          return;
+        }
 
-          return remain();
-        });
+        const out = remain();
+        const check3 =
+          out.target === undefined && Object.keys(out.result).length < 1;
+        if (check3) return Promise.reject('No transitions reached !');
+        return out;
+      };
 
       const promise = withTimeout(_promise, key);
 
       promises.push(promise);
     });
 
-    const remaining = performRemaining(...remains);
+    const finalize = () => {};
 
-    const finalize = () => {
-      this.#addRemainingAfter(from, remaining);
-    };
+    const check5 = promises.length < 1;
+    if (check5) return;
 
-    const out = { promise: racePromises(key, ...promises), finalize };
-
+    const out = { promise: anyPromises(key, ...promises), finalize };
     return out;
   };
 
@@ -992,12 +1046,17 @@ export class Interpreter<
       const finalizes: (() => void)[] = [];
       const promises: Promises = [];
 
+      const froms = _afters.map(([from]) => from);
+      this.#performRemainingAfters(...froms);
+
       const afters = _afters
         .map(args => this.#performAfter(...args))
         .filter(isDefined);
 
       const check1 = afters.length < 1;
-      if (check1) return;
+      if (check1) {
+        return;
+      }
 
       afters.forEach(({ finalize, promise }) => {
         finalizes.push(finalize);
@@ -1016,11 +1075,7 @@ export class Interpreter<
       const cb = () => {
         resultAfters.forEach(({ result, target }) => {
           this.#merge(result);
-
-          if (target) {
-            this.#config = this.proposedNextConfig(target);
-            this.#performConfig();
-          }
+          this.#performConfig(target);
         });
       };
 
@@ -1039,12 +1094,7 @@ export class Interpreter<
 
         const { target, result } = resultAlways;
         this.#merge(result);
-
-        if (target) {
-          this.#config = this.proposedNextConfig(target);
-          this.#performConfig();
-        }
-
+        this.#performConfig(target);
         this.#makeWork();
       };
 
@@ -1083,10 +1133,7 @@ export class Interpreter<
         }
       });
 
-      if (target) {
-        this.#config = this.proposedNextConfig(target);
-        this.#performConfig();
-      }
+      this.#performConfig(target);
     };
 
     this.#scheduler.schedule(cb);
@@ -1328,7 +1375,7 @@ export class Interpreter<
     return { result, next };
   };
 
-  send = async (_event: EventArg<E>) => {
+  send = (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
     const previous = structuredClone(this.#event);
     this.#event = event;
@@ -1356,8 +1403,8 @@ export class Interpreter<
     if (check2) {
       this.#config = next;
       this.#makeWork();
-      this.#performConfig();
-      await this.next();
+      this.#performConfig(true);
+      this.next();
     }
   };
 
@@ -1572,6 +1619,8 @@ export class Interpreter<
     this.stop();
   };
 }
+
+export type AnyInterpreter2 = Interpreter<any, any, any, any, any>;
 
 export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   ConfigFrom<M>,

@@ -76,11 +76,14 @@ export type AlwaysConfig =
 export type DelayedTransitions = RecordS<SingleOrArrayT>;
 
 export type ExtractActionsFromDelayed<T> = ExtractActionsFromMap<
-  Extract<T[keyof T], { actions: SingleOrArrayL<ActionConfig> }>
+  Extract<
+    ReduceArray<T[keyof T]>,
+    { actions: SingleOrArrayL<ActionConfig> }
+  >
 >;
 
 export type ExtractGuardsFromDelayed<T> = ExtractGuardsFromMap<
-  Extract<T[keyof T], { guards: SingleOrArrayL<GuardConfig> }>
+  Extract<ReduceArray<T[keyof T]>, { guards: SingleOrArrayL<GuardConfig> }>
 >;
 
 export type TransitionsConfig = {

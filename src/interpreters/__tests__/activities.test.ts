@@ -1,213 +1,483 @@
+import { t } from '@bemedev/types';
+import type { StateValue } from '~states';
 import { nothing } from '~utils';
 import { interpretTest } from '../interpreterTest';
 import { fakeWaiter } from './fixtures';
-import { DELAY, fakeDB, machine1, machine2 } from './test.data';
-
-const log = vi.spyOn(console, 'log');
+import { DELAY, fakeDB, machine2 } from './test.data';
 
 beforeAll(() => {
   vi.useFakeTimers();
 });
 
-const TEST_1 = '#1 => First state has activity';
-const TEST_2 = '#2 => Complex';
+const TEXT = 'Activities Integration Test';
 
-describe(TEST_1, () => {
-  beforeAll(() => {
-    log.mockClear();
-  });
-
-  const service = interpretTest(machine1, {
-    pContext: {},
-    context: { iterator: 0 },
-  });
-
-  service.addSubscriber({
-    NEXT: () => console.log('Subscribe to my channel !!'),
-    else: nothing,
-  });
-
-  test('#00 => start the service', () => {
-    console.time(TEST_1);
-    service.start();
-    expect(service.context.iterator).toBe(0);
-  });
-
-  test('#01 => Await one delay -> iterator = 1', async () => {
-    await fakeWaiter(DELAY);
-    expect(service.context.iterator).toBe(1);
-  });
-
-  test('#02 => Await one delay -> iterator = 2', async () => {
-    await fakeWaiter(DELAY);
-    expect(service.context.iterator).toBe(2);
-  });
-
-  test('#03 => Await twice delay -> iterator = 4', async () => {
-    await fakeWaiter(DELAY, 2);
-    expect(service.context.iterator).toBe(4);
-  });
-
-  test('#04 => Await six times delay -> iterator = 10', async () => {
-    await fakeWaiter(DELAY, 6);
-    expect(service.context.iterator).toBe(10);
-  });
-
-  test('#05 => Send NEXT and await 3 times -> iterator = 10, remains the same', async () => {
-    service.send({ type: 'NEXT', payload: {} });
-    await fakeWaiter(DELAY, 3);
-    expect(service.context.iterator).toBe(10);
-  });
-
-  test('#06 => Send NEXT again and await 3 times -> iterator = 10, remains the same', async () => {
-    service.send('NEXT');
-    await fakeWaiter(DELAY, 3);
-    expect(service.context.iterator).toBe(10);
-  });
-
-  describe('#08 => Log is only call one time', () => {
-    test('#01 => console.log is called', () => {
-      expect(log).toBeCalledTimes(1);
-    });
-
-    test('#03 => console.log is called with "Subscribe to my channel !!"', () => {
-      expect(log).toHaveBeenNthCalledWith(1, 'Subscribe to my channel !!');
-    });
-  });
-
-  test('#07 => Pause the service', () => {
-    service.pause();
-    console.timeEnd(TEST_1);
-  });
-});
-
-describe(TEST_2, () => {
-  beforeAll(() => {
-    log.mockClear();
-  });
+describe(TEXT, () => {
+  // #region Config
 
   const service = interpretTest(machine2, {
-    pContext: { iterator: 0 },
+    pContext: {
+      iterator: 0,
+    },
     context: { iterator: 0, input: '', data: [] },
   });
 
-  test('#00 => start the service', () => {
-    console.time(TEST_2);
+  const subscriber = service.addSubscriber({
+    WRITE: (_, { value }) => console.log('WRITE with', ':', `"${value}"`),
+    NEXT: () => console.log('NEXT time, you will see!!'),
+    else: nothing,
+  });
+
+  const log = vi.spyOn(console, 'log');
+
+  beforeAll(() => {
+    console.time(TEXT);
+  });
+
+  type SE = Parameters<typeof service.send>[0];
+
+  const INPUT = 'a';
+
+  const FAKES = fakeDB.filter(({ name }) => name.includes(INPUT));
+
+  const strings: (string | string[])[] = [];
+
+  // #region Hooks
+
+  const useSend = (event: SE, index: number) => {
+    const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
+
+    return t.tuple(invite, () => service.send(event));
+  };
+
+  const useWrite = (value: string, index: number) => {
+    const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
+
+    return t.tuple(invite, () =>
+      service.send({ type: 'WRITE', payload: { value } }),
+    );
+  };
+
+  const useWaiter = (times: number, index: number) => {
+    const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
+
+    return t.tuple(invite, () => fakeWaiter(DELAY, times));
+  };
+
+  const useState = (state: StateValue, index: number) => {
+    const invite = `#${index < 10 ? '0' + index : index} => Current state is "${state}"`;
+    return t.tuple(invite, () => {
+      expect(service.value).toStrictEqual(state);
+    });
+  };
+
+  const useIterator = (num: number, index: number) => {
+    const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
+    return t.tuple(invite, async () => {
+      expect(service.select('iterator')).toBe(num);
+    });
+  };
+
+  const useIteratorC = (num: number, index: number) => {
+    const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
+    return t.tuple(invite, async () => {
+      expect(service.pSelect('iterator')).toBe(num);
+    });
+  };
+
+  const useInput = (input: string, index: number) => {
+    const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
+    return t.tuple(invite, async () => {
+      expect(service.context.input).toBe(input);
+    });
+  };
+
+  const useData = (index: number, ...datas: any[]) => {
+    const inviteStrict = `#02 => Check strict data`;
+
+    const strict = () => {
+      expect(service.context.data).toStrictEqual(datas);
+    };
+
+    const inviteLength = `#01 => Length of data is ${datas.length}`;
+
+    const length = () => {
+      expect(service.context.data.length).toBe(datas.length);
+    };
+
+    const invite = `#${index < 10 ? '0' + index : index} => Check data`;
+    const func = () => {
+      test(inviteLength, length);
+      test(inviteStrict, strict);
+    };
+
+    return t.tuple(invite, func);
+  };
+
+  const useConsole = (
+    index: number,
+    ..._strings: (string | string[])[]
+  ) => {
+    const inviteStrict = `#02 => Check strict string`;
+
+    const strict = () => {
+      const calls = strings.map(data => [data].flat());
+      const check = _strings.length > 0;
+      if (check) {
+        expect(log.mock.calls).toStrictEqual(calls);
+      }
+    };
+
+    const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
+
+    const length = () => {
+      strings.push(..._strings);
+      expect(log.mock.calls.length).toBe(strings.length);
+    };
+
+    const invite = `#${index < 10 ? '0' + index : index} => Check the console`;
+    const func = () => {
+      test(inviteLength, length);
+      test(inviteStrict, strict);
+    };
+
+    return t.tuple(invite, func);
+  };
+  // #endregion
+
+  // #endregion
+
+  test('#00 => Start the machine', () => {
     service.start();
-    expect(service.context.iterator).toBe(0);
   });
 
-  test('#01 => Await one delay -> iterator = 1', async () => {
-    await fakeWaiter(DELAY);
-    expect(log).not.toBeCalled();
-    expect(service.context.iterator).toBe(1);
+  test(...useWaiter(6, 1));
+
+  describe('#02 => Check the service', () => {
+    test(...useState('idle', 1));
+    test(...useIterator(6, 2));
+    test(...useIteratorC(6, 3));
+    describe(...useConsole(4));
   });
 
-  test('#02 => Send Next', () => {
-    service.send({ type: 'NEXT', payload: {} });
+  test(...useSend('NEXT', 3));
+
+  describe('#05 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'idle',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(6, 2));
+    test(...useIteratorC(6, 3));
+
+    describe(...useConsole(4, 'NEXT time, you will see!!'));
   });
 
-  describe('#03 => Await twice delay', () => {
-    test('#00 => Wait', () => fakeWaiter(DELAY, 2));
+  test(...useWaiter(6, 5));
 
-    test('#01 => iterator = 5', async () => {
-      expect(service.context.iterator).toBe(5);
+  describe('#06 => Check the service', () => {
+    test(...useIterator(18, 1));
+    test(...useIteratorC(12, 2));
+    describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
+  });
+
+  test('#07 => pause', service.pause.bind(service));
+
+  describe('#08 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'idle',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(18, 2));
+    test(...useIteratorC(12, 3));
+
+    describe(...useConsole(4));
+  });
+
+  test(...useWaiter(6, 9));
+
+  describe('#10 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'idle',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(18, 2));
+    test(...useIteratorC(12, 3));
+
+    describe(...useConsole(4));
+  });
+
+  test('#11 => resume', service.resume.bind(service));
+
+  test(...useWaiter(12, 12));
+
+  describe('#13 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'idle',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(42, 2));
+    test(...useIteratorC(24, 3));
+
+    describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
+  });
+
+  test(...useWrite('', 14));
+
+  describe('#15 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'input',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(42, 2));
+    test(...useIteratorC(24, 3));
+    test(...useInput('', 4));
+    describe(...useConsole(5, ['WRITE with', ':', '""']));
+  });
+
+  test(...useWaiter(12, 16));
+
+  describe('#17 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'input',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(66, 2));
+    test(...useIteratorC(36, 3));
+    test(...useInput('', 4));
+
+    describe(
+      ...useConsole(
+        5,
+        ...Array(24)
+          .fill(0)
+          .map((_, index) => {
+            const isEven = index % 2 === 0;
+            return isEven ? 'sendPanelToUser' : 'Input, please !!';
+          }),
+      ),
+    );
+  });
+
+  test(...useWrite(INPUT, 18));
+
+  describe('#19 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'idle',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(66, 2));
+    test(...useIteratorC(36, 3));
+    test(...useInput('', 4));
+    describe(...useConsole(5, ['WRITE with', ':', `"${INPUT}"`]));
+  });
+
+  test(...useWaiter(12, 20));
+
+  describe('#21 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'idle',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(90, 2));
+    test(...useIteratorC(48, 3));
+    test(...useInput('', 4));
+    describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
+  });
+
+  test('#22 => Close the subscriber', subscriber.close.bind(subscriber));
+
+  test(...useWrite(INPUT, 23));
+
+  describe('#24 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'input',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(90, 2));
+    test(...useIteratorC(48, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useConsole(5, 'nothing call nothing'));
+  });
+
+  test(...useWaiter(6, 25));
+
+  describe('#26 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'input',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(102, 2));
+    test(...useIteratorC(54, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useData(5));
+    describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
+  });
+
+  test(...useSend('FETCH', 27));
+
+  describe('#28 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'input',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(102, 2));
+    test(...useIteratorC(54, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useData(5, ...FAKES));
+    describe(...useConsole(6, ...Array(2).fill('nothing call nothing')));
+  });
+
+  test('#29 => Await the fetch', () => fakeWaiter());
+
+  describe('#30 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'input',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(102, 2));
+    test(...useIteratorC(54, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useData(5, ...FAKES));
+    describe(...useConsole(5));
+  });
+
+  test(...useWaiter(6, 31));
+
+  describe('#32 => Check the service', () => {
+    test(
+      ...useState(
+        {
+          working: {
+            fetch: 'idle',
+            ui: 'input',
+          },
+        },
+        1,
+      ),
+    );
+
+    test(...useIterator(114, 2));
+    test(...useIteratorC(60, 3));
+    test(...useInput(INPUT, 4));
+    describe(...useData(5, ...FAKES));
+    describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
+  });
+
+  describe('#33 => Close the service', async () => {
+    test('#01 => Pause the service', service.pause.bind(service));
+
+    test('#02 => All intervals are paused', () => {
+      expect(service.intervalsArePaused).toBe(true);
     });
 
-    describe('#02 => console.log is called', () => {
-      test('#01 => console.log is called', () => {
-        expect(log).toBeCalled();
+    describe('#02 => Calls of log', () => {
+      test('#01 => Length of calls of log is the same of length of strings', () => {
+        expect(log).toBeCalledTimes(strings.length);
       });
 
-      test('#02 => console.log is called with sendPanelToUser twice', () => {
-        expect(log).toHaveBeenNthCalledWith(2, 'sendPanelToUser');
-        expect(log).toHaveBeenCalledTimes(2);
-        log.mockClear();
+      test('#02 => Log is called "72" times', () => {
+        expect(log).toBeCalledTimes(72);
       });
     });
-  });
 
-  describe('#04 => Await four delays', () => {
-    test('#00 => Wait', () => fakeWaiter(DELAY, 4));
-
-    test('#01 => iterator = 13', async () => {
-      expect(service.context.iterator).toBe(13);
+    test('#03 => Log the time of all tests', () => {
+      console.timeEnd(TEXT);
     });
-
-    describe('#02 => console.log is called', () => {
-      test('#01 => console.log is called', () => {
-        expect(log).toBeCalled();
-      });
-
-      test('#02 => console.log is called with sendPanelToUser 4 times', () => {
-        expect(log).toHaveBeenNthCalledWith(4, 'sendPanelToUser');
-        expect(log).toHaveBeenCalledTimes(4);
-        log.mockClear();
-      });
-    });
-  });
-
-  test('#05 => Send WRITE', () => {
-    service.send({ type: 'WRITE', payload: { value: 'a' } });
-  });
-
-  describe('#06 => Context input is modified', () => {
-    test('#01 => input is not empty', () => {
-      expect(service.context.input).toBeDefined();
-      expect(service.context.input).not.toBe('');
-    });
-
-    test('#02 => input = a', () => {
-      expect(service.context.input).toBe('a');
-    });
-  });
-
-  describe('#07 => Await four delays', () => {
-    test('#00 => Wait', () => fakeWaiter(DELAY, 4));
-
-    test('#01 => iterator = 21', async () => {
-      expect(service.context.iterator).toBe(21);
-    });
-
-    describe('#02 => console.log is called', () => {
-      test('#01 => console.log is called', () => {
-        expect(log).toBeCalled();
-      });
-
-      test('#02 => console.log is called with sendPanelToUser 4 times', () => {
-        expect(log).toHaveBeenNthCalledWith(4, 'sendPanelToUser');
-        expect(log).toHaveBeenCalledTimes(4);
-        log.mockClear();
-      });
-    });
-  });
-
-  test('#08 => Send FETCH', async () => {
-    service.send('FETCH');
-  });
-
-  test('#09 => Wait for promise', () => fakeWaiter());
-
-  describe('#10 => Data is inserted', () => {
-    test('#01 => Data is not empty', () => {
-      expect(service.context.data).toBeDefined();
-      expect(service.context.data).not.toHaveLength(0);
-    });
-
-    test('#02 => Data has length of 17', () => {
-      expect(service.context.data).toHaveLength(17);
-    });
-
-    test('#03 => Data has the right values', () => {
-      const expected = fakeDB.filter(item => item.name.includes('a'));
-      expect(service.context.data).toStrictEqual(expected);
-    });
-  });
-
-  test('#11 => Pause the service', () => {
-    console.time('close');
-    service.pause();
-    console.timeEnd(TEST_2);
-    console.timeEnd('close');
   });
 });
