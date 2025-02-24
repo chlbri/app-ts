@@ -18,12 +18,15 @@ export type EventsMap = Record<string, PrimitiveObject>;
 export type InitEvent = typeof INIT_EVENT;
 export type AlwaysEvent = typeof ALWAYS_EVENT;
 
+export type ToEvents2<T extends EventsMap> =
+  Unionize<T> extends infer U
+    ? U extends any
+      ? { type: keyof U; payload: U[keyof U] }
+      : never
+    : never;
+
 export type ToEvents<T extends EventsMap> =
-  | (Unionize<T> extends infer U
-      ? U extends any
-        ? { type: keyof U; payload: U[keyof U] }
-        : never
-      : never)
+  | ToEvents2<T>
   | InitEvent
   | AlwaysEvent
   | ThenEvent
@@ -31,7 +34,7 @@ export type ToEvents<T extends EventsMap> =
   | MaxExceededEvent;
 
 export type EventArg<T extends EventsMap> =
-  ToEvents<T> extends infer To extends ToEvents<EventsMap>
+  ToEvents2<T> extends infer To extends ToEvents2<EventsMap>
     ? To extends string
       ? To
       : To extends EventObject

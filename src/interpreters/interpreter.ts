@@ -2,6 +2,7 @@ import {
   anyPromises,
   isDefined,
   partialCall,
+  switchV,
   withTimeout,
   type TimeoutPromise,
 } from '@bemedev/basifun';
@@ -247,7 +248,7 @@ export class Interpreter<
     }
   };
 
-  #_performConfig = () => {
+  protected _performConfig = () => {
     this.#value = nodeToValue(this.#config);
     this.#node = this.#resolveNode(this.#config);
 
@@ -257,15 +258,15 @@ export class Interpreter<
   };
 
   #performConfig = (target?: string | true) => {
-    if (target === true) return this.#_performConfig();
+    if (target === true) return this._performConfig();
 
     if (target) {
       this.#config = this.proposedNextConfig(target);
-      return this.#_performConfig();
+      return this._performConfig();
     }
   };
 
-  protected iterate = () => this.#iterator++;
+  protected _iterate = () => this.#iterator++;
 
   #resolveNode = (config: NodeConfigWithInitials) => {
     const options = this.#machine.options;
@@ -429,6 +430,7 @@ export class Interpreter<
   };
 
   #performAction: PerformAction_F<E, Pc, Tc> = action => {
+    this._iterate();
     return action(
       cloneDeep(this.#pContext),
       structuredClone(this.#context),
@@ -466,6 +468,7 @@ export class Interpreter<
   };
 
   #performPredicate: PerformPredicate_F<E, Pc, Tc> = predicate => {
+    this._iterate();
     return predicate(
       cloneDeep(this.#pContext),
       structuredClone(this.#context),
@@ -491,6 +494,7 @@ export class Interpreter<
   };
 
   #performDelay: PerformDelay_F<E, Pc, Tc> = delay => {
+    this._iterate();
     return delay(
       cloneDeep(this.#pContext),
       structuredClone(this.#context),
@@ -641,6 +645,7 @@ export class Interpreter<
   };
 
   #performPromiseSrc: PerformPromise_F<E, Pc, Tc> = promise => {
+    this._iterate();
     return promise(
       cloneDeep(this.#pContext),
       structuredClone(this.#context),
@@ -886,25 +891,6 @@ export class Interpreter<
     return entries;
   }
 
-  // get #_performPromisees() {
-  //   return this.#collectedPromisees.map(args => {
-  //     const out = this.#performPromisee(...args);
-  //     return out;
-  //   });
-  // }
-
-  // get #_performAlways() {
-  //   const collected = this.#collectedAlways;
-  //   const check = collected.length < 1;
-  //   if (check) return;
-  //   return this.#collectedAlways
-  //     .map(args => {
-  //       const out = this.#performAlway(...args);
-  //       return out;
-  //     })
-  //     .reduce((acc, value) => merge(acc, value));
-  // }
-
   #performActivities = () => {
     const collected = this.#collectedActivities;
     const check = collected.length < 1;
@@ -960,60 +946,58 @@ export class Interpreter<
   }
 
   get #collecteds() {
-    const entries1 = Array.from(this.#collected0);
-    const entries2 = entries1.map(
-      ([from, { after, always, promisee }]) => {
-        const promise = async () => {
-          if (always) {
-            const cb = () => {
-              this.#merge(always.result);
-              this.#performConfig(always.target);
-            };
-            this.#schedule(cb);
-            return;
-          }
+    const entries = Array.from(this.#collected0);
+    const out = entries.map(([from, { after, always, promisee }]) => {
+      const promise = async () => {
+        if (always) {
+          const cb = () => {
+            this.#merge(always.result);
+            this.#performConfig(always.target);
+          };
+          this.#schedule(cb);
+          return;
+        }
 
-          const promises: TimeoutPromise<void>[] = [];
-          if (after) {
-            const _after = async () => {
-              return after().then(transition => {
-                if (transition) {
-                  const cb = () => {
-                    this.#merge(transition.result);
-                    this.#performConfig(transition.target);
-                  };
-                  this.#schedule(cb);
-                }
-              });
-            };
-            promises.push(withTimeout(_after, from));
-          }
+        const promises: TimeoutPromise<void>[] = [];
+        if (after) {
+          const _after = async () => {
+            return after().then(transition => {
+              if (transition) {
+                const cb = () => {
+                  this.#merge(transition.result);
+                  this.#performConfig(transition.target);
+                };
+                this.#schedule(cb);
+              }
+            });
+          };
+          promises.push(withTimeout(_after, 'after'));
+        }
 
-          if (promisee) {
-            const _promisee = async () => {
-              return promisee().then(transition => {
-                if (transition) {
-                  const cb = () => {
-                    this.#merge(transition.result);
-                    this.#performConfig(transition.target);
-                  };
-                  this.#schedule(cb);
-                }
-              });
-            };
-            promises.push(withTimeout(_promisee, from));
-          }
+        if (promisee) {
+          const _promisee = async () => {
+            return promisee().then(transition => {
+              if (transition) {
+                const cb = () => {
+                  this.#merge(transition.result);
+                  this.#performConfig(transition.target);
+                };
+                this.#schedule(cb);
+              }
+            });
+          };
+          promises.push(withTimeout(_promisee, 'promisee'));
+        }
 
-          const check1 = promises.length < 1;
-          if (check1) return;
-          await anyPromises(from, ...promises)() /* .catch() */;
-        };
+        const check1 = promises.length < 1;
+        if (check1) return;
+        await anyPromises(from, ...promises)() /* .catch() */;
+      };
 
-        return promise;
-      },
-    );
+      return promise;
+    });
 
-    return entries2;
+    return out;
   }
 
   #performSelfTransitions = async () => {
@@ -1030,12 +1014,8 @@ export class Interpreter<
 
   pause = () => {
     this.#rinitIntervals();
-    this.#fullSubscribers.forEach(f => {
-      f.close();
-    });
-    this.#childrenServices.forEach(child => {
-      child.pause();
-    });
+    this.#fullSubscribers.forEach(f => f.close());
+    this.#childrenServices.forEach(c => c.pause());
     this.#status = 'paused';
   };
 
@@ -1043,18 +1023,15 @@ export class Interpreter<
     if (this.#status === 'paused') {
       this.#status = 'working';
       this.#performActivities();
-      this.#fullSubscribers.forEach(f => {
-        f.open();
-      });
-      this.#childrenServices.forEach(child => {
-        child.resume();
-      });
+      this.#fullSubscribers.forEach(f => f.open());
+      this.#childrenServices.forEach(c => c.resume());
     }
   };
 
   stop = () => {
+    this.pause();
+    this.#childrenServices.forEach(c => c.stop());
     this.#status = 'stopped';
-    this.#rinitIntervals();
   };
 
   #makeBusy = (): WorkingStatus => (this.#status = 'busy');
@@ -1167,12 +1144,10 @@ export class Interpreter<
 
   // #region Next
 
-  protected _send: _Send_F<E, Pc, Tc> = (
-    event: Exclude<ToEvents<E>, string>,
-  ) => {
-    type PR = PromiseeResult<E, Pc, Tc>;
+  protected _send: _Send_F<E, Pc, Tc> = event => {
+    // type PR = PromiseeResult<E, Pc, Tc>;
 
-    let result: PR['result'] = this.#contexts;
+    let result = this.#contexts;
     let sv = this.#value;
     const entriesFlat = Object.entries(this.#flat);
     const flat: [from: string, transitions: TransitionConfig[]][] = [];
@@ -1218,43 +1193,29 @@ export class Interpreter<
     });
     // #endregion
 
-    const check4 = equal(this.#value, sv); //If no changes in state value
-    const next = check4
-      ? this.#config
-      : initialNode(this.#machine.valueToConfig(sv));
-    return { result, next };
+    //If no changes in state value, no cahnges in current config
+    const next = switchV({
+      condition: equal(this.#value, sv),
+      truthy: undefined,
+      falsy: initialNode(this.#machine.valueToConfig(sv)),
+    });
+
+    return { next, result };
   };
 
   send = (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
-    const previous = structuredClone(this.#event);
     this.#event = event;
     this.#status = 'sending';
-
-    const check0 = typeof event === 'string';
-    if (check0) {
-      this.#makeWork();
-      return;
-    }
-
-    const sends = this._send(event);
-    const check1 = sends === undefined;
-
-    if (check1) {
-      this.#event = previous;
-      this.#makeWork();
-      return;
-    }
-
-    const { result, next } = sends;
+    const { result, next } = this._send(event);
     this.#merge(result);
-    const check2 = !equal(this.#config, next);
-    if (check2) {
+
+    if (isDefined(next)) {
       this.#config = next;
       this.#performConfig(true);
       this.#makeWork();
       this.next();
-    }
+    } else this.#makeWork();
   };
 
   #proposedNextSV = (target: string) => nextSV(this.#value, target);

@@ -13,15 +13,15 @@ export type IsValueS_F = <
 ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
 
 export const isValue: IsValueS_F = (path, ...values) => {
+  const start = path.startsWith.bind(path);
+
   return (pContext, context, event) => {
-    const checkContext = path.startsWith('context.');
-    if (checkContext) {
+    if (start('context.')) {
       const key = path.replace('context.', '');
       return values.some(value => getByKey(context, key) === value);
     }
 
-    const checkPContext = path.startsWith('pContext.');
-    if (checkPContext) {
+    if (start('pContext.')) {
       const key = path.replace('pContext.', '');
       return values.some(value => getByKey(pContext, key) === value);
     }
@@ -39,27 +39,10 @@ export const isValue: IsValueS_F = (path, ...values) => {
 };
 
 export const isNotValue: IsValueS_F = (path, ...values) => {
+  const func = isValue(path, ...values);
+
   return (pContext, context, event) => {
-    const checkContext = path.startsWith('context.');
-    if (checkContext) {
-      const key = path.replace('context.', '');
-      return values.every(value => getByKey(context, key) !== value);
-    }
-
-    const checkPContext = path.startsWith('pContext.');
-    if (checkPContext) {
-      const key = path.replace('pContext.', '');
-      return values.every(value => getByKey(pContext, key) !== value);
-    }
-
-    const key = path.replace('events.', '');
-    const check1 = typeof event === 'object';
-
-    if (check1) {
-      const toValidate = getByKey(event, key);
-      return values.every(value => toValidate !== value);
-    }
-
-    return false;
+    const result = func(pContext, context, event);
+    return !result;
   };
 };

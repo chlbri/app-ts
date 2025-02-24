@@ -7,7 +7,7 @@ import type {
   ActionResult,
 } from '~actions';
 import type { Delay } from '~delays';
-import type { EventArg, EventsMap, ToEvents } from '~events';
+import type { EventArg, EventsMap, ToEvents, ToEvents2 } from '~events';
 import type { GuardConfig, PredicateS, PredicateS2 } from '~guards';
 import type { Machine } from '~machine';
 import type {
@@ -213,12 +213,10 @@ export type _Send_F<
   E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (event: Exclude<ToEvents<E>, string>) =>
-  | {
-      result: ActionResult<Pc, Tc>;
-      next: NodeConfigWithInitials;
-    }
-  | undefined;
+> = (event: ToEvents2<E>) => {
+  result: ActionResult<Pc, Tc>;
+  next?: NodeConfigWithInitials;
+};
 
 export type AddSubscriber_F<
   E extends EventsMap = EventsMap,

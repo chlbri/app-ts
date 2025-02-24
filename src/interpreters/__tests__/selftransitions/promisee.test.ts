@@ -1,5 +1,6 @@
 import sleep from '@bemedev/sleep';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
+import { returnFalse, returnTrue } from '~guards';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
 import {
@@ -298,7 +299,7 @@ describe('promisee', () => {
       );
 
       const actionVi = vi.fn();
-      const guard = vi.fn(() => false);
+      const guard = vi.fn(returnFalse);
       machine.addPromises({ rejectPromise });
       machine.addPredicates({ guard });
       machine.addActions({
@@ -336,7 +337,7 @@ describe('promisee', () => {
 
       describe('#02 => Transition  pass', () => {
         beforeAll(() => {
-          guard.mockImplementation(() => true);
+          guard.mockImplementation(returnTrue);
         });
 
         afterAll(() => {
