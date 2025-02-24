@@ -742,10 +742,8 @@ export class Interpreter<
           MAX_POMS.push(max);
         }
 
-        const promise = withTimeout(_promise, from, ...MAX_POMS);
-        const promise2 = () => promise().catch(() => undefined);
-        const promise3 = withTimeout(promise2, from);
-        promises.push(promise3);
+        const promise = withTimeout.safe(_promise, from, ...MAX_POMS);
+        promises.push(promise);
       },
     );
 
@@ -1237,8 +1235,8 @@ export class Interpreter<
     const keysNext = Object.keys(flatNext);
 
     const keys = entriesCurrent.map(([key]) => key);
-    const diffEntries: string[] = [];
-    const diffExits: string[] = [];
+    const diffEntries: ActionConfig[] = [];
+    const diffExits: ActionConfig[] = [];
 
     // #region Entry actions
     // These actions are from next config states that are not inside the previous

@@ -1,4 +1,4 @@
-import { isDefined, partialCall, toArray } from '@bemedev/basifun';
+import { isDefined, partialCall } from '@bemedev/basifun';
 import { t, type NOmit } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import type { Action } from '~actions';
@@ -28,7 +28,7 @@ import {
   type StateValue,
 } from '~states';
 import type { PrimitiveObject, RecordS } from '~types';
-import { IS_TEST } from '~utils';
+import { IS_TEST, toArray } from '~utils';
 import { createChild } from './functions';
 import type {
   AddOptions_F,
@@ -551,7 +551,7 @@ class Machine<
 }
 
 const getIO: GetIO_F = (key, node) => {
-  const out = toArray<string>(node?.[key]);
+  const out = toArray.typed(node?.[key]);
 
   if (!node) return [];
   if (isAtomic(node)) {

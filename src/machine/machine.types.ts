@@ -1,5 +1,5 @@
 import type { Fn, NOmit } from '@bemedev/types';
-import type { Action } from '~actions';
+import type { Action, ActionConfig } from '~actions';
 import type { EventsMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
 import type { Machine } from '~machine';
@@ -48,7 +48,7 @@ export type Elements<
 export type GetIO_F = (
   key: 'exit' | 'entry',
   node: NodeConfigWithInitials,
-) => string[];
+) => ActionConfig[];
 
 export interface AnyMachine<
   E extends EventsMap = EventsMap,
