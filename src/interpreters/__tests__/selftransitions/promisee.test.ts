@@ -201,6 +201,7 @@ describe('promisee', () => {
       test(...useWaiter(3, 2));
       test(...useValue('idle', 5));
     });
+
     describe('#01 => max is defined', () => {
       machine.addDelays({ DELAY });
 
@@ -216,6 +217,160 @@ describe('promisee', () => {
       test(...useValue('idle', 4));
       test(...useWaiter(3, 2));
       test(...useValue('idle', 5));
+    });
+  });
+
+  describe('#06 => With finally', () => {
+    const rejectPromise = async () => {
+      await sleep(DELAY * 2);
+      return Promise.reject();
+      // throw undefined;
+    };
+
+    describe('#01 => Simple finally', () => {
+      const actionVi = vi.fn();
+      const machine = createMachine(
+        {
+          states: {
+            idle: {
+              promises: {
+                src: 'rejectPromise',
+                then: '/active',
+                catch: '/active',
+                finally: 'finalAction',
+              },
+            },
+            active: {},
+          },
+        },
+        defaultT,
+        defaultI,
+      );
+
+      machine.addPromises({ rejectPromise });
+
+      machine.addActions({
+        finalAction: () => {
+          actionVi('finalAction');
+          return {};
+        },
+      });
+
+      const service = interpret(machine, defaultC);
+      const useValue = constructValue(service);
+
+      test('#01 => Start', () => {
+        service.start();
+      });
+
+      test(...useValue('idle', 2));
+      test(...useWaiter(3, 2));
+      test(...useValue('active', 4));
+
+      describe('#05 => actionVi is called one time', () => {
+        test('#01 => Called one time', () => {
+          expect(actionVi).toHaveBeenCalledTimes(1);
+        });
+
+        test('#02 => Called with finalAction', () => {
+          expect(actionVi).toHaveBeenNthCalledWith(1, 'finalAction');
+        });
+      });
+    });
+
+    describe('#02 => Transition finally', () => {
+      const machine = createMachine(
+        {
+          states: {
+            idle: {
+              promises: {
+                src: 'rejectPromise',
+                then: '/active',
+                catch: '/active',
+                finally: { actions: 'finalAction', guards: 'guard' },
+              },
+            },
+            active: {},
+          },
+        },
+        defaultT,
+        defaultI,
+      );
+
+      const actionVi = vi.fn();
+      const guard = vi.fn(() => false);
+      machine.addPromises({ rejectPromise });
+      machine.addPredicates({ guard });
+      machine.addActions({
+        finalAction: () => {
+          actionVi('finalAction');
+          return {};
+        },
+      });
+
+      describe('#01 => Transition not pass', () => {
+        afterAll(() => {
+          actionVi.mockClear();
+          guard.mockClear();
+        });
+
+        const service = interpret(machine, defaultC);
+        const useValue = constructValue(service);
+
+        test('#01 => Start', () => {
+          service.start();
+        });
+
+        test(...useValue('idle', 2));
+        test(...useWaiter(3, 2));
+        test(...useValue('active', 4));
+
+        test('#05 => guard is called one time', () => {
+          expect(guard).toHaveBeenCalledTimes(1);
+        });
+
+        test('#06 => actionVi is not called', () => {
+          expect(actionVi).not.toBeCalled();
+        });
+      });
+
+      describe('#02 => Transition  pass', () => {
+        beforeAll(() => {
+          guard.mockImplementation(() => true);
+        });
+
+        afterAll(() => {
+          actionVi.mockClear();
+          guard.mockClear();
+        });
+
+        machine.addPredicates({ guard });
+
+        const service = interpret(machine, defaultC);
+        const useValue = constructValue(service);
+
+        test('#01 => Start', () => {
+          service.start();
+        });
+
+        test(...useValue('idle', 2));
+        test(...useWaiter(3, 2));
+        test(...useValue('active', 4));
+
+        test('#05 => guard is called one time', () => {
+          expect(guard).toHaveBeenCalledTimes(1);
+        });
+
+        describe('#05 => actionVi is called one time', () => {
+          test('#01 => Called one time', () => {
+            expect(actionVi).toHaveBeenCalledTimes(1);
+          });
+
+          test('#02 => Called with finalAction', () => {
+            expect(actionVi).toHaveBeenNthCalledWith(1, 'finalAction');
+          });
+        });
+      });
     });
   });
 });

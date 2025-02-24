@@ -5,7 +5,11 @@ import type {
   ReduceArray,
   Require,
 } from '@bemedev/types';
-import type { ActionConfig, ActionResult } from '~actions';
+import type {
+  ActionConfig,
+  ActionResult,
+  FromActionConfig,
+} from '~actions';
 import type { EventsMap, ToEvents } from '~events';
 import type {
   ExtractActionsFromMap,
@@ -51,14 +55,21 @@ type _ExtractActionsFromMap<T> = ExtractActionsFromMap<
   >
 >;
 
-export type ExtractActionsFromPromise<T extends PromiseConfig> =
+export type ExtractActionsFromFinally<T extends FinallyConfig> =
+  ReduceArray<T> extends infer Tr
+    ? Tr extends ActionConfig
+      ? FromActionConfig<Tr>
+      : _ExtractActionsFromMap<Tr>
+    : never;
+
+export type ExtractActionsFromPromisee<T extends PromiseConfig> =
   | _ExtractActionsFromMap<T['then']>
   | _ExtractActionsFromMap<T['catch']>
-  | _ExtractActionsFromMap<T['finally']>;
+  | ExtractActionsFromFinally<NotUndefined<T['finally']>>;
 
-export type ExtractSrcFromPromise<T extends { src: string }> = T['src'];
+export type ExtractSrcFromPromisee<T extends { src: string }> = T['src'];
 
-export type ExtractMaxFromPromise<T extends { max: string }> = T['max'];
+export type ExtractMaxFromPromisee<T extends { max: string }> = T['max'];
 
 export type ExtractGuardsFromPromise<T extends PromiseConfig> =
   | ExtractGuardsFromDelayed<T['then']>
