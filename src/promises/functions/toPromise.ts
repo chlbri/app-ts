@@ -40,8 +40,7 @@ export const toPromise: ToPromise_F = (events, promise, options) => {
 
   const out = { src, then, catch: _catch, finally: _finally } as any;
 
-  const { id, description } = promise;
-  if (id) out.id = id;
+  const { description } = promise;
   if (description) out.description = description;
 
   return out;

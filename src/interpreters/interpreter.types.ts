@@ -1,3 +1,4 @@
+import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { Fn, NOmit } from '@bemedev/types';
 import type {
@@ -24,7 +25,6 @@ import type {
   PromiseConfig,
   PromiseeResult,
   PromiseFunction,
-  TimeoutPromise,
 } from '~promises';
 import type {
   ActivityConfig,

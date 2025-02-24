@@ -38,7 +38,6 @@ export type FinallyConfig =
 
 export type PromiseConfig = {
   readonly src: string;
-  readonly id?: string;
 
   // Max wait time to perform the promise
   readonly max?: string;
