@@ -46,11 +46,9 @@ export type Elements<
 };
 
 export type GetIO_F = (
-  node: NodeConfigWithInitials,
   key: 'exit' | 'entry',
+  node: NodeConfigWithInitials,
 ) => string[];
-
-export type GetIO2_F = (node: NodeConfigWithInitials) => string[];
 
 export interface AnyMachine<
   E extends EventsMap = EventsMap,
@@ -75,7 +73,6 @@ export interface AnyMachine<
   renew: any;
   initialConfig: NodeConfigWithInitials;
   initialValue: StateValue;
-  errorsCollector: string[];
 
   addInitials: Fn<[any], any>;
   provideInitials: Fn<[any], any>;

@@ -1,4 +1,4 @@
-import { isDefined, toArray } from '@bemedev/basifun';
+import { isDefined, partialCall, toArray } from '@bemedev/basifun';
 import { t, type NOmit } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import type { Action } from '~actions';
@@ -27,25 +27,21 @@ import {
   type NodeConfigWithInitials,
   type StateValue,
 } from '~states';
-import type { KeyU, PrimitiveObject, RecordS } from '~types';
+import type { PrimitiveObject, RecordS } from '~types';
 import { IS_TEST } from '~utils';
-import { createChildS } from './functions';
+import { createChild } from './functions';
 import type {
   AddOptions_F,
   AnyMachine,
   Elements,
-  GetIO2_F,
   GetIO_F,
 } from './machine.types';
 import type {
   Config,
-  ContextFrom,
   GetEventsFromConfig,
   InitialsFromConfig,
   MachineOptions,
-  PrivateContextFrom,
   SimpleMachineOptions2,
-  Subscriber,
 } from './types';
 
 class Machine<
@@ -112,6 +108,14 @@ class Machine<
    */
   get delay() {
     return t.unknown<Delay<E, Pc, Tc>>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
+  get definedValue() {
+    return t.unknown<DefinedValue<E, Pc, Tc>>();
   }
 
   /**
@@ -485,13 +489,7 @@ class Machine<
   };
 
   valueToConfig = (from: StateValue) => {
-    const config = this.#postConfig;
-    const check = isDefined(config);
-
-    if (check) return valueToNode(config, from);
-
-    this.#addError('The machine is not configured');
-    return t.notUndefined(config);
+    return valueToNode(this.#postConfig, from);
   };
 
   get initialConfig() {
@@ -504,16 +502,6 @@ class Machine<
 
   toNode = this.valueToConfig;
 
-  #errorsCollector = new Set<string>();
-
-  get errorsCollector() {
-    return Array.from(this.#errorsCollector);
-  }
-
-  #addError = (error: string) => {
-    return this.#errorsCollector.add(error);
-  };
-
   get options() {
     const guards = this.#predicates;
     const actions = this.#actions;
@@ -524,41 +512,27 @@ class Machine<
     return { guards, actions, delays, promises, machines };
   }
 
-  #createChildS = <
-    const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
-      'preConfig' | 'context' | 'pContext'
-    >,
-  >(
-    machine: T,
-    initials: {
-      pContext: PrivateContextFrom<T>;
-      context: ContextFrom<T>;
-    },
-    ...subscribers: Subscriber<E, Tc, T>[]
-  ) => createChildS<E, Tc, T>(machine, initials, ...subscribers);
+  get #isValue() {
+    return isValue<E, Pc, Tc>;
+  }
 
-  #isValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
-    return isValue<E, Pc, Tc>(path, ...values);
-  };
+  get #isNotValue() {
+    return isNotValue<E, Pc, Tc>;
+  }
 
-  #isNotValue = (path: DefinedValue<E, Pc, Tc>, ...values: any[]) => {
-    return isNotValue<E, Pc, Tc>(path, ...values);
-  };
+  get #isDefined() {
+    return isDefinedS<E, Pc, Tc>;
+  }
 
-  #isDefined = (path: DefinedValue<E, Pc, Tc>) => {
-    return isDefinedS<E, Pc, Tc>(path);
-  };
-
-  #isNotDefined = (path: DefinedValue<E, Pc, Tc>) => {
-    return isNotDefinedS<E, Pc, Tc>(path);
-  };
+  get #isNotDefined() {
+    return isNotDefinedS<E, Pc, Tc>;
+  }
 
   addOptions: AddOptions_F<E, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
     const isNotDefined = this.#isNotDefined;
-    const createChild = this.#createChildS;
 
     const out = func({
       isValue,
@@ -576,7 +550,7 @@ class Machine<
   };
 }
 
-export const getIO: GetIO_F = (node, key) => {
+const getIO: GetIO_F = (key, node) => {
   const out = toArray<string>(node?.[key]);
 
   if (!node) return [];
@@ -587,20 +561,20 @@ export const getIO: GetIO_F = (node, key) => {
   if (isCompound(node)) {
     const initial = node.states[node.initial];
 
-    out.push(...getIO(initial, key));
+    out.push(...getIO(key, initial));
   } else {
     const values = Object.values(node.states);
 
     values.forEach(node1 => {
-      out.push(...getIO(node1, key));
+      out.push(...getIO(key, node1));
     });
   }
 
   return out;
 };
 
-export const getEntries: GetIO2_F = node => getIO(node, 'entry');
-export const getExits: GetIO2_F = node => getIO(node, 'exit');
+export const getEntries = partialCall(getIO, 'entry');
+export const getExits = partialCall(getIO, 'exit');
 
 export type { Machine };
 

@@ -1,5 +1,6 @@
 import {
   anyPromises,
+  asyncfy,
   isDefined,
   partialCall,
   switchV,
@@ -51,6 +52,7 @@ import {
   type ContextFrom,
   type EventsMapFrom,
   type GetEventsFromConfig,
+  type MachineConfig,
   type MachineOptions,
   type MachineOptionsFrom,
   type PrivateContextFrom,
@@ -909,8 +911,8 @@ export class Interpreter<
   };
 
   #performMachines = () => {
-    this.#childrenMachines.forEach(child => {
-      this.#reduceChild(t.any(child));
+    this.#childrenMachines.forEach(({ id, ...child }) => {
+      this.#reduceChild(t.any(child), id);
     });
 
     this.#childrenServices.forEach(child => {
@@ -1337,7 +1339,7 @@ export class Interpreter<
     );
   };
 
-  toMachine = (machine: ActionConfig) => {
+  toMachine = (machine: MachineConfig) => {
     const machines = this.#machine.machines;
 
     return this.#returnWithWarning(
@@ -1346,7 +1348,7 @@ export class Interpreter<
     );
   };
 
-  protected createChild: Fn = interpret;
+  protected interpretChild: Fn = interpret;
 
   #reduceChild = <T extends AnyMachine = AnyMachine>(
     { subscribers, machine, initials }: ChildS<E, Tc, T>,
@@ -1357,8 +1359,8 @@ export class Interpreter<
     );
 
     if (!service) {
-      service = this.createChild(machine, initials);
-      if (id) service.id = id;
+      service = this.interpretChild(machine, initials);
+      service.id = id;
     }
 
     this.#childrenServices.push(t.any(service));
@@ -1428,6 +1430,10 @@ export class Interpreter<
   [Symbol.dispose] = () => {
     this.stop();
   };
+
+  get [Symbol.asyncDispose]() {
+    return asyncfy(this[Symbol.dispose]);
+  }
 }
 
 export type AnyInterpreter2 = Interpreter<any, any, any, any, any>;
