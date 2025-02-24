@@ -9,4 +9,3 @@ export * from './objects';
 export * from './reduceFnMap';
 export * from './sleepU';
 export * from './strings';
-export * from './toArray';

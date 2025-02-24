@@ -4,6 +4,7 @@ import {
   isDefined,
   partialCall,
   switchV,
+  toArray,
   withTimeout,
   type TimeoutPromise,
 } from '@bemedev/basifun';
@@ -87,12 +88,7 @@ import {
   type PrimitiveObject,
   type RecordS,
 } from '~types';
-import {
-  IS_TEST,
-  measureExecutionTime,
-  replaceAll,
-  toArray,
-} from '~utils';
+import { IS_TEST, measureExecutionTime, replaceAll } from '~utils';
 import { merge } from './../utils/merge';
 import { possibleEvents } from './interpreter.helpers';
 import type {

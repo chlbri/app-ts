@@ -98,7 +98,7 @@
     "vitest": "^3.0.6"
   },
   "dependencies": {
-    "@bemedev/basifun": "^0.3.1",
+    "@bemedev/basifun": "^0.3.2",
     "@bemedev/boolean-recursive": "^0.0.3",
     "@bemedev/decompose": "^0.8.0",
     "@bemedev/interval2": "^0.1.1",

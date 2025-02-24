@@ -1,6 +1,6 @@
+import { toArray } from '@bemedev/basifun';
 import { t } from '@bemedev/types';
 import type { RecordS } from '~types';
-import { toArray } from '~utils';
 
 export type ReduceEvents_F = (
   events: RecordS<string | string[]> | 'full' | string[],

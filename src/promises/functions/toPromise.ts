@@ -1,10 +1,10 @@
+import { toArray } from '@bemedev/basifun';
 import type { NOmit } from '@bemedev/types';
 import type { EventsMap } from '~events';
 import type { SimpleMachineOptions } from '~machines';
 import type { PromiseConfig } from '~promises';
 import { toTransition } from '~transitions';
 import type { PrimitiveObject } from '~types';
-import { toArray } from '~utils';
 import type { Promisee } from '../types';
 import { toPromiseSrc } from './src';
 
