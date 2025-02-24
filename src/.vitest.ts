@@ -17,6 +17,7 @@ const plugins = [
       '**/*.types.ts',
       '**/*.typegen.ts',
       '**/*.fixtures.ts',
+      '**/experimental.ts',
       '**/fixtures.ts',
       '**/fixture.ts',
       '**/*.fixture.ts',
