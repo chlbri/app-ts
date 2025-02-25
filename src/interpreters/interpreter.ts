@@ -32,7 +32,9 @@ import {
 } from '~constants';
 import { toDelay, type Delay } from '~delays';
 import {
+  eventToType,
   INIT_EVENT,
+  possibleEvents,
   transformEventArg,
   type EventArg,
   type EventsMap,
@@ -90,7 +92,6 @@ import {
 } from '~types';
 import { IS_TEST, measureExecutionTime, replaceAll } from '~utils';
 import { merge } from './../utils/merge';
-import { eventToType, possibleEvents } from './interpreter.helpers';
 import type {
   _Send_F,
   AddSubscriber_F,
@@ -177,6 +178,10 @@ export class Interpreter<
     return this.#machine.eventsMap;
   }
 
+  get scheduleds() {
+    return this.#scheduler.performeds;
+  }
+
   constructor(machine: Machine<C, Pc, Tc, E, Mo>, mode: Mode = 'strict') {
     this.#machine = machine.renew;
 
@@ -205,14 +210,14 @@ export class Interpreter<
 
   #throwing = () => {
     if (this.isStrict) {
-      const check2 = this.#warningsCollector.size > 0;
-      if (check2) {
+      const check1 = this.#warningsCollector.size > 0;
+      if (check1) {
         const warnings = this.#displayConsole(this.#warningsCollector);
         console.log(warnings);
       }
 
-      const check1 = this.#errorsCollector.size > 0;
-      if (check1) {
+      const check2 = this.#errorsCollector.size > 0;
+      if (check2) {
         const errors = this.#displayConsole(this.#errorsCollector);
         throw new Error(errors);
       }
@@ -221,14 +226,14 @@ export class Interpreter<
     }
 
     if (this.isNormal) {
-      const check1 = this.#errorsCollector.size > 0;
-      if (check1) {
+      const check3 = this.#errorsCollector.size > 0;
+      if (check3) {
         const errors = this.#displayConsole(this.#errorsCollector);
         console.error(errors);
       }
 
-      const check2 = this.#warningsCollector.size > 0;
-      if (check2) {
+      const check4 = this.#warningsCollector.size > 0;
+      if (check4) {
         const warnings = this.#displayConsole(this.#warningsCollector);
         console.log(warnings);
       }
@@ -237,12 +242,16 @@ export class Interpreter<
     }
 
     if (this.isStrictest) {
-      const errors = this.#displayConsole([
+      const _errors = [
         ...this.#errorsCollector,
         ...this.#warningsCollector,
-      ]);
+      ];
 
-      throw new Error(errors);
+      const check5 = _errors.length > 0;
+      if (check5) {
+        const errors = this.#displayConsole(_errors);
+        throw new Error(errors);
+      }
     }
   };
 
@@ -287,6 +296,10 @@ export class Interpreter<
 
   makeStrictest = () => {
     this.#mode = 'strictest';
+  };
+
+  makeNormal = () => {
+    this.#mode = 'normal';
   };
 
   get status() {
@@ -482,7 +495,7 @@ export class Interpreter<
     return out;
   };
 
-  #performGuards = (...guards: GuardConfig[]) => {
+  #performPredicates = (...guards: GuardConfig[]) => {
     if (guards.length < 1) return true;
     return guards
       .map(this.toPredicate)
@@ -565,7 +578,7 @@ export class Interpreter<
               return this.#merge(result);
             }
 
-            const check5 = this.#performGuards(
+            const check5 = this.#performPredicates(
               ...toArray.typed(activity.guards),
             );
             if (check5) {
@@ -614,7 +627,9 @@ export class Interpreter<
     if (check) return transition;
 
     const { guards, actions, target } = transition;
-    const response = this.#performGuards(...toArray<GuardConfig>(guards));
+    const response = this.#performPredicates(
+      ...toArray<GuardConfig>(guards),
+    );
     if (response) {
       const result = this.#performActions(
         this.#contexts,
@@ -664,7 +679,9 @@ export class Interpreter<
         return result;
       }
 
-      const response = this.#performGuards(...toArray.typed(final.guards));
+      const response = this.#performPredicates(
+        ...toArray.typed(final.guards),
+      );
       if (response) {
         const result = this.#performActions(
           this.#contexts,

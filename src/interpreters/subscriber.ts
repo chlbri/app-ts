@@ -46,6 +46,7 @@ class Subscriber<
     return func;
   }
 
+  /* v8 ignore next 3*/
   get state() {
     return this.#state;
   }

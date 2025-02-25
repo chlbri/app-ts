@@ -16,23 +16,23 @@ import type {
   PrivateContextFrom,
   PromiseKeysFrom,
 } from '../../machine/types';
-import { Config1, Machine1 } from './fixtures';
+import type { Config3, Machine3 } from './data/test.data';
 
-type TTConfig = ConfigFrom<Machine1>;
+type TTConfig = ConfigFrom<Machine3>;
 
-expectTypeOf<TTConfig>().toEqualTypeOf<Config1>();
+expectTypeOf<TTConfig>().toEqualTypeOf<Config3>();
 
-type TTPrivate = PrivateContextFrom<Machine1>;
+type TTPrivate = PrivateContextFrom<Machine3>;
 expectTypeOf<TTPrivate>().toEqualTypeOf<{
   data: string;
 }>();
 
-type TTC = ContextFrom<Machine1>;
+type TTC = ContextFrom<Machine3>;
 expectTypeOf<TTC>().toEqualTypeOf<{
   age: number;
 }>();
 
-type TTEm = EventsMapFrom<Machine1>;
+type TTEm = EventsMapFrom<Machine3>;
 expectTypeOf<TTEm>().toEqualTypeOf<{
   EVENT: {
     password: string;
@@ -45,7 +45,7 @@ expectTypeOf<TTEm>().toEqualTypeOf<{
   };
 }>();
 
-type TTE = EventsFrom<Machine1>;
+type TTE = EventsFrom<Machine3>;
 expectTypeOf<TTE>().toEqualTypeOf<
   | {
       type: 'EVENT';
@@ -72,7 +72,7 @@ expectTypeOf<TTE>().toEqualTypeOf<
   | MaxExceededEvent
 >();
 
-type ActionKeys = ActionKeysFrom<Machine1>;
+type ActionKeys = ActionKeysFrom<Machine3>;
 expectTypeOf<ActionKeys>().toEqualTypeOf<
   | 'action1'
   | 'dodo3'
@@ -88,18 +88,18 @@ expectTypeOf<ActionKeys>().toEqualTypeOf<
   | 'deal17'
 >();
 
-type GuardKeys = keyof GuardsFrom<Machine1>;
+type GuardKeys = keyof GuardsFrom<Machine3>;
 expectTypeOf<GuardKeys>().toEqualTypeOf<
   'guard' | 'guard2' | 'ert' | 'guar34' | 'guard4'
 >();
 
-type DelayKeys = DelayKeysFrom<Machine1>;
+type DelayKeys = DelayKeysFrom<Machine3>;
 expectTypeOf<DelayKeys>().toEqualTypeOf<
   'DELAY' | 'DELAY2' | 'DELAY3' | 'DELAY5' | 'DELAY17'
 >();
 
-type PromiseKeys = PromiseKeysFrom<Machine1>;
+type PromiseKeys = PromiseKeysFrom<Machine3>;
 expectTypeOf<PromiseKeys>().toEqualTypeOf<'promise1' | 'promise2'>();
 
-type MachineKeys = MachineKeysFrom<Machine1>;
+type MachineKeys = MachineKeysFrom<Machine3>;
 expectTypeOf<MachineKeys>().toEqualTypeOf<'machine1'>();

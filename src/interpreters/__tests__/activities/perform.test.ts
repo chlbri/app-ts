@@ -2,8 +2,9 @@ import { t } from '@bemedev/types';
 import type { StateValue } from '~states';
 import { nothing } from '~utils';
 import { interpretTest } from '../../interpreterTest';
+import { fakeDB } from '../data';
+import { DELAY, machine2 } from '../data/test.data';
 import { fakeWaiter } from '../fixtures';
-import { DELAY, fakeDB, machine2 } from '../test.data';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -479,5 +480,7 @@ describe(TEXT, () => {
     test('#03 => Log the time of all tests', () => {
       console.timeEnd(TEXT);
     });
+
+    test('#04 => dispose', service[Symbol.asyncDispose].bind(service));
   });
 });

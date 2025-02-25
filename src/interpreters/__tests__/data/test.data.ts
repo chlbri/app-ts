@@ -1,34 +1,7 @@
 import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
-
-export const fakeDB = [
-  { _id: '01', name: 'Alice' },
-  { _id: '02', name: 'Bob' },
-  { _id: '03', name: 'Charlie' },
-  { _id: '04', name: 'David' },
-  { _id: '05', name: 'Eve' },
-  { _id: '06', name: 'Frank' },
-  { _id: '07', name: 'Grace' },
-  { _id: '08', name: 'Hank' },
-  { _id: '09', name: 'Ivy' },
-  { _id: '10', name: 'Jack' },
-  { _id: '11', name: 'Kathy' },
-  { _id: '12', name: 'Leo' },
-  { _id: '13', name: 'Mona' },
-  { _id: '14', name: 'Nina' },
-  { _id: '15', name: 'Oscar' },
-  { _id: '16', name: 'Paul' },
-  { _id: '17', name: 'Quincy' },
-  { _id: '18', name: 'Rachel' },
-  { _id: '19', name: 'Steve' },
-  { _id: '20', name: 'Tracy' },
-  { _id: '21', name: 'Uma' },
-  { _id: '22', name: 'Victor' },
-  { _id: '23', name: 'Wendy' },
-  { _id: '24', name: 'Xander' },
-  { _id: '25', name: 'Yara' },
-  { _id: '26', name: 'Zane' },
-];
+import { createConfig } from '~machines';
+import { fakeDB } from './fakeDB';
 
 export const DELAY = 60;
 
@@ -240,3 +213,97 @@ machine2.addOptions(({ isNotValue, isValue, createChild }) => ({
   },
 }));
 // #endregion
+
+export const config3 = createConfig({
+  description: 'cdd',
+  states: {
+    state1: {
+      states: {
+        state11: {
+          states: {
+            state111: {},
+          },
+        },
+        state12: {
+          activities: {
+            DELAY5: 'deal',
+            DELAY17: 'deal17',
+          },
+        },
+      },
+    },
+    state2: {
+      after: {
+        DELAY: { actions: ['dodo1', 'doré'] },
+        DELAY2: '/state2',
+        DELAY3: { actions: 'dodo2' },
+      },
+      on: {
+        EVENT: { actions: ['dodo3', 'doré1'] },
+        EVENT2: '/state4',
+        EVENT3: { actions: 'dodo5' },
+      },
+      always: [
+        { actions: 'dodo6', guards: 'guard2', target: '/state3' },
+        {
+          actions: ['dodo7', 'doré3', 'doré1'],
+          guards: 'guard2',
+          target: '/state3',
+        },
+        '/state1',
+      ],
+      promises: [
+        {
+          src: 'promise1',
+          then: { actions: 'action1' },
+          catch: [{ guards: 'ert', actions: 'action14' }, '/state1'],
+          finally: [
+            {
+              actions: 'action13',
+              guards: 'guar34',
+            },
+            {
+              guards: 'guard4',
+              actions: 'action13',
+            },
+            'action22',
+          ],
+        },
+        {
+          src: 'promise2',
+          then: [
+            { actions: 'action4', guards: 'guard2' },
+            { actions: 'action3' },
+          ],
+          catch: [{ guards: 'ert', actions: 'action15' }, '/state1'],
+          finally: [
+            {
+              guards: 'guard',
+              actions: 'action12',
+            },
+            'action20',
+          ],
+        },
+      ],
+    },
+  },
+  machines: { description: 'A beautiful machine', name: 'machine1' },
+});
+
+export const machine3 = createMachine(
+  config3,
+  {
+    pContext: { data: t.string },
+    context: { age: t.number },
+    eventsMap: {
+      EVENT: { password: t.string, username: t.string },
+      EVENT2: t.boolean,
+      EVENT3: { login: t.string, pwd: t.string },
+    },
+  },
+  { '/': 'state1', '/state1': 'state11', '/state1/state11': 'state111' },
+);
+
+export type Machine3 = typeof machine3;
+
+export type Config3 = typeof config3;

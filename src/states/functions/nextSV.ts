@@ -26,6 +26,9 @@ export const nextSV: NextStateValue_F = (from, target) => {
   const check1 = isStringEmpty(target);
   if (check1) return from;
 
+  const check11 = !target.startsWith('/');
+  if (check11) return from;
+
   const check2 = isString(from);
 
   if (check2) {
@@ -48,7 +51,6 @@ export const nextSV: NextStateValue_F = (from, target) => {
   const decomposed = t.any(decompose(from));
 
   const last = target.lastIndexOf(DEFAULT_DELIMITER);
-  if (last === -1) return from;
 
   const entry = target.substring(0, last);
 

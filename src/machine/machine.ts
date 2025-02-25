@@ -1,6 +1,7 @@
 import { isDefined, partialCall, toArray } from '@bemedev/basifun';
 import { t, type NOmit } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
+import { EOL } from 'os';
 import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { Delay } from '~delays';
@@ -343,7 +344,12 @@ class Machine<
       return out;
     }
 
-    return console.error('Only renew in test env');
+    const errors = [
+      'provideOptions is only available in test env',
+      'Only renew is available in test env',
+    ];
+
+    return console.error(errors.join(EOL));
   };
   // #endregion
 

@@ -13,13 +13,11 @@ import type { EventObject, EventsMap, ToEvents, ToEventsR } from '~events';
 import type { StateType, StateValue } from '~states';
 import { checkKeys } from '~utils';
 
-type isArray_F = <T>(value: unknown) => value is T[];
 export type IsString_F = (value: unknown) => value is string;
 export type SingleOrArrayR<T> = T | readonly T[];
 export type SingleOrArrayL<T> = T | readonly [...(readonly T[]), T];
 
 export const DESCRIBER_KEYS = ['name', 'description'] as const;
-export const isArray: isArray_F = value => Array.isArray(value);
 
 export type Describer = Record<(typeof DESCRIBER_KEYS)[number], string>;
 

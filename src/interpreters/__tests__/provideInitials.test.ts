@@ -1,9 +1,9 @@
 import { reFunction } from '@bemedev/basifun';
 import { createTests } from '@bemedev/vitest-extended';
-import { machine1 } from './fixtures';
+import { machine3 } from './data/test.data';
 
 describe('provideInitials', () => {
-  const provide = reFunction(machine1, 'addInitials');
+  const provide = reFunction(machine3, 'addInitials');
 
   const { acceptation, success } = createTests(provide);
 

@@ -1,17 +1,19 @@
 import { t } from '@bemedev/types';
-import { machine1 } from './__tests__/fixtures';
+import { machine3 } from './__tests__/data/test.data';
 import { interpret } from './interpreter';
 import type { AnyInterpreter } from './interpreter.types';
 
 describe('Interpreter', () => {
+  const resultC = {
+    pContext: { data: 'avion' },
+    context: { age: 5 },
+  };
+
   describe('#1 => Status', () => {
     let service = t.unknown<AnyInterpreter>();
 
     test('#0 => Create the machine', () => {
-      service = interpret(machine1, {
-        pContext: { data: 'avion' },
-        context: { age: 5 },
-      }) as any;
+      service = t.any(interpret(machine3, resultC));
     });
 
     test('#1 => The machine is at "status: idle"', () => {
@@ -45,6 +47,32 @@ describe('Interpreter', () => {
           expect(service.initialValue).toStrictEqual(service.value);
         });
       });
+    });
+  });
+
+  describe('#02 => Mode', () => {
+    const service = interpret(machine3, {
+      ...resultC,
+    });
+
+    test('#01 => mode is ""strict" by default', () => {
+      expect(service.mode).toBe('strict');
+    });
+
+    test('@02 => Make it normal', () => {
+      service.makeNormal();
+    });
+
+    test('03 => modde is "normal"', () => {
+      expect(service.mode).toBe('normal');
+    });
+
+    test('@04 => Make it "strictest"', () => {
+      service.makeStrictest();
+    });
+
+    test('03 => modde is "strictest"', () => {
+      expect(service.mode).toBe('strictest');
     });
   });
 });
