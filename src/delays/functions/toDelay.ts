@@ -15,8 +15,6 @@ export type ToDelay_F = <
 ) => Fn<[Pc, Tc, ToEvents<E>], number> | undefined;
 
 export const toDelay: ToDelay_F = (events, delay, delays) => {
-  if (!delay) return undefined;
-
   const fn = delays?.[delay];
   const check = typeof fn === 'number';
   if (check) return () => fn;

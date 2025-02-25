@@ -30,9 +30,7 @@ export const toPromise: ToPromise_F = (events, promise, options) => {
     .map(config => toTransition(events, config, options));
 
   const _finally = toArray.typed(promise.finally).map(config => {
-    const check1 =
-      typeof config === 'object' &&
-      ('actions' in config || 'guards' in config);
+    const check1 = typeof config === 'object' && 'actions' in config;
     if (check1) return toTransition(events, config, options);
 
     return toTransition(events, { actions: config }, options);

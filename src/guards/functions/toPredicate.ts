@@ -36,14 +36,14 @@ const _toPredicate: _ToPredicateF = (events, guard, predicates) => {
   if (isDescriber(guard)) {
     const fn = predicates?.[guard.name];
     const func = fn ? reduceFnMap(events, fn) : undefined;
-    if (!func) errors.push(`Predicate "${guard.name}" not found`);
+    if (!func) errors.push(`Predicate (${guard.name}) is not defined`);
     return { func, errors };
   }
 
   if (isString(guard)) {
     const fn = predicates?.[guard];
     const func = fn ? reduceFnMap(events, fn) : undefined;
-    if (!func) errors.push(`Predicate "${guard}" not found`);
+    if (!func) errors.push(`Predicate (${guard}) is not defined`);
     return { func, errors };
   }
 
@@ -64,7 +64,7 @@ const _toPredicate: _ToPredicateF = (events, guard, predicates) => {
 
   if (GUARD_TYPE.and in guard) {
     const and = makeArray(guard.and);
-    return { and, errors };
+    return { func: { and }, errors };
   }
 
   const or = makeArray(guard.or);

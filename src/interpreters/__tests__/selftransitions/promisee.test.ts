@@ -27,6 +27,7 @@ describe('promisee', () => {
               src: 'notDefined',
               then: '/active',
               catch: '/active',
+              description: 'notDefined',
             },
           },
           active: {},

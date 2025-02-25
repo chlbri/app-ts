@@ -1,3 +1,4 @@
+import { t } from '@bemedev/types';
 import type { EventsMap, ToEvents } from '~events';
 import { getByKey } from '~machines';
 import type { PrimitiveObject } from '~types';
@@ -8,7 +9,7 @@ export type IsValueS_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
-  path: DefinedValue<E, Pc, Tc>,
+  path: DefinedValue<Pc, Tc>,
   ...values: any[]
 ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
 
@@ -16,6 +17,16 @@ export const isValue: IsValueS_F = (path, ...values) => {
   const start = path.startsWith.bind(path);
 
   return (pContext, context, event) => {
+    if (path === 'pContext') {
+      return values.some(value => pContext === value);
+    }
+
+    if (path === 'context') {
+      return values.some(value => context === value);
+    }
+
+    if (path === 'events') return values.some(value => event === value);
+
     if (start('context.')) {
       const key = path.replace('context.', '');
       return values.some(value => getByKey(context, key) === value);
@@ -27,14 +38,8 @@ export const isValue: IsValueS_F = (path, ...values) => {
     }
 
     const key = path.replace('events.', '');
-    const check1 = typeof event === 'object';
-
-    if (check1) {
-      const toValidate = getByKey(event, key);
-      return values.some(value => toValidate === value);
-    }
-
-    return false;
+    const toValidate = getByKey(event, key);
+    return values.some(value => toValidate === value);
   };
 };
 
@@ -42,7 +47,7 @@ export const isNotValue: IsValueS_F = (path, ...values) => {
   const func = isValue(path, ...values);
 
   return (pContext, context, event) => {
-    const result = func(pContext, context, event);
+    const result = func(pContext, context, t.any(event));
     return !result;
   };
 };

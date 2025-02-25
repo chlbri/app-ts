@@ -1,9 +1,9 @@
 import { t } from '@bemedev/types';
 import type { StateValue } from '~states';
 import { nothing } from '~utils';
-import { interpretTest } from '../interpreterTest';
-import { fakeWaiter } from './fixtures';
-import { DELAY, fakeDB, machine2 } from './test.data';
+import { interpretTest } from '../../interpreterTest';
+import { fakeWaiter } from '../fixtures';
+import { DELAY, fakeDB, machine2 } from '../test.data';
 
 beforeAll(() => {
   vi.useFakeTimers();

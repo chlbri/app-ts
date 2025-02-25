@@ -41,12 +41,12 @@ import {
 import { toPredicate, type GuardConfig, type PredicateS } from '~guards';
 import { getEntries, getExits, type Machine } from '~machine';
 import {
+  assignByBey,
   getByKey,
   mergeByKey,
   reduceEvents,
   toMachine,
   type AnyMachine,
-  type Child,
   type ChildS,
   type Config,
   type ConfigFrom,
@@ -90,7 +90,7 @@ import {
 } from '~types';
 import { IS_TEST, measureExecutionTime, replaceAll } from '~utils';
 import { merge } from './../utils/merge';
-import { possibleEvents } from './interpreter.helpers';
+import { eventToType, possibleEvents } from './interpreter.helpers';
 import type {
   _Send_F,
   AddSubscriber_F,
@@ -166,7 +166,7 @@ export class Interpreter<
   }
 
   get #canAct() {
-    return this.#status === 'started';
+    return this.#status === 'started' || this.#status === 'working';
   }
 
   get event() {
@@ -534,25 +534,22 @@ export class Interpreter<
       const delayF = this.toDelay(_delay);
       const check0 = !isDefined(delayF);
       if (check0) return [];
-      const delay = this.#executeDelay(delayF);
+      const interval = this.#executeDelay(delayF);
 
-      const check11 = delay < MIN_ACTIVITY_TIME;
+      const check11 = interval < MIN_ACTIVITY_TIME;
       if (check11) {
-        this._addWarning(`${_delay} is too short`);
+        this._addWarning(`Delay (${_delay}) is too short`);
         return [];
       }
 
-      const check12 = delay > MAX_TIME_PROMISE;
+      const check12 = interval > MAX_TIME_PROMISE;
       if (check12) {
-        this._addWarning(`${_delay} is too long`);
+        this._addWarning(`Delay (${_delay}) is too long`);
         return [];
       }
-
-      if (this.#cannotPerform(from)) return [];
 
       const activities = toArray.typed(_activity);
 
-      const interval = delay;
       const callback = () => {
         const cb = () => {
           for (const activity of activities) {
@@ -893,14 +890,14 @@ export class Interpreter<
     if (check) return;
 
     const ids: string[] = [];
-    for (const args of this.#collectedActivities) {
+    for (const args of collected) {
       ids.push(...this.#executeActivities(...args));
     }
 
     return this._cachedIntervals
       .filter(({ id }) => ids.includes(id))
       .forEach(f => {
-        this.#scheduler.schedule(f.start.bind(f));
+        f.start();
       });
   };
 
@@ -1011,6 +1008,7 @@ export class Interpreter<
   pause = () => {
     this.#rinitIntervals();
     this.#fullSubscribers.forEach(f => f.close());
+    this.#subscribers.forEach(f => f.close());
     this.#childrenServices.forEach(c => c.pause());
     this.#status = 'paused';
   };
@@ -1020,6 +1018,7 @@ export class Interpreter<
       this.#status = 'working';
       this.#performActivities();
       this.#fullSubscribers.forEach(f => f.open());
+      this.#subscribers.forEach(f => f.open());
       this.#childrenServices.forEach(c => c.resume());
     }
   };
@@ -1058,6 +1057,10 @@ export class Interpreter<
 
   // #region Providers
 
+  get addOptions() {
+    return this.#machine.addOptions;
+  }
+
   addAction = (key: Keys<Mo['actions']>, action: Action<E, Pc, Tc>) => {
     if (this.#canAct) {
       const out = { [key]: action };
@@ -1065,7 +1068,7 @@ export class Interpreter<
     }
   };
 
-  addGuard = (
+  addPredicate = (
     key: Keys<Mo['predicates']>,
     guard: PredicateS<E, Pc, Tc>,
   ) => {
@@ -1092,7 +1095,7 @@ export class Interpreter<
     }
   };
 
-  addMachine = (key: Keys<Mo['machines']>, machine: Child<E, Tc>) => {
+  addMachine = (key: Keys<Mo['machines']>, machine: ChildS<E, Tc>) => {
     if (this.#canAct) {
       const out = { [key]: machine };
       this.#machine.addMachines(out);
@@ -1126,8 +1129,15 @@ export class Interpreter<
     return this.#errorsCollector;
   }
 
+  /**
+   * @deprecated
+   * Just use for testing
+   * Call in production will return nothing
+   */
   get warningsCollector() {
-    return this.#warningsCollector;
+    if (IS_TEST) return this.#warningsCollector;
+    console.error('warningsCollector is not available in production');
+    return;
   }
 
   protected _addError = (...errors: string[]) => {
@@ -1296,7 +1306,7 @@ export class Interpreter<
 
     return this.#returnWithWarning(
       toAction<E, Pc, Tc>(events, action, actions),
-      `Action (${action}) is not defined`,
+      `Action (${reduceAction(action)}) is not defined`,
     );
   };
 
@@ -1359,20 +1369,15 @@ export class Interpreter<
 
     this.#childrenServices.push(t.any(service));
 
-    const subscriber = service.addFullSubscriber((_, events1) => {
+    const subscriber = service.addFullSubscriber((_, { type }) => {
       const _subscribers = toArray.typed(subscribers);
 
       _subscribers.forEach(({ contexts, events }) => {
-        const check1 = typeof events1 === 'string';
-        const events2 = service.event;
-        const check2 = typeof events2 === 'string';
-        const check3 = check1 || check2;
+        const type2 = eventToType(service.event);
 
-        const checkEvents =
-          check3 ||
-          reduceEvents(t.any(events), events1.type, events2.type);
+        const checkEvents = reduceEvents(t.any(events), type, type2);
 
-        const checkContexts = contexts === true;
+        const checkContexts = !isDefined(contexts);
         if (checkEvents) {
           if (checkContexts) {
             const pContext = t.any(service.#context);
@@ -1387,11 +1392,8 @@ export class Interpreter<
 
             paths.forEach(path => {
               if (typeof path === 'string') {
-                const pContext = mergeByKey(this.#pContext)(
-                  path,
-                  service.#context,
-                );
-                const callback = () => this.#merge({ pContext });
+                const callback = () =>
+                  assignByBey(this.#pContext, path, service.#context);
                 this.#scheduler.schedule(callback);
               } else {
                 const entries = Object.entries(path).map(
@@ -1407,6 +1409,7 @@ export class Interpreter<
                       path,
                       getByKey(service.#context, pathChild),
                     );
+
                     const callback = () => this.#merge({ pContext });
                     this.#scheduler.schedule(callback);
                   });
@@ -1423,6 +1426,7 @@ export class Interpreter<
 
   [Symbol.dispose] = () => {
     this.stop();
+    this.#scheduler.stop();
   };
 
   get [Symbol.asyncDispose]() {

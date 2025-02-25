@@ -111,17 +111,17 @@ export type AddOption_F<
   >,
 > = (option: {
   isDefined: (
-    path: DefinedValue<E, Pc, Tc>,
+    path: DefinedValue<Pc, Tc>,
   ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
   isNotDefined: (
-    path: DefinedValue<E, Pc, Tc>,
+    path: DefinedValue<Pc, Tc>,
   ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
   isValue: (
-    path: DefinedValue<E, Pc, Tc>,
+    path: DefinedValue<Pc, Tc>,
     ...values: any[]
   ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
   isNotValue: (
-    path: DefinedValue<E, Pc, Tc>,
+    path: DefinedValue<Pc, Tc>,
     ...values: any[]
   ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
   createChild: <

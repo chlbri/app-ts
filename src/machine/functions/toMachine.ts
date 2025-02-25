@@ -11,8 +11,6 @@ export type ToMachine_F = <
 ) => (ChildS<E, Tc> & { id?: string }) | undefined;
 
 export const toMachine: ToMachine_F = (machine, machines) => {
-  if (!machine) return;
-
   if (isDescriber(machine)) {
     const out = machines?.[machine.name];
     if (!out) return;

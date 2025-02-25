@@ -213,8 +213,8 @@ machine2.addOptions(({ isNotValue, isValue, createChild }) => ({
     },
   },
   predicates: {
-    isInputNotEmpty: isNotValue('context.input', ''),
     isInputEmpty: isValue('context.input', ''),
+    isInputNotEmpty: isNotValue('context.input', ''),
   },
   promises: {
     fetch: async (_, { input }) => {

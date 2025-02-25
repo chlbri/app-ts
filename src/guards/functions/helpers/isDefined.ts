@@ -8,7 +8,7 @@ export type IsDefinedS_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
-  path: DefinedValue<E, Pc, Tc>,
+  path: DefinedValue<Pc, Tc>,
 ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
 
 export const isDefinedS: IsDefinedS_F = path => {

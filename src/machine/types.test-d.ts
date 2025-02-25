@@ -1,16 +1,14 @@
-import type { Fn } from '@bemedev/types';
 import type {
   machine1,
   machine2,
 } from 'src/interpreters/__tests__/test.data';
-import type { PrimitiveObject, Simplify, SingleOrArrayL } from '~types';
+import type { PrimitiveObject, SingleOrArrayL } from '~types';
 import type {
   ContextFrom,
   EventsMapFrom,
   FnMapFrom2,
   GetEventsFromMachine,
   Subscriber,
-  Subscriber2,
 } from './types';
 
 type TT2 = keyof FnMapFrom2<typeof machine2>;
@@ -23,84 +21,6 @@ expectTypeOf<TT2>().toEqualTypeOf<
   | 'machine$$then'
   | 'machine$$catch'
 >;
-
-type FT = Extract<
-  Subscriber2<
-    { event1: { data: string } },
-    { data: string },
-    typeof machine2
-  >,
-  Fn
->;
-
-expectTypeOf<FT>().toMatchTypeOf<
-  (
-    contexts: [
-      {
-        data: string;
-      },
-      {
-        iterator: number;
-        input: string;
-        data: string[];
-      },
-    ],
-    map: [
-      (
-        | 'machine$$init'
-        | 'machine$$always'
-        | {
-            type: 'machine$$then';
-            payload: any;
-          }
-        | {
-            type: 'machine$$catch';
-            payload: any;
-          }
-        | 'machine$$exceeded'
-        | {
-            type: 'event1';
-            payload: {
-              data: string;
-            };
-          }
-      ),
-      (
-        | 'machine$$init'
-        | 'machine$$always'
-        | {
-            type: 'machine$$then';
-            payload: any;
-          }
-        | {
-            type: 'machine$$catch';
-            payload: any;
-          }
-        | 'machine$$exceeded'
-        | {
-            type: 'NEXT';
-            payload: {};
-          }
-        | {
-            type: 'FINISH';
-            payload: {};
-          }
-        | {
-            type: 'FETCH';
-            payload: {};
-          }
-        | {
-            type: 'WRITE';
-            payload: {
-              value: string;
-            };
-          }
-      ),
-    ],
-  ) => {
-    data?: string;
-  }
->();
 
 type GEFC1 = GetEventsFromMachine<typeof machine2>;
 expectTypeOf<GEFC1>().toMatchTypeOf<{
@@ -115,7 +35,7 @@ type Sub1 = Subscriber<
   ContextFrom<typeof machine2>,
   typeof machine1
 >;
-expectTypeOf<Sub1>().toEqualTypeOf<{
+expectTypeOf<Sub1>().branded.toEqualTypeOf<{
   events:
     | 'full'
     | SingleOrArrayL<
@@ -132,10 +52,12 @@ expectTypeOf<Sub1>().toEqualTypeOf<{
   }>;
 }>();
 
-type Sub2 = Simplify<
-  Subscriber<{}, string, { preConfig: unknown; context: string }>
+type Sub2 = Subscriber<
+  {},
+  string,
+  { preConfig: unknown; context: string }
 >;
-expectTypeOf<Sub2>().toEqualTypeOf<{
+expectTypeOf<Sub2>().branded.toEqualTypeOf<{
   events: 'full' | SingleOrArrayL<{}>;
-  contexts: true;
+  contexts?: never;
 }>();

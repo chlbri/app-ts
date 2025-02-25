@@ -8,7 +8,7 @@ import type {
   ActionResult,
 } from '~actions';
 import type { Delay } from '~delays';
-import type { EventArg, EventsMap, ToEvents, ToEvents2 } from '~events';
+import type { EventArg, EventsMap, ToEvents, ToEventsR } from '~events';
 import type { GuardConfig, PredicateS, PredicateS2 } from '~guards';
 import type { Machine } from '~machine';
 import type {
@@ -213,7 +213,7 @@ export type _Send_F<
   E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (event: ToEvents2<E>) => {
+> = (event: ToEventsR<E>) => {
   result: ActionResult<Pc, Tc>;
   next?: NodeConfigWithInitials;
 };
@@ -260,13 +260,12 @@ export interface AnyInterpreter<
   ppC: (pContext: Pc) => AnyMachine<E, Pc, Tc>;
   provideContext: (context: Tc) => AnyMachine<E, Pc, Tc>;
   addAction: Fn;
-  addGuard: Fn;
+  addPredicate: Fn;
   addPromise: Fn;
   addDelay: Fn;
   addMachine: Fn;
   addSubscriber: AddSubscriber_F<any, any>;
-  errorsCollector: Set<string>;
-  warningsCollector: Set<string>;
+
   send: (event: EventArg<E>) => void;
   flushSubscribers: () => void;
   toAction: (action: ActionConfig) => Action<E, Pc, Tc> | undefined;

@@ -115,7 +115,7 @@ class Machine<
    * Just use for typing
    */
   get definedValue() {
-    return t.unknown<DefinedValue<E, Pc, Tc>>();
+    return t.unknown<DefinedValue<Pc, Tc>>();
   }
 
   /**
