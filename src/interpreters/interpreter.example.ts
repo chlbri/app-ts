@@ -1,5 +1,5 @@
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { DELAY, machine2 } from './__tests__/data/test.data';
+import { DELAY, machine2 } from '~fixturesData';
 import { interpretTest } from './interpreterTest';
 
 {

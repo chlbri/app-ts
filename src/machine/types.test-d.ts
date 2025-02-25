@@ -1,7 +1,4 @@
-import type {
-  machine1,
-  machine2,
-} from 'src/interpreters/__tests__/data/test.data';
+import type { machine1, machine2 } from 'src/interpreters/__tests__/data';
 import type { PrimitiveObject, SingleOrArrayL } from '~types';
 import type {
   ContextFrom,

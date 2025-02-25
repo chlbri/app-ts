@@ -1,5 +1,5 @@
 import { t } from '@bemedev/types';
-import { machine3 } from './__tests__/data/test.data';
+import { machine3 } from './__tests__/data/machine3';
 import { interpret } from './interpreter';
 import type { AnyInterpreter } from './interpreter.types';
 

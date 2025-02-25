@@ -16,7 +16,7 @@ import type {
   PrivateContextFrom,
   PromiseKeysFrom,
 } from '../../machine/types';
-import type { Config3, Machine3 } from './data/test.data';
+import type { Config3, Machine3 } from './data/machine3';
 
 type TTConfig = ConfigFrom<Machine3>;
 

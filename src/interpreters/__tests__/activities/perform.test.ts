@@ -1,9 +1,9 @@
 import { t } from '@bemedev/types';
+import { DELAY, fakeDB } from '~fixturesData';
 import type { StateValue } from '~states';
 import { nothing } from '~utils';
 import { interpretTest } from '../../interpreterTest';
-import { fakeDB } from '../data';
-import { DELAY, machine2 } from '../data/test.data';
+import { machine22 } from '../data/machine22';
 import { fakeWaiter } from '../fixtures';
 
 beforeAll(() => {
@@ -15,7 +15,7 @@ const TEXT = 'Activities Integration Test';
 describe(TEXT, () => {
   // #region Config
 
-  const service = interpretTest(machine2, {
+  const service = interpretTest(machine22, {
     pContext: {
       iterator: 0,
     },

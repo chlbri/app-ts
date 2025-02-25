@@ -1,6 +1,6 @@
 import { reFunction } from '@bemedev/basifun';
 import { createTests } from '@bemedev/vitest-extended';
-import { machine3 } from './data/test.data';
+import { machine3 } from '~fixturesData';
 
 describe('provideInitials', () => {
   const provide = reFunction(machine3, 'addInitials');
