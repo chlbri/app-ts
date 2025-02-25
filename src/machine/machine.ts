@@ -30,7 +30,7 @@ import {
 } from '~states';
 import type { PrimitiveObject, RecordS } from '~types';
 import { IS_TEST } from '~utils';
-import { createChild } from './functions';
+import { createChildS, type CreateChild_F } from './functions/create';
 import type {
   AddOptions_F,
   AnyMachine,
@@ -56,6 +56,7 @@ class Machine<
   #config: C;
 
   #flat: FlatMapN<C, true>;
+
   #eventsMap!: E;
 
   get eventsMap() {
@@ -123,7 +124,15 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get delayFunction() {
+  get delayKey() {
+    return t.unknown<keyof (typeof this)['mo']['delays']>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
+  get delay() {
     return t.unknown<Delay<E, Pc, Tc>>();
   }
 
@@ -139,8 +148,24 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get promiseFunction() {
+  get src() {
+    return t.unknown<keyof (typeof this)['mo']['promises']>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
+  get promise() {
     return t.unknown<PromiseFunction<E, Pc, Tc>>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
+  get child() {
+    return t.unknown<keyof (typeof this)['mo']['machines']>();
   }
 
   /**
@@ -550,11 +575,16 @@ class Machine<
     return isNotDefinedS<E, Pc, Tc>;
   }
 
+  createChild: CreateChild_F<E, Tc> = (...args) => {
+    return createChildS(...args);
+  };
+
   addOptions: AddOptions_F<E, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
     const isNotDefined = this.#isNotDefined;
+    const createChild = this.createChild;
 
     const out = func({
       isValue,
