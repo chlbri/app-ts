@@ -1,5 +1,5 @@
 import { isDefined, partialCall, toArray } from '@bemedev/basifun';
-import { t, type NOmit, type NotUndefined } from '@bemedev/types';
+import { t, type NOmit } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import { EOL } from 'os';
 import type { Action } from '~actions';
@@ -68,7 +68,7 @@ class Machine<
    * Just use for typing
    */
   get mo() {
-    return t.unknown<Mo>();
+    return t.unknown<Required<Mo>>();
   }
 
   /**
@@ -92,7 +92,7 @@ class Machine<
    * Just use for typing
    */
   get actionKey() {
-    return t.unknown<keyof NotUndefined<Mo['actions']>>();
+    return t.unknown<keyof (typeof this)['mo']['actions']>();
   }
 
   /**
@@ -101,6 +101,14 @@ class Machine<
    */
   get actionParams() {
     return t.unknown<{ pContext: Pc; context: Tc; map: E }>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
+  get guard() {
+    return t.unknown<keyof (typeof this)['mo']['predicates']>();
   }
 
   /**
