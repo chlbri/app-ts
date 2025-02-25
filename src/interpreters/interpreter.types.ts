@@ -249,7 +249,7 @@ export interface AnyInterpreter<
   initialConfig: NodeConfigWithInitials;
   initialValue: StateValue;
   config: NodeConfigWithInitials;
-  renew: Interpreter<any, any, any, any, any>;
+  renew: any;
   value: StateValue;
   context: any;
   start: () => Promise<void>;

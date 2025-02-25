@@ -7,7 +7,7 @@ import type { NodeConfig, NodeConfigWithInitials } from '../types';
 import { flatMap } from './flatMap';
 import { getChildren } from './getChildren';
 import { getParents } from './getParents';
-import { recomposeNode } from './recompose';
+import { recomposeConfig } from './recompose';
 
 export type ValueToNode_F = <T extends StateValue>(
   body: NodeConfigWithInitials,
@@ -33,7 +33,7 @@ export const valueToNode: ValueToNode_F = (body, from) => {
         out1[key] = (flatBody as any)[key];
       });
 
-      const out: any = recomposeNode(out1);
+      const out: any = recomposeConfig(out1);
       return out;
     }
     return {};
@@ -66,6 +66,6 @@ export const valueToNode: ValueToNode_F = (body, from) => {
     }
   });
 
-  const out2 = recomposeNode(out1);
+  const out2 = recomposeConfig(out1);
   return out2;
 };

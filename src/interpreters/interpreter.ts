@@ -69,7 +69,7 @@ import {
 } from '~promises';
 import {
   flatMap,
-  initialNode,
+  initialConfig,
   nextSV,
   nodeToValue,
   resolveNode,
@@ -341,6 +341,7 @@ export class Interpreter<
    */
   get pContext() {
     if (IS_TEST) return this.#pContext;
+    /* v8 ignore next 3 */
     console.error('pContext is not available in production');
     return;
   }
@@ -353,8 +354,12 @@ export class Interpreter<
    * Call in production will return nothing
    */
   pSelect: Selector_F<Pc> = selector => {
-    const pContext = this.pContext;
-    if (pContext) return getByKey(pContext, selector);
+    if (IS_TEST) {
+      const pContext = this.pContext;
+      if (pContext) return getByKey(pContext, selector);
+      /* v8 ignore next 4 */
+    }
+    console.error('pContext is not available in production');
     return;
   };
 
@@ -1220,7 +1225,7 @@ export class Interpreter<
     const next = switchV({
       condition: equal(this.#value, sv),
       truthy: undefined,
-      falsy: initialNode(this.#machine.valueToConfig(sv)),
+      falsy: initialConfig(this.#machine.valueToConfig(sv)),
     });
 
     return { next, result };

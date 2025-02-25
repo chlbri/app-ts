@@ -1,5 +1,5 @@
-import { deepmerge } from 'deepmerge-ts';
 import { DEFAULT_DELIMITER } from '~constants';
+import { merge } from '~utils';
 import type { NodeConfig, NodeConfigCompoundWithInitials } from '../types';
 
 type Url_F = <T>(shape: string, value: T) => any;
@@ -30,19 +30,19 @@ export const recomposeObjectUrl: Url_F = (shape, value) => {
   return obj;
 };
 
-export type RecomposeNode_F = <
+export type RecomposeConfig_F = <
   T extends NodeConfig | NodeConfigCompoundWithInitials,
 >(
   shape: T,
 ) => NodeConfigCompoundWithInitials;
 
-export const recomposeNode: RecomposeNode_F = shape => {
+export const recomposeConfig: RecomposeConfig_F = shape => {
   const entries = Object.entries(shape);
   const arr: any[] = [];
   entries.forEach(([key, value]) => {
     arr.push(recomposeObjectUrl(key, value));
   });
 
-  const output = deepmerge(...arr);
+  const output = merge(...(arr as [any, ...any[]]));
   return output as any;
 };

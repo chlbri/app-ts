@@ -2,12 +2,12 @@ import { t, type Fn } from '@bemedev/types';
 import type { NodeConfigWithInitials } from '../types';
 import { isAtomic, isParallel } from './checks';
 
-export type InitialNode_F = Fn<
+export type InitialConfig_F = Fn<
   [body: NodeConfigWithInitials],
   NodeConfigWithInitials
 >;
 
-export const initialNode: InitialNode_F = body => {
+export const initialConfig: InitialConfig_F = body => {
   const check1 = isAtomic(body);
   if (check1) return body;
 
@@ -16,7 +16,7 @@ export const initialNode: InitialNode_F = body => {
   if (check2) {
     const { states: _states, ...config } = body;
     const entries1 = Object.entries(_states).map(([key, state]) => {
-      const reduced = initialNode(state);
+      const reduced = initialConfig(state);
       return t.tuple(key, reduced);
     });
 
@@ -35,7 +35,7 @@ export const initialNode: InitialNode_F = body => {
   if (!initial) {
     const { states: _states, ...config } = body;
     const entries1 = Object.entries(_states).map(([key, state]) => {
-      const reduced = initialNode(state);
+      const reduced = initialConfig(state);
       return t.tuple(key, reduced);
     });
 
@@ -56,7 +56,7 @@ export const initialNode: InitialNode_F = body => {
 
   const out = {
     ...body,
-    states: { [__id]: initialNode(initial) },
+    states: { [__id]: initialConfig(initial) },
   };
   return out;
 };

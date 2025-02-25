@@ -17,11 +17,11 @@ import {
 import type { PromiseFunction } from '~promises';
 import {
   flatMap,
-  initialNode,
+  initialConfig,
   isAtomic,
   isCompound,
   nodeToValue,
-  recomposeNode,
+  recomposeConfig,
   valueToNode,
   type FlatMapN,
   type NodeConfig,
@@ -269,8 +269,8 @@ class Machine<
       flat[key] = { ...flat[key], initial };
     });
 
-    this.#postConfig = recomposeNode(flat);
-    this.#initialConfig = initialNode(this.#postConfig);
+    this.#postConfig = recomposeConfig(flat);
+    this.#initialConfig = initialConfig(this.#postConfig);
 
     this.#getInitialKeys();
 
