@@ -1,5 +1,5 @@
 import type { Fn, NOmit } from '@bemedev/types';
-import type { Action } from '~actions';
+import type { Action, ActionConfig } from '~actions';
 import type { EventsMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
 import type { Machine } from '~machine';
@@ -46,11 +46,9 @@ export type Elements<
 };
 
 export type GetIO_F = (
-  node: NodeConfigWithInitials,
   key: 'exit' | 'entry',
-) => string[];
-
-export type GetIO2_F = (node: NodeConfigWithInitials) => string[];
+  node: NodeConfigWithInitials,
+) => ActionConfig[];
 
 export interface AnyMachine<
   E extends EventsMap = EventsMap,
@@ -75,7 +73,6 @@ export interface AnyMachine<
   renew: any;
   initialConfig: NodeConfigWithInitials;
   initialValue: StateValue;
-  errorsCollector: string[];
 
   addInitials: Fn<[any], any>;
   provideInitials: Fn<[any], any>;
@@ -114,17 +111,17 @@ export type AddOption_F<
   >,
 > = (option: {
   isDefined: (
-    path: DefinedValue<E, Pc, Tc>,
+    path: DefinedValue<Pc, Tc>,
   ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
   isNotDefined: (
-    path: DefinedValue<E, Pc, Tc>,
+    path: DefinedValue<Pc, Tc>,
   ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
   isValue: (
-    path: DefinedValue<E, Pc, Tc>,
+    path: DefinedValue<Pc, Tc>,
     ...values: any[]
   ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
   isNotValue: (
-    path: DefinedValue<E, Pc, Tc>,
+    path: DefinedValue<Pc, Tc>,
     ...values: any[]
   ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
   createChild: <

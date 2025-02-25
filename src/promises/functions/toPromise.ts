@@ -1,10 +1,10 @@
+import { toArray } from '@bemedev/basifun';
 import type { NOmit } from '@bemedev/types';
 import type { EventsMap } from '~events';
 import type { SimpleMachineOptions } from '~machines';
 import type { PromiseConfig } from '~promises';
 import { toTransition } from '~transitions';
 import type { PrimitiveObject } from '~types';
-import { toArray } from '~utils';
 import type { Promisee } from '../types';
 import { toPromiseSrc } from './src';
 
@@ -30,9 +30,7 @@ export const toPromise: ToPromise_F = (events, promise, options) => {
     .map(config => toTransition(events, config, options));
 
   const _finally = toArray.typed(promise.finally).map(config => {
-    const check1 =
-      typeof config === 'object' &&
-      ('actions' in config || 'guards' in config);
+    const check1 = typeof config === 'object' && 'actions' in config;
     if (check1) return toTransition(events, config, options);
 
     return toTransition(events, { actions: config }, options);
@@ -40,8 +38,7 @@ export const toPromise: ToPromise_F = (events, promise, options) => {
 
   const out = { src, then, catch: _catch, finally: _finally } as any;
 
-  const { id, description } = promise;
-  if (id) out.id = id;
+  const { description } = promise;
   if (description) out.description = description;
 
   return out;

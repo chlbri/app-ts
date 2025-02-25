@@ -1,6 +1,5 @@
 export * from './asyncfy';
 export * from './asyncNothing';
-export * from './describer';
 export * from './duration';
 export * from './environment';
 export * from './merge';
@@ -9,4 +8,3 @@ export * from './objects';
 export * from './reduceFnMap';
 export * from './sleepU';
 export * from './strings';
-export * from './toArray';

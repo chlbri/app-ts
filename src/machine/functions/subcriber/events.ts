@@ -1,9 +1,8 @@
-import { t } from '@bemedev/types';
+import { toArray } from '@bemedev/basifun';
 import type { RecordS } from '~types';
-import { toArray } from '~utils';
 
 export type ReduceEvents_F = (
-  events: RecordS<string | string[]> | 'full' | string[],
+  events: (RecordS<string | string[]> | string)[] | 'full',
 
   firstEvent: string,
   ...toChecks: string[]
@@ -17,26 +16,26 @@ export const reduceEvents: ReduceEvents_F = (
   const check1 = _events === 'full';
   if (check1) return true;
 
-  const check2 = Array.isArray(_events);
-  if (check2) {
-    for (const toCheck of toChecks) {
-      if (!_events.includes(toCheck)) return false;
-    }
-    return true;
-  }
+  const check2 = toChecks.every(check => {
+    const check3 = _events.includes(check);
+    if (check3) return true;
 
-  const events = Object.entries(_events).map(([key, value]) => {
-    const values = toArray.typed(value);
-    return t.tuple(key, values);
-  });
+    for (const _event of _events) {
+      const check4 = typeof _event === 'string';
+      if (check4) continue;
 
-  for (const [key, values] of events) {
-    if (key === firstEvent) {
-      for (const toCheck of toChecks) {
-        if (!values.includes(toCheck)) return false;
+      const entries = Object.entries(_event);
+      for (const [key, value] of entries) {
+        const values = toArray.typed(value);
+
+        if (key === firstEvent) {
+          const check5 = values.includes(check);
+          if (check5) return true;
+        }
       }
     }
-  }
+    return false;
+  });
 
-  return true;
+  return check2;
 };

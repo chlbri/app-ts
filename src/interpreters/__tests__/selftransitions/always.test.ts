@@ -105,7 +105,10 @@ describe('Integration testing for interpret, Children', () => {
       defaultI,
     );
 
-    machine.addPredicates({ returnFalse });
+    // machine.addPredicates({ returnFalse });
+    machine.addOptions(({ isNotDefined }) => ({
+      predicates: { returnFalse: isNotDefined('pContext') },
+    }));
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
 

@@ -1,3 +1,4 @@
+import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { Fn, NOmit } from '@bemedev/types';
 import type {
@@ -7,7 +8,7 @@ import type {
   ActionResult,
 } from '~actions';
 import type { Delay } from '~delays';
-import type { EventArg, EventsMap, ToEvents } from '~events';
+import type { EventArg, EventsMap, ToEvents, ToEventsR } from '~events';
 import type { GuardConfig, PredicateS, PredicateS2 } from '~guards';
 import type { Machine } from '~machine';
 import type {
@@ -24,7 +25,6 @@ import type {
   PromiseConfig,
   PromiseeResult,
   PromiseFunction,
-  TimeoutPromise,
 } from '~promises';
 import type {
   ActivityConfig,
@@ -213,12 +213,10 @@ export type _Send_F<
   E extends EventsMap = EventsMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (event: Exclude<ToEvents<E>, string>) =>
-  | {
-      result: ActionResult<Pc, Tc>;
-      next: NodeConfigWithInitials;
-    }
-  | undefined;
+> = (event: ToEventsR<E>) => {
+  result: ActionResult<Pc, Tc>;
+  next?: NodeConfigWithInitials;
+};
 
 export type AddSubscriber_F<
   E extends EventsMap = EventsMap,
@@ -262,13 +260,12 @@ export interface AnyInterpreter<
   ppC: (pContext: Pc) => AnyMachine<E, Pc, Tc>;
   provideContext: (context: Tc) => AnyMachine<E, Pc, Tc>;
   addAction: Fn;
-  addGuard: Fn;
+  addPredicate: Fn;
   addPromise: Fn;
   addDelay: Fn;
   addMachine: Fn;
   addSubscriber: AddSubscriber_F<any, any>;
-  errorsCollector: Set<string>;
-  warningsCollector: Set<string>;
+
   send: (event: EventArg<E>) => void;
   flushSubscribers: () => void;
   toAction: (action: ActionConfig) => Action<E, Pc, Tc> | undefined;

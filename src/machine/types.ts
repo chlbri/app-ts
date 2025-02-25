@@ -1,7 +1,6 @@
 import type { Decompose } from '@bemedev/decompose';
 import type {
   DeepNotUndefined,
-  DeepPartial,
   Fn,
   NotUndefined,
   Primitive,
@@ -31,7 +30,6 @@ import type {
   TransitionsConfig,
 } from '~transitions';
 import type {
-  ConcatFnMap,
   Describer,
   FnMap,
   FnMap2,
@@ -43,7 +41,6 @@ import type {
   SingleOrArrayR,
   SubType,
 } from '~types';
-import type { AnyMachine } from './machine.types';
 
 export type ConfigNode = NodeConfigCompound | NodeConfigParallel;
 
@@ -184,13 +181,15 @@ export type Decompose2<T> = T extends Ru
     : never;
 
 type HeritageMap<U extends Ru, Tc extends Ru> =
-  Decompose2<U> extends infer KU extends object
+  Decompose<U> extends infer KU extends object
     ? {
-        [key in keyof KU]?: Decompose2<Tc> extends infer KT extends object
+        [key in keyof KU]?: Decompose<Tc> extends infer KT extends object
           ? SingleOrArrayL<keyof SubType<KT, KU[key]>>
           : never;
       }
     : never;
+
+type SubNev = { contexts?: never };
 
 export type Subscriber<
   E extends EventsMap = EventsMap,
@@ -207,20 +206,19 @@ export type Subscriber<
         | keyof E
       >
     | 'full';
-  contexts: ContextFrom<U> extends infer CU
-    ? CU extends Ru
-      ? Pc extends Ru
-        ? SingleOrArrayL<HeritageMap<CU, Pc>>
-        : never
-      : CU extends Primitive
-        ? Pc extends CU
-          ? true
-          : Pc extends infer Tc1 extends Ru
-            ? SingleOrArrayL<keyof SubType<Decompose<Tc1>, CU>>
-            : never
-        : never
-    : never;
-};
+} & (ContextFrom<U> extends infer CU
+  ? CU extends Ru
+    ? Pc extends Ru
+      ? { contexts: SingleOrArrayL<HeritageMap<CU, Pc>> }
+      : SubNev
+    : CU extends Primitive
+      ? Pc extends CU
+        ? SubNev
+        : Pc extends infer Tc1 extends Ru
+          ? { contexts: SingleOrArrayL<keyof SubType<Decompose<Tc1>, CU>> }
+          : SubNev
+      : SubNev
+  : SubNev);
 
 export type ChildS<
   E extends EventsMap = EventsMap,
@@ -236,39 +234,6 @@ export type ChildS<
   };
   subscribers: SingleOrArrayL<Subscriber<E, Pc, NoInfer<T>>>;
 };
-
-export type Subscriber2<
-  E extends EventsMap = EventsMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  U extends KeyU<'eventsMap' | 'pContext' | 'context'> = KeyU<
-    'eventsMap' | 'pContext' | 'context'
-  >,
-> =
-  | ConcatFnMap<FnMap2<E, Tc, DeepPartial<Tc>>, FnMapFrom2<U>>
-  | ConcatFnMap<FnMap2<E, Tc, DeepPartial<Tc>>, FnMapFrom2<U>>['else'];
-
-export type Child<
-  E extends EventsMap = EventsMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  T extends AnyMachine = AnyMachine,
-> = {
-  machine: T;
-  initials: {
-    pContext: PrivateContextFrom<T>;
-    context: ContextFrom<T>;
-  };
-  subscriber: Subscriber2<E, Tc, T>;
-};
-
-export type FnMapFrom<
-  T extends KeyU<'eventsMap' | 'pContext' | 'context'>,
-  R = any,
-> = FnMap<
-  Extract<EventsMapFrom<T>, EventsMap>,
-  PrivateContextFrom<T>,
-  Extract<ContextFrom<T>, PrimitiveObject>,
-  R
->;
 
 export type FnMapFrom2<
   T extends KeyU<'eventsMap' | 'pContext' | 'context'>,

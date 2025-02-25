@@ -1,3 +1,4 @@
+import { t } from '@bemedev/types';
 import type { EventsMap, ToEvents } from '~events';
 import {
   isFunction,
@@ -53,7 +54,7 @@ export type ReduceFnMap2_F = <
 
 export const reduceFnMap2: ReduceFnMap2_F = (events, fn) => {
   const check1 = isFunction(fn);
-  if (check1) return fn;
+  if (check1) return t.any(fn);
 
   const keys = Object.keys(events);
 

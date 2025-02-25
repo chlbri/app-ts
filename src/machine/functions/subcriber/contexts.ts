@@ -1,11 +1,15 @@
-import { decompose, type Recompose, type Ru } from '@bemedev/decompose';
+import {
+  decompose,
+  type Decompose,
+  type Recompose,
+  type Ru,
+} from '@bemedev/decompose';
 import { type Fn } from '@bemedev/types';
-import type { Decompose2 } from '../../types';
 
 // #region type AssignByBey_F
 export type AssignByBey_F = <
   T extends Ru,
-  D extends Decompose2<T>,
+  D extends Decompose<T>,
   K extends Extract<keyof D, string>,
   R extends D[K],
 >(
@@ -44,10 +48,10 @@ assignByBey.low = _assignByKey;
 assignByBey.typed = _assignByKey;
 
 // #region type GetByKey_F
-export type GetByKey_F = <T extends Ru, K extends keyof Decompose2<T>>(
+export type GetByKey_F = <T extends Ru, K extends keyof Decompose<T>>(
   obj: T,
   key: Extract<K, string>,
-) => Decompose2<T>[K];
+) => Decompose<T>[K];
 // #endregion
 export interface GetByKey {
   (obj: any, key: string): any;
@@ -67,7 +71,7 @@ getByKey.typed = _getByKey;
 // #region type MergeByKey_F
 export type MergeByKey_F = (
   obj: Ru,
-) => <D extends Decompose2<typeof obj>, K extends keyof D>(
+) => <D extends Decompose<typeof obj>, K extends keyof D>(
   key: Extract<K, string>,
   value: D[K],
 ) => Recompose<Pick<D, K>>;

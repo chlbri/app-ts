@@ -5,7 +5,6 @@ import type { FromGuard, GuardConfig } from '~guards';
 import type { Transitions, TransitionsConfig } from '~transitions';
 import type {
   AllowedNames,
-  Describer2,
   Identitfy,
   PrimitiveObject,
   ReduceArray,
@@ -176,12 +175,3 @@ export type Node<
   states: Identitfy<Node<E, Pc, Tc>>[];
   initial?: string;
 } & Transitions<E, Pc, Tc>;
-
-export type SimpleStateConfig = {
-  type: StateType;
-  initial?: string;
-  states: Identitfy<SimpleStateConfig>[];
-  entry: Describer2[];
-  exit: Describer2[];
-  tags: string[];
-};

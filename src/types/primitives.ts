@@ -9,7 +9,7 @@ import type {
   Unionize,
   UnionToIntersection,
 } from '@bemedev/types';
-import type { EventObject, EventsMap, ToEvents } from '~events';
+import type { EventObject, EventsMap, ToEvents, ToEventsR } from '~events';
 import type { StateType, StateValue } from '~states';
 import { checkKeys } from '~utils';
 
@@ -395,7 +395,7 @@ export type FnMapReduced<
   E extends EventsMap = EventsMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = ((context: Tc, eventsMap: ToEvents<E>) => R) | _FnMapR<E, Tc, R>;
+> = ((context: Tc, eventsMap: ToEventsR<E>) => R) | _FnMapR<E, Tc, R>;
 
 export type EventsMapFromFn<F extends FnMap> =
   F extends FnMap<infer P> ? P : never;

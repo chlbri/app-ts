@@ -8,9 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.0.5-canary] - 2024-02-25 _01:30_
+
+### - Test coverage **90%**
+
+<br/>
+
 ## [0.0.3-canary] - 2024-02-22
 
-### -  Test coverage **84%**
+### - Test coverage **84%**
 
 <br/>
 

@@ -1,16 +1,14 @@
 import type { Fn } from '@bemedev/types';
 
-interface SchedulerOptions {
-  deferEvents: boolean;
-}
-
-const defaultOptions: SchedulerOptions = {
-  deferEvents: false,
-};
-
 type Cb = Fn<[], void>;
 
-type Status = 'idle' | 'initialized' | 'processing' | 'paused' | 'working';
+type Status =
+  | 'idle'
+  | 'initialized'
+  | 'processing'
+  | 'paused'
+  | 'working'
+  | 'stopped';
 
 export class Scheduler {
   #queue: Array<Cb> = [];
@@ -27,26 +25,14 @@ export class Scheduler {
     return this.#status;
   }
 
-  get #isEmpty() {
-    return this.#queue.length === 0;
-  }
-
   // deferred feature
-  private options: SchedulerOptions;
 
-  constructor(options?: Partial<SchedulerOptions>) {
-    this.options = { ...defaultOptions, ...options };
-  }
+  constructor() {}
 
   initialize = (callback?: Cb) => {
     this.#status = 'initialized';
 
     if (callback) {
-      if (!this.options.deferEvents) {
-        this.schedule(callback);
-        return;
-      }
-
       this.#process(callback);
     }
 
@@ -58,6 +44,9 @@ export class Scheduler {
   }
 
   schedule = (task: Cb) => {
+    const check0 = this.#status === 'stopped';
+    if (check0) return;
+
     const check1 =
       this.processing ||
       this.#status === 'idle' ||
@@ -68,12 +57,6 @@ export class Scheduler {
       return;
     }
 
-    if (!this.#isEmpty) {
-      throw new Error(
-        'Event queue should be empty when it is not processing events',
-      );
-    }
-
     this.#process(task);
     this.#flushEvents();
   };
@@ -82,8 +65,14 @@ export class Scheduler {
     this.#status = 'paused';
   };
 
-  clear = () => {
+  #clear = () => {
     this.#queue = [];
+  };
+
+  stop = () => {
+    this.pause();
+    this.#status = 'stopped';
+    this.#clear();
   };
 
   #flushEvents = () => {
@@ -100,17 +89,9 @@ export class Scheduler {
 
     if (check) {
       this.#status = 'processing';
-      try {
-        callback();
-        this.#performeds++;
-      } catch (e) {
-        // there is no use to keep the future events
-        // as the situation is not anymore the same
-        this.clear();
-        throw e;
-      } finally {
-        this.#status = 'working';
-      }
+      callback();
+      this.#performeds++;
+      this.#status = 'working';
     }
   };
 }

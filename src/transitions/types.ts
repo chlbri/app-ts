@@ -3,10 +3,10 @@ import type { Action, ActionConfig, FromActionConfig } from '~actions';
 import type { EventsMap } from '~events';
 import type { FromGuard, GuardConfig, Predicate } from '~guards';
 import type {
-  ExtractActionsFromPromise,
+  ExtractActionsFromPromisee,
   ExtractGuardsFromPromise,
-  ExtractMaxFromPromise,
-  ExtractSrcFromPromise,
+  ExtractMaxFromPromisee,
+  ExtractSrcFromPromisee,
   PromiseConfig,
   Promisee,
 } from '~promises';
@@ -94,7 +94,7 @@ export type TransitionsConfig = {
 };
 
 export type ExtractDelaysFromTransitions<T extends TransitionsConfig> =
-  | ExtractMaxFromPromise<
+  | ExtractMaxFromPromisee<
       Extract<ReduceArray<T['promises']>, { max: string }>
     >
   | (T['after'] extends undefined ? never : keyof T['after']);
@@ -108,7 +108,7 @@ export type ExtractActionsFromTransitions<T extends TransitionsConfig> =
         { actions: SingleOrArrayL<ActionConfig> }
       >
     >
-  | ExtractActionsFromPromise<NotUndefined<ReduceArray<T['promises']>>>;
+  | ExtractActionsFromPromisee<NotUndefined<ReduceArray<T['promises']>>>;
 
 export type ExtractGuardsFromTransitions<T extends TransitionsConfig> =
   | ExtractGuardsFromDelayed<T['on']>
@@ -122,7 +122,7 @@ export type ExtractGuardsFromTransitions<T extends TransitionsConfig> =
   | ExtractGuardsFromPromise<NotUndefined<ReduceArray<T['promises']>>>;
 
 export type ExtractSrcFromTransitions<T extends TransitionsConfig> =
-  ExtractSrcFromPromise<NotUndefined<ReduceArray<T['promises']>>>;
+  ExtractSrcFromPromisee<NotUndefined<ReduceArray<T['promises']>>>;
 
 export type _ExtractTargetsFromConfig<T extends AlwaysConfig> = T extends {
   target: string;

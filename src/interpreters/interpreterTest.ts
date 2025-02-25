@@ -36,7 +36,7 @@ class InterpreterTest<
     return this._cachedIntervals.every(({ state }) => state === 'paused');
   }
 
-  protected createChild = interpretTest;
+  protected interpretChild = interpretTest;
 }
 
 export type { InterpreterTest };
