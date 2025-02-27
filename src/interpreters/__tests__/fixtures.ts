@@ -2,8 +2,15 @@ import sleep from '@bemedev/sleep';
 import { t } from '@bemedev/types';
 import { DEFAULT_NOTHING } from '~constants';
 import type { EventArg, EventsMap } from '~events';
-import type { AnyInterpreter2, Interpreter } from '~interpreter';
+import type { Interpreter } from '~interpreter';
+import type {
+  Config,
+  GetEventsFromConfig,
+  MachineOptions,
+  SimpleMachineOptions2,
+} from '~machines';
 import type { StateValue } from '~states';
+import type { PrimitiveObject } from '~types';
 import { IS_TEST } from '~utils';
 
 export const defaultC = { pContext: {}, context: {} };
@@ -30,8 +37,14 @@ export const constructWaiter: ConstructWaiter_F = (DELAY = 0) => {
   };
 };
 
-type ConstructValue_F = (
-  service: AnyInterpreter2,
+type ConstructValue_F = <
+  const C extends Config = Config,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  E extends EventsMap = GetEventsFromConfig<C>,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
+>(
+  service: Interpreter<C, Pc, Tc, E, Mo>,
 ) => (value: StateValue, index: number) => [string, () => void];
 
 export const constructValue: ConstructValue_F = service => {
@@ -46,9 +59,15 @@ export const constructValue: ConstructValue_F = service => {
   };
 };
 
-type ConstructSend_F = <T extends EventsMap>(
-  service: Interpreter<any, any, any, T, any>,
-) => (_event: EventArg<T>, index: number) => [string, () => void];
+type ConstructSend_F = <
+  const C extends Config = Config,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  E extends EventsMap = GetEventsFromConfig<C>,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
+>(
+  service: Interpreter<C, Pc, Tc, E, Mo>,
+) => (_event: EventArg<E>, index: number) => [string, () => void];
 
 export const constructSend: ConstructSend_F = service => {
   return (_event, index) => {
