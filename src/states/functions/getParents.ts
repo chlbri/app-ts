@@ -1,17 +1,22 @@
 import { DEFAULT_DELIMITER } from '~constants';
 import { isStringEmpty } from '~utils';
 
-export type GetParents_F = (value: string) => string[];
+type _GetParents_F = (value: string) => string[];
+export type GetParents_F = (value: `/${string}`) => string[];
 
-export const getParents: GetParents_F = value => {
+const _getParents: _GetParents_F = value => {
   const last = value.lastIndexOf(DEFAULT_DELIMITER);
-  if (last === -1) return [];
-  const out = ['/', value];
+  const out = new Set('/');
+  out.add(value);
   const str2 = value.substring(0, last);
   if (isStringEmpty(str2)) {
-    return out;
+    return Array.from(out);
   }
 
-  out.push(...getParents(str2));
-  return out;
+  const inner = _getParents(str2);
+  inner.forEach(v => out.add(v));
+
+  return Array.from(out);
 };
+
+export const getParents: GetParents_F = _getParents;

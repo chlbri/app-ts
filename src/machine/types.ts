@@ -196,9 +196,7 @@ export type GetMachineKeysFromConfig<C extends Config> = FromActionConfig<
 
 export type Decompose2<T> = T extends Ru
   ? Decompose<DeepNotUndefined<T>>
-  : T extends Primitive
-    ? T
-    : never;
+  : never;
 
 type HeritageMap<U extends Ru, Tc extends Ru> =
   Decompose<U> extends infer KU extends object

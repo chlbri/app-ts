@@ -1,5 +1,8 @@
 import { t } from '@bemedev/types';
+import { MAX_SELF_TRANSITIONS } from '~constants';
+import { createMachine } from '~machine';
 import { machine3 } from './__tests__/data/machine3';
+import { defaultC, defaultT } from './__tests__/fixtures';
 import { interpret } from './interpreter';
 import type { AnyInterpreter } from './interpreter.types';
 
@@ -9,7 +12,7 @@ describe('Interpreter', () => {
     context: { age: 5 },
   };
 
-  describe('#1 => Status', () => {
+  describe('#01 => Status', () => {
     let service = t.unknown<AnyInterpreter>();
 
     test('#0 => Create the machine', () => {
@@ -66,6 +69,7 @@ describe('Interpreter', () => {
 
       test('#03 => mode is "normal"', () => {
         expect(service.isNormal).toBe(true);
+        expect(service.mode).toBe('normal');
       });
 
       test('#04 => Make it "strictest"', () => {
@@ -191,6 +195,56 @@ describe('Interpreter', () => {
 
       test('#02 => current', () => {
         expect(service.config).toStrictEqual(_config);
+      });
+    });
+  });
+
+  describe('#03 => Exceed selfTransitionsCounter', () => {
+    const fn = vi.spyOn(console, 'error');
+
+    beforeAll(() => {
+      fn.mockClear();
+    });
+
+    const machine = createMachine(
+      {
+        states: {
+          idle: {
+            always: '/working',
+          },
+          working: {
+            always: '/idle',
+          },
+        },
+      },
+      defaultT,
+      { '/': 'idle' },
+    );
+    const service = interpret(machine, { ...defaultC, mode: 'normal' });
+
+    const error = `Too much self transitions, exceeded ${MAX_SELF_TRANSITIONS} transitions`;
+
+    test('#01 => Start the service', service.start.bind(service));
+
+    describe('#02 => Error is throwing', () => {
+      describe('#01 => console.error', () => {
+        test('#01 => called one time', () => {
+          expect(fn).toBeCalledTimes(1);
+        });
+
+        test('#02 => called with the error', () => {
+          expect(fn).toHaveBeenNthCalledWith(1, error);
+        });
+      });
+
+      describe('#02 => collector', () => {
+        test('#01 => collector has one element', () => {
+          expect(service.errorsCollector).toHaveLength(1);
+        });
+
+        test('#02 => collector has the error', () => {
+          expect(service.errorsCollector).toContain(error);
+        });
       });
     });
   });

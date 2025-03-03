@@ -15,6 +15,7 @@ import sleep from '@bemedev/sleep';
 import { t, type Fn } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
+import { EOL } from 'os';
 import {
   reduceAction,
   toAction,
@@ -154,10 +155,6 @@ export class Interpreter<
     return this.#mode;
   }
 
-  get idle() {
-    return this.#status === 'idle';
-  }
-
   // get #canAct() {
   //   return this.#status === 'started' || this.#status === 'working';
   // }
@@ -211,6 +208,7 @@ export class Interpreter<
         console.log(warnings);
       }
 
+      /* v8 ignore next 5 */
       const check2 = this.#errorsCollector.size > 0;
       if (check2) {
         const errors = this.#displayConsole(this.#errorsCollector);
@@ -227,6 +225,7 @@ export class Interpreter<
         console.error(errors);
       }
 
+      /* v8 ignore next 8 */
       const check4 = this.#warningsCollector.size > 0;
       if (check4) {
         const warnings = this.#displayConsole(this.#warningsCollector);
@@ -236,6 +235,7 @@ export class Interpreter<
       return;
     }
 
+    /* v8 ignore next 12 */
     if (this.isStrictest) {
       const _errors = [
         ...this.#errorsCollector,
@@ -335,8 +335,10 @@ export class Interpreter<
    * Call in production will return nothing
    */
   get pContext() {
-    if (IS_TEST) return this.#pContext;
-    /* v8 ignore next 3 */
+    if (IS_TEST) {
+      return this.#pContext;
+      /* v8 ignore next 4 */
+    }
     console.error('pContext is not available in production');
     return;
   }
@@ -361,7 +363,7 @@ export class Interpreter<
   #startStatus = (): WorkingStatus => (this.#status = 'started');
 
   #displayConsole = (messages: Iterable<string>) => {
-    return Array.from(messages).join('\n');
+    return Array.from(messages).join(EOL);
   };
 
   #checkContexts = () => {
@@ -380,7 +382,7 @@ export class Interpreter<
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#performMachines();
-    return this.next();
+    return this._next();
   };
 
   #rinitIntervals = () => {
@@ -412,14 +414,13 @@ export class Interpreter<
 
   #selfTransitionsCounter = 0;
 
-  protected next = async () => {
+  protected _next = async () => {
+    if (this.#status === 'stopped') return;
     const previousValue = this.#value;
     const checkCounter =
       this.#selfTransitionsCounter >= MAX_SELF_TRANSITIONS;
 
-    if (checkCounter) {
-      throw `Too much self transitions, exceeded ${MAX_SELF_TRANSITIONS} transitions`;
-    }
+    if (checkCounter) return this.#throwMaxCounter();
     this.#throwing();
 
     this.flushSubscribers();
@@ -433,7 +434,7 @@ export class Interpreter<
     const check = !equal(previousValue, currentConfig);
 
     if (check) {
-      const duration = await measureExecutionTime(this.next.bind(this));
+      const duration = await measureExecutionTime(this._next.bind(this));
       const check2 = duration > MIN_ACTIVITY_TIME;
       if (check2) this.#selfTransitionsCounter = 0;
     } else this.#selfTransitionsCounter = 0;
@@ -455,6 +456,16 @@ export class Interpreter<
     this.#makeWork();
     return { pContext, context };
   };
+
+  #throwMaxCounter() {
+    const error = `Too much self transitions, exceeded ${MAX_SELF_TRANSITIONS} transitions`;
+    if (IS_TEST) {
+      this._addError(error);
+      this.#throwing();
+      this.stop();
+      /* v8 ignore next 1 */
+    } else throw error;
+  }
 
   get #contexts() {
     return t.unknown<ActionResult<Pc, Tc>>({
@@ -1110,6 +1121,11 @@ export class Interpreter<
   #errorsCollector = new Set<string>();
   #warningsCollector = new Set<string>();
 
+  /**
+   * @deprecated
+   * Just use for testing
+   * Call in production will return nothing
+   */
   get errorsCollector() {
     if (IS_TEST) return this.#errorsCollector;
     /* v8 ignore next 3 */
@@ -1209,7 +1225,7 @@ export class Interpreter<
       this.#config = next;
       this.#performConfig(true);
       this.#makeWork();
-      this.next();
+      this._next();
     } else this.#makeWork();
   };
 
