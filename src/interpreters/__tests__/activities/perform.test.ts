@@ -122,10 +122,7 @@ describe(TEXT, () => {
 
     const strict = () => {
       const calls = strings.map(data => [data].flat());
-      const check = _strings.length > 0;
-      if (check) {
-        expect(log.mock.calls).toStrictEqual(calls);
-      }
+      expect(log.mock.calls).toStrictEqual(calls);
     };
 
     const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
@@ -157,7 +154,7 @@ describe(TEXT, () => {
     test(...useState('idle', 1));
     test(...useIterator(6, 2));
     test(...useIteratorC(6, 3));
-    describe(...useConsole(4));
+    describe(...useConsole(4, 'nothing call nothing'));
   });
 
   test(...useSend('NEXT', 3));
@@ -472,8 +469,8 @@ describe(TEXT, () => {
         expect(log).toBeCalledTimes(strings.length);
       });
 
-      test('#02 => Log is called "72" times', () => {
-        expect(log).toBeCalledTimes(72);
+      test('#02 => Log is called "73" times', () => {
+        expect(log).toBeCalledTimes(73);
       });
     });
 

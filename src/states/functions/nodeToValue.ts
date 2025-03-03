@@ -32,13 +32,9 @@ export const nodeToValue: NodeToValue_F = body => {
     }
   }
 
-  const entries2 = entries.map(([key, value]) => {
-    const check1 = isAtomic(value);
-    if (check1) {
-      return t.tuple(key, {});
-    }
-    return t.tuple(key, nodeToValue(value));
-  });
+  const entries2 = entries.map(([key, value]) =>
+    t.tuple(key, nodeToValue(value)),
+  );
 
   const out = entries2.reduce((acc, [key, value]) => {
     acc[key] = value;

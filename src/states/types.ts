@@ -81,7 +81,6 @@ export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T
   : never;
 
 export type CommonNodeConfig = {
-  readonly id?: string;
   readonly description?: string;
   readonly entry?: SingleOrArrayR<ActionConfig>;
   readonly exit?: SingleOrArrayR<ActionConfig>;
@@ -92,7 +91,6 @@ export type CommonNodeConfig = {
 export type NodeConfigAtomic = TransitionsConfig &
   CommonNodeConfig & {
     readonly type?: 'atomic';
-    readonly id?: string;
     readonly initial?: never;
     readonly states?: never;
   };

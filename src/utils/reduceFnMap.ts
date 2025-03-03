@@ -6,6 +6,7 @@ import {
   type FnMapReduced,
   type PrimitiveObject,
 } from '~types';
+import { nothing } from './nothing';
 
 export type ReduceFnMap_F = <
   const E extends EventsMap,
@@ -25,10 +26,10 @@ export const reduceFnMap: ReduceFnMap_F = (events, fn) => {
 
   return (pContext, context, event) => {
     const check5 = typeof event === 'string';
-    if (check5) return;
+    const _else = fn.else ?? nothing;
+    if (check5) return t.any(_else(pContext, context, event));
 
     const { payload, type } = event;
-    const _else = fn.else!;
 
     for (const key of keys) {
       const check2 = type === key;
@@ -39,7 +40,7 @@ export const reduceFnMap: ReduceFnMap_F = (events, fn) => {
       if (check4) return func(pContext, context, payload);
     }
 
-    return _else(pContext, context, event) as any;
+    return t.any(_else(pContext, context, event));
   };
 };
 
@@ -60,10 +61,10 @@ export const reduceFnMap2: ReduceFnMap2_F = (events, fn) => {
 
   return (context, event) => {
     const check5 = typeof event === 'string';
-    if (check5) return;
+    const _else = fn.else ?? nothing;
+    if (check5) return t.any(_else(context, event));
 
     const { payload, type } = event;
-    const _else = fn.else!;
 
     for (const key of keys) {
       const check2 = type === key;
@@ -74,6 +75,6 @@ export const reduceFnMap2: ReduceFnMap2_F = (events, fn) => {
       if (check4) return func(context, payload);
     }
 
-    return _else(context, event) as any;
+    return t.any(_else(context, event));
   };
 };

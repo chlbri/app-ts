@@ -54,7 +54,11 @@ describe('Interpret for actions', () => {
     });
 
     test('#04 => add action', () => {
-      service.addAction('action1', action1);
+      service.addOptions(() => ({
+        actions: {
+          action1,
+        },
+      }));
     });
 
     test(...useSendNext(5));
@@ -134,7 +138,11 @@ describe('Interpret for actions', () => {
     });
 
     test('#04 => add action', () => {
-      service.addAction('action1', action1);
+      service.addOptions(() => ({
+        actions: {
+          action1,
+        },
+      }));
     });
 
     test(...useSendNext(5));

@@ -18,7 +18,6 @@ import equal from 'fast-deep-equal';
 import {
   reduceAction,
   toAction,
-  type Action,
   type ActionConfig,
   type ActionResult,
 } from '~actions';
@@ -30,7 +29,7 @@ import {
   MIN_ACTIVITY_TIME,
   THEN_EVENT_TYPE,
 } from '~constants';
-import { toDelay, type Delay } from '~delays';
+import { toDelay } from '~delays';
 import {
   eventToType,
   INIT_EVENT,
@@ -40,7 +39,7 @@ import {
   type EventsMap,
   type ToEvents,
 } from '~events';
-import { toPredicate, type GuardConfig, type PredicateS } from '~guards';
+import { toPredicate, type GuardConfig } from '~guards';
 import { getEntries, getExits, type Machine } from '~machine';
 import {
   assignByBey,
@@ -63,7 +62,6 @@ import {
 } from '~machines';
 import {
   PromiseConfig,
-  PromiseFunction,
   toPromiseSrc,
   type PromiseeResult,
 } from '~promises';
@@ -84,12 +82,7 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '~transitions';
-import {
-  isDescriber,
-  type Keys,
-  type PrimitiveObject,
-  type RecordS,
-} from '~types';
+import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
 import { IS_TEST, measureExecutionTime, replaceAll } from '~utils';
 import { merge } from './../utils/merge';
 import type {
@@ -162,13 +155,13 @@ export class Interpreter<
     return this.#mode;
   }
 
-  get #idle() {
+  get idle() {
     return this.#status === 'idle';
   }
 
-  get #canAct() {
-    return this.#status === 'started' || this.#status === 'working';
-  }
+  // get #canAct() {
+  //   return this.#status === 'started' || this.#status === 'working';
+  // }
 
   get event() {
     return this.#event;
@@ -425,7 +418,6 @@ export class Interpreter<
     if (checkCounter) {
       throw `Too much self transitions, exceeded ${MAX_SELF_TRANSITIONS} transitions`;
     }
-
     this.#throwing();
 
     this.flushSubscribers();
@@ -1053,12 +1045,16 @@ export class Interpreter<
 
   #makeBusy = (): WorkingStatus => (this.#status = 'busy');
 
+  /**
+   * @deprecated
+   * Uses internal
+   */
   providePrivateContext = (pContext: Pc) => {
     this.#initialPpc = pContext;
     this.#pContext = pContext;
     this.#makeBusy();
 
-    if (this.#idle) this.#machine.addPrivateContext(this.#initialPpc);
+    this.#machine.addPrivateContext(this.#initialPpc);
 
     this.#status = 'starting';
     return this.#machine;
@@ -1066,12 +1062,16 @@ export class Interpreter<
 
   ppC = this.providePrivateContext;
 
+  /**
+   * @deprecated
+   * Uses internal
+   */
   provideContext = (context: Tc) => {
     this.#initialContext = context;
     this.#context = context;
     this.#makeBusy();
 
-    if (this.#idle) this.#machine.addContext(this.#initialContext);
+    this.#machine.addContext(this.#initialContext);
 
     this.#status = 'starting';
     return this.#machine;
@@ -1082,47 +1082,6 @@ export class Interpreter<
   get addOptions() {
     return this.#machine.addOptions;
   }
-
-  addAction = (key: Keys<Mo['actions']>, action: Action<E, Pc, Tc>) => {
-    if (this.#canAct) {
-      const out = { [key]: action };
-      this.#machine.addActions(out);
-    }
-  };
-
-  addPredicate = (
-    key: Keys<Mo['predicates']>,
-    guard: PredicateS<E, Pc, Tc>,
-  ) => {
-    if (this.#canAct) {
-      const out = { [key]: guard };
-      this.#machine.addPredicates(out);
-    }
-  };
-
-  addPromise = (
-    key: Keys<Mo['promises']>,
-    promise: PromiseFunction<E, Pc, Tc>,
-  ) => {
-    if (this.#canAct) {
-      const out = { [key]: promise };
-      this.#machine.addPromises(out);
-    }
-  };
-
-  addDelay = (key: Keys<Mo['delays']>, delay: Delay<E, Pc, Tc>) => {
-    if (this.#canAct) {
-      const out = { [key]: delay };
-      this.#machine.addDelays(out);
-    }
-  };
-
-  addMachine = (key: Keys<Mo['machines']>, machine: ChildS<E, Tc>) => {
-    if (this.#canAct) {
-      const out = { [key]: machine };
-      this.#machine.addMachines(out);
-    }
-  };
 
   #subscribers = new Set<Subscriber<E, Tc>>();
   #fullSubscribers = new Set<Subscriber<E, Tc>>();
@@ -1148,7 +1107,10 @@ export class Interpreter<
   #warningsCollector = new Set<string>();
 
   get errorsCollector() {
-    return this.#errorsCollector;
+    if (IS_TEST) return this.#errorsCollector;
+    /* v8 ignore next 3 */
+    console.error('errorsCollector is not available in production');
+    return;
   }
 
   /**
@@ -1158,6 +1120,7 @@ export class Interpreter<
    */
   get warningsCollector() {
     if (IS_TEST) return this.#warningsCollector;
+    /* v8 ignore next 3 */
     console.error('warningsCollector is not available in production');
     return;
   }

@@ -39,7 +39,7 @@ export type Elements<
   events: E;
   context: Tc;
   actions?: Mo['actions'];
-  guards?: Mo['predicates'];
+  predicates?: Mo['predicates'];
   delays?: Mo['delays'];
   promises?: Mo['promises'];
   machines?: Mo['machines'];
@@ -69,28 +69,13 @@ export interface AnyMachine<
   promises: any;
   machines: any;
   action: Action<E, Pc, Tc>;
-  postFlat: NodeConfigWithInitials;
+  postflat: NodeConfigWithInitials;
   renew: any;
   initialConfig: NodeConfigWithInitials;
   initialValue: StateValue;
 
   addInitials: Fn<[any], any>;
   provideInitials: Fn<[any], any>;
-
-  addActions: Fn<[any], any>;
-  provideActions: Fn<[any], any>;
-
-  addPredicates: Fn<[any], any>;
-  providePredicates: Fn<[any], any>;
-
-  addDelays: Fn<[any], any>;
-  provideDelays: Fn<[any], any>;
-
-  addPromises: Fn<[any], any>;
-  providePromises: Fn<[any], any>;
-
-  addMachines: Fn<[any], any>;
-  provideMachines: Fn<[any], any>;
 
   providePrivateContext: Fn<[any], any>;
   provideContext: Fn<[any], any>;

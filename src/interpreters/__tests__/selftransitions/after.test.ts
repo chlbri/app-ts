@@ -36,7 +36,11 @@ describe('after', () => {
   describe('#01 => simple', () => {
     const machine = createMachine(simpleConfig, defaultT, defaultI);
 
-    machine.addDelays({ DELAY });
+    machine.addOptions(() => ({
+      delays: {
+        DELAY,
+      },
+    }));
 
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
@@ -68,7 +72,12 @@ describe('after', () => {
       defaultI,
     );
 
-    machine.addDelays({ DELAY1: DELAY * 3, DELAY2: DELAY * 2 });
+    machine.addOptions(() => ({
+      delays: {
+        DELAY1: DELAY * 3,
+        DELAY2: DELAY * 2,
+      },
+    }));
 
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
@@ -103,15 +112,15 @@ describe('after', () => {
       defaultT,
       defaultI,
     );
-
-    machine.addDelays({
-      DELAY,
-      DELAY2: DELAY * 4,
-    });
-
-    machine.addPredicates({
-      returnFalse,
-    });
+    machine.addOptions(() => ({
+      delays: {
+        DELAY,
+        DELAY2: DELAY * 4,
+      },
+      predicates: {
+        returnFalse,
+      },
+    }));
 
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
@@ -134,7 +143,12 @@ describe('after', () => {
   describe('#04 => Delay is too long', () => {
     const machine = createMachine(simpleConfig, defaultT, defaultI);
 
-    machine.addDelays({ DELAY: MAX_TIME_PROMISE + DELAY });
+    machine.addOptions(() => ({
+      delays: {
+        DELAY: MAX_TIME_PROMISE + DELAY,
+      },
+    }));
+
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
 
@@ -183,7 +197,11 @@ describe('after', () => {
       defaultI,
     );
 
-    machine.addDelays({ DELAY2: DELAY * 3 });
+    machine.addOptions(() => ({
+      delays: {
+        DELAY2: DELAY * 3,
+      },
+    }));
 
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);

@@ -259,11 +259,7 @@ export interface AnyInterpreter<
   providePrivateContext: (pContext: Pc) => AnyMachine<E, Pc, Tc>;
   ppC: (pContext: Pc) => AnyMachine<E, Pc, Tc>;
   provideContext: (context: Tc) => AnyMachine<E, Pc, Tc>;
-  addAction: Fn;
-  addPredicate: Fn;
-  addPromise: Fn;
-  addDelay: Fn;
-  addMachine: Fn;
+
   addSubscriber: AddSubscriber_F<any, any>;
 
   send: (event: EventArg<E>) => void;

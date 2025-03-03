@@ -66,9 +66,11 @@ describe('promisee', () => {
       defaultI,
     );
 
-    machine.addPromises({
-      rejectPromise: () => Promise.reject(),
-    });
+    machine.addOptions(() => ({
+      promises: {
+        rejectPromise: () => Promise.reject(),
+      },
+    }));
 
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
@@ -99,9 +101,11 @@ describe('promisee', () => {
       defaultI,
     );
 
-    machine.addPromises({
-      resolvePromise: () => Promise.resolve(),
-    });
+    machine.addOptions(() => ({
+      promises: {
+        resolvePromise: () => Promise.resolve(),
+      },
+    }));
 
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
@@ -136,13 +140,14 @@ describe('promisee', () => {
       defaultI,
     );
 
-    machine.addPromises({
-      rejectPromise: async () => {
-        await sleep(DELAY * 2);
-        return Promise.reject();
-        // throw undefined;
+    machine.addOptions(() => ({
+      promises: {
+        rejectPromise: async () => {
+          await sleep(DELAY * 2);
+          return Promise.reject();
+        },
       },
-    });
+    }));
 
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
@@ -180,13 +185,15 @@ describe('promisee', () => {
       defaultI,
     );
 
-    machine.addPromises({
-      rejectPromise: async () => {
-        await sleep(DELAY * 2);
-        return Promise.reject();
-        // throw undefined;
+    machine.addOptions(() => ({
+      promises: {
+        rejectPromise: async () => {
+          await sleep(DELAY * 2);
+          return Promise.reject();
+        },
       },
-    });
+      delays: { DELAY },
+    }));
     // #endregion
 
     describe('#01 => max is not defined', () => {
@@ -205,7 +212,15 @@ describe('promisee', () => {
     });
 
     describe('#01 => max is defined', () => {
-      machine.addDelays({ DELAY });
+      machine.addOptions(() => ({
+        promises: {
+          rejectPromise: async () => {
+            await sleep(DELAY * 2);
+            return Promise.reject();
+          },
+        },
+        delays: { DELAY },
+      }));
 
       const service = interpret(machine, defaultC);
       const useValue = constructValue(service);
@@ -249,14 +264,15 @@ describe('promisee', () => {
         defaultI,
       );
 
-      machine.addPromises({ rejectPromise });
-
-      machine.addActions({
-        finalAction: () => {
-          actionVi('finalAction');
-          return {};
+      machine.addOptions(() => ({
+        promises: { rejectPromise },
+        actions: {
+          finalAction: () => {
+            actionVi('finalAction');
+            return {};
+          },
         },
-      });
+      }));
 
       const service = interpret(machine, defaultC);
       const useValue = constructValue(service);
@@ -301,14 +317,16 @@ describe('promisee', () => {
 
       const actionVi = vi.fn();
       const guard = vi.fn(returnFalse);
-      machine.addPromises({ rejectPromise });
-      machine.addPredicates({ guard });
-      machine.addActions({
-        finalAction: () => {
-          actionVi('finalAction');
-          return {};
+      machine.addOptions(() => ({
+        promises: { rejectPromise },
+        predicates: { guard },
+        actions: {
+          finalAction: () => {
+            actionVi('finalAction');
+            return {};
+          },
         },
-      });
+      }));
 
       describe('#01 => Transition not pass', () => {
         afterAll(() => {
@@ -346,7 +364,16 @@ describe('promisee', () => {
           guard.mockClear();
         });
 
-        machine.addPredicates({ guard });
+        machine.addOptions(() => ({
+          promises: { rejectPromise },
+          predicates: { guard },
+          actions: {
+            finalAction: () => {
+              actionVi('finalAction');
+              return {};
+            },
+          },
+        }));
 
         const service = interpret(machine, defaultC);
         const useValue = constructValue(service);

@@ -111,9 +111,7 @@ export const machine2 = createMachine(
     pContext: t.unknown<{ iterator: number }>(),
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
-);
-
-machine2.addOptions(({ isNotValue, isValue, createChild }) => ({
+).provideOptions(({ isNotValue, isValue, createChild }) => ({
   actions: {
     inc: (pContext, context) => {
       context.iterator++;
