@@ -88,6 +88,7 @@ export const machine3 = createMachine(
       EVENT2: t.boolean,
       EVENT3: { login: t.string, pwd: t.string },
     },
+    promiseesMap: {},
   },
   { '/': 'state1', '/state1': 'state11', '/state1/state11': 'state111' },
 );

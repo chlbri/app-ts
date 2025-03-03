@@ -1,15 +1,14 @@
-import type {
-  CatchEvent,
-  MaxExceededEvent,
-  ThenEvent,
-} from 'src/constants/events';
+import type { MaxExceededEvent } from 'src/constants/events';
 
 import type { AlwaysEvent, InitEvent, ToEvents } from './types';
 
-type TT1 = ToEvents<{
-  AUTH: { userName: string; password: string };
-  MODIFY: { data?: any };
-}>;
+type TT1 = ToEvents<
+  {
+    AUTH: { userName: string; password: string };
+    MODIFY: { data?: any };
+  },
+  {}
+>;
 
 expectTypeOf<TT1>().toEqualTypeOf<
   | {
@@ -27,7 +26,5 @@ expectTypeOf<TT1>().toEqualTypeOf<
     }
   | InitEvent
   | AlwaysEvent
-  | ThenEvent
-  | CatchEvent
   | MaxExceededEvent
 >();

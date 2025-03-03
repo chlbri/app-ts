@@ -109,6 +109,9 @@ export const machine2 = createMachine(
       data: string[];
     }>(),
     pContext: t.unknown<{ iterator: number }>(),
+    promiseesMap: {
+      fetch: { then: t.array(t.string), catch: t.object },
+    },
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
 ).provideOptions(({ isNotValue, isValue, createChild }) => ({
@@ -130,7 +133,6 @@ export const machine2 = createMachine(
         context.input = value;
         return { context, pContext };
       },
-      else: (pContext, context) => ({ pContext, context }),
     },
     askUsertoInput: (pContext, context) => {
       console.log('Input, please !!');
@@ -139,15 +141,11 @@ export const machine2 = createMachine(
         context,
       };
     },
-    insertData: (pContext, context, eventsMap) => {
-      const check =
-        typeof eventsMap === 'object' &&
-        eventsMap.type === 'machine$$then';
-
-      if (check) {
-        context.data.push(...eventsMap.payload);
-      }
-      return { context, pContext };
+    insertData: {
+      'fetch::then': (pContext, context, payload) => {
+        context.data.push(...payload);
+        return { context, pContext };
+      },
     },
   },
   predicates: {

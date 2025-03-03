@@ -1,5 +1,5 @@
 import { createInterval } from '@bemedev/interval2';
-import type { EventsMap } from '~events';
+import type { EventsMap, PromiseeMap } from '~events';
 import type {
   Config,
   MachineOptions,
@@ -15,8 +15,9 @@ class InterpreterTest<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = EventsMap,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
-> extends Interpreter<C, Pc, Tc, E, Mo> {
+  P extends PromiseeMap = PromiseeMap,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
+> extends Interpreter<C, Pc, Tc, E, P, Mo> {
   protected createInterval: CreateInterval2_F = ({
     callback,
     id,
@@ -45,6 +46,7 @@ export type AnyInterpreterTest = InterpreterTest<
   Config,
   any,
   PrimitiveObject,
+  any,
   any,
   SimpleMachineOptions2
 >;

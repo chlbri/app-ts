@@ -1,4 +1,4 @@
-import type { EventsMap } from '~events';
+import type { EventsMap, PromiseeMap } from '~events';
 import type { Machine } from '~machine';
 import type {
   Config,
@@ -13,8 +13,9 @@ export type InterpreterTest_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = EventsMap,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
+  P extends PromiseeMap = PromiseeMap,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 >(
-  machine: Machine<C, Pc, Tc, E, Mo>,
+  machine: Machine<C, Pc, Tc, E, P, Mo>,
   config: { pContext: Pc; context: Tc },
-) => InterpreterTest<C, Pc, Tc, E, Mo>;
+) => InterpreterTest<C, Pc, Tc, E, P, Mo>;

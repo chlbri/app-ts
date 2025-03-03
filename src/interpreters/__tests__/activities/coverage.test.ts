@@ -34,7 +34,7 @@ describe('Interpreter integration ofr activities coverage', () => {
           },
         },
       },
-      { ...defaultC, eventsMap: { NEXT: {} } },
+      { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
       { '/': 'state1' },
     );
 
@@ -122,7 +122,7 @@ describe('Interpreter integration ofr activities coverage', () => {
           },
         },
       },
-      { ...defaultC, eventsMap: { NEXT: {} } },
+      { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
       { '/': 'state1' },
     );
 
@@ -237,7 +237,7 @@ describe('Interpreter integration ofr activities coverage', () => {
           },
         },
       },
-      { ...defaultC, eventsMap: { NEXT: {} } },
+      { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
       { '/': 'state1' },
     );
 

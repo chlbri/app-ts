@@ -1,6 +1,6 @@
 import type { Fn, NOmit } from '@bemedev/types';
-import type { Action, ActionConfig } from '~actions';
-import type { EventsMap, ToEvents } from '~events';
+import type { ActionConfig } from '~actions';
+import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
 import type { Machine } from '~machine';
 import type { NodeConfigWithInitials, StateValue } from '~states';
@@ -29,14 +29,16 @@ export type _ProvideActions_F<T> = (actions: T) => void;
 export type Elements<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = {
   config: C;
-  initials?: Mo['initials'];
+  initials: Mo['initials'];
   pContext: Pc;
   events: E;
+  promisees: P;
   context: Tc;
   actions?: Mo['actions'];
   predicates?: Mo['predicates'];
@@ -52,6 +54,7 @@ export type GetIO_F = (
 
 export interface AnyMachine<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > {
@@ -61,14 +64,14 @@ export interface AnyMachine<
   context: Tc;
   pContext: Pc;
   eventsMap: E;
-  events: ToEvents<E>;
+  promiseesMap: P;
+  events: ToEvents<E, P>;
   mo: any;
   actions: any;
   predicates: any;
   delays: any;
   promises: any;
   machines: any;
-  action: Action<E, Pc, Tc>;
   postflat: NodeConfigWithInitials;
   renew: any;
   initialConfig: NodeConfigWithInitials;
@@ -88,6 +91,7 @@ export interface AnyMachine<
 
 export type AddOption_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends NOmit<SimpleMachineOptions2, 'initials'> = NOmit<
@@ -97,18 +101,18 @@ export type AddOption_F<
 > = (option: {
   isDefined: (
     path: DefinedValue<Pc, Tc>,
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
+  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
   isNotDefined: (
     path: DefinedValue<Pc, Tc>,
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
+  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
   isValue: (
     path: DefinedValue<Pc, Tc>,
     ...values: any[]
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
+  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
   isNotValue: (
     path: DefinedValue<Pc, Tc>,
     ...values: any[]
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
+  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
   createChild: <
     const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
       'pContext' | 'context' | 'preConfig'
@@ -119,16 +123,17 @@ export type AddOption_F<
       pContext: PrivateContextFrom<T>;
       context: ContextFrom<T>;
     },
-    ...subscribers: Subscriber<E, Tc, T>[]
-  ) => ChildS<E, Tc, T>;
+    ...subscribers: Subscriber<E, P, Tc, T>[]
+  ) => ChildS<E, P, Tc, T>;
 }) => Mo | undefined;
 
 export type AddOptions_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends NOmit<SimpleMachineOptions2, 'initials'> = NOmit<
     SimpleMachineOptions2,
     'initials'
   >,
-> = (option: AddOption_F<E, Pc, Tc, Mo>) => void;
+> = (option: AddOption_F<E, P, Pc, Tc, Mo>) => void;

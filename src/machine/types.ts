@@ -8,7 +8,12 @@ import type {
 } from '@bemedev/types';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
 import type { Delay } from '~delays';
-import type { EventsMap, ToEvents } from '~events';
+import type {
+  EventsMap,
+  PromiseeDef,
+  PromiseeMap,
+  ToEvents,
+} from '~events';
 import type { PredicateS } from '~guards';
 import type {
   ActivityConfig,
@@ -133,30 +138,34 @@ type _GetKeyDelaysFromFlat<Flat extends FlatMapN> = {
 export type GetActionsFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetKeyActionsFromFlat<Flat>, Action<E, Pc, Tc>>;
+> = Record<_GetKeyActionsFromFlat<Flat>, Action<E, P, Pc, Tc>>;
 
 export type GetGuardsFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, Pc, Tc>>;
+> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, P, Pc, Tc>>;
 
 export type GetSrcFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetKeySrcFromFlat<Flat>, PromiseFunction<E, Pc, Tc>>;
+> = Record<_GetKeySrcFromFlat<Flat>, PromiseFunction<E, P, Pc, Tc>>;
 
 export type GetDelaysFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetKeyDelaysFromFlat<Flat>, Delay<E, Pc, Tc>>;
+> = Record<_GetKeyDelaysFromFlat<Flat>, Delay<E, P, Pc, Tc>>;
 
 export type GetEventsFromFlat<Flat extends FlatMapN> = Record<
   _GetEventsFromFlat<Flat>,
@@ -168,6 +177,17 @@ export type GetEventsFromConfig<C extends Config> = GetEventsFromFlat<
 >;
 
 export type GetEventsFromMachine<T extends KeyU<'preConfig'>> =
+  GetEventsFromConfig<ConfigFrom<T>>;
+
+export type GetPromiseeSrcFromFlat<Flat extends FlatMapN> = Record<
+  _GetKeySrcFromFlat<Flat>,
+  PromiseeDef
+>;
+
+export type GetPromiseeSrcFromConfig<C extends Config> =
+  GetPromiseeSrcFromFlat<FlatMapN<C>>;
+
+export type GetPromiseeSrcFromMachine<T extends KeyU<'preConfig'>> =
   GetEventsFromConfig<ConfigFrom<T>>;
 
 export type GetMachineKeysFromConfig<C extends Config> = FromActionConfig<
@@ -191,19 +211,32 @@ type HeritageMap<U extends Ru, Tc extends Ru> =
 
 type SubNev = { contexts?: never };
 
+type SubEventsKeysFrom<T extends KeyU<'preConfig' | 'context'>> =
+  | keyof GetEventsFromMachine<T>
+  | (GetPromiseeSrcFromMachine<T> extends infer K extends string
+      ? `${K}::${'then' | 'catch'}`
+      : never);
+
+type SubEventsKeys<E extends EventsMap, P extends PromiseeMap> =
+  | keyof E
+  | (keyof P extends infer K extends string
+      ? `${K}::${'then' | 'catch'}`
+      : never);
+
 export type Subscriber<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   U extends KeyU<'preConfig' | 'context'> = KeyU<'preConfig' | 'context'>,
 > = {
   events:
     | SingleOrArrayL<
         | {
-            [key in keyof GetEventsFromMachine<U>]?: SingleOrArrayL<
-              keyof E
+            [key in SubEventsKeysFrom<U>]?: SingleOrArrayL<
+              SubEventsKeys<E, P>
             >;
           }
-        | keyof E
+        | SubEventsKeys<E, P>
       >
     | 'full';
 } & (ContextFrom<U> extends infer CU
@@ -222,6 +255,7 @@ export type Subscriber<
 
 export type ChildS<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
     'preConfig' | 'context' | 'pContext'
@@ -232,14 +266,15 @@ export type ChildS<
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
   };
-  subscribers: SingleOrArrayL<Subscriber<E, Pc, NoInfer<T>>>;
+  subscribers: SingleOrArrayL<Subscriber<E, P, Pc, NoInfer<T>>>;
 };
 
-export type FnMapFrom2<
-  T extends KeyU<'eventsMap' | 'pContext' | 'context'>,
+export type FnMapFrom<
+  T extends KeyU<'eventsMap' | 'pContext' | 'context' | 'promiseesMap'>,
   R = any,
 > = FnMap2<
   Extract<EventsMapFrom<T>, EventsMap>,
+  Extract<PromiseesMapFrom<T>, PromiseeDef>,
   Extract<ContextFrom<T>, PrimitiveObject>,
   R
 >;
@@ -247,22 +282,24 @@ export type FnMapFrom2<
 export type GetMachinesFromConfig<
   C extends Config,
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
-> = Record<GetMachineKeysFromConfig<C>, ChildS<E, Pc>>;
+> = Record<GetMachineKeysFromConfig<C>, ChildS<E, P, Pc>>;
 
 export type MachineOptions<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Flat extends FlatMapN<C> = FlatMapN<C>,
 > = {
   initials: GetInititalsFromFlat<Flat>;
-  actions?: Partial<GetActionsFromFlat<Flat, E, Pc, Tc>>;
-  predicates?: Partial<GetGuardsFromFlat<Flat, E, Pc, Tc>>;
-  promises?: Partial<GetSrcFromFlat<Flat, E, Pc, Tc>>;
-  delays?: Partial<GetDelaysFromFlat<Flat, E, Pc, Tc>>;
-  machines?: Partial<GetMachinesFromConfig<C, E, Pc>>;
+  actions?: Partial<GetActionsFromFlat<Flat, E, P, Pc, Tc>>;
+  predicates?: Partial<GetGuardsFromFlat<Flat, E, P, Pc, Tc>>;
+  promises?: Partial<GetSrcFromFlat<Flat, E, P, Pc, Tc>>;
+  delays?: Partial<GetDelaysFromFlat<Flat, E, P, Pc, Tc>>;
+  machines?: Partial<GetMachinesFromConfig<C, E, P, Pc>>;
 };
 
 export type MachineOptionsFrom<T extends KeyU<'mo'>> = Extract<
@@ -287,6 +324,11 @@ export type ContextFrom<T extends KeyU<'context'>> = Extract<
 export type EventsMapFrom<T extends KeyU<'eventsMap'>> = Extract<
   T['eventsMap'],
   EventsMap
+>;
+
+export type PromiseesMapFrom<T extends KeyU<'promiseesMap'>> = Extract<
+  T['promiseesMap'],
+  PromiseeMap
 >;
 
 export type EventsFrom<T extends KeyU<'events'>> = T['events'];
@@ -337,14 +379,15 @@ export type MachineKeysFrom<T extends KeyU<'machines'>> =
 
 export type SimpleMachineOptions<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   initials: RecordS<string>;
-  actions?: Partial<RecordS<Action<E, Pc, Tc>>>;
-  predicates?: Partial<RecordS<PredicateS<E, Pc, Tc>>>;
-  promises?: Partial<RecordS<PromiseFunction<E, Pc, Tc>>>;
-  delays?: Partial<RecordS<Delay<E, Pc, Tc>>>;
+  actions?: Partial<RecordS<Action<E, P, Pc, Tc>>>;
+  predicates?: Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
+  promises?: Partial<RecordS<PromiseFunction<E, P, Pc, Tc>>>;
+  delays?: Partial<RecordS<Delay<E, P, Pc, Tc>>>;
   machines?: Partial<RecordS<any>>;
 };
 
@@ -359,17 +402,20 @@ export type SimpleMachineOptions2 = {
 
 export type PromiseFunction<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   TC extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, Pc, TC, Promise<any>>;
+> = FnMap<E, P, Pc, TC, Promise<any>>;
 
 export type PromiseFunction2<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   TC extends PrimitiveObject = PrimitiveObject,
-> = Fn<[Pc, TC, ToEvents<E>], Promise<any>>;
+> = Fn<[Pc, TC, ToEvents<E, P>], Promise<any>>;
 
 export type MachineMap<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
-> = Partial<RecordS<ChildS<E, Pc>>>;
+> = Partial<RecordS<ChildS<E, P, Pc>>>;

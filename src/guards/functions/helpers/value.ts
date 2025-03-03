@@ -1,17 +1,18 @@
 import { t } from '@bemedev/types';
-import type { EventsMap, ToEvents } from '~events';
+import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import { getByKey } from '~machines';
 import type { PrimitiveObject } from '~types';
 import type { DefinedValue } from '../../types';
 
 export type IsValueS_F = <
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   path: DefinedValue<Pc, Tc>,
   ...values: any[]
-) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => boolean;
+) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
 
 export const isValue: IsValueS_F = (path, ...values) => {
   const start = path.startsWith.bind(path);

@@ -1,6 +1,6 @@
 import type { NotUndefined, Require } from '@bemedev/types';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
-import type { EventsMap } from '~events';
+import type { EventsMap, PromiseeMap } from '~events';
 import type { FromGuard, GuardConfig, Predicate } from '~guards';
 import type {
   ExtractActionsFromPromisee,
@@ -136,24 +136,26 @@ export type ExtractTargetsFromConfig<T> = _ExtractTargetsFromConfig<
 
 export type Transition<
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   readonly target: string[];
   // readonly internal?: boolean;
-  readonly actions: Action<E, Pc, Tc>[];
-  readonly guards: Predicate<E, Pc, Tc>[];
+  readonly actions: Action<E, P, Pc, Tc>[];
+  readonly guards: Predicate<E, P, Pc, Tc>[];
   readonly description?: string;
   readonly in: string[];
 };
 
 export type Transitions<
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  on: Identitfy<Transition<E, Pc, Tc>>[];
-  always: Transition<E, Pc, Tc>[];
-  after: Identitfy<Transition<E, Pc, Tc>>[];
-  promises: Promisee<E, Pc, Tc>[];
+  on: Identitfy<Transition<E, P, Pc, Tc>>[];
+  always: Transition<E, P, Pc, Tc>[];
+  after: Identitfy<Transition<E, P, Pc, Tc>>[];
+  promises: Promisee<E, P, Pc, Tc>[];
 };

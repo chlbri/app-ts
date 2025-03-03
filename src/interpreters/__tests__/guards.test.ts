@@ -65,6 +65,7 @@ describe('Interpret for guards', () => {
         eventsMap: {
           NEXT: {},
         },
+        promiseesMap: {},
       },
       { '/': 'state1' },
     );
@@ -146,6 +147,7 @@ describe('Interpret for guards', () => {
         eventsMap: {
           NEXT: {},
         },
+        promiseesMap: {},
       },
       { '/': 'state1' },
     );

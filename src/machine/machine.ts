@@ -4,7 +4,7 @@ import cloneDeep from 'clone-deep';
 import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { Delay } from '~delays';
-import type { EventsMap, ToEvents } from '~events';
+import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import {
   isDefinedS,
   isNotDefinedS,
@@ -40,6 +40,7 @@ import type {
 import type {
   Config,
   GetEventsFromConfig,
+  GetPromiseeSrcFromConfig,
   InitialsFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
@@ -50,17 +51,21 @@ class Machine<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
-> implements AnyMachine<E, Pc, Tc>
+  P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
+> implements AnyMachine<E, P, Pc, Tc>
 {
   #config: C;
-
   #flat: FlatMapN<C, true>;
-
   #eventsMap!: E;
+  #promiseesMap!: P;
 
   get eventsMap() {
     return this.#eventsMap;
+  }
+
+  get promiseesMap() {
+    return this.#promiseesMap;
   }
 
   // #region Types
@@ -77,7 +82,7 @@ class Machine<
    * Just use for typing
    */
   get events() {
-    return t.unknown<ToEvents<E>>();
+    return t.unknown<ToEvents<E, P>>();
   }
 
   /**
@@ -85,7 +90,7 @@ class Machine<
    * Just use for typing
    */
   get action() {
-    return t.unknown<Action<E, Pc, Tc>>();
+    return t.unknown<Action<E, P, Pc, Tc>>();
   }
 
   /**
@@ -117,7 +122,7 @@ class Machine<
    * Just use for typing
    */
   get predictate() {
-    return t.unknown<PredicateS<E, Pc, Tc>>();
+    return t.unknown<PredicateS<E, P, Pc, Tc>>();
   }
 
   /**
@@ -133,7 +138,7 @@ class Machine<
    * Just use for typing
    */
   get delay() {
-    return t.unknown<Delay<E, Pc, Tc>>();
+    return t.unknown<Delay<E, P, Pc, Tc>>();
   }
 
   /**
@@ -157,7 +162,7 @@ class Machine<
    * Just use for typing
    */
   get promise() {
-    return t.unknown<PromiseFunction<E, Pc, Tc>>();
+    return t.unknown<PromiseFunction<E, P, Pc, Tc>>();
   }
 
   /**
@@ -304,7 +309,7 @@ class Machine<
       );
       const check2 = this.isInitial(parent);
 
-      if (check2) return this.retrieveParentFromInitial(parent);
+      if (check2) return this.retrieveParentFromInitial.bind(this)(parent);
       return this.#postflat[parent];
     }
     return this.#postflat[target];
@@ -329,7 +334,7 @@ class Machine<
     (this.#machines = merge(this.#machines, machines));
 
   provideOptions = (
-    option: AddOption_F<E, Pc, Tc, NOmit<Mo, 'initials'>>,
+    option: AddOption_F<E, P, Pc, Tc, NOmit<Mo, 'initials'>>,
   ) => {
     const out = this.renew;
     out.addOptions(option);
@@ -338,17 +343,18 @@ class Machine<
   };
   // #endregion
 
-  get #elements(): Elements<C, E, Pc, Tc, Mo> {
+  get #elements(): Elements<C, E, P, Pc, Tc, Mo> {
     const config = structuredClone(this.#config);
     const initials = structuredClone(this.#initials);
     const pContext = cloneDeep(this.#pContext);
     const context = structuredClone(this.#context);
     const actions = cloneDeep(this.#actions);
-    const guards = cloneDeep(this.#predicates);
+    const predicates = cloneDeep(this.#predicates);
     const delays = cloneDeep(this.#delays);
     const promises = cloneDeep(this.#promises);
     const machines = cloneDeep(this.#machines);
     const events = cloneDeep(this.#eventsMap);
+    const promisees = cloneDeep(this.#promiseesMap);
 
     return {
       config,
@@ -356,18 +362,19 @@ class Machine<
       pContext,
       context,
       actions,
-      predicates: guards,
+      predicates,
       delays,
       promises,
       machines,
       events,
+      promisees,
     };
   }
 
   #provideElements = <T extends keyof Elements>(
     key?: T,
-    value?: Elements<C, E, Pc, Tc, Mo>[T],
-  ): Elements<C, E, Pc, Tc, Mo> => {
+    value?: Elements<C, E, P, Pc, Tc, Mo>[T],
+  ): Elements<C, E, P, Pc, Tc, Mo> => {
     const out = this.#elements;
     const check = isDefined(key);
 
@@ -381,8 +388,8 @@ class Machine<
 
   #renew = <T extends keyof Elements>(
     key?: T,
-    value?: Elements<C, E, Pc, Tc, Mo>[T],
-  ): Machine<C, Pc, Tc, E, Mo> => {
+    value?: Elements<C, E, P, Pc, Tc, Mo>[T],
+  ): Machine<C, Pc, Tc, E, P, Mo> => {
     const {
       config,
       initials,
@@ -393,16 +400,17 @@ class Machine<
       delays,
       promises,
       machines,
+      promisees,
       events,
     } = this.#provideElements(key, value);
 
-    const out = new Machine<C, Pc, Tc, E, Mo>(config);
-    const check1 = isDefined(initials);
-    if (check1) out.addInitials(initials);
+    const out = new Machine<C, Pc, Tc, E, P, Mo>(config);
+    out.addInitials(initials);
 
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
+    out.#promiseesMap = promisees;
 
     out.#addPredicates(predicates);
     out.#addActions(actions);
@@ -422,16 +430,16 @@ class Machine<
    */
 
   providePrivateContext = <T>(pContext: T) => {
-    const { context, initials, config, events } = this.#elements;
+    const { context, initials, config, events, promisees } =
+      this.#elements;
 
-    const out = new Machine<C, T, Tc, E>(config);
+    const out = new Machine<C, T, Tc, E, P>(config);
 
-    const check1 = isDefined(initials);
-    if (check1) out.addInitials(initials);
-
+    out.addInitials(initials);
     out.#context = context;
     out.#pContext = pContext;
     out.#eventsMap = events;
+    out.#promiseesMap = promisees;
 
     return out;
   };
@@ -444,15 +452,16 @@ class Machine<
    * Reset all options
    */
   provideContext = <T extends PrimitiveObject>(context: T) => {
-    const { pContext, initials, config, events } = this.#elements;
+    const { pContext, initials, config, events, promisees } =
+      this.#elements;
 
-    const out = new Machine<C, Pc, T, E>(config);
-    const check1 = isDefined(initials);
-    if (check1) out.addInitials(initials);
+    const out = new Machine<C, Pc, T, E, P>(config);
 
+    out.addInitials(initials);
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
+    out.#promiseesMap = promisees;
 
     return out;
   };
@@ -465,16 +474,31 @@ class Machine<
    * Reset all options
    */
 
-  provideEvents = <T extends EventsMap>(events: T) => {
-    const { pContext, initials, config, context } = this.#elements;
+  provideEvents = <T extends EventsMap>(map: T) => {
+    const { pContext, initials, config, context, promisees } =
+      this.#elements;
 
-    const out = new Machine<C, Pc, Tc, T>(config);
-    const check1 = isDefined(initials);
-    if (check1) out.addInitials(initials);
+    const out = new Machine<C, Pc, Tc, T, P>(config);
 
+    out.addInitials(initials);
+    out.#pContext = pContext;
+    out.#context = context;
+    out.#eventsMap = map;
+    out.#promiseesMap = promisees;
+
+    return out;
+  };
+
+  providePromisees = <T extends PromiseeMap>(map: T) => {
+    const { pContext, initials, config, context, events } = this.#elements;
+
+    const out = new Machine<C, Pc, Tc, E, T>(config);
+
+    out.addInitials(initials);
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
+    out.#promiseesMap = map;
 
     return out;
   };
@@ -504,26 +528,26 @@ class Machine<
   }
 
   get #isValue() {
-    return isValue<E, Pc, Tc>;
+    return isValue<E, P, Pc, Tc>;
   }
 
   get #isNotValue() {
-    return isNotValue<E, Pc, Tc>;
+    return isNotValue<E, P, Pc, Tc>;
   }
 
   get #isDefined() {
-    return isDefinedS<E, Pc, Tc>;
+    return isDefinedS<E, P, Pc, Tc>;
   }
 
   get #isNotDefined() {
-    return isNotDefinedS<E, Pc, Tc>;
+    return isNotDefinedS<E, P, Pc, Tc>;
   }
 
-  createChild: CreateChild_F<E, Tc> = (...args) => {
+  createChild: CreateChild_F<E, P, Tc> = (...args) => {
     return createChildS(...args);
   };
 
-  addOptions: AddOptions_F<E, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
+  addOptions: AddOptions_F<E, P, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
@@ -578,22 +602,24 @@ type CreateMachine_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
+  P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
 >(
   config: C,
-  types: { pContext: Pc; context: Tc; eventsMap: EventM },
+  types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
   initials: InitialsFromConfig<C>,
-) => Machine<C, Pc, Tc, EventM>;
+) => Machine<C, Pc, Tc, EventM, P>;
 
 export const createMachine: CreateMachine_F = (
   config,
-  { eventsMap, pContext, context },
+  { eventsMap, pContext, context, promiseesMap },
   initials,
 ) => {
   const out = new Machine(config)
     .provideInitials(initials)
     .provideEvents(eventsMap)
     .providePrivateContext(pContext)
-    .provideContext(context);
+    .provideContext(context)
+    .providePromisees(promiseesMap);
 
   return out;
 };

@@ -6,10 +6,15 @@ import type {
   NotUndefined,
   Primitive,
   TuplifyUnion,
-  Unionize,
   UnionToIntersection,
 } from '@bemedev/types';
-import type { EventObject, EventsMap, ToEvents, ToEventsR } from '~events';
+import type {
+  EventObject,
+  EventsMap,
+  PromiseeMap,
+  ToEvents,
+  ToEventsR,
+} from '~events';
 import type { StateType, StateValue } from '~states';
 import { checkKeys } from '~utils';
 
@@ -259,141 +264,71 @@ export type ReduceArray<T> = T extends readonly (infer U1)[]
     ? U2
     : T;
 
-type _ConcatKeys<T extends object, U extends object> =
-  Unionize<T> extends infer TT
-    ? TT extends Record<infer S1 extends string | number, infer R1>
-      ? Unionize<U> extends infer UU
-        ? UU extends Record<infer S2 extends string | number, infer R2>
-          ? Record<`${S1}&&${S2}`, [R1, R2]>
-          : never
-        : never
-      : never
-    : never;
-
-export type ConcatKeys<
-  T extends object,
-  U extends object,
-> = UnionToIntersection<_ConcatKeys<T, U>>;
-
 export type FnMap2<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> =
-  | ({
-      [key in keyof E]: (context: Tc, payload: E[key]) => R;
-    } & {
-      else?: (context: Tc, eventsMap: ToEvents<E>) => R;
-      machine$$then: (context: Tc, events: any) => R;
-      machine$$catch: (context: Tc, events: any) => R;
-    })
-  | ({
-      [key in keyof E]?: (context: Tc, payload: E[key]) => R;
-    } & {
-      else: (context: Tc, eventsMap: ToEvents<E>) => R;
-      machine$$then?: (context: Tc, events: any) => R;
-      machine$$catch?: (context: Tc, events: any) => R;
-    });
+  TT extends ToEventsR<E, P> = ToEventsR<E, P>,
+> = {
+  [key in TT['type']]?: (
+    context: Tc,
+    payload: Extract<TT, { type: key }>['payload'],
+  ) => R;
+} & {
+  else?: (context: Tc, eventsMap: ToEvents<E, P>) => R;
+};
 
 type _FnMap<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> =
-  | ({
-      [key in keyof E]: (pContext: Pc, context: Tc, payload: E[key]) => R;
-    } & {
-      else?: (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R;
-      machine$$then: (pContext: Pc, context: Tc, events: any) => R;
-      machine$$catch: (pContext: Pc, context: Tc, events: any) => R;
-    })
-  | ({
-      [key in keyof E]?: (pContext: Pc, context: Tc, payload: E[key]) => R;
-    } & {
-      else: (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R;
-      machine$$then?: (pContext: Pc, context: Tc, events: any) => R;
-      machine$$catch?: (pContext: Pc, context: Tc, events: any) => R;
-    });
+  TT extends ToEventsR<E, P> = ToEventsR<E, P>,
+> = {
+  [key in TT['type']]?: (
+    pContext: Pc,
+    context: Tc,
+    payload: Extract<TT, { type: key }>['payload'],
+  ) => R;
+} & {
+  else?: (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R;
+};
 
-export type _FnMapR<
+type _FnMapR<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> =
-  | ({
-      [key in keyof E]: (context: Tc, payload: E[key]) => R;
-    } & {
-      else?: (context: Tc, eventsMap: ToEvents<E>) => R;
-      machine$$then: (context: Tc, events: any) => R;
-      machine$$catch: (context: Tc, events: any) => R;
-    })
-  | ({
-      [key in keyof E]?: (context: Tc, payload: E[key]) => R;
-    } & {
-      else: (context: Tc, eventsMap: ToEvents<E>) => R;
-      machine$$then?: (context: Tc, events: any) => R;
-      machine$$catch?: (context: Tc, events: any) => R;
-    });
-
-export const MAP_CONCATENER = '&&';
-
-export type MapConcatener = typeof MAP_CONCATENER;
-
-type _ConcatFnMap<T extends object, U extends object> =
-  Unionize<T> extends infer TT
-    ? TT extends Record<
-        infer S1 extends string | number,
-        (context: infer Tc1, eventsMap: infer E1) => infer R
-      >
-      ? Unionize<U> extends infer UU
-        ? UU extends Record<
-            infer S2 extends string | number,
-            (context: infer Tc2, eventsMap: infer E2) => any
-          >
-          ? Record<
-              `${S1}${MapConcatener}${S2}`,
-              (contexts: [Tc1, Tc2], map: [E1, E2]) => R
-            >
-          : never
-        : never
-      : never
-    : never;
-
-type ConcatFnMap2<
-  T extends object,
-  U extends object,
-> = UnionToIntersection<_ConcatFnMap<T, U>>;
-
-export type ConcatFnMap<T extends object, U extends object> =
-  ConcatFnMap2<T, U> extends infer TU
-    ? Omit<
-        TU,
-        | `else&&${string}`
-        | `${string}&&else`
-        | `machine$$then&&${string}`
-        | `${string}&&machine$$then`
-        | `machine$$catch&&${string}`
-        | `${string}&&machine$$catch`
-      > & {
-        else: `else&&else` extends keyof TU ? TU[`else&&else`] : never;
-      }
-    : never;
+  TT extends ToEventsR<E, P> = ToEventsR<E, P>,
+> = {
+  [key in TT['type']]?: (
+    context: Tc,
+    payload: Extract<TT, { type: key }>['payload'],
+  ) => R;
+} & {
+  else?: (context: Tc, eventsMap: ToEvents<E, P>) => R;
+};
 
 export type FnMap<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > =
-  | ((pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R)
-  | _FnMap<E, Pc, Tc, R>;
+  | ((pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R)
+  | _FnMap<E, P, Pc, Tc, R, ToEventsR<E, P>>;
 
 export type FnMapReduced<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = ((context: Tc, eventsMap: ToEventsR<E>) => R) | _FnMapR<E, Tc, R>;
+> =
+  | ((context: Tc, eventsMap: ToEventsR<E, P>) => R)
+  | _FnMapR<E, P, Tc, R, ToEventsR<E, P>>;
 
 export type EventsMapFromFn<F extends FnMap> =
   F extends FnMap<infer P> ? P : never;

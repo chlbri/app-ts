@@ -10,7 +10,7 @@ import type {
   ActionResult,
   FromActionConfig,
 } from '~actions';
-import type { EventsMap, ToEvents } from '~events';
+import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type {
   ExtractActionsFromMap,
   ExtractGuardsFromDelayed,
@@ -22,9 +22,10 @@ import type { FnMap, PrimitiveObject, SingleOrArrayL } from '~types';
 
 export type PromiseFunction<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   TC extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, Pc, TC, Promise<any>>;
+> = FnMap<E, P, Pc, TC, Promise<any>>;
 
 export type FinallyConfig =
   NOmit<TransitionConfigMapA, 'target'> extends infer F extends NOmit<
@@ -77,28 +78,31 @@ export type ExtractGuardsFromPromise<T extends PromiseConfig> =
 
 export type Promisee<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   TC extends PrimitiveObject = PrimitiveObject,
 > = {
-  src: PromiseFunction2<E, Pc, TC>;
+  src: PromiseFunction2<E, P, Pc, TC>;
   description?: string;
-  then: Transition<E, Pc, TC>[];
-  catch: Transition<E, Pc, TC>[];
-  finally: Transition<E, Pc, TC>[];
+  then: Transition<E, P, Pc, TC>[];
+  catch: Transition<E, P, Pc, TC>[];
+  finally: Transition<E, P, Pc, TC>[];
 };
 
 export type PromiseFunction2<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   TC extends PrimitiveObject = PrimitiveObject,
-> = Fn<[Pc, TC, ToEvents<E>], Promise<any>>;
+> = Fn<[Pc, TC, ToEvents<E, P>], Promise<any>>;
 
 export type PromiseeResult<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  event: ToEvents<E>;
+  event: ToEvents<E, P>;
   result: ActionResult<Pc, Tc>;
   target?: string;
 };

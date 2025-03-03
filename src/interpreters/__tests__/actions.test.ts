@@ -26,6 +26,7 @@ describe('Interpret for actions', () => {
         eventsMap: {
           NEXT: {},
         },
+        promiseesMap: {},
       },
       { '/': 'state1' },
     );
@@ -110,6 +111,7 @@ describe('Interpret for actions', () => {
         eventsMap: {
           NEXT: {},
         },
+        promiseesMap: {},
       },
       { '/': 'state1' },
     );

@@ -22,21 +22,19 @@ import {
   type ActionResult,
 } from '~actions';
 import {
-  CATCH_EVENT_TYPE,
   DEFAULT_DELIMITER,
   MAX_SELF_TRANSITIONS,
   MAX_TIME_PROMISE,
   MIN_ACTIVITY_TIME,
-  THEN_EVENT_TYPE,
 } from '~constants';
 import { toDelay } from '~delays';
 import {
   eventToType,
   INIT_EVENT,
-  possibleEvents,
   transformEventArg,
   type EventArg,
   type EventsMap,
+  type PromiseeMap,
   type ToEvents,
 } from '~events';
 import { toPredicate, type GuardConfig } from '~guards';
@@ -58,6 +56,7 @@ import {
   type MachineOptions,
   type MachineOptionsFrom,
   type PrivateContextFrom,
+  type PromiseesMapFrom,
   type SimpleMachineOptions2,
 } from '~machines';
 import {
@@ -114,20 +113,20 @@ export class Interpreter<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
-> implements AnyInterpreter<E, Pc, Tc>
+  P extends PromiseeMap = PromiseeMap,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
+> implements AnyInterpreter<E, P, Pc, Tc>
 {
-  #machine: Machine<C, Pc, Tc, E, Mo>;
+  #machine: Machine<C, Pc, Tc, E, P, Mo>;
   #status: WorkingStatus = 'idle';
   #config: NodeConfigWithInitials;
   #flat!: RecordS<NodeConfigWithInitials>;
-  #possibleEvents!: string[];
   #value!: StateValue;
   #mode: Mode;
-  readonly #initialNode: Node<E, Pc, Tc>;
-  #node!: Node<E, Pc, Tc>;
+  readonly #initialNode: Node<E, P, Pc, Tc>;
+  #node!: Node<E, P, Pc, Tc>;
   #iterator = 0;
-  #event: ToEvents<E> = INIT_EVENT;
+  #event: ToEvents<E, P> = INIT_EVENT;
   readonly #initialConfig: NodeConfigWithInitials;
   #initialPpc!: Pc;
   #initialContext!: Tc;
@@ -135,7 +134,7 @@ export class Interpreter<
   #context!: Tc;
   #scheduler: Scheduler;
 
-  #childrenServices: AnyInterpreter<E, Pc, Tc>[] = [];
+  #childrenServices: AnyInterpreter<E, P, Pc, Tc>[] = [];
   get #childrenMachines() {
     const _machines = toArray.typed(this.#machine.preConfig.machines);
     return _machines.map(this.toMachine).filter(isDefined);
@@ -175,7 +174,10 @@ export class Interpreter<
     return this.#scheduler.performeds;
   }
 
-  constructor(machine: Machine<C, Pc, Tc, E, Mo>, mode: Mode = 'strict') {
+  constructor(
+    machine: Machine<C, Pc, Tc, E, P, Mo>,
+    mode: Mode = 'strict',
+  ) {
     this.#machine = machine.renew;
 
     this.#initialConfig = this.#machine.initialConfig;
@@ -254,7 +256,6 @@ export class Interpreter<
 
     const configForFlat = t.unknown<NodeConfig>(this.#config);
     this.#flat = t.any(flatMap(configForFlat));
-    this.#possibleEvents = possibleEvents(this.#flat);
   };
 
   #performConfig = (target?: string | true) => {
@@ -271,8 +272,9 @@ export class Interpreter<
   #resolveNode = (config: NodeConfigWithInitials) => {
     const options = this.#machine.options;
     const events = this.#machine.eventsMap;
+    const promisees = this.#machine.promiseesMap;
 
-    return resolveNode<E, Pc, Tc>(events, config, options);
+    return resolveNode<E, P, Pc, Tc>(events, promisees, config, options);
   };
 
   get initialNode() {
@@ -392,14 +394,14 @@ export class Interpreter<
     return this.#scheduler.schedule;
   }
 
-  #produceSubscriberCallback = (subscriber: Subscriber<E, Tc>) => {
+  #produceSubscriberCallback = (subscriber: Subscriber<E, P, Tc>) => {
     const context = cloneDeep(this.#context);
     const event = structuredClone(this.#event);
     const callback = () => subscriber.reduced(context, event);
     return callback;
   };
 
-  #scheduleSubscriber = (subscriber: Subscriber<E, Tc>) => {
+  #scheduleSubscriber = (subscriber: Subscriber<E, P, Tc>) => {
     const callback = this.#produceSubscriberCallback(subscriber);
     this.#schedule(callback);
   };
@@ -437,7 +439,7 @@ export class Interpreter<
     } else this.#selfTransitionsCounter = 0;
   };
 
-  #performAction: PerformAction_F<E, Pc, Tc> = action => {
+  #performAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this._iterate();
     return action(
       cloneDeep(this.#pContext),
@@ -446,7 +448,7 @@ export class Interpreter<
     );
   };
 
-  #executeAction: PerformAction_F<E, Pc, Tc> = action => {
+  #executeAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this.#makeBusy();
     const { pContext, context } = this.#performAction(action);
 
@@ -475,7 +477,7 @@ export class Interpreter<
       }, contexts);
   };
 
-  #performPredicate: PerformPredicate_F<E, Pc, Tc> = predicate => {
+  #performPredicate: PerformPredicate_F<E, P, Pc, Tc> = predicate => {
     this._iterate();
     return predicate(
       cloneDeep(this.#pContext),
@@ -484,7 +486,7 @@ export class Interpreter<
     );
   };
 
-  #executePredicate: PerformPredicate_F<E, Pc, Tc> = predicate => {
+  #executePredicate: PerformPredicate_F<E, P, Pc, Tc> = predicate => {
     this.#makeBusy();
     const out = this.#performPredicate(predicate);
 
@@ -501,7 +503,7 @@ export class Interpreter<
       .every(bool => bool);
   };
 
-  #performDelay: PerformDelay_F<E, Pc, Tc> = delay => {
+  #performDelay: PerformDelay_F<E, P, Pc, Tc> = delay => {
     this._iterate();
     return delay(
       cloneDeep(this.#pContext),
@@ -510,7 +512,7 @@ export class Interpreter<
     );
   };
 
-  #executeDelay: PerformDelay_F<E, Pc, Tc> = delay => {
+  #executeDelay: PerformDelay_F<E, P, Pc, Tc> = delay => {
     this.#makeBusy();
     const out = this.#performDelay(delay);
 
@@ -651,7 +653,7 @@ export class Interpreter<
     return {};
   };
 
-  #performPromiseSrc: PerformPromise_F<E, Pc, Tc> = promise => {
+  #performPromiseSrc: PerformPromise_F<E, P, Pc, Tc> = promise => {
     this._iterate();
     return promise(
       cloneDeep(this.#pContext),
@@ -694,11 +696,11 @@ export class Interpreter<
     return this.#status === 'sending';
   }
 
-  #performPromisee: PerformPromisee_F<E, Pc, Tc> = (
+  #performPromisee: PerformPromisee_F<E, P, Pc, Tc> = (
     from,
     ...promisees
   ) => {
-    type PR = PromiseeResult<E, Pc, Tc>;
+    type PR = PromiseeResult<E, P, Pc, Tc>;
 
     const promises: TimeoutPromise<PR | undefined>[] = [];
 
@@ -709,10 +711,10 @@ export class Interpreter<
 
         const handlePromise = (type: 'then' | 'catch', payload: any) => {
           const out = () => {
-            this.#event = {
-              type: type === 'then' ? THEN_EVENT_TYPE : CATCH_EVENT_TYPE,
+            this.#event = t.any({
+              type: `${src}::${type}`,
               payload,
-            };
+            });
 
             const transitions = toArray.typed(
               type === 'then' ? then : _catch,
@@ -759,14 +761,6 @@ export class Interpreter<
 
     const promise = anyPromises(from, ...promises);
     return promise;
-  };
-
-  protected get _possibleEvents() {
-    return this.#possibleEvents;
-  }
-
-  protected _canEvent = (eventS: string) => {
-    return this.#possibleEvents.includes(eventS);
   };
 
   #cannotPerform = (from: string) => {
@@ -926,7 +920,7 @@ export class Interpreter<
   };
 
   get #collected0() {
-    const entries = new Map<string, Collected0<E, Pc, Tc>>();
+    const entries = new Map<string, Collected0<E, P, Pc, Tc>>();
     this.#collectedAlways.forEach(([from, always]) => {
       entries.set(from, { always: this.#performAlways(always) });
     });
@@ -1083,21 +1077,31 @@ export class Interpreter<
     return this.#machine.addOptions;
   }
 
-  #subscribers = new Set<Subscriber<E, Tc>>();
-  #fullSubscribers = new Set<Subscriber<E, Tc>>();
+  #subscribers = new Set<Subscriber<E, P, Tc>>();
+  #fullSubscribers = new Set<Subscriber<E, P, Tc>>();
 
-  addSubscriber: AddSubscriber_F<E, Tc> = _subscriber => {
+  addSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
+    const promiseesMap = this.#machine.promiseesMap;
 
-    const subcriber = createSubscriber(eventsMap, _subscriber);
+    const subcriber = createSubscriber(
+      eventsMap,
+      promiseesMap,
+      _subscriber,
+    );
     this.#subscribers.add(subcriber);
     return subcriber;
   };
 
-  addFullSubscriber: AddSubscriber_F<E, Tc> = _subscriber => {
+  addFullSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
+    const promiseesMap = this.#machine.promiseesMap;
 
-    const subcriber = createSubscriber(eventsMap, _subscriber);
+    const subcriber = createSubscriber(
+      eventsMap,
+      promiseesMap,
+      _subscriber,
+    );
     this.#fullSubscribers.add(subcriber);
     return subcriber;
   };
@@ -1135,7 +1139,7 @@ export class Interpreter<
 
   // #region Next
 
-  protected _send: _Send_F<E, Pc, Tc> = event => {
+  protected _send: _Send_F<E, P, Pc, Tc> = event => {
     // type PR = PromiseeResult<E, Pc, Tc>;
 
     let result = this.#contexts;
@@ -1194,7 +1198,7 @@ export class Interpreter<
     return { next, result };
   };
 
-  send = (_event: EventArg<E>) => {
+  send = (_event: EventArg<E, P>) => {
     const event = transformEventArg(_event);
     this.#event = event;
     this.#status = 'sending';
@@ -1287,20 +1291,23 @@ export class Interpreter<
 
   toAction = (action: ActionConfig) => {
     const events = this.#machine.eventsMap;
+    const promisees = this.#machine.promiseesMap;
     const actions = this.#machine.actions;
 
     return this.#returnWithWarning(
-      toAction<E, Pc, Tc>(events, action, actions),
+      toAction<E, P, Pc, Tc>(events, promisees, action, actions),
       `Action (${reduceAction(action)}) is not defined`,
     );
   };
 
   toPredicate = (guard: GuardConfig) => {
     const events = this.#machine.eventsMap;
+    const promisees = this.#machine.promiseesMap;
     const predicates = this.#machine.predicates;
 
-    const { predicate, errors } = toPredicate<E, Pc, Tc>(
+    const { predicate, errors } = toPredicate<E, P, Pc, Tc>(
       events,
+      promisees,
       guard,
       predicates,
     );
@@ -1310,20 +1317,22 @@ export class Interpreter<
 
   toPromiseSrc = (src: string) => {
     const events = this.#machine.eventsMap;
+    const promisees = this.#machine.promiseesMap;
     const promises = this.#machine.promises;
 
     return this.#returnWithWarning(
-      toPromiseSrc<E, Pc, Tc>(events, src, promises),
+      toPromiseSrc<E, P, Pc, Tc>(events, promisees, src, promises),
       `Promise (${src}) is not defined`,
     );
   };
 
   toDelay = (delay: string) => {
     const events = this.#machine.eventsMap;
+    const promisees = this.#machine.promiseesMap;
     const delays = this.#machine.delays;
 
     return this.#returnWithWarning(
-      toDelay<E, Pc, Tc>(events, delay, delays),
+      toDelay<E, P, Pc, Tc>(events, promisees, delay, delays),
       `Delay (${delay}) is not defined`,
     );
   };
@@ -1332,7 +1341,7 @@ export class Interpreter<
     const machines = this.#machine.machines;
 
     return this.#returnWithWarning(
-      toMachine<E, Tc>(machine, machines),
+      toMachine<E, P, Tc>(machine, machines),
       `Machine (${reduceAction(machine)}) is not defined`,
     );
   };
@@ -1340,7 +1349,7 @@ export class Interpreter<
   protected interpretChild: Fn = interpret;
 
   #reduceChild = <T extends AnyMachine = AnyMachine>(
-    { subscribers, machine, initials }: ChildS<E, Tc, T>,
+    { subscribers, machine, initials }: ChildS<E, P, Tc, T>,
     id?: string,
   ) => {
     let service = t.unknown<InterpreterFrom<T>>(
@@ -1419,13 +1428,14 @@ export class Interpreter<
   }
 }
 
-export type AnyInterpreter2 = Interpreter<any, any, any, any, any>;
+export type AnyInterpreter2 = Interpreter<any, any, any, any, any, any>;
 
 export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   ConfigFrom<M>,
   PrivateContextFrom<M>,
   ContextFrom<M>,
   EventsMapFrom<M>,
+  PromiseesMapFrom<M>,
   MachineOptionsFrom<M>
 >;
 

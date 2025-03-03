@@ -1,5 +1,5 @@
 import type { DeepPartial, Fn } from '@bemedev/types';
-import type { EventsMap, ToEvents } from '~events';
+import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type {
   Describer,
   FnMap,
@@ -15,15 +15,17 @@ export type FromActionConfig<T extends ActionConfig> = T extends Describer
 
 export type Action<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, Pc, Tc, ActionResult<Pc, Tc>>;
+> = FnMap<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
 
 export type ActionMap<
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<Record<string, Action<E, Pc, Tc>>>;
+> = Partial<Record<string, Action<E, P, Pc, Tc>>>;
 
 export type ActionResult<
   Pc = any,
@@ -35,6 +37,7 @@ export type ActionResult<
 
 export type Action2<
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Fn<[Pc, Tc, ToEvents<E>], ActionResult<Pc, Tc>>;
+> = Fn<[Pc, Tc, ToEvents<E, P>], ActionResult<Pc, Tc>>;
