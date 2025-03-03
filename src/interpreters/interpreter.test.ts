@@ -2,7 +2,7 @@ import { t } from '@bemedev/types';
 import { MAX_SELF_TRANSITIONS } from '~constants';
 import { createMachine } from '~machine';
 import { machine3 } from './__tests__/data/machine3';
-import { defaultC, defaultT } from './__tests__/fixtures';
+import { defaultC } from './__tests__/fixtures';
 import { interpret } from './interpreter';
 import type { AnyInterpreter } from './interpreter.types';
 
@@ -208,23 +208,74 @@ describe('Interpreter', () => {
 
     const machine = createMachine(
       {
+        on: {
+          ADD_CONDITION: { actions: 'addCondition' },
+          REMOVE_CONDITION: { actions: 'removeCondition' },
+        },
         states: {
           idle: {
-            always: '/working',
+            entry: 'inc',
+            always: {
+              target: '/working',
+              guards: { and: ['condition', 'limit'] },
+            },
           },
           working: {
-            always: '/idle',
+            entry: 'inc2',
+            always: {
+              target: '/idle',
+              guards: { and: ['condition', 'limit'] },
+            },
           },
         },
       },
-      defaultT,
+      {
+        context: { condition: t.boolean, iterator: t.number },
+        pContext: {},
+        promiseesMap: {},
+        eventsMap: {
+          ADD_CONDITION: {},
+          REMOVE_CONDITION: {},
+        },
+      },
       { '/': 'idle' },
-    );
-    const service = interpret(machine, { ...defaultC, mode: 'normal' });
+    ).provideOptions(({ isValue }) => ({
+      actions: {
+        addCondition: (pContext, context) => ({
+          pContext,
+          context: { ...context, condition: true },
+        }),
+        removeCondition: (pContext, context) => ({
+          pContext,
+          context: { ...context, condition: false },
+        }),
+        inc: (pContext, context) => ({
+          pContext,
+          context: { ...context, iterator: context.iterator + 1 },
+        }),
+        inc2: (pContext, context) => ({
+          pContext,
+          context: { ...context, iterator: context.iterator + 2 },
+        }),
+      },
+      predicates: {
+        condition: isValue('context.condition', false),
+        limit: (_, { iterator }) => {
+          console.log('iterator', '=>', iterator);
+          return iterator <= 100;
+        },
+      },
+    }));
+
+    const service = interpret(machine, {
+      ...defaultC,
+      context: { condition: false, iterator: 0 },
+      mode: 'normal',
+    });
 
     const error = `Too much self transitions, exceeded ${MAX_SELF_TRANSITIONS} transitions`;
 
-    test('#01 => Start the service', service.start.bind(service));
+    test('#01 => Start the service', () => service.start());
 
     describe('#02 => Error is throwing', () => {
       describe('#01 => console.error', () => {

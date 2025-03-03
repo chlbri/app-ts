@@ -300,12 +300,12 @@ export type MachineOptions<
   machines?: Partial<GetMachinesFromConfig<C, E, P, Pc>>;
 };
 
-export type MachineOptionsFrom<T extends KeyU<'mo'>> = Extract<
-  T['mo'],
+export type MachineOptionsFrom<T extends KeyU<'options'>> = Extract<
+  T['options'],
   SimpleMachineOptions2
 >;
 
-export type MoF<T extends KeyU<'mo'>> = MachineOptionsFrom<T>;
+export type MoF<T extends KeyU<'options'>> = MachineOptionsFrom<T>;
 
 export type ConfigFrom<T extends KeyU<'preConfig'>> = Extract<
   T['preConfig'],

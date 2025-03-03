@@ -256,7 +256,6 @@ export interface AnyInterpreter<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > {
-  mo: any;
   mode: Mode;
   event: ToEvents<E, P>;
   eventsMap: EventsMap;

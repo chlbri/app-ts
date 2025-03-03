@@ -143,14 +143,6 @@ export class Interpreter<
 
   id?: string;
 
-  /**
-   * @deprecated
-   * Just use for typing
-   */
-  get mo() {
-    return this.#machine.mo;
-  }
-
   get mode() {
     return this.#mode;
   }
@@ -366,21 +358,11 @@ export class Interpreter<
     return Array.from(messages).join(EOL);
   };
 
-  #checkContexts = () => {
-    if (!this.#pContext) {
-      this._addError('No pContext provided');
-    }
-    if (!this.#context) {
-      this._addError('No context provided');
-    }
-  };
-
   start = () => {
-    this.#checkContexts();
     this.#throwing();
 
     this.#startStatus();
-    this.#scheduler.initialize(this.#startInitialEntries);
+    this.#scheduler.initialize(this.#performEntries);
     this.#performMachines();
     return this._next();
   };
@@ -415,8 +397,8 @@ export class Interpreter<
   #selfTransitionsCounter = 0;
 
   protected _next = async () => {
-    if (this.#status === 'stopped') return;
-    const previousValue = this.#value;
+    this.#selfTransitionsCounter++;
+    const previous = this.#value;
     const checkCounter =
       this.#selfTransitionsCounter >= MAX_SELF_TRANSITIONS;
 
@@ -425,13 +407,12 @@ export class Interpreter<
 
     this.flushSubscribers();
     this.#rinitIntervals();
+
     this.#performActivities();
     await this.#performSelfTransitions();
 
-    this.#selfTransitionsCounter++;
-
-    const currentConfig = this.#value;
-    const check = !equal(previousValue, currentConfig);
+    const current = this.#value;
+    const check = !equal(previous, current);
 
     if (check) {
       const duration = await measureExecutionTime(this._next.bind(this));
@@ -481,7 +462,7 @@ export class Interpreter<
     return actions
       .map(this.toAction)
       .filter(f => f !== undefined)
-      .map(value => this.#executeAction(value))
+      .map(this.#executeAction)
       .reduce((acc, value) => {
         const out = merge(acc, value);
         return out;
@@ -757,7 +738,7 @@ export class Interpreter<
         if (check3) {
           const delayF = this.toDelay(maxS);
           const check4 = !isDefined(delayF);
-          if (check4) return undefined;
+          if (check4) return this.#throwing();
           const max = this.#performDelay(delayF);
           MAX_POMS.push(max);
         }
@@ -1019,9 +1000,13 @@ export class Interpreter<
     this.#makeWork();
   };
 
-  #startInitialEntries = () => {
-    const actions = getEntries(this.#initialConfig);
-    return this.#performActions(this.#contexts, ...actions);
+  #performEntries = () => {
+    const actions = getEntries(this.#config);
+    const cb = () => {
+      const result = this.#performActions(this.#contexts, ...actions);
+      this.#merge(result);
+    };
+    this.#schedule(cb);
   };
 
   pause = () => {
@@ -1127,8 +1112,10 @@ export class Interpreter<
    * Call in production will return nothing
    */
   get errorsCollector() {
-    if (IS_TEST) return this.#errorsCollector;
-    /* v8 ignore next 3 */
+    if (IS_TEST) {
+      return this.#errorsCollector;
+      /* v8 ignore next 3 */
+    }
     console.error('errorsCollector is not available in production');
     return;
   }
@@ -1139,8 +1126,10 @@ export class Interpreter<
    * Call in production will return nothing
    */
   get warningsCollector() {
-    if (IS_TEST) return this.#warningsCollector;
-    /* v8 ignore next 3 */
+    if (IS_TEST) {
+      return this.#warningsCollector;
+      /* v8 ignore next 3 */
+    }
     console.error('warningsCollector is not available in production');
     return;
   }
@@ -1276,9 +1265,6 @@ export class Interpreter<
   };
 
   #isInsideValue = (_state: string) => {
-    const check1 = _state === '/';
-    if (check1) return true;
-
     const values = decomposeSV(this.#value);
     const entry = _state.substring(1);
     const state = replaceAll({

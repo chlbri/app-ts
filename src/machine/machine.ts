@@ -68,15 +68,6 @@ class Machine<
     return this.#promiseesMap;
   }
 
-  // #region Types
-  /**
-   * @deprecated
-   * Just use for typing
-   */
-  get mo() {
-    return t.unknown<Required<Mo>>();
-  }
-
   /**
    * @deprecated
    * Just use for typing
@@ -98,7 +89,7 @@ class Machine<
    * Just use for typing
    */
   get actionKey() {
-    return t.unknown<keyof (typeof this)['mo']['actions']>();
+    return t.unknown<keyof (typeof this)['options']['actions']>();
   }
 
   /**
@@ -114,7 +105,7 @@ class Machine<
    * Just use for typing
    */
   get guard() {
-    return t.unknown<keyof (typeof this)['mo']['predicates']>();
+    return t.unknown<keyof (typeof this)['options']['predicates']>();
   }
 
   /**
@@ -130,7 +121,7 @@ class Machine<
    * Just use for typing
    */
   get delayKey() {
-    return t.unknown<keyof (typeof this)['mo']['delays']>();
+    return t.unknown<keyof (typeof this)['options']['delays']>();
   }
 
   /**
@@ -154,7 +145,7 @@ class Machine<
    * Just use for typing
    */
   get src() {
-    return t.unknown<keyof (typeof this)['mo']['promises']>();
+    return t.unknown<keyof (typeof this)['options']['promises']>();
   }
 
   /**
@@ -170,7 +161,7 @@ class Machine<
    * Just use for typing
    */
   get child() {
-    return t.unknown<keyof (typeof this)['mo']['machines']>();
+    return t.unknown<keyof (typeof this)['options']['machines']>();
   }
 
   /**
@@ -518,13 +509,21 @@ class Machine<
   toNode = this.valueToConfig;
 
   get options() {
-    const guards = this.#predicates;
+    const predicates = this.#predicates;
     const actions = this.#actions;
     const delays = this.#delays;
     const promises = this.#promises;
     const machines = this.#machines;
+    const initials = this.#initials;
 
-    return { guards, actions, delays, promises, machines };
+    return t.unknown<Mo>({
+      predicates,
+      actions,
+      delays,
+      promises,
+      machines,
+      initials,
+    });
   }
 
   get #isValue() {
@@ -571,6 +570,7 @@ class Machine<
 }
 
 const getIO: GetIO_F = (key, node) => {
+  if (!node) return [];
   const out = toArray.typed(node?.[key]);
 
   if (isAtomic(node)) {
