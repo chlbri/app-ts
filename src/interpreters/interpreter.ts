@@ -362,7 +362,7 @@ export class Interpreter<
     this.#throwing();
 
     this.#startStatus();
-    this.#scheduler.initialize(this.#performEntries);
+    this.#scheduler.initialize(this.#startInitialEntries);
     this.#performMachines();
     return this._next();
   };
@@ -398,7 +398,7 @@ export class Interpreter<
 
   protected _next = async () => {
     this.#selfTransitionsCounter++;
-    const previous = this.#value;
+    const previousValue = this.#value;
     const checkCounter =
       this.#selfTransitionsCounter >= MAX_SELF_TRANSITIONS;
 
@@ -407,12 +407,11 @@ export class Interpreter<
 
     this.flushSubscribers();
     this.#rinitIntervals();
-
     this.#performActivities();
     await this.#performSelfTransitions();
 
-    const current = this.#value;
-    const check = !equal(previous, current);
+    const currentConfig = this.#value;
+    const check = !equal(previousValue, currentConfig);
 
     if (check) {
       const duration = await measureExecutionTime(this._next.bind(this));
@@ -1000,8 +999,8 @@ export class Interpreter<
     this.#makeWork();
   };
 
-  #performEntries = () => {
-    const actions = getEntries(this.#config);
+  #startInitialEntries = () => {
+    const actions = getEntries(this.#initialConfig);
     const cb = () => {
       const result = this.#performActions(this.#contexts, ...actions);
       this.#merge(result);
