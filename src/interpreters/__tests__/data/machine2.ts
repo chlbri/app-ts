@@ -90,6 +90,7 @@ export const config2 = createConfig({
     final: {},
   },
 });
+
 export const machine2 = createMachine(
   {
     machines: 'machine1',
