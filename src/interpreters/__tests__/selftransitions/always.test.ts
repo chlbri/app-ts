@@ -36,7 +36,9 @@ describe('Integration testing for interpret, Children', () => {
       defaultI,
     );
 
-    machine.addDelays({ DELAY });
+    machine.addOptions(() => ({
+      delays: { DELAY },
+    }));
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
 
@@ -67,8 +69,10 @@ describe('Integration testing for interpret, Children', () => {
       defaultI,
     );
 
-    machine.addDelays({ DELAY3: DELAY * 3 });
-    machine.addPredicates({ returnFalse });
+    machine.addOptions(() => ({
+      delays: { DELAY3: DELAY * 3 },
+      predicates: { returnFalse },
+    }));
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
 

@@ -1,17 +1,19 @@
 import { t } from '@bemedev/types';
-import { machine1 } from './__tests__/fixtures';
+import { machine3 } from './__tests__/data/machine3';
 import { interpret } from './interpreter';
 import type { AnyInterpreter } from './interpreter.types';
 
 describe('Interpreter', () => {
+  const resultC = {
+    pContext: { data: 'avion' },
+    context: { age: 5 },
+  };
+
   describe('#1 => Status', () => {
     let service = t.unknown<AnyInterpreter>();
 
     test('#0 => Create the machine', () => {
-      service = interpret(machine1, {
-        pContext: { data: 'avion' },
-        context: { age: 5 },
-      }) as any;
+      service = t.any(interpret(machine3, resultC));
     });
 
     test('#1 => The machine is at "status: idle"', () => {
@@ -23,7 +25,7 @@ describe('Interpreter', () => {
       service.start();
     });
 
-    describe('#3 => The machine is started', () => {
+    describe('#3 => The machine can start', () => {
       test('#1 => The machine is at "status: working"', () => {
         const actual = service.status;
         expect(actual).toBe('working');
@@ -44,6 +46,151 @@ describe('Interpreter', () => {
         test("#2 => It's the same as the initial", () => {
           expect(service.initialValue).toStrictEqual(service.value);
         });
+      });
+    });
+  });
+
+  describe('#02 => Can check without starting', () => {
+    const service = interpret(machine3, {
+      ...resultC,
+    }).renew;
+
+    describe('#01 => Mode', () => {
+      test('#01 => mode is ""strict" by default', () => {
+        expect(service.isStrict).toBe(true);
+      });
+
+      test('#02 => Make it normal', () => {
+        service.makeNormal();
+      });
+
+      test('#03 => mode is "normal"', () => {
+        expect(service.isNormal).toBe(true);
+      });
+
+      test('#04 => Make it "strictest"', () => {
+        service.makeStrictest();
+      });
+
+      test('#05 => modde is "strictest"', () => {
+        expect(service.isStrictest).toBe(true);
+      });
+
+      test('#06 => Remake it "strict"', () => {
+        service.makeStrict();
+      });
+
+      test('#07 => modde is "strict"', () => {
+        expect(service.isStrict).toBe(true);
+      });
+    });
+
+    test('#02 => Events Map', () => {
+      expect(service.eventsMap).toStrictEqual({
+        EVENT: { password: t.string, username: t.string },
+        EVENT2: t.boolean,
+        EVENT3: { login: t.string, pwd: t.string },
+      });
+    });
+
+    test('#03 => Cannot use scheduler before starting', () => {
+      expect(service.scheduleds).toBe(0);
+    });
+
+    describe('#04 => nodes', () => {
+      const node = {
+        after: [],
+        always: [],
+        description: 'cdd',
+        entry: [],
+        exit: [],
+        initial: 'state1',
+        on: [],
+        promises: [],
+        states: [
+          {
+            __id: 'state1',
+            after: [],
+            always: [],
+            entry: [],
+            exit: [],
+            initial: 'state11',
+            on: [],
+            promises: [],
+            states: [
+              {
+                __id: 'state11',
+                after: [],
+                always: [],
+                entry: [],
+                exit: [],
+                initial: 'state111',
+                on: [],
+                promises: [],
+                states: [
+                  {
+                    __id: 'state111',
+                    after: [],
+                    always: [],
+                    entry: [],
+                    exit: [],
+                    on: [],
+                    promises: [],
+                    states: [],
+                    tags: [],
+                    type: 'atomic',
+                  },
+                ],
+                tags: [],
+                type: 'compound',
+              },
+            ],
+            tags: [],
+            type: 'compound',
+          },
+        ],
+        tags: [],
+        type: 'compound',
+      };
+
+      test('#01 => initialNode', () => {
+        expect(service.initialNode).toStrictEqual(node);
+      });
+
+      test('#02 => currentNode', () => {
+        expect(service.node).toStrictEqual(node);
+      });
+    });
+
+    describe('#05 => config', () => {
+      const _config = {
+        description: 'cdd',
+        machines: {
+          description: 'A beautiful machine',
+          name: 'machine1',
+        },
+        initial: 'state1',
+        states: {
+          state1: {
+            states: {
+              state11: {
+                states: {
+                  state111: {},
+                },
+                initial: 'state111',
+              },
+            },
+            initial: 'state11',
+          },
+        },
+      };
+
+      test('#01 => initial', () => {
+        expect(service.initialConfig).toStrictEqual(_config);
+      });
+
+      test('#02 => current', () => {
+        expect(service.config).toStrictEqual(_config);
       });
     });
   });

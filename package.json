@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "0.0.5-canary",
+  "version": "0.0.6-canary",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -80,7 +80,7 @@
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.21.0",
     "@types/clone-deep": "^4.0.4",
-    "@types/node": "^22.13.5",
+    "@types/node": "^22.13.8",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
     "@vitest/coverage-v8": "^3.0.7",
@@ -89,16 +89,16 @@
     "globals": "^16.0.0",
     "husky": "^9.1.7",
     "onchange": "^7.1.0",
-    "prettier": "^3.5.2",
+    "prettier": "^3.5.3",
     "pretty-quick": "^4.0.0",
-    "rollup": "^4.34.8",
+    "rollup": "^4.34.9",
     "tslib": "^2.8.1",
     "tsx": "^4.19.3",
-    "typescript": "^5.7.3",
+    "typescript": "^5.8.2",
     "vitest": "^3.0.7"
   },
   "dependencies": {
-    "@bemedev/basifun": "^0.3.2",
+    "@bemedev/basifun": "^0.3.3",
     "@bemedev/boolean-recursive": "^0.0.3",
     "@bemedev/decompose": "^0.8.0",
     "@bemedev/interval2": "^0.1.1",

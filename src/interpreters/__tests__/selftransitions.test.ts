@@ -23,9 +23,11 @@ describe('Self Transitions', () => {
       { '/': 'idle' },
     );
 
-    machine.addDelays({
-      DELAY,
-    });
+    machine.addOptions(() => ({
+      delays: {
+        DELAY,
+      },
+    }));
 
     const service = interpret(machine, {
       pContext: {},
@@ -86,9 +88,11 @@ describe('Self Transitions', () => {
       { '/': 'idle' },
     );
 
-    machine.addPromises({
-      resolvePromise: () => Promise.resolve({}),
-    });
+    machine.addOptions(() => ({
+      promises: {
+        resolvePromise: () => Promise.resolve({}),
+      },
+    }));
 
     const service = interpret(machine, {
       pContext: {},

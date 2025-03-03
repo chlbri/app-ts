@@ -1,5 +1,5 @@
-import { sleepU } from '~utils';
-import { DELAY, machine2 } from './__tests__/test.data';
+import { createFakeWaiter } from '@bemedev/vitest-extended';
+import { DELAY, machine2 } from '~fixturesData';
 import { interpretTest } from './interpreterTest';
 
 {
@@ -10,6 +10,8 @@ import { interpretTest } from './interpreterTest';
   });
 
   service.start();
+
+  const sleepU = createFakeWaiter(vi);
 
   await sleepU(DELAY, 6).then(() => {
     console.log('service.context.iterator', service.context.iterator);

@@ -21,11 +21,10 @@ export class Scheduler {
 
   #status: Status = 'idle';
 
+  /* v8 ignore next 3*/
   get status() {
     return this.#status;
   }
-
-  // deferred feature
 
   constructor() {}
 
@@ -83,15 +82,19 @@ export class Scheduler {
     }
   };
 
+  processImmediate = (callback: Cb) => {
+    callback();
+    this.#performeds++;
+    this.#status = 'working';
+  };
+
   #process = (callback: Cb) => {
     const check =
       this.#status === 'working' || this.#status === 'initialized';
 
     if (check) {
       this.#status = 'processing';
-      callback();
-      this.#performeds++;
-      this.#status = 'working';
+      this.processImmediate(callback);
     }
   };
 }

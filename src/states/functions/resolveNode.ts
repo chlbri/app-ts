@@ -31,7 +31,7 @@ export const resolveNode: ResolveNode_F = (events, config, options) => {
   };
   // #endregion
 
-  const { id, description, initial, tags: _tags } = config;
+  const { description, initial, tags: _tags } = config;
   const __id = (config as any).__id;
   const type = stateType(config);
   const tags = toArray.typed(_tags);
@@ -63,7 +63,6 @@ export const resolveNode: ResolveNode_F = (events, config, options) => {
 
   if (__id) out.__id = __id;
   if (initial) out.initial = initial;
-  if (id) out.id = id;
   if (description) out.description = description;
 
   return out;

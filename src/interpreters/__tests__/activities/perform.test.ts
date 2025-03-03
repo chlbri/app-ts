@@ -1,9 +1,10 @@
 import { t } from '@bemedev/types';
+import { DELAY, fakeDB } from '~fixturesData';
 import type { StateValue } from '~states';
 import { nothing } from '~utils';
 import { interpretTest } from '../../interpreterTest';
+import { machine22 } from '../data/machine22';
 import { fakeWaiter } from '../fixtures';
-import { DELAY, fakeDB, machine2 } from '../test.data';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -14,7 +15,7 @@ const TEXT = 'Activities Integration Test';
 describe(TEXT, () => {
   // #region Config
 
-  const service = interpretTest(machine2, {
+  const service = interpretTest(machine22, {
     pContext: {
       iterator: 0,
     },
@@ -121,10 +122,7 @@ describe(TEXT, () => {
 
     const strict = () => {
       const calls = strings.map(data => [data].flat());
-      const check = _strings.length > 0;
-      if (check) {
-        expect(log.mock.calls).toStrictEqual(calls);
-      }
+      expect(log.mock.calls).toStrictEqual(calls);
     };
 
     const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
@@ -156,7 +154,7 @@ describe(TEXT, () => {
     test(...useState('idle', 1));
     test(...useIterator(6, 2));
     test(...useIteratorC(6, 3));
-    describe(...useConsole(4));
+    describe(...useConsole(4, 'nothing call nothing'));
   });
 
   test(...useSend('NEXT', 3));
@@ -471,13 +469,15 @@ describe(TEXT, () => {
         expect(log).toBeCalledTimes(strings.length);
       });
 
-      test('#02 => Log is called "72" times', () => {
-        expect(log).toBeCalledTimes(72);
+      test('#02 => Log is called "73" times', () => {
+        expect(log).toBeCalledTimes(73);
       });
     });
 
     test('#03 => Log the time of all tests', () => {
       console.timeEnd(TEXT);
     });
+
+    test('#04 => dispose', service[Symbol.asyncDispose].bind(service));
   });
 });

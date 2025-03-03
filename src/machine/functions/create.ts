@@ -12,12 +12,10 @@ export type CreateConfig_F = <const T extends Config>(config: T) => T;
 
 export const createConfig: CreateConfig_F = config => config;
 
-export type createChild_F = <
+export type CreateChildS_F = <
+  const T extends KeyU<'preConfig' | 'context' | 'pContext'>,
   const E extends EventsMap = EventsMap,
   const Tc extends PrimitiveObject = PrimitiveObject,
-  const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
-    'preConfig' | 'context' | 'pContext'
-  >,
 >(
   machine: T,
   initials: {
@@ -27,7 +25,19 @@ export type createChild_F = <
   ...subscribers: Subscriber<E, Tc, T>[]
 ) => ChildS<E, Tc, T>;
 
-export const createChild: createChild_F = (
+export type CreateChild_F<
+  E extends EventsMap = EventsMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = <const T extends KeyU<'preConfig' | 'context' | 'pContext'>>(
+  machine: T,
+  initials: {
+    pContext: PrivateContextFrom<T>;
+    context: ContextFrom<T>;
+  },
+  ...subscribers: Subscriber<E, Tc, T>[]
+) => ChildS<E, Tc, T>;
+
+export const createChildS: CreateChildS_F = (
   machine,
   initials,
   subscribers,

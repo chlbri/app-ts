@@ -1,4 +1,4 @@
-import { returnFalse, returnTrue } from '~guards';
+import { t } from '@bemedev/types';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
 import {
@@ -217,7 +217,8 @@ describe('Interpret for guards', () => {
                 {
                   or: [
                     'returnFalse',
-                    { and: ['returnTrue', 'returnTrue'] },
+                    { and: ['returnTrue', 'returnTrue2'] },
+                    'returnFalse2',
                   ],
                 },
               ],
@@ -226,16 +227,36 @@ describe('Interpret for guards', () => {
           state2: {},
         },
       },
-      defaultT,
+      {
+        ...defaultT,
+        context: {
+          data: t.number,
+        },
+        pContext: {
+          data: t.string,
+        },
+      },
       { '/': 'state1' },
     );
 
-    machine.addPredicates({
-      returnTrue,
-      returnFalse,
-    });
+    // machine.addPredicates({
+    //   returnTrue,
+    //   returnFalse,
+    // });
 
-    const service = interpret(machine, defaultC);
+    machine.addOptions(({ isDefined, isNotDefined }) => ({
+      predicates: {
+        returnFalse: isNotDefined('events'),
+        returnFalse2: isDefined('events.type'),
+        returnTrue: isDefined('context'),
+        returnTrue2: isDefined('pContext.data'),
+      },
+    }));
+
+    const service = interpret(machine, {
+      context: { data: 5 },
+      pContext: { data: 'avion' },
+    });
     const useValue = constructValue(service);
 
     test('#01 => Start', () => {

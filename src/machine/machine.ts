@@ -16,11 +16,11 @@ import {
 import type { PromiseFunction } from '~promises';
 import {
   flatMap,
-  initialNode,
+  initialConfig,
   isAtomic,
   isCompound,
   nodeToValue,
-  recomposeNode,
+  recomposeConfig,
   valueToNode,
   type FlatMapN,
   type NodeConfig,
@@ -28,9 +28,10 @@ import {
   type StateValue,
 } from '~states';
 import type { PrimitiveObject, RecordS } from '~types';
-import { IS_TEST } from '~utils';
-import { createChild } from './functions';
+import { merge } from '~utils';
+import { createChildS, type CreateChild_F } from './functions/create';
 import type {
+  AddOption_F,
   AddOptions_F,
   AnyMachine,
   Elements,
@@ -55,6 +56,7 @@ class Machine<
   #config: C;
 
   #flat: FlatMapN<C, true>;
+
   #eventsMap!: E;
 
   get eventsMap() {
@@ -67,7 +69,7 @@ class Machine<
    * Just use for typing
    */
   get mo() {
-    return t.unknown<Mo>();
+    return t.unknown<Required<Mo>>();
   }
 
   /**
@@ -90,6 +92,14 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
+  get actionKey() {
+    return t.unknown<keyof (typeof this)['mo']['actions']>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
   get actionParams() {
     return t.unknown<{ pContext: Pc; context: Tc; map: E }>();
   }
@@ -99,7 +109,23 @@ class Machine<
    * Just use for typing
    */
   get guard() {
+    return t.unknown<keyof (typeof this)['mo']['predicates']>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
+  get predictate() {
     return t.unknown<PredicateS<E, Pc, Tc>>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
+  get delayKey() {
+    return t.unknown<keyof (typeof this)['mo']['delays']>();
   }
 
   /**
@@ -122,8 +148,24 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
+  get src() {
+    return t.unknown<keyof (typeof this)['mo']['promises']>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
   get promise() {
     return t.unknown<PromiseFunction<E, Pc, Tc>>();
+  }
+
+  /**
+   * @deprecated
+   * Just use for typing
+   */
+  get child() {
+    return t.unknown<keyof (typeof this)['mo']['machines']>();
   }
 
   /**
@@ -153,7 +195,7 @@ class Machine<
   #pContext!: Pc;
 
   #postConfig!: NodeConfigWithInitials;
-  #postFlat!: RecordS<NodeConfigWithInitials>;
+  #postflat!: RecordS<NodeConfigWithInitials>;
 
   #initialKeys: string[] = [];
 
@@ -214,8 +256,8 @@ class Machine<
     return this.#machines;
   }
 
-  get postFlat() {
-    return this.#postFlat;
+  get postflat() {
+    return this.#postflat;
   }
 
   // #region Providers
@@ -227,8 +269,8 @@ class Machine<
       flat[key] = { ...flat[key], initial };
     });
 
-    this.#postConfig = recomposeNode(flat);
-    this.#initialConfig = initialNode(this.#postConfig);
+    this.#postConfig = recomposeConfig(flat);
+    this.#initialConfig = initialConfig(this.#postConfig);
 
     this.#getInitialKeys();
 
@@ -237,9 +279,9 @@ class Machine<
 
   #getInitialKeys = () => {
     const postConfig = this.#postConfig as NodeConfig;
-    this.#postFlat = flatMap(postConfig) as any;
+    this.#postflat = flatMap(postConfig) as any;
 
-    const entries = Object.entries(this.#postFlat);
+    const entries = Object.entries(this.#postflat);
     entries.forEach(([key, { initial }]) => {
       const check1 = initial !== undefined;
       if (check1) {
@@ -263,87 +305,36 @@ class Machine<
       const check2 = this.isInitial(parent);
 
       if (check2) return this.retrieveParentFromInitial(parent);
-      return this.#postFlat[parent];
+      return this.#postflat[parent];
     }
-    return this.#postFlat[target];
+    return this.#postflat[target];
   };
 
   provideInitials = (initials: Mo['initials']) =>
     this.#renew('initials', initials);
 
-  addActions = (actions?: Mo['actions']) => {
-    return (this.#actions = actions);
-  };
+  #addActions = (actions?: Mo['actions']) =>
+    (this.#actions = merge(this.#actions, actions));
 
-  /**
-   * @deprecated
-   * Just use for testing
-   */
-  provideActions = (actions?: Mo['actions']) => {
-    if (IS_TEST) return this.#renew('actions', actions);
-    return console.error('Only renew in test env');
-  };
+  #addPredicates = (predicates?: Mo['predicates']) =>
+    (this.#predicates = merge(this.#predicates, predicates));
 
-  addPredicates = (predicates?: Mo['predicates']) =>
-    (this.#predicates = predicates);
+  #addDelays = (delays?: Mo['delays']) =>
+    (this.#delays = merge(this.#delays, delays));
 
-  /**
-   * @deprecated
-   * Just use for testing
-   */
-  providePredicates = (guards?: Mo['predicates']) => {
-    if (IS_TEST) return this.#renew('guards', guards);
-    return console.error('Only renew in test env');
-  };
+  #addPromises = (promises?: Mo['promises']) =>
+    (this.#promises = merge(this.#promises, promises));
 
-  addDelays = (delays?: Mo['delays']) => (this.#delays = delays);
-
-  /**
-   * @deprecated
-   * Just use for testing
-   */
-  provideDelays = (delays?: Mo['delays']) => {
-    if (IS_TEST) return this.#renew('delays', delays);
-    return console.error('Only renew in test env');
-  };
-
-  addPromises = (promises?: Mo['promises']) => (this.#promises = promises);
-
-  /**
-   * @deprecated
-   * Just use for testing
-   */
-  providePromises = (promises?: Mo['promises']) => {
-    if (IS_TEST) return this.#renew('promises', promises);
-    return console.error('Only renew in test env');
-  };
-
-  addMachines = (machines?: Mo['machines']) => (this.#machines = machines);
-
-  /**
-   * @deprecated
-   * Just use for testing
-   */
-  provideMachines = (machines?: Mo['machines']) => {
-    if (IS_TEST) return this.#renew('machines', machines);
-    return console.error('Only renew in test env');
-  };
+  #addMachines = (machines?: Mo['machines']) =>
+    (this.#machines = merge(this.#machines, machines));
 
   provideOptions = (
-    options?: NOmit<Mo, 'initials'>,
-  ): Machine<C, Pc, Tc, E, Mo> | void => {
-    if (IS_TEST) {
-      const out = this.#renew('actions', options?.actions);
+    option: AddOption_F<E, Pc, Tc, NOmit<Mo, 'initials'>>,
+  ) => {
+    const out = this.renew;
+    out.addOptions(option);
 
-      out.addPredicates(options?.predicates);
-      out.addDelays(options?.delays);
-      out.addPromises(options?.promises);
-      out.addMachines(options?.machines);
-
-      return out;
-    }
-
-    return console.error('Only renew in test env');
+    return out;
   };
   // #endregion
 
@@ -365,7 +356,7 @@ class Machine<
       pContext,
       context,
       actions,
-      guards,
+      predicates: guards,
       delays,
       promises,
       machines,
@@ -397,7 +388,7 @@ class Machine<
       initials,
       pContext,
       context,
-      guards,
+      predicates,
       actions,
       delays,
       promises,
@@ -413,11 +404,11 @@ class Machine<
     out.#context = context;
     out.#eventsMap = events;
 
-    out.addPredicates(guards);
-    out.addActions(actions);
-    out.addDelays(delays);
-    out.addPromises(promises);
-    out.addMachines(machines);
+    out.#addPredicates(predicates);
+    out.#addActions(actions);
+    out.#addDelays(delays);
+    out.#addPromises(promises);
+    out.#addMachines(machines);
 
     return out;
   };
@@ -497,7 +488,7 @@ class Machine<
   }
 
   get initialValue() {
-    return nodeToValue(this.initialConfig);
+    return nodeToValue(this.#initialConfig);
   }
 
   toNode = this.valueToConfig;
@@ -528,11 +519,16 @@ class Machine<
     return isNotDefinedS<E, Pc, Tc>;
   }
 
+  createChild: CreateChild_F<E, Tc> = (...args) => {
+    return createChildS(...args);
+  };
+
   addOptions: AddOptions_F<E, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
     const isNotDefined = this.#isNotDefined;
+    const createChild = this.createChild;
 
     const out = func({
       isValue,
@@ -542,18 +538,17 @@ class Machine<
       createChild,
     });
 
-    this.addActions(out?.actions);
-    this.addPredicates(out?.predicates);
-    this.addDelays(out?.delays);
-    this.addPromises(out?.promises);
-    this.addMachines(out?.machines);
+    this.#addActions(out?.actions);
+    this.#addPredicates(out?.predicates);
+    this.#addDelays(out?.delays);
+    this.#addPromises(out?.promises);
+    this.#addMachines(out?.machines);
   };
 }
 
 const getIO: GetIO_F = (key, node) => {
   const out = toArray.typed(node?.[key]);
 
-  if (!node) return [];
   if (isAtomic(node)) {
     return out;
   }

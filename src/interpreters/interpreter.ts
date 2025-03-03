@@ -18,7 +18,6 @@ import equal from 'fast-deep-equal';
 import {
   reduceAction,
   toAction,
-  type Action,
   type ActionConfig,
   type ActionResult,
 } from '~actions';
@@ -30,15 +29,17 @@ import {
   MIN_ACTIVITY_TIME,
   THEN_EVENT_TYPE,
 } from '~constants';
-import { toDelay, type Delay } from '~delays';
+import { toDelay } from '~delays';
 import {
+  eventToType,
   INIT_EVENT,
+  possibleEvents,
   transformEventArg,
   type EventArg,
   type EventsMap,
   type ToEvents,
 } from '~events';
-import { toPredicate, type GuardConfig, type PredicateS } from '~guards';
+import { toPredicate, type GuardConfig } from '~guards';
 import { getEntries, getExits, type Machine } from '~machine';
 import {
   assignByBey,
@@ -61,13 +62,12 @@ import {
 } from '~machines';
 import {
   PromiseConfig,
-  PromiseFunction,
   toPromiseSrc,
   type PromiseeResult,
 } from '~promises';
 import {
   flatMap,
-  initialNode,
+  initialConfig,
   nextSV,
   nodeToValue,
   resolveNode,
@@ -82,15 +82,9 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '~transitions';
-import {
-  isDescriber,
-  type Keys,
-  type PrimitiveObject,
-  type RecordS,
-} from '~types';
+import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
 import { IS_TEST, measureExecutionTime, replaceAll } from '~utils';
 import { merge } from './../utils/merge';
-import { eventToType, possibleEvents } from './interpreter.helpers';
 import type {
   _Send_F,
   AddSubscriber_F,
@@ -161,13 +155,13 @@ export class Interpreter<
     return this.#mode;
   }
 
-  get #idle() {
+  get idle() {
     return this.#status === 'idle';
   }
 
-  get #canAct() {
-    return this.#status === 'started' || this.#status === 'working';
-  }
+  // get #canAct() {
+  //   return this.#status === 'started' || this.#status === 'working';
+  // }
 
   get event() {
     return this.#event;
@@ -175,6 +169,10 @@ export class Interpreter<
 
   get eventsMap() {
     return this.#machine.eventsMap;
+  }
+
+  get scheduleds() {
+    return this.#scheduler.performeds;
   }
 
   constructor(machine: Machine<C, Pc, Tc, E, Mo>, mode: Mode = 'strict') {
@@ -205,14 +203,14 @@ export class Interpreter<
 
   #throwing = () => {
     if (this.isStrict) {
-      const check2 = this.#warningsCollector.size > 0;
-      if (check2) {
+      const check1 = this.#warningsCollector.size > 0;
+      if (check1) {
         const warnings = this.#displayConsole(this.#warningsCollector);
         console.log(warnings);
       }
 
-      const check1 = this.#errorsCollector.size > 0;
-      if (check1) {
+      const check2 = this.#errorsCollector.size > 0;
+      if (check2) {
         const errors = this.#displayConsole(this.#errorsCollector);
         throw new Error(errors);
       }
@@ -221,14 +219,14 @@ export class Interpreter<
     }
 
     if (this.isNormal) {
-      const check1 = this.#errorsCollector.size > 0;
-      if (check1) {
+      const check3 = this.#errorsCollector.size > 0;
+      if (check3) {
         const errors = this.#displayConsole(this.#errorsCollector);
         console.error(errors);
       }
 
-      const check2 = this.#warningsCollector.size > 0;
-      if (check2) {
+      const check4 = this.#warningsCollector.size > 0;
+      if (check4) {
         const warnings = this.#displayConsole(this.#warningsCollector);
         console.log(warnings);
       }
@@ -237,12 +235,16 @@ export class Interpreter<
     }
 
     if (this.isStrictest) {
-      const errors = this.#displayConsole([
+      const _errors = [
         ...this.#errorsCollector,
         ...this.#warningsCollector,
-      ]);
+      ];
 
-      throw new Error(errors);
+      const check5 = _errors.length > 0;
+      if (check5) {
+        const errors = this.#displayConsole(_errors);
+        throw new Error(errors);
+      }
     }
   };
 
@@ -289,6 +291,10 @@ export class Interpreter<
     this.#mode = 'strictest';
   };
 
+  makeNormal = () => {
+    this.#mode = 'normal';
+  };
+
   get status() {
     return this.#status;
   }
@@ -328,6 +334,7 @@ export class Interpreter<
    */
   get pContext() {
     if (IS_TEST) return this.#pContext;
+    /* v8 ignore next 3 */
     console.error('pContext is not available in production');
     return;
   }
@@ -340,8 +347,12 @@ export class Interpreter<
    * Call in production will return nothing
    */
   pSelect: Selector_F<Pc> = selector => {
-    const pContext = this.pContext;
-    if (pContext) return getByKey(pContext, selector);
+    if (IS_TEST) {
+      const pContext = this.pContext;
+      if (pContext) return getByKey(pContext, selector);
+      /* v8 ignore next 4 */
+    }
+    console.error('pContext is not available in production');
     return;
   };
 
@@ -407,7 +418,6 @@ export class Interpreter<
     if (checkCounter) {
       throw `Too much self transitions, exceeded ${MAX_SELF_TRANSITIONS} transitions`;
     }
-
     this.#throwing();
 
     this.flushSubscribers();
@@ -482,7 +492,7 @@ export class Interpreter<
     return out;
   };
 
-  #performGuards = (...guards: GuardConfig[]) => {
+  #performPredicates = (...guards: GuardConfig[]) => {
     if (guards.length < 1) return true;
     return guards
       .map(this.toPredicate)
@@ -565,7 +575,7 @@ export class Interpreter<
               return this.#merge(result);
             }
 
-            const check5 = this.#performGuards(
+            const check5 = this.#performPredicates(
               ...toArray.typed(activity.guards),
             );
             if (check5) {
@@ -614,7 +624,9 @@ export class Interpreter<
     if (check) return transition;
 
     const { guards, actions, target } = transition;
-    const response = this.#performGuards(...toArray<GuardConfig>(guards));
+    const response = this.#performPredicates(
+      ...toArray<GuardConfig>(guards),
+    );
     if (response) {
       const result = this.#performActions(
         this.#contexts,
@@ -664,7 +676,9 @@ export class Interpreter<
         return result;
       }
 
-      const response = this.#performGuards(...toArray.typed(final.guards));
+      const response = this.#performPredicates(
+        ...toArray.typed(final.guards),
+      );
       if (response) {
         const result = this.#performActions(
           this.#contexts,
@@ -1031,12 +1045,16 @@ export class Interpreter<
 
   #makeBusy = (): WorkingStatus => (this.#status = 'busy');
 
+  /**
+   * @deprecated
+   * Uses internal
+   */
   providePrivateContext = (pContext: Pc) => {
     this.#initialPpc = pContext;
     this.#pContext = pContext;
     this.#makeBusy();
 
-    if (this.#idle) this.#machine.addPrivateContext(this.#initialPpc);
+    this.#machine.addPrivateContext(this.#initialPpc);
 
     this.#status = 'starting';
     return this.#machine;
@@ -1044,12 +1062,16 @@ export class Interpreter<
 
   ppC = this.providePrivateContext;
 
+  /**
+   * @deprecated
+   * Uses internal
+   */
   provideContext = (context: Tc) => {
     this.#initialContext = context;
     this.#context = context;
     this.#makeBusy();
 
-    if (this.#idle) this.#machine.addContext(this.#initialContext);
+    this.#machine.addContext(this.#initialContext);
 
     this.#status = 'starting';
     return this.#machine;
@@ -1060,47 +1082,6 @@ export class Interpreter<
   get addOptions() {
     return this.#machine.addOptions;
   }
-
-  addAction = (key: Keys<Mo['actions']>, action: Action<E, Pc, Tc>) => {
-    if (this.#canAct) {
-      const out = { [key]: action };
-      this.#machine.addActions(out);
-    }
-  };
-
-  addPredicate = (
-    key: Keys<Mo['predicates']>,
-    guard: PredicateS<E, Pc, Tc>,
-  ) => {
-    if (this.#canAct) {
-      const out = { [key]: guard };
-      this.#machine.addPredicates(out);
-    }
-  };
-
-  addPromise = (
-    key: Keys<Mo['promises']>,
-    promise: PromiseFunction<E, Pc, Tc>,
-  ) => {
-    if (this.#canAct) {
-      const out = { [key]: promise };
-      this.#machine.addPromises(out);
-    }
-  };
-
-  addDelay = (key: Keys<Mo['delays']>, delay: Delay<E, Pc, Tc>) => {
-    if (this.#canAct) {
-      const out = { [key]: delay };
-      this.#machine.addDelays(out);
-    }
-  };
-
-  addMachine = (key: Keys<Mo['machines']>, machine: ChildS<E, Tc>) => {
-    if (this.#canAct) {
-      const out = { [key]: machine };
-      this.#machine.addMachines(out);
-    }
-  };
 
   #subscribers = new Set<Subscriber<E, Tc>>();
   #fullSubscribers = new Set<Subscriber<E, Tc>>();
@@ -1126,7 +1107,10 @@ export class Interpreter<
   #warningsCollector = new Set<string>();
 
   get errorsCollector() {
-    return this.#errorsCollector;
+    if (IS_TEST) return this.#errorsCollector;
+    /* v8 ignore next 3 */
+    console.error('errorsCollector is not available in production');
+    return;
   }
 
   /**
@@ -1136,6 +1120,7 @@ export class Interpreter<
    */
   get warningsCollector() {
     if (IS_TEST) return this.#warningsCollector;
+    /* v8 ignore next 3 */
     console.error('warningsCollector is not available in production');
     return;
   }
@@ -1203,7 +1188,7 @@ export class Interpreter<
     const next = switchV({
       condition: equal(this.#value, sv),
       truthy: undefined,
-      falsy: initialNode(this.#machine.valueToConfig(sv)),
+      falsy: initialConfig(this.#machine.valueToConfig(sv)),
     });
 
     return { next, result };

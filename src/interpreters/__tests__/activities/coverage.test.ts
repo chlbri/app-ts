@@ -76,7 +76,9 @@ describe('Interpreter integration ofr activities coverage', () => {
     test(...useValue('state2', 6));
 
     test('#07 => add delay', () => {
-      service.addDelay('DELAY', DELAY);
+      service.addOptions(() => ({
+        delays: { DELAY },
+      }));
     });
 
     test(...useSendNext(8));
@@ -124,18 +126,25 @@ describe('Interpreter integration ofr activities coverage', () => {
       { '/': 'state1' },
     );
 
-    machine.addActions({
-      activity1,
-    });
+    machine.addOptions(() => ({
+      actions: {
+        activity1,
+      },
+    }));
 
     describe('01 => Delay is too short', () => {
       afterAll(() => {
         activity1.mockClear();
       });
 
-      machine.addDelays({
-        DELAY: MIN_ACTIVITY_TIME / 2,
-      });
+      machine.addOptions(() => ({
+        actions: {
+          activity1,
+        },
+        delays: {
+          DELAY: MIN_ACTIVITY_TIME / 2,
+        },
+      }));
 
       const service = interpret(machine, defaultC);
       const useValue = constructValue(service);
@@ -168,9 +177,14 @@ describe('Interpreter integration ofr activities coverage', () => {
         activity1.mockClear();
       });
 
-      machine.addDelays({
-        DELAY: MAX_TIME_PROMISE * 1.5,
-      });
+      machine.addOptions(() => ({
+        actions: {
+          activity1,
+        },
+        delays: {
+          DELAY: MAX_TIME_PROMISE * 1.5,
+        },
+      }));
 
       const service = interpret(machine, defaultC);
       const useValue = constructValue(service);
