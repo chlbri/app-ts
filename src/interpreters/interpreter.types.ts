@@ -8,7 +8,13 @@ import type {
   ActionResult,
 } from '~actions';
 import type { Delay } from '~delays';
-import type { EventArg, EventsMap, ToEvents, ToEventsR } from '~events';
+import type {
+  EventArg,
+  EventsMap,
+  PromiseeMap,
+  ToEvents,
+  ToEventsR,
+} from '~events';
 import type { GuardConfig, PredicateS, PredicateS2 } from '~guards';
 import type { Machine } from '~machine';
 import type {
@@ -58,53 +64,61 @@ export type Interpreter_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
+  P extends PromiseeMap = PromiseeMap,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 >(
-  machine: Machine<C, Pc, Tc, E, Mo>,
+  machine: Machine<C, Pc, Tc, E, P, Mo>,
   config: { pContext: Pc; context: Tc; mode?: Mode },
-) => Interpreter<C, Pc, Tc, E, Mo>;
+) => Interpreter<C, Pc, Tc, E, P, Mo>;
 
 export type ToAction_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (action?: ActionConfig) => Action2<E, Pc, Tc>;
+> = (action?: ActionConfig) => Action2<E, P, Pc, Tc>;
 
 export type PerformAction_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (action: Action2<E, Pc, Tc>) => ActionResult<Pc, Tc>;
+> = (action: Action2<E, P, Pc, Tc>) => ActionResult<Pc, Tc>;
 
 export type ToPredicate_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (predicate?: GuardConfig) => PredicateS2<E, Pc, Tc>;
+> = (predicate?: GuardConfig) => PredicateS2<E, P, Pc, Tc>;
 
 export type PerformPredicate_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (predicate: PredicateS2<E, Pc, Tc>) => boolean;
+> = (predicate: PredicateS2<E, P, Pc, Tc>) => boolean;
 
 export type ToDelay_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (delay?: string) => Fn<[Pc, Tc, ToEvents<E>], number> | undefined;
+> = (delay?: string) => Fn<[Pc, Tc, ToEvents<E, P>], number> | undefined;
 
 export type PerformDelay_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (delay: Fn<[Pc, Tc, ToEvents<E>], number>) => number;
+> = (delay: Fn<[Pc, Tc, ToEvents<E, P>], number>) => number;
 
 export type PerformPromise_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (promise: PromiseFunction2<E, Pc, Tc>) => Promise<any>;
+> = (promise: PromiseFunction2<E, P, Pc, Tc>) => Promise<any>;
 
 export type ExecuteActivities_F = (
   from: string,
@@ -144,6 +158,7 @@ export type PerformAlway_F<
 
 export type Collected0<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
@@ -156,24 +171,26 @@ export type Collected0<
         | undefined
       >
     | undefined;
-  promisee?: TimeoutPromise<PromiseeResult<E, Pc, Tc> | undefined>;
+  promisee?: TimeoutPromise<PromiseeResult<E, P, Pc, Tc> | undefined>;
   always?: TransitionAfterResult<Pc, Tc>;
 };
 
 export type ToPromiseSrc_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (promise: string) => PromiseFunction2<E, Pc, Tc>;
+> = (promise: string) => PromiseFunction2<E, P, Pc, Tc>;
 
 export type PerformPromisee_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   from: string,
   ...promisees: PromiseConfig[]
-) => TimeoutPromise<PromiseeResult<E, Pc, Tc> | undefined> | undefined;
+) => TimeoutPromise<PromiseeResult<E, P, Pc, Tc> | undefined> | undefined;
 
 export type Contexts<
   Pc = any,
@@ -211,17 +228,19 @@ export type SleepContexts_F = <
 
 export type _Send_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (event: ToEventsR<E>) => {
+> = (event: ToEventsR<E, P>) => {
   result: ActionResult<Pc, Tc>;
   next?: NodeConfigWithInitials;
 };
 
 export type AddSubscriber_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (subscriber: FnMapReduced<E, Tc>) => Subscriber<E, Tc>;
+> = (subscriber: FnMapReduced<E, P, Tc>) => Subscriber<E, P, Tc>;
 
 export type Selector_F<T = any> = <
   D extends Decompose2<T>,
@@ -233,15 +252,16 @@ export type Selector_F<T = any> = <
 
 export interface AnyInterpreter<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > {
   mo: any;
   mode: Mode;
-  event: ToEvents<E>;
+  event: ToEvents<E, P>;
   eventsMap: EventsMap;
-  initialNode: Node<E, Pc, Tc>;
-  node: Node<E, Pc, Tc>;
+  initialNode: Node<E, P, Pc, Tc>;
+  node: Node<E, P, Pc, Tc>;
 
   makeStrict: () => void;
   makeStrictest: () => void;
@@ -256,19 +276,21 @@ export interface AnyInterpreter<
   pause: () => void;
   resume: () => void;
   stop: () => void;
-  providePrivateContext: (pContext: Pc) => AnyMachine<E, Pc, Tc>;
-  ppC: (pContext: Pc) => AnyMachine<E, Pc, Tc>;
-  provideContext: (context: Tc) => AnyMachine<E, Pc, Tc>;
+  providePrivateContext: (pContext: Pc) => AnyMachine<E, P, Pc, Tc>;
+  ppC: (pContext: Pc) => AnyMachine<E, P, Pc, Tc>;
+  provideContext: (context: Tc) => AnyMachine<E, P, Pc, Tc>;
 
-  addSubscriber: AddSubscriber_F<any, any>;
+  addSubscriber: AddSubscriber_F<E, P, Tc>;
 
-  send: (event: EventArg<E>) => void;
+  send: (event: EventArg<E, P>) => void;
   flushSubscribers: () => void;
-  toAction: (action: ActionConfig) => Action<E, Pc, Tc> | undefined;
-  toPredicate: (guard: GuardConfig) => PredicateS<E, Pc, Tc> | undefined;
-  toPromiseSrc: (src: string) => PromiseFunction<E, Pc, Tc> | undefined;
-  toDelay: (delay: string) => Delay<E, Pc, Tc> | undefined;
-  toMachine: (machine: ActionConfig) => ChildS<E, Tc> | undefined;
+  toAction: (action: ActionConfig) => Action<E, P, Pc, Tc> | undefined;
+  toPredicate: (
+    guard: GuardConfig,
+  ) => PredicateS<E, P, Pc, Tc> | undefined;
+  toPromiseSrc: (src: string) => PromiseFunction<E, P, Pc, Tc> | undefined;
+  toDelay: (delay: string) => Delay<E, P, Pc, Tc> | undefined;
+  toMachine: (machine: ActionConfig) => ChildS<E, P, Tc> | undefined;
   id?: string;
 }
 

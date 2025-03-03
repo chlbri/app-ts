@@ -1,5 +1,5 @@
 import { t } from '@bemedev/types';
-import type { EventsMap, ToEvents } from '~events';
+import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
 import {
   isFunction,
   type FnMap,
@@ -8,21 +8,45 @@ import {
 } from '~types';
 import { nothing } from './nothing';
 
+type ToEventMap_F = <
+  E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+>(
+  events: E,
+  promisees: P,
+) => ToEventsR<E, P>;
+
+export const toEventsMap: ToEventMap_F = (events, _promisees) => {
+  const promisees = Object.entries(_promisees).reduce(
+    (acc, [key, value]) => {
+      acc[`${key}::then`] = value.then;
+      acc[`${key}::catch`] = value.catch;
+      return acc;
+    },
+    {} as any,
+  );
+
+  return { ...events, ...promisees };
+};
+
 export type ReduceFnMap_F = <
-  const E extends EventsMap,
+  E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 >(
   events: E,
-  fn: FnMap<E, Pc, Tc, R>,
-) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E>) => R;
+  promisees: P,
+  fn: FnMap<E, P, Pc, Tc, R>,
+) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R;
 
-export const reduceFnMap: ReduceFnMap_F = (events, fn) => {
+export const reduceFnMap: ReduceFnMap_F = (events, promisees, fn) => {
   const check1 = isFunction(fn);
   if (check1) return fn;
 
-  const keys = Object.keys(events);
+  const map = toEventsMap(events, promisees);
+  const keys = Object.keys(map);
 
   return (pContext, context, event) => {
     const check5 = typeof event === 'string';
@@ -33,7 +57,7 @@ export const reduceFnMap: ReduceFnMap_F = (events, fn) => {
 
     for (const key of keys) {
       const check2 = type === key;
-      const func = fn[key];
+      const func = t.any(fn)[key];
       const check3 = !!func;
 
       const check4 = check2 && check3;
@@ -45,19 +69,22 @@ export const reduceFnMap: ReduceFnMap_F = (events, fn) => {
 };
 
 export type ReduceFnMap2_F = <
-  const E extends EventsMap,
+  E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 >(
   events: E,
-  fn: FnMapReduced<E, Tc, R>,
-) => (context: Tc, eventsMap: ToEvents<E>) => R;
+  promisees: P,
+  fn: FnMapReduced<E, P, Tc, R>,
+) => (context: Tc, eventsMap: ToEvents<E, P>) => R;
 
-export const reduceFnMap2: ReduceFnMap2_F = (events, fn) => {
+export const reduceFnMap2: ReduceFnMap2_F = (events, promisees, fn) => {
   const check1 = isFunction(fn);
   if (check1) return t.any(fn);
 
-  const keys = Object.keys(events);
+  const map = toEventsMap(events, promisees);
+  const keys = Object.keys(map);
 
   return (context, event) => {
     const check5 = typeof event === 'string';
@@ -68,7 +95,7 @@ export const reduceFnMap2: ReduceFnMap2_F = (events, fn) => {
 
     for (const key of keys) {
       const check2 = type === key;
-      const func = fn[key];
+      const func = t.any(fn)[key];
       const check3 = !!func;
 
       const check4 = check2 && check3;

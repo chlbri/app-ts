@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.0.7-canary] - 2024-03-03 _16:30_
+
+- Add key of promisees to types
+- <u>Test coverage **99%**</u>
+
+<br/>
+
 ## [0.0.5-canary] - 2024-02-25 _01:30_
 
 ### - Test coverage **90%**

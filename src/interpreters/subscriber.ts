@@ -1,15 +1,16 @@
 import type { TimerState } from '@bemedev/interval2';
-import type { EventsMap, ToEvents } from '~events';
+import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import { PrimitiveObject } from '~types';
 import { nothing, reduceFnMap2 } from '~utils';
 import { type FnMapReduced } from '../types/primitives';
 
 export type SubscriberMap<
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > = {
-  func: FnMapReduced<E, Tc, R>;
+  func: FnMapReduced<E, P, Tc, R>;
   id: string;
   // status: string;
   // close: () => void;
@@ -17,30 +18,38 @@ export type SubscriberMap<
 
 class Subscriber<
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > {
-  #subscriber: FnMapReduced<E, Tc, R>;
+  #subscriber: FnMapReduced<E, P, Tc, R>;
 
   #eventsMap: E;
+  #promiseesMap: P;
 
   #state: TimerState = 'idle';
 
-  constructor(eventsMap: E, subscriber: FnMapReduced<E, Tc, R>) {
+  constructor(
+    eventsMap: E,
+    promiseesMap: P,
+    subscriber: FnMapReduced<E, P, Tc, R>,
+  ) {
     this.#subscriber = subscriber;
     this.#eventsMap = eventsMap;
+    this.#promiseesMap = promiseesMap;
 
     this.#state = 'active';
   }
 
-  get reduced(): (context: Tc, events: ToEvents<E>) => R {
+  get reduced(): (context: Tc, events: ToEvents<E, P>) => R {
     if (this.#state === 'paused') return nothing as any;
 
-    const func = (context: Tc, events: ToEvents<E>) => {
-      return reduceFnMap2(this.#eventsMap, this.#subscriber)(
-        context,
-        events,
-      );
+    const func = (context: Tc, events: ToEvents<E, P>) => {
+      return reduceFnMap2(
+        this.#eventsMap,
+        this.#promiseesMap,
+        this.#subscriber,
+      )(context, events);
     };
 
     return func;
@@ -64,16 +73,19 @@ export type { Subscriber };
 
 export type CreateSubscriber_F = <
   E extends EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 >(
   eventsMap: E,
-  subscriber: FnMapReduced<E, Tc, R>,
-) => Subscriber<E, Tc, R>;
+  promiseesMap: P,
+  subscriber: FnMapReduced<E, P, Tc, R>,
+) => Subscriber<E, P, Tc, R>;
 
 export const createSubscriber: CreateSubscriber_F = (
   eventsMap,
+  promiseesMap,
   subscriber,
 ) => {
-  return new Subscriber(eventsMap, subscriber);
+  return new Subscriber(eventsMap, promiseesMap, subscriber);
 };

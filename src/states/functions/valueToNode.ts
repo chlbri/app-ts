@@ -22,7 +22,7 @@ export const valueToNode: ValueToNode_F = (body, from) => {
   if (check1) {
     const check2 = keysB.includes(from);
     if (check2) {
-      const parents = getParents(from);
+      const parents = getParents(from as any);
       const children = getChildren(from, ...keysB);
 
       const out1: any = {

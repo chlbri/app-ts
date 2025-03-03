@@ -1,8 +1,16 @@
-import type { EventArg, EventsMap, ToEventsR } from '../types';
+import type {
+  EventArg,
+  EventsMap,
+  PromiseeMap,
+  ToEventsR,
+} from '../types';
 
-export type TransformEventArg = <T extends EventsMap>(
-  event: EventArg<T>,
-) => ToEventsR<T>;
+export type TransformEventArg = <
+  E extends EventsMap,
+  P extends PromiseeMap,
+>(
+  event: EventArg<E, P>,
+) => ToEventsR<E, P>;
 
 export const transformEventArg: TransformEventArg = event => {
   const check1 = typeof event === 'string';

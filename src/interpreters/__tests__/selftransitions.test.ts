@@ -1,5 +1,6 @@
 import { createMachine } from '~machine';
 import { interpret } from '../interpreter';
+import { defaultT } from './fixtures';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -19,7 +20,7 @@ describe('Self Transitions', () => {
           active: {},
         },
       },
-      { pContext: {}, context: {}, eventsMap: {} },
+      defaultT,
       { '/': 'idle' },
     );
 
@@ -51,7 +52,7 @@ describe('Self Transitions', () => {
           active: {},
         },
       },
-      { pContext: {}, context: {}, eventsMap: {} },
+      defaultT,
       { '/': 'idle' },
     );
 
@@ -80,11 +81,7 @@ describe('Self Transitions', () => {
           active: {},
         },
       },
-      {
-        pContext: {},
-        context: {},
-        eventsMap: {},
-      },
+      defaultT,
       { '/': 'idle' },
     );
 

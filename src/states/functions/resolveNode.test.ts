@@ -3,6 +3,7 @@ import { resolveNode } from './resolveNode';
 test('resolveNode -> coverage', () => {
   const inc = vi.fn();
   const events = {};
+  const promisees = {};
   const options = {
     actions: {
       inc,
@@ -13,7 +14,7 @@ test('resolveNode -> coverage', () => {
     exit: 'inc',
   };
 
-  const node = resolveNode(events, config, options);
+  const node = resolveNode(events, promisees, config, options);
   expect(node).toStrictEqual({
     after: [],
     always: [],

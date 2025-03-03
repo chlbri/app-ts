@@ -1,7 +1,7 @@
 import sleep from '@bemedev/sleep';
 import { t } from '@bemedev/types';
 import { DEFAULT_NOTHING } from '~constants';
-import type { EventArg, EventsMap } from '~events';
+import type { EventArg, EventsMap, PromiseeMap } from '~events';
 import type { Interpreter } from '~interpreter';
 import type {
   Config,
@@ -14,7 +14,7 @@ import type { PrimitiveObject } from '~types';
 import { IS_TEST } from '~utils';
 
 export const defaultC = { pContext: {}, context: {} };
-export const defaultT = { ...defaultC, eventsMap: {} };
+export const defaultT = { ...defaultC, eventsMap: {}, promiseesMap: {} };
 export const defaultI = { '/': 'idle' } as const;
 
 export const fakeWaiter = async (ms = 0, times = 1) => {
@@ -42,9 +42,10 @@ type ConstructValue_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
+  P extends PromiseeMap = PromiseeMap,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 >(
-  service: Interpreter<C, Pc, Tc, E, Mo>,
+  service: Interpreter<C, Pc, Tc, E, P, Mo>,
 ) => (value: StateValue, index: number) => [string, () => void];
 
 export const constructValue: ConstructValue_F = service => {
@@ -64,10 +65,11 @@ type ConstructSend_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, Pc, Tc>,
+  P extends PromiseeMap = PromiseeMap,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 >(
-  service: Interpreter<C, Pc, Tc, E, Mo>,
-) => (_event: EventArg<E>, index: number) => [string, () => void];
+  service: Interpreter<C, Pc, Tc, E, P, Mo>,
+) => (_event: EventArg<E, P>, index: number) => [string, () => void];
 
 export const constructSend: ConstructSend_F = service => {
   return (_event, index) => {

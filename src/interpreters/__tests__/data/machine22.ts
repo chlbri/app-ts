@@ -12,6 +12,7 @@ export const machine22 = createMachine(
     eventsMap: machine2.eventsMap,
     context: machine2.context,
     pContext: machine2.pContext,
+    promiseesMap: machine2.promiseesMap,
   },
   machine2.initials,
 );

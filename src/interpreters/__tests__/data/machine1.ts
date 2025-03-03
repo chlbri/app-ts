@@ -23,6 +23,7 @@ export const machine1 = createMachine(
     },
     context: t.buildObject({ iterator: t.number }),
     pContext: t.object,
+    promiseesMap: {},
   },
   { '/': 'idle' },
 );

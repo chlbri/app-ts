@@ -1,4 +1,4 @@
-import type { EventsMap } from '~events';
+import type { EventsMap, PromiseeMap } from '~events';
 import type {
   ChildS,
   Config,
@@ -15,6 +15,7 @@ export const createConfig: CreateConfig_F = config => config;
 export type CreateChildS_F = <
   const T extends KeyU<'preConfig' | 'context' | 'pContext'>,
   const E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   const Tc extends PrimitiveObject = PrimitiveObject,
 >(
   machine: T,
@@ -22,11 +23,12 @@ export type CreateChildS_F = <
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
   },
-  ...subscribers: Subscriber<E, Tc, T>[]
-) => ChildS<E, Tc, T>;
+  ...subscribers: Subscriber<E, P, Tc, T>[]
+) => ChildS<E, P, Tc, T>;
 
 export type CreateChild_F<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = <const T extends KeyU<'preConfig' | 'context' | 'pContext'>>(
   machine: T,
@@ -34,8 +36,8 @@ export type CreateChild_F<
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
   },
-  ...subscribers: Subscriber<E, Tc, T>[]
-) => ChildS<E, Tc, T>;
+  ...subscribers: Subscriber<E, P, Tc, T>[]
+) => ChildS<E, P, Tc, T>;
 
 export const createChildS: CreateChildS_F = (
   machine,

@@ -1,6 +1,6 @@
 import type { NotUndefined, UnionToIntersection2 } from '@bemedev/types';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
-import type { EventsMap } from '~events';
+import type { EventsMap, PromiseeMap } from '~events';
 import type { FromGuard, GuardConfig } from '~guards';
 import type { Transitions, TransitionsConfig } from '~transitions';
 import type {
@@ -161,15 +161,16 @@ export type FlatMapN<
 
 export type Node<
   E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   id?: string;
   description?: string;
   type: StateType;
-  entry: Action<E, Pc, Tc>[];
-  exit: Action<E, Pc, Tc>[];
+  entry: Action<E, P, Pc, Tc>[];
+  exit: Action<E, P, Pc, Tc>[];
   tags: string[];
-  states: Identitfy<Node<E, Pc, Tc>>[];
+  states: Identitfy<Node<E, P, Pc, Tc>>[];
   initial?: string;
-} & Transitions<E, Pc, Tc>;
+} & Transitions<E, P, Pc, Tc>;
