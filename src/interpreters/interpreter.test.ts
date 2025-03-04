@@ -403,10 +403,6 @@ describe('Interpreter', () => {
     const inc2 = vi.fn().mockReturnValue({ pContext: {}, context: {} });
     const src = vi.fn(() => Promise.resolve());
 
-    beforeEach(() => {
-      console.warn(service.value);
-    });
-
     const machine = createMachine(
       {
         states: {

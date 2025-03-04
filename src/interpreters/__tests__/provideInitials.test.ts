@@ -258,14 +258,4 @@ describe('provideInitials', () => {
       },
     ),
   );
-
-  test.todo('Console.log', () => {
-    const actual = provide({
-      '/': 'state1',
-      '/state1': 'state11',
-      '/state1/state11': 'state111',
-    });
-
-    console.log(JSON.stringify(actual, null, 2));
-  });
 });
