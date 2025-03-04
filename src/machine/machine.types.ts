@@ -123,8 +123,8 @@ export type AddOption_F<
       pContext: PrivateContextFrom<T>;
       context: ContextFrom<T>;
     },
-    ...subscribers: Subscriber<E, P, Tc, T>[]
-  ) => ChildS<E, P, Tc, T>;
+    ...subscribers: Subscriber<E, P, Pc, T>[]
+  ) => ChildS<E, P, Pc, T>;
 }) => Mo | undefined;
 
 export type AddOptions_F<

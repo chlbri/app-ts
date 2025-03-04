@@ -397,4 +397,108 @@ describe('Interpreter', () => {
       expect(inc).toBeCalledTimes(1);
     });
   });
+
+  describe('#06 => Coverage getCollected0', () => {
+    const inc = vi.fn().mockReturnValue({ pContext: {}, context: {} });
+    const inc2 = vi.fn().mockReturnValue({ pContext: {}, context: {} });
+    const src = vi.fn(() => Promise.resolve());
+
+    const machine = createMachine(
+      {
+        states: {
+          idle: {
+            after: {
+              DELAY: { actions: 'inc2' },
+            },
+            promises: {
+              src: 'src',
+              then: { actions: 'inc' /* , target: '/next' */ },
+              catch: { actions: 'inc' },
+            },
+          },
+          // next: {
+          //   after: {
+          //     DELAY: '/idle',
+          //   },
+          // },
+        },
+      },
+      { ...defaultT, context: { iterator: t.number } },
+      { '/': 'idle' },
+    ).provideOptions(() => ({
+      actions: {
+        inc,
+        inc2,
+      },
+      delays: {
+        DELAY: 1000,
+      },
+      promises: {
+        src,
+      },
+    }));
+
+    const service = interpret(machine, {
+      ...defaultC,
+      context: { iterator: 0 },
+    });
+
+    test('#01 => Start the service', () => {
+      service.start();
+    });
+
+    test('#02 => src is called', () => {
+      expect(src).toBeCalledTimes(3);
+    });
+
+    test('#03 => inc2 is not called', () => {
+      expect(inc2).toBeCalledTimes(0);
+    });
+
+    test('#04 => Wait 0', () => {
+      return vi.advanceTimersByTimeAsync(1000);
+    });
+
+    test('#05 => inc is called', () => {
+      expect(inc2).toBeCalledTimes(1);
+    });
+
+    describe('#06 => check collecteds0', () => {
+      test('#01 => collecteds0 has one element', () => {
+        expect(service.collecteds0).toHaveLength(1);
+      });
+
+      describe('#02 => promisee is defined', () => {
+        const promisee = service.collecteds0?.get('/idle')?.promisee;
+
+        test('#01 => promisee is defined', () => {
+          expect(promisee).toBeDefined();
+        });
+
+        test('#02 => promisee is a function', () => {
+          expect(promisee).toBeTypeOf('function');
+        });
+
+        test('#03 => promisee has id : "/idle"', () => {
+          expect(promisee?.id).toBe('/idle');
+        });
+      });
+
+      describe('#02 => after is defined', () => {
+        const after = service.collecteds0?.get('/idle')?.after;
+
+        test('#01 => after is defined', () => {
+          expect(after).toBeDefined();
+        });
+
+        test('#02 => after is a function', () => {
+          expect(after).toBeTypeOf('function');
+        });
+
+        test('#03 => after has id : "/idle"', () => {
+          expect(after?.id).toBe('/idle');
+        });
+      });
+    });
+  });
 });
