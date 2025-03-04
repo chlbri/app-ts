@@ -83,7 +83,7 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
-import { IS_TEST, measureExecutionTime, replaceAll } from '~utils';
+import { IS_TEST, replaceAll } from '~utils';
 import { merge } from './../utils/merge';
 import type {
   _Send_F,
@@ -142,14 +142,6 @@ export class Interpreter<
   }
 
   id?: string;
-
-  /**
-   * @deprecated
-   * Just use for typing
-   */
-  get mo() {
-    return this.#machine.mo;
-  }
 
   get mode() {
     return this.#mode;
@@ -366,17 +358,7 @@ export class Interpreter<
     return Array.from(messages).join(EOL);
   };
 
-  #checkContexts = () => {
-    if (!this.#pContext) {
-      this._addError('No pContext provided');
-    }
-    if (!this.#context) {
-      this._addError('No context provided');
-    }
-  };
-
   start = () => {
-    this.#checkContexts();
     this.#throwing();
 
     this.#startStatus();
@@ -414,30 +396,38 @@ export class Interpreter<
 
   #selfTransitionsCounter = 0;
 
-  protected _next = async () => {
-    if (this.#status === 'stopped') return;
-    const previousValue = this.#value;
-    const checkCounter =
-      this.#selfTransitionsCounter >= MAX_SELF_TRANSITIONS;
-
-    if (checkCounter) return this.#throwMaxCounter();
-    this.#throwing();
-
+  #next = async () => {
+    this.#selfTransitionsCounter++;
     this.flushSubscribers();
     this.#rinitIntervals();
     this.#performActivities();
     await this.#performSelfTransitions();
+  };
 
-    this.#selfTransitionsCounter++;
+  protected _next = async () => {
+    let check = false;
+    do {
+      const startTime = Date.now();
+      const previousValue = this.#value;
 
-    const currentConfig = this.#value;
-    const check = !equal(previousValue, currentConfig);
+      const checkCounter =
+        this.#selfTransitionsCounter >= MAX_SELF_TRANSITIONS;
+      if (checkCounter) return this.#throwMaxCounter();
+      this.#throwing();
 
-    if (check) {
-      const duration = await measureExecutionTime(this._next.bind(this));
-      const check2 = duration > MIN_ACTIVITY_TIME;
-      if (check2) this.#selfTransitionsCounter = 0;
-    } else this.#selfTransitionsCounter = 0;
+      await this.#next();
+
+      const currentConfig = this.#value;
+      check = !equal(previousValue, currentConfig);
+
+      const duration = Date.now() - startTime;
+      const check2 = duration > TIME_TO_RINIT_SELF_COUNTER;
+      if (check2) {
+        this.#selfTransitionsCounter = 0;
+      }
+    } while (check);
+
+    this.#selfTransitionsCounter = 0;
   };
 
   #performAction: PerformAction_F<E, P, Pc, Tc> = action => {
@@ -481,7 +471,7 @@ export class Interpreter<
     return actions
       .map(this.toAction)
       .filter(f => f !== undefined)
-      .map(value => this.#executeAction(value))
+      .map(this.#executeAction)
       .reduce((acc, value) => {
         const out = merge(acc, value);
         return out;
@@ -511,7 +501,7 @@ export class Interpreter<
       .map(this.toPredicate)
       .filter(isDefined)
       .map(this.#executePredicate)
-      .every(bool => bool);
+      .every(b => b);
   };
 
   #performDelay: PerformDelay_F<E, P, Pc, Tc> = delay => {
@@ -757,7 +747,7 @@ export class Interpreter<
         if (check3) {
           const delayF = this.toDelay(maxS);
           const check4 = !isDefined(delayF);
-          if (check4) return undefined;
+          if (check4) return this.#throwing();
           const max = this.#performDelay(delayF);
           MAX_POMS.push(max);
         }
@@ -963,7 +953,24 @@ export class Interpreter<
       const promise = async () => {
         if (always) {
           const cb = () => {
+            const { diffEntries, diffExits } = this.#diffNext(
+              always.target,
+            );
+
+            const _exits = this.#performActions(
+              this.#contexts,
+              ...diffExits,
+            );
+            this.#merge(_exits);
+
             this.#merge(always.result);
+
+            const _entries = this.#performActions(
+              this.#contexts,
+              ...diffEntries,
+            );
+            this.#merge(_entries);
+
             this.#performConfig(always.target);
           };
           this.#schedule(cb);
@@ -976,7 +983,24 @@ export class Interpreter<
             return after().then(transition => {
               if (transition) {
                 const cb = () => {
+                  const { diffEntries, diffExits } = this.#diffNext(
+                    transition.target,
+                  );
+
+                  const _exits = this.#performActions(
+                    this.#contexts,
+                    ...diffExits,
+                  );
+                  this.#merge(_exits);
+
                   this.#merge(transition.result);
+
+                  const _entries = this.#performActions(
+                    this.#contexts,
+                    ...diffEntries,
+                  );
+                  this.#merge(_entries);
+
                   this.#performConfig(transition.target);
                 };
                 this.#schedule(cb);
@@ -991,7 +1015,24 @@ export class Interpreter<
             return promisee().then(transition => {
               if (transition) {
                 const cb = () => {
+                  const { diffEntries, diffExits } = this.#diffNext(
+                    transition.target,
+                  );
+
+                  const _exits = this.#performActions(
+                    this.#contexts,
+                    ...diffExits,
+                  );
+                  this.#merge(_exits);
+
                   this.#merge(transition.result);
+
+                  const _entries = this.#performActions(
+                    this.#contexts,
+                    ...diffEntries,
+                  );
+                  this.#merge(_entries);
+
                   this.#performConfig(transition.target);
                 };
                 this.#schedule(cb);
@@ -1021,7 +1062,11 @@ export class Interpreter<
 
   #startInitialEntries = () => {
     const actions = getEntries(this.#initialConfig);
-    return this.#performActions(this.#contexts, ...actions);
+    const cb = () => {
+      const result = this.#performActions(this.#contexts, ...actions);
+      this.#merge(result);
+    };
+    this.#schedule(cb);
   };
 
   pause = () => {
@@ -1127,8 +1172,10 @@ export class Interpreter<
    * Call in production will return nothing
    */
   get errorsCollector() {
-    if (IS_TEST) return this.#errorsCollector;
-    /* v8 ignore next 3 */
+    if (IS_TEST) {
+      return this.#errorsCollector;
+      /* v8 ignore next 3 */
+    }
     console.error('errorsCollector is not available in production');
     return;
   }
@@ -1139,8 +1186,10 @@ export class Interpreter<
    * Call in production will return nothing
    */
   get warningsCollector() {
-    if (IS_TEST) return this.#warningsCollector;
-    /* v8 ignore next 3 */
+    if (IS_TEST) {
+      return this.#warningsCollector;
+      /* v8 ignore next 3 */
+    }
     console.error('warningsCollector is not available in production');
     return;
   }
@@ -1238,7 +1287,11 @@ export class Interpreter<
     return out;
   };
 
-  #diffNext = (target: string) => {
+  #diffNext = (target?: string) => {
+    if (!target) {
+      return { sv: this.#value, diffEntries: [], diffExits: [] };
+    }
+
     const next = t.unknown<NodeConfig>(this.proposedNextConfig(target));
     const flatNext = flatMap(next, false);
 
@@ -1276,9 +1329,6 @@ export class Interpreter<
   };
 
   #isInsideValue = (_state: string) => {
-    const check1 = _state === '/';
-    if (check1) return true;
-
     const values = decomposeSV(this.#value);
     const entry = _state.substring(1);
     const state = replaceAll({
@@ -1443,6 +1493,8 @@ export class Interpreter<
     return asyncfy(this[Symbol.dispose]);
   }
 }
+
+export const TIME_TO_RINIT_SELF_COUNTER = MIN_ACTIVITY_TIME * 2;
 
 export type AnyInterpreter2 = Interpreter<any, any, any, any, any, any>;
 

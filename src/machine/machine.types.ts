@@ -49,7 +49,7 @@ export type Elements<
 
 export type GetIO_F = (
   key: 'exit' | 'entry',
-  node: NodeConfigWithInitials,
+  node?: NodeConfigWithInitials,
 ) => ActionConfig[];
 
 export interface AnyMachine<
@@ -58,6 +58,7 @@ export interface AnyMachine<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > {
+  options: any;
   preConfig: Config;
   postConfig: NodeConfigWithInitials;
   initials: any;
@@ -66,7 +67,6 @@ export interface AnyMachine<
   eventsMap: E;
   promiseesMap: P;
   events: ToEvents<E, P>;
-  mo: any;
   actions: any;
   predicates: any;
   delays: any;

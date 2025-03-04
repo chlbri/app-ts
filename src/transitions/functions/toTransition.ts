@@ -24,7 +24,6 @@ export const toTransition: ToTransition_F = (
   config,
   options,
 ) => {
-  const __id = (config as any).__id;
   if (isString(config)) {
     const target = toArray<string>(config);
     return { target, actions: [], guards: [], in: [] };
@@ -43,7 +42,5 @@ export const toTransition: ToTransition_F = (
   const out = { target, actions, guards } as any;
 
   if (description) out.description = description;
-  if (__id) out.__id = __id;
-
   return out;
 };

@@ -11,7 +11,7 @@ export const machine1 = createMachine(
           DELAY: 'inc',
         },
         on: {
-          NEXT: '/final',
+          NEXT: { target: '/final', description: 'Next' },
         },
       },
       final: {},

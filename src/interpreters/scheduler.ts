@@ -26,9 +26,9 @@ export class Scheduler {
     return this.#status;
   }
 
-  constructor() {}
-
   initialize = (callback?: Cb) => {
+    const check = this.#status !== 'idle';
+    if (check) return;
     this.#status = 'initialized';
 
     if (callback) {

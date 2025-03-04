@@ -62,10 +62,12 @@ const _toPredicate: _ToPredicateF = (
   const makeArray = (guards: GuardConfig[]) => {
     return guards
       .map(guard => _toPredicate(events, promisees, guard, predicates))
-      .filter(({ errors }) => {
-        const check = errors.length > 0;
+      .filter(({ errors: errors1 }) => {
+        const check = errors1.length > 0;
         if (check) {
-          errors.push(...errors);
+          errors.push(...errors1);
+
+          // Because if it has error, the function is not defined
           return false;
         }
         return true;
@@ -76,10 +78,16 @@ const _toPredicate: _ToPredicateF = (
 
   if (GUARD_TYPE.and in guard) {
     const and = makeArray(guard.and);
+    const check = and.length < 1;
+    if (check) return { errors };
+
     return { func: { and }, errors };
   }
 
   const or = makeArray(guard.or);
+  const check = or.length < 1;
+  if (check) return { errors };
+
   return { func: { or }, errors };
 };
 
@@ -95,6 +103,7 @@ export const toPredicate: ToPredicate_F = (
     guard,
     predicates,
   );
+
   if (!func) return { errors };
 
   return { predicate: recursive(func), errors };

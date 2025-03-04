@@ -136,7 +136,7 @@ describe('promisee', () => {
           inactive: {},
         },
       },
-      { ...defaultC, eventsMap: { NEXT: {} } },
+      { ...defaultT, eventsMap: { NEXT: {} } },
       defaultI,
     );
 
@@ -192,13 +192,14 @@ describe('promisee', () => {
           return Promise.reject();
         },
       },
-      delays: { DELAY },
     }));
     // #endregion
 
     describe('#01 => max is not defined', () => {
       const service = interpret(machine, defaultC);
       const useValue = constructValue(service);
+      const log = vi.spyOn(console, 'log');
+      const error = 'Delay (DELAY) is not defined';
 
       test('#01 => Start', () => {
         service.start();
@@ -209,16 +210,34 @@ describe('promisee', () => {
       test(...useValue('idle', 4));
       test(...useWaiter(3, 2));
       test(...useValue('idle', 5));
+
+      describe('#06 => Error is throwing', () => {
+        test('#01 => Length of collector is one', () => {
+          expect(service.warningsCollector).toHaveLength(1);
+        });
+
+        test('#02 => Contain the error', () => {
+          expect(service.warningsCollector).toContain(error);
+        });
+
+        describe('#03 => console.log', () => {
+          test('#01 => called one time', () => {
+            expect(log).toBeCalledTimes(1);
+          });
+
+          test('#02 => called with the error', () => {
+            expect(log).toHaveBeenNthCalledWith(1, error);
+          });
+        });
+      });
+
+      afterAll(() => {
+        log.mockClear();
+      });
     });
 
     describe('#01 => max is defined', () => {
       machine.addOptions(() => ({
-        promises: {
-          rejectPromise: async () => {
-            await sleep(DELAY * 2);
-            return Promise.reject();
-          },
-        },
         delays: { DELAY },
       }));
 
@@ -402,4 +421,6 @@ describe('promisee', () => {
       });
     });
   });
+
+  describe('#07 => Getters', () => {});
 });
