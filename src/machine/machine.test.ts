@@ -1,7 +1,14 @@
 import { t } from '@bemedev/types';
-import { fakeWaiter } from 'src/interpreters/__tests__/fixtures';
+import {
+  constructSend,
+  constructValue,
+  defaultC,
+  defaultT,
+  fakeWaiter,
+} from 'src/interpreters/__tests__/fixtures';
 import { DELAY, fakeDB, machine2 } from '~fixturesData';
-import { interpretTest } from '~interpreters';
+import { interpret, interpretTest } from '~interpreters';
+import { createMachine, getEntries } from '~machine';
 import type { StateValue } from '~states';
 import { nothing } from '~utils';
 
@@ -492,7 +499,6 @@ describe('machine coverage', () => {
 
   describe('#02 => Typings', () => {
     const array = [
-      'mo',
       'events',
       'action',
       'actionKey',
@@ -1179,5 +1185,67 @@ describe('machine coverage', () => {
     test('#04 => initialValue', () => {
       expect(machine2.initialValue).toStrictEqual('idle');
     });
+  });
+
+  describe('#04 = > coverage retrieve initial', () => {
+    const machine = createMachine(
+      {
+        states: {
+          idle: { on: { NEXT: '/state1' } },
+          state1: {
+            states: {
+              state11: {
+                states: {
+                  state111: {
+                    states: {
+                      state1111: {},
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      { ...defaultT, eventsMap: { NEXT: {} } },
+      {
+        '/': 'idle',
+        '/state1': 'state11',
+        '/state1/state11': 'state111',
+        '/state1/state11/state111': 'state1111',
+      },
+    );
+
+    const service = interpret(machine, defaultC);
+    const useValue = constructValue(service);
+    const useSendNEXT = (index: number) => {
+      const func = constructSend(service);
+      return func('NEXT', index);
+    };
+
+    test('#01 => start the service', () => {
+      service.start();
+    });
+
+    test(...useValue('idle', 1));
+
+    test(...useSendNEXT(2));
+
+    test(
+      ...useValue(
+        {
+          state1: {
+            state11: {
+              state111: 'state1111',
+            },
+          },
+        },
+        3,
+      ),
+    );
+  });
+
+  test('#05 => getEntries - coverage', () => {
+    expect(getEntries()).toStrictEqual([]);
   });
 });
