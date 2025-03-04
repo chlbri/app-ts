@@ -542,7 +542,7 @@ class Machine<
     return isNotDefinedS<E, P, Pc, Tc>;
   }
 
-  createChild: CreateChild_F<E, P, Tc> = (...args) => {
+  createChild: CreateChild_F<E, P, Pc> = (...args) => {
     return createChildS(...args);
   };
 

@@ -1,8 +1,9 @@
 import { toArray } from '@bemedev/basifun';
+import { EVENTS_FULL } from '../../types';
 import type { RecordS } from '~types';
 
 export type ReduceEvents_F = (
-  events: (RecordS<string | string[]> | string)[] | 'full',
+  events: (RecordS<string | string[]> | string)[] | typeof EVENTS_FULL,
 
   firstEvent: string,
   ...toChecks: string[]
@@ -13,7 +14,7 @@ export const reduceEvents: ReduceEvents_F = (
   firstEvent,
   ...toChecks
 ) => {
-  const check1 = _events === 'full';
+  const check1 = _events === EVENTS_FULL;
   if (check1) return true;
 
   const check2 = toChecks.every(check => {

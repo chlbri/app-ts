@@ -1,4 +1,5 @@
 import { createMachine } from '~machine';
+import { EVENTS_FULL } from '~machines';
 import { machine1 } from './machine1';
 import { config2, machine2 } from './machine2';
 
@@ -33,7 +34,7 @@ machine22.addOptions(({ isNotValue, isValue, createChild }) => ({
         context: { iterator: 0 },
       },
       {
-        events: 'full',
+        events: EVENTS_FULL,
         contexts: { iterator: 'iterator' },
       },
     ),

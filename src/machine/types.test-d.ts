@@ -2,6 +2,7 @@ import type { machine1, machine2 } from 'src/interpreters/__tests__/data';
 import type { PrimitiveObject, SingleOrArrayL } from '~types';
 import type {
   ContextFrom,
+  EVENTS_FULL,
   EventsMapFrom,
   FnMapFrom,
   GetEventsFromMachine,
@@ -31,7 +32,7 @@ type Sub1 = Subscriber<
 
 expectTypeOf<Sub1>().branded.toEqualTypeOf<{
   events:
-    | 'full'
+    | typeof EVENTS_FULL
     | SingleOrArrayL<
         | {
             NEXT?: SingleOrArrayL<
@@ -63,6 +64,6 @@ type Sub2 = Subscriber<
 >;
 
 expectTypeOf<Sub2>().branded.toEqualTypeOf<{
-  events: 'full' | SingleOrArrayL<{}>;
+  events: typeof EVENTS_FULL | SingleOrArrayL<{}>;
   contexts?: never;
 }>();

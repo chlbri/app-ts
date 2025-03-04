@@ -1,6 +1,6 @@
 import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
-import { createConfig } from '~machines';
+import { createConfig, EVENTS_FULL } from '~machines';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
@@ -169,7 +169,7 @@ export const machine2 = createMachine(
         context: { iterator: 0 },
       },
       {
-        events: 'full',
+        events: EVENTS_FULL,
         contexts: { iterator: 'iterator' },
       },
     ),

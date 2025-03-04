@@ -5,6 +5,7 @@ import type {
   NOmit,
   NotUndefined,
   Primitive,
+  Ru,
   TuplifyUnion,
   UnionToIntersection,
 } from '@bemedev/types';
@@ -362,7 +363,7 @@ export type KeyO<S extends string, R = unknown> = Partial<KeyU<S, R>>;
 
 export type ExtractS<T> = Extract<T, string>;
 
-export type TrueObject = object & {
+export type TrueObject = Ru & {
   [Symbol.iterator]?: never;
   //@ts-expect-error - 'SymbolConstructor' does not exist on type 'object'
   [SymbolConstructor]?: never;

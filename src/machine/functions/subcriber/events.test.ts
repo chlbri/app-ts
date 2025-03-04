@@ -1,8 +1,9 @@
+import { EVENTS_FULL } from '../../types';
 import { reduceEvents } from './events';
 
 describe('reduceEvents', () => {
   it('should return true when events is "full"', () => {
-    const result = reduceEvents('full', 'event1', 'event2', 'any');
+    const result = reduceEvents(EVENTS_FULL, 'event1', 'event2', 'any');
     expect(result).toBe(true);
   });
 

@@ -32,6 +32,7 @@ import { toDelay } from '~delays';
 import {
   eventToType,
   INIT_EVENT,
+  possibleEvents,
   transformEventArg,
   type EventArg,
   type EventsMap,
@@ -635,6 +636,7 @@ export class Interpreter<
         this.#contexts,
         ...toArray<ActionConfig>(actions),
       );
+
       return { target, result };
     }
     return false;
@@ -920,8 +922,9 @@ export class Interpreter<
     });
   };
 
-  get #collected0() {
+  get #collecteds0() {
     const entries = new Map<string, Collected0<E, P, Pc, Tc>>();
+
     this.#collectedAlways.forEach(([from, always]) => {
       entries.set(from, { always: this.#performAlways(always) });
     });
@@ -947,8 +950,21 @@ export class Interpreter<
     return entries;
   }
 
+  /**
+   * @deprecated
+   * used only for testing
+   */
+  get collecteds0() {
+    if (IS_TEST) {
+      return this.#collecteds0;
+      /* v8 ignore next 4 */
+    }
+    console.error('collecteds0 is not available in production');
+    return;
+  }
+
   get #collecteds() {
-    const entries = Array.from(this.#collected0);
+    const entries = Array.from(this.#collecteds0);
     const out = entries.map(([from, { after, always, promisee }]) => {
       const promise = async () => {
         if (always) {
@@ -1223,10 +1239,7 @@ export class Interpreter<
       }
     });
 
-    flat.forEach(([from, transitions]) => {
-      const check1 = !this.#isInsideValue(from);
-      if (check1) return;
-
+    flat.forEach(([, transitions]) => {
       const { target, result: _result } = this.#performTransitions(
         ...toArray.typed(transitions),
       );
@@ -1263,7 +1276,19 @@ export class Interpreter<
     return { next, result };
   };
 
+  get #possibleEvents() {
+    return possibleEvents(this.#flat);
+  }
+
+  #cannotEvent = (_event: EventArg<E, P>) => {
+    const type = eventToType(_event);
+    const check = !this.#possibleEvents.includes(type);
+    return check;
+  };
+
   send = (_event: EventArg<E, P>) => {
+    const check = this.#cannotEvent(_event);
+    if (check) return;
     const event = transformEventArg(_event);
     this.#event = event;
     this.#status = 'sending';

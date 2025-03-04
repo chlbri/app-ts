@@ -45,6 +45,7 @@ import type {
   SingleOrArrayL,
   SingleOrArrayR,
   SubType,
+  TrueObject,
 } from '~types';
 
 export type ConfigNode = NodeConfigCompound | NodeConfigParallel;
@@ -221,6 +222,8 @@ type SubEventsKeys<E extends EventsMap, P extends PromiseeMap> =
       ? `${K}::${'then' | 'catch'}`
       : never);
 
+export const EVENTS_FULL = 'machine$$full';
+
 export type Subscriber<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -236,16 +239,16 @@ export type Subscriber<
           }
         | SubEventsKeys<E, P>
       >
-    | 'full';
+    | typeof EVENTS_FULL;
 } & (ContextFrom<U> extends infer CU
-  ? CU extends Ru
-    ? Pc extends Ru
+  ? CU extends TrueObject
+    ? Pc extends TrueObject
       ? { contexts: SingleOrArrayL<HeritageMap<CU, Pc>> }
       : SubNev
     : CU extends Primitive
       ? Pc extends CU
         ? SubNev
-        : Pc extends infer Tc1 extends Ru
+        : Pc extends infer Tc1 extends TrueObject
           ? { contexts: SingleOrArrayL<keyof SubType<Decompose<Tc1>, CU>> }
           : SubNev
       : SubNev

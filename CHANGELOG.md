@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.0.9-canary] - 2024-03-04 _14:13_
+
+- Improve interpreter
+- <u>Test coverage **99.94%**</u>
+
+<br/>
+
 ## [0.0.8-canary] - 2024-03-04 _01:30_
 
 - Improve to Predicate
