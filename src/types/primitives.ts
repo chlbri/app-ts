@@ -284,7 +284,7 @@ type _FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Tc = any,
   R = any,
   TT extends ToEventsR<E, P> = ToEventsR<E, P>,
 > = {
@@ -316,7 +316,7 @@ export type FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Tc = any,
   R = any,
 > =
   | ((pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R)

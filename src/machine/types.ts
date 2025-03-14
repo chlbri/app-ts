@@ -332,14 +332,14 @@ export type PromiseesMapFrom<T extends KeyU<'promiseesMap'>> = Extract<
   PromiseeMap
 >;
 
-export type EventsFrom<T extends KeyU<'events'>> = T['events'];
+export type EventsFrom<T extends KeyU<'__events'>> = T['__events'];
 
 export type ActionsFrom<T extends KeyU<'actions'>> = NotUndefined<
   T['actions']
 >;
 
-export type ActionFrom<T extends KeyU<'action'>> =
-  NotUndefined<T['action']> extends infer A extends any[] ? A : never;
+export type ActionFnFrom<T extends KeyU<'__actionFn'>> =
+  NotUndefined<T['__actionFn']> extends infer A extends any[] ? A : never;
 
 export type ActionParamsFrom<T extends KeyU<'actionParams'>> =
   NotUndefined<T['actionParams']>;

@@ -88,14 +88,15 @@ export type PredicateMap<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
 
+type _DefinedValue<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = KeysMatching<{
+  pContext: Pc;
+  context: Tc;
+}>;
+
 export type DefinedValue<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> =
-  | KeysMatching<{
-      pContext: Pc;
-      context: Tc;
-    }>
-  | 'events'
-  | 'events.type'
-  | 'events.payload';
+> = _DefinedValue<Pc, Tc> | 'events' | 'events.type' | 'events.payload';

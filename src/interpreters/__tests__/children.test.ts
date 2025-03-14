@@ -63,7 +63,7 @@ describe('Integration testing for interpret, Children', () => {
       const count = index > 10 ? '' + index : `0${index}`;
       const invite = `#${count} => iterator is (${value})`;
       const fn = () => {
-        expect(service.pContext).toBe(value);
+        expect(service._pContext).toBe(value);
       };
 
       return [invite, fn] as const;
@@ -126,7 +126,7 @@ describe('Integration testing for interpret, Children', () => {
       const count = index > 10 ? '' + index : `0${index}`;
       const invite = `#${count} => iterator is (${value})`;
       const fn = () => {
-        expect(service.pSelect('iterator')).toBe(value);
+        expect(service._pSelect('iterator')).toBe(value);
       };
 
       return [invite, fn] as const;

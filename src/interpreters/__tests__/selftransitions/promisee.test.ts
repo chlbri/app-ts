@@ -213,11 +213,11 @@ describe('promisee', () => {
 
       describe('#06 => Error is throwing', () => {
         test('#01 => Length of collector is one', () => {
-          expect(service.warningsCollector).toHaveLength(1);
+          expect(service._warningsCollector).toHaveLength(1);
         });
 
         test('#02 => Contain the error', () => {
-          expect(service.warningsCollector).toContain(error);
+          expect(service._warningsCollector).toContain(error);
         });
 
         describe('#03 => console.log', () => {

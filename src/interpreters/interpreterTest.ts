@@ -57,8 +57,8 @@ export const interpretTest: InterpreterTest_F = (
 ) => {
   const out = new InterpreterTest(machine);
 
-  out.ppC(pContext);
-  out.provideContext(context);
+  out._ppC(pContext);
+  out._provideContext(context);
 
   return out;
 };

@@ -1,8 +1,8 @@
 import { createTests } from '@bemedev/vitest-extended';
-import { assignByBey, getByKey, mergeByKey } from './contexts';
+import { assignByKey, getByKey, mergeByKey } from './contexts';
 
 describe('assignByKey', () => {
-  const { acceptation, success } = createTests(assignByBey);
+  const { acceptation, success } = createTests(assignByKey);
 
   describe('Acceptation', acceptation);
 
