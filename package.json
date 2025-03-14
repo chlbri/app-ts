@@ -95,6 +95,7 @@
     "tslib": "^2.8.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
+    "@bemedev/rollup-config": "^0.1.1",
     "vitest": "^3.0.7"
   },
   "dependencies": {
@@ -102,7 +103,6 @@
     "@bemedev/boolean-recursive": "^0.0.3",
     "@bemedev/decompose": "^0.8.0",
     "@bemedev/interval2": "^0.1.1",
-    "@bemedev/rollup-config": "^0.1.1",
     "@bemedev/sleep": "^0.1.2",
     "@bemedev/types": "^0.1.5",
     "clone-deep": "^4.0.1",
