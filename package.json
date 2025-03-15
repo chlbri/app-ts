@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "0.1.8-beta",
+  "version": "0.1.9-beta",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -73,6 +73,7 @@
     "upgrade": "pnpm upgrade --latest"
   },
   "devDependencies": {
+    "@bemedev/build-tests": "^0.1.0",
     "@bemedev/fsf": "^0.7.3",
     "@bemedev/rollup-config": "^0.1.1",
     "@bemedev/vitest-alias": "^0.0.3",

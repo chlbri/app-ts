@@ -56,6 +56,12 @@ const machine = createMachine({
 View changelog
 </summary>
 
+## [0.1.9-beta] - 2024-03-15 _15:10_
+
+- Simplify types for interpret
+
+<br/>
+
 ## [0.1.5-beta] - 2024-03-15 _03:08_
 
 - Fix subscriber for hooks

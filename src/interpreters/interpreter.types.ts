@@ -16,16 +16,13 @@ import type {
   ToEventsR,
 } from '~events';
 import type { GuardConfig, PredicateS, PredicateS2 } from '~guards';
-import type { Machine } from '~machine';
 import type {
   AnyMachine,
   ChildS,
-  Config,
+  ContextFrom,
   Decompose2,
-  GetEventsFromConfig,
-  MachineOptions,
+  PrivateContextFrom,
   PromiseFunction2,
-  SimpleMachineOptions2,
 } from '~machines';
 import type {
   PromiseConfig,
@@ -44,7 +41,7 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import type { FnMapReduced, PrimitiveObject } from '~types';
-import type { Interpreter } from './interpreter';
+import type { InterpreterFrom } from './interpreter';
 import type { Subscriber } from './subscriber';
 
 export type WorkingStatus =
@@ -59,17 +56,14 @@ export type WorkingStatus =
 
 export type Mode = 'normal' | 'strict' | 'strictest';
 
-export type Interpreter_F = <
-  const C extends Config = Config,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  E extends EventsMap = GetEventsFromConfig<C>,
-  P extends PromiseeMap = PromiseeMap,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
->(
-  machine: Machine<C, Pc, Tc, E, P, Mo>,
-  config: { pContext: Pc; context: Tc; mode?: Mode },
-) => Interpreter<C, Pc, Tc, E, P, Mo>;
+export type Interpreter_F = <M extends AnyMachine>(
+  machine: M,
+  config: {
+    pContext: PrivateContextFrom<M>;
+    context: ContextFrom<M>;
+    mode?: Mode;
+  },
+) => InterpreterFrom<M>;
 
 export type ToAction_F<
   E extends EventsMap = EventsMap,

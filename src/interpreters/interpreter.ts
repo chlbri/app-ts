@@ -1580,10 +1580,11 @@ export const interpret: Interpreter_F = (
   machine,
   { context, pContext, mode },
 ) => {
+  //@ts-expect-error for build
   const out = new Interpreter(machine, mode);
 
   out._ppC(pContext);
   out._provideContext(context);
 
-  return out;
+  return out as any;
 };
