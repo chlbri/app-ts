@@ -8,7 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
-## [0.1.4-beta] - 2024-03-14 _00:00_
+## [0.1.5-beta] - 2024-03-15 _03:08_
+
+- Fix subscriber for hooks
+
+<br/>
+
+## [0.1.4-beta] - 2024-03-15 _00:00_
 
 - Fix imports
 
