@@ -285,7 +285,7 @@ export interface AnyInterpreter<
   _ppC: (pContext: Pc) => AnyMachine<E, P, Pc, Tc>;
   _provideContext: (context: Tc) => AnyMachine<E, P, Pc, Tc>;
 
-  subscribeWeak: AddSubscriber_F<E, P, Tc>;
+  addWeakSubscriber: AddSubscriber_F<E, P, Tc>;
 
   send: (event: EventArg<E, P>) => void;
   flushSubscribers: () => void;
@@ -302,3 +302,18 @@ export interface AnyInterpreter<
 export type CreateInterval2_F = (
   config: NOmit<IntervalParams, 'exact'>,
 ) => Interval2;
+
+export type State<Tc extends PrimitiveObject> = {
+  context?: Tc;
+  mode?: Mode;
+  scheduleds: number;
+  status: WorkingStatus;
+  value?: StateValue;
+};
+
+export type Subcription = { unsubscribe: () => void };
+
+export type Observer<Tc extends PrimitiveObject> = ((
+  state: State<Tc>,
+) => void) &
+  Subcription;

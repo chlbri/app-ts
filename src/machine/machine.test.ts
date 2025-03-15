@@ -30,7 +30,7 @@ describe('machine coverage', () => {
         context: { iterator: 0, input: '', data: [] },
       });
 
-      const subscriber = service.subscribeWeak({
+      const subscriber = service.addWeakSubscriber({
         WRITE: (_, { value }) =>
           console.log('WRITE with', ':', `"${value}"`),
         NEXT: () => console.log('NEXT time, you will see!!'),
