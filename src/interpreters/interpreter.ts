@@ -95,7 +95,6 @@ import {
   type ExecuteActivities_F,
   type Interpreter_F,
   type Mode,
-  type Observer,
   type PerformAction_F,
   type PerformAfter_F,
   type PerformAlway_F,
@@ -1172,7 +1171,7 @@ export class Interpreter<
   #weakSubscribers = new Set<Subscriber<E, P, Tc>>();
   #fullSubscribers = new Set<Subscriber<E, P, Tc>>();
 
-  #subscribers = new Set<Observer<Tc>>();
+  #subscribers = new Set<(state: State<Tc>) => void>();
 
   addWeakSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
@@ -1188,10 +1187,8 @@ export class Interpreter<
   };
 
   subscribe = (sub: (state: State<Tc>) => void) => {
-    (sub as any).unsubscribe = () => this.#subscribers.delete(sub as any);
-    this.#subscribers.add(sub as any);
-
-    return sub as Observer<Tc>;
+    this.#subscribers.add(sub);
+    return () => this.#subscribers.delete(sub);
   };
 
   #addFullSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {

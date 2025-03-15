@@ -29,7 +29,7 @@ describe(TEXT, () => {
   });
 
   const dumbFn = vi.fn();
-  const { unsubscribe } = service.subscribe(dumbFn);
+  const unsubscribe = service.subscribe(dumbFn);
 
   const log = vi.spyOn(console, 'log');
 
