@@ -29,7 +29,7 @@ describe(TEXT, () => {
   });
 
   const dumbFn = vi.fn();
-  const { unsubscribe } = service.subscribe(dumbFn);
+  const unsubscribe = service.subscribe(dumbFn);
 
   const log = vi.spyOn(console, 'log');
 
@@ -477,8 +477,8 @@ describe(TEXT, () => {
       });
     });
 
-    test('#03 => Length of calls of warn is "169"', () => {
-      expect(dumbFn).toBeCalledTimes(169);
+    test('#03 => Length of calls of warn is "95"', () => {
+      expect(dumbFn).toBeCalledTimes(95);
       unsubscribe();
     });
 

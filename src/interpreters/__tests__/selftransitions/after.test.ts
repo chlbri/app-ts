@@ -193,7 +193,7 @@ describe('after', () => {
           },
         },
       },
-      { ...defaultC, eventsMap: { NEXT: {} } },
+      { ...defaultT, eventsMap: { NEXT: {} } },
       defaultI,
     );
 

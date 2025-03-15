@@ -95,7 +95,6 @@ import {
   type ExecuteActivities_F,
   type Interpreter_F,
   type Mode,
-  type Observer,
   type PerformAction_F,
   type PerformAfter_F,
   type PerformAlway_F,
@@ -525,6 +524,9 @@ export class Interpreter<
   };
 
   #merge = ({ pContext, context }: ActionResult<Pc, Tc>) => {
+    const previousPContext = cloneDeep(this.#pContext);
+    const previousContext = structuredClone(this.#context);
+
     this.#pContext = merge(this.#pContext, pContext);
     this.#context = merge(this.#context, context);
 
@@ -533,18 +535,24 @@ export class Interpreter<
       this.#schedule(callback);
     });
 
-    this.#subscribers.forEach(f => {
-      const callback = () =>
-        f({
-          scheduleds: this.scheduleds,
-          value: this.value,
-          status: this.status,
-          context: this.#context,
-          mode: this.#mode,
-        });
+    const check =
+      !equal(previousPContext, this.#pContext) ||
+      !equal(previousContext, this.#context);
 
-      this.#schedule(callback);
-    });
+    if (check) {
+      this.#subscribers.forEach(f => {
+        const callback = () =>
+          f({
+            scheduleds: this.scheduleds,
+            value: this.value,
+            status: this.status,
+            context: this.#context,
+            mode: this.#mode,
+          });
+
+        this.#schedule(callback);
+      });
+    }
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
@@ -1172,7 +1180,7 @@ export class Interpreter<
   #weakSubscribers = new Set<Subscriber<E, P, Tc>>();
   #fullSubscribers = new Set<Subscriber<E, P, Tc>>();
 
-  #subscribers = new Set<Observer<Tc>>();
+  #subscribers = new Set<(state: State<Tc>) => void>();
 
   addWeakSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
@@ -1188,10 +1196,18 @@ export class Interpreter<
   };
 
   subscribe = (sub: (state: State<Tc>) => void) => {
-    (sub as any).unsubscribe = () => this.#subscribers.delete(sub as any);
-    this.#subscribers.add(sub as any);
+    this.#subscribers.add(sub);
+    return () => this.#subscribers.delete(sub);
+  };
 
-    return sub as Observer<Tc>;
+  getSnapshot = (): State<Tc> => {
+    return {
+      status: this.status,
+      value: this.value,
+      context: this.context,
+      scheduleds: this.scheduleds,
+      mode: this.mode,
+    };
   };
 
   #addFullSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
@@ -1564,10 +1580,11 @@ export const interpret: Interpreter_F = (
   machine,
   { context, pContext, mode },
 ) => {
+  //@ts-expect-error for build
   const out = new Interpreter(machine, mode);
 
   out._ppC(pContext);
   out._provideContext(context);
 
-  return out;
+  return out as any;
 };
