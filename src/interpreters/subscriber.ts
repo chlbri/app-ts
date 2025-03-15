@@ -61,11 +61,16 @@ class Subscriber<
   }
 
   close() {
-    this.#state = 'paused';
+    if (this.state !== 'disposed') this.#state = 'paused';
   }
 
   open() {
-    this.#state = 'active';
+    if (this.state !== 'disposed') this.#state = 'active';
+  }
+
+  unsubscribe() {
+    this.close();
+    this.#state = 'disposed';
   }
 }
 

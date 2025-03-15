@@ -83,11 +83,11 @@ describe('Interpret for guards', () => {
 
     describe('#03 => Check the warnings', () => {
       test('#01 => Length of warnings', () => {
-        expect(service.warningsCollector?.size).toBe(1);
+        expect(service._warningsCollector?.size).toBe(1);
       });
 
       test('#02 => Check the warning', () => {
-        expect(service.warningsCollector).toContain(
+        expect(service._warningsCollector).toContain(
           'Predicate (guard1) is not defined',
         );
       });
@@ -165,11 +165,11 @@ describe('Interpret for guards', () => {
 
     describe('#03 => Check the warnings', () => {
       test('#01 => Length of warnings', () => {
-        expect(service.warningsCollector?.size).toBe(1);
+        expect(service._warningsCollector?.size).toBe(1);
       });
 
       test('#02 => Check the warning', () => {
-        expect(service.warningsCollector).toContain(
+        expect(service._warningsCollector).toContain(
           'Predicate (guard1) is not defined',
         );
       });

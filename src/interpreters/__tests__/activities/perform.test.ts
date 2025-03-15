@@ -22,7 +22,7 @@ describe(TEXT, () => {
     context: { iterator: 0, input: '', data: [] },
   });
 
-  const subscriber = service.addSubscriber({
+  const subscriber = service.subscribeWeak({
     WRITE: (_, { value }) => console.log('WRITE with', ':', `"${value}"`),
     NEXT: () => console.log('NEXT time, you will see!!'),
     else: nothing,
@@ -81,7 +81,7 @@ describe(TEXT, () => {
   const useIteratorC = (num: number, index: number) => {
     const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
     return t.tuple(invite, async () => {
-      expect(service.pSelect('iterator')).toBe(num);
+      expect(service._pSelect('iterator')).toBe(num);
     });
   };
 

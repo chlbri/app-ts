@@ -299,11 +299,11 @@ describe('Interpreter', () => {
 
       describe('#02 => collector', () => {
         test('#01 => collector has one element', () => {
-          expect(service.errorsCollector).toHaveLength(1);
+          expect(service._errorsCollector).toHaveLength(1);
         });
 
         test('#02 => collector has the error', () => {
-          expect(service.errorsCollector).toContain(error);
+          expect(service._errorsCollector).toContain(error);
         });
       });
     });
@@ -465,11 +465,11 @@ describe('Interpreter', () => {
 
     describe('#06 => check collecteds0', () => {
       test('#01 => collecteds0 has one element', () => {
-        expect(service.collecteds0).toHaveLength(1);
+        expect(service._collecteds0).toHaveLength(1);
       });
 
       describe('#02 => promisee is defined', () => {
-        const promisee = service.collecteds0?.get('/idle')?.promisee;
+        const promisee = service._collecteds0?.get('/idle')?.promisee;
 
         test('#01 => promisee is defined', () => {
           expect(promisee).toBeDefined();
@@ -485,7 +485,7 @@ describe('Interpreter', () => {
       });
 
       describe('#02 => after is defined', () => {
-        const after = service.collecteds0?.get('/idle')?.after;
+        const after = service._collecteds0?.get('/idle')?.after;
 
         test('#01 => after is defined', () => {
           expect(after).toBeDefined();

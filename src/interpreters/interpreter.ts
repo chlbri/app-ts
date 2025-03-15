@@ -42,7 +42,7 @@ import {
 import { toPredicate, type GuardConfig } from '~guards';
 import { getEntries, getExits, type Machine } from '~machine';
 import {
-  assignByBey,
+  assignByKey,
   getByKey,
   mergeByKey,
   reduceEvents,
@@ -308,8 +308,8 @@ export class Interpreter<
 
   get renew() {
     const out = new Interpreter(this.#machine);
-    out.ppC(this.#initialPpc);
-    out.provideContext(this.#initialContext);
+    out._ppC(this.#initialPpc);
+    out._provideContext(this.#initialContext);
 
     return out;
   }
@@ -325,9 +325,9 @@ export class Interpreter<
   /**
    * @deprecated
    * Just use for testing
-   * Call in production will return nothing
+   * returns nothing in prod
    */
-  get pContext() {
+  get _pContext() {
     if (IS_TEST) {
       return this.#pContext;
       /* v8 ignore next 4 */
@@ -341,11 +341,11 @@ export class Interpreter<
   /**
    * @deprecated
    * Just use for testing
-   * Call in production will return nothing
+   * returns nothing in prod
    */
-  pSelect: Selector_F<Pc> = selector => {
+  _pSelect: Selector_F<Pc> = selector => {
     if (IS_TEST) {
-      const pContext = this.pContext;
+      const pContext = this._pContext;
       if (pContext) return getByKey(pContext, selector);
       /* v8 ignore next 4 */
     }
@@ -953,8 +953,9 @@ export class Interpreter<
   /**
    * @deprecated
    * used only for testing
+   * returns nothing in prod
    */
-  get collecteds0() {
+  get _collecteds0() {
     if (IS_TEST) {
       return this.#collecteds0;
       /* v8 ignore next 4 */
@@ -1105,6 +1106,8 @@ export class Interpreter<
 
   stop = () => {
     this.pause();
+    this.#fullSubscribers.forEach(f => f.unsubscribe());
+    this.#subscribers.forEach(f => f.unsubscribe());
     this.#childrenServices.forEach(c => c.stop());
     this.#status = 'stopped';
   };
@@ -1115,7 +1118,7 @@ export class Interpreter<
    * @deprecated
    * Uses internal
    */
-  providePrivateContext = (pContext: Pc) => {
+  _providePrivateContext = (pContext: Pc) => {
     this.#initialPpc = pContext;
     this.#pContext = pContext;
     this.#makeBusy();
@@ -1126,13 +1129,17 @@ export class Interpreter<
     return this.#machine;
   };
 
-  ppC = this.providePrivateContext;
-
   /**
    * @deprecated
    * Uses internal
    */
-  provideContext = (context: Tc) => {
+  _ppC = this._providePrivateContext;
+
+  /**
+   * @deprecated
+   * Used internally
+   */
+  _provideContext = (context: Tc) => {
     this.#initialContext = context;
     this.#context = context;
     this.#makeBusy();
@@ -1143,8 +1150,6 @@ export class Interpreter<
     return this.#machine;
   };
 
-  // #region Providers
-
   get addOptions() {
     return this.#machine.addOptions;
   }
@@ -1152,7 +1157,7 @@ export class Interpreter<
   #subscribers = new Set<Subscriber<E, P, Tc>>();
   #fullSubscribers = new Set<Subscriber<E, P, Tc>>();
 
-  addSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
+  subscribeWeak: AddSubscriber_F<E, P, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
 
@@ -1165,7 +1170,7 @@ export class Interpreter<
     return subcriber;
   };
 
-  addFullSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
+  subscribe: AddSubscriber_F<E, P, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
 
@@ -1177,7 +1182,6 @@ export class Interpreter<
     this.#fullSubscribers.add(subcriber);
     return subcriber;
   };
-  // #endregion
 
   #errorsCollector = new Set<string>();
   #warningsCollector = new Set<string>();
@@ -1185,9 +1189,9 @@ export class Interpreter<
   /**
    * @deprecated
    * Just use for testing
-   * Call in production will return nothing
+   * returns nothing in prod
    */
-  get errorsCollector() {
+  get _errorsCollector() {
     if (IS_TEST) {
       return this.#errorsCollector;
       /* v8 ignore next 3 */
@@ -1199,9 +1203,9 @@ export class Interpreter<
   /**
    * @deprecated
    * Just use for testing
-   * Call in production will return nothing
+   * returns nothing in prod
    */
-  get warningsCollector() {
+  get _warningsCollector() {
     if (IS_TEST) {
       return this.#warningsCollector;
       /* v8 ignore next 3 */
@@ -1454,7 +1458,7 @@ export class Interpreter<
 
     this.#childrenServices.push(t.any(service));
 
-    const subscriber = service.addFullSubscriber((_, { type }) => {
+    const subscriber = service.subscribe((_, { type }) => {
       const _subscribers = toArray.typed(subscribers);
 
       _subscribers.forEach(({ contexts, events }) => {
@@ -1478,7 +1482,7 @@ export class Interpreter<
             paths.forEach(path => {
               if (typeof path === 'string') {
                 const callback = () =>
-                  assignByBey(this.#pContext, path, service.#context);
+                  assignByKey(this.#pContext, path, service.#context);
                 this.#scheduler.schedule(callback);
               } else {
                 const entries = Object.entries(path).map(
@@ -1538,8 +1542,8 @@ export const interpret: Interpreter_F = (
 ) => {
   const out = new Interpreter(machine, mode);
 
-  out.ppC(pContext);
-  out.provideContext(context);
+  out._ppC(pContext);
+  out._provideContext(context);
 
   return out;
 };
