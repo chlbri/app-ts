@@ -30,7 +30,7 @@ describe('machine coverage', () => {
         context: { iterator: 0, input: '', data: [] },
       });
 
-      const subscriber = service.addSubscriber({
+      const subscriber = service.subscribeWeak({
         WRITE: (_, { value }) =>
           console.log('WRITE with', ':', `"${value}"`),
         NEXT: () => console.log('NEXT time, you will see!!'),
@@ -90,7 +90,7 @@ describe('machine coverage', () => {
       const useIteratorC = (num: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
         return t.tuple(invite, async () => {
-          expect(service.pSelect('iterator')).toBe(num);
+          expect(service._pSelect('iterator')).toBe(num);
         });
       };
 
@@ -499,19 +499,19 @@ describe('machine coverage', () => {
 
   describe('#02 => Typings', () => {
     const array = [
-      'events',
-      'action',
-      'actionKey',
-      'actionParams',
-      'guard',
-      'predictate',
-      'delayKey',
-      'delay',
-      'definedValue',
-      'src',
-      'promise',
-      'child',
-      'machine',
+      '__events',
+      '__actionFn',
+      '__actionKey',
+      '__actionParams',
+      '__guard',
+      '__predictate',
+      '__delayKey',
+      '__delay',
+      '__definedValue',
+      '__src',
+      '__promise',
+      '__child',
+      '__machine',
     ] as const;
 
     array.forEach((key, index) => {

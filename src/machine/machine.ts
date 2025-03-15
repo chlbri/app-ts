@@ -29,13 +29,16 @@ import {
 } from '~states';
 import type { PrimitiveObject, RecordS } from '~types';
 import { merge } from '~utils';
+import { expandFnMap } from './functions';
 import { createChildS, type CreateChild_F } from './functions/create';
 import type {
   AddOption_F,
   AddOptions_F,
   AnyMachine,
+  Assign_F,
   Elements,
   GetIO_F,
+  Void_F,
 } from './machine.types';
 import type {
   Config,
@@ -72,7 +75,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get events() {
+  get __events() {
     return t.unknown<ToEvents<E, P>>();
   }
 
@@ -80,7 +83,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get action() {
+  get __actionFn() {
     return t.unknown<Action<E, P, Pc, Tc>>();
   }
 
@@ -88,7 +91,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get actionKey() {
+  get __actionKey() {
     return t.unknown<keyof (typeof this)['options']['actions']>();
   }
 
@@ -96,7 +99,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get actionParams() {
+  get __actionParams() {
     return t.unknown<{ pContext: Pc; context: Tc; map: E }>();
   }
 
@@ -104,7 +107,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get guard() {
+  get __guard() {
     return t.unknown<keyof (typeof this)['options']['predicates']>();
   }
 
@@ -112,7 +115,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get predictate() {
+  get __predictate() {
     return t.unknown<PredicateS<E, P, Pc, Tc>>();
   }
 
@@ -120,7 +123,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get delayKey() {
+  get __delayKey() {
     return t.unknown<keyof (typeof this)['options']['delays']>();
   }
 
@@ -128,7 +131,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get delay() {
+  get __delay() {
     return t.unknown<Delay<E, P, Pc, Tc>>();
   }
 
@@ -136,7 +139,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get definedValue() {
+  get __definedValue() {
     return t.unknown<DefinedValue<Pc, Tc>>();
   }
 
@@ -144,7 +147,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get src() {
+  get __src() {
     return t.unknown<keyof (typeof this)['options']['promises']>();
   }
 
@@ -152,7 +155,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get promise() {
+  get __promise() {
     return t.unknown<PromiseFunction<E, P, Pc, Tc>>();
   }
 
@@ -160,7 +163,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get child() {
+  get __child() {
     return t.unknown<keyof (typeof this)['options']['machines']>();
   }
 
@@ -168,7 +171,7 @@ class Machine<
    * @deprecated
    * Just use for typing
    */
-  get machine() {
+  get __machine() {
     return t.unknown<this>();
   }
   // #endregion
@@ -306,7 +309,11 @@ class Machine<
     return this.#postflat[target];
   };
 
-  provideInitials = (initials: Mo['initials']) =>
+  /**
+   * @deprecated
+   * used internally
+   */
+  _provideInitials = (initials: Mo['initials']) =>
     this.#renew('initials', initials);
 
   #addActions = (actions?: Mo['actions']) =>
@@ -417,10 +424,10 @@ class Machine<
   }
 
   /**
-   * Reset all options
+   * @deprecated
+   * used internally
    */
-
-  providePrivateContext = <T>(pContext: T) => {
+  _providePrivateContext = <T>(pContext: T) => {
     const { context, initials, config, events, promisees } =
       this.#elements;
 
@@ -440,9 +447,10 @@ class Machine<
   };
 
   /**
-   * Reset all options
+   * @deprecated
+   * used internally
    */
-  provideContext = <T extends PrimitiveObject>(context: T) => {
+  _provideContext = <T extends PrimitiveObject>(context: T) => {
     const { pContext, initials, config, events, promisees } =
       this.#elements;
 
@@ -460,12 +468,11 @@ class Machine<
   addContext = (context: Tc) => {
     this.#context = context;
   };
-
   /**
-   * Reset all options
+   * @deprecated
+   * used internally
    */
-
-  provideEvents = <T extends EventsMap>(map: T) => {
+  _provideEvents = <T extends EventsMap>(map: T) => {
     const { pContext, initials, config, context, promisees } =
       this.#elements;
 
@@ -480,7 +487,11 @@ class Machine<
     return out;
   };
 
-  providePromisees = <T extends PromiseeMap>(map: T) => {
+  /**
+   * @deprecated
+   * used internally
+   */
+  _providePromisees = <T extends PromiseeMap>(map: T) => {
     const { pContext, initials, config, context, events } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, E, T>(config);
@@ -546,12 +557,32 @@ class Machine<
     return createChildS(...args);
   };
 
+  assign: Assign_F<E, P, Pc, Tc> = (key, fn) => {
+    const out = expandFnMap(
+      this.#eventsMap,
+      this.#promiseesMap,
+      t.any(key),
+      fn,
+    );
+
+    return out;
+  };
+
+  voidAction: Void_F<E, P, Pc, Tc> = fn => {
+    return (pContext, context) => {
+      fn();
+      return t.any({ pContext, context });
+    };
+  };
+
   addOptions: AddOptions_F<E, P, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
     const isNotDefined = this.#isNotDefined;
     const createChild = this.createChild;
+    const assign = this.assign;
+    const voidAction = this.voidAction;
 
     const out = func({
       isValue,
@@ -559,6 +590,8 @@ class Machine<
       isDefined,
       isNotDefined,
       createChild,
+      assign,
+      voidAction,
     });
 
     this.#addActions(out?.actions);
@@ -615,11 +648,11 @@ export const createMachine: CreateMachine_F = (
   initials,
 ) => {
   const out = new Machine(config)
-    .provideInitials(initials)
-    .provideEvents(eventsMap)
-    .providePrivateContext(pContext)
-    .provideContext(context)
-    .providePromisees(promiseesMap);
+    ._provideInitials(initials)
+    ._provideEvents(eventsMap)
+    ._providePrivateContext(pContext)
+    ._provideContext(context)
+    ._providePromisees(promiseesMap);
 
   return out;
 };

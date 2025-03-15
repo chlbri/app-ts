@@ -1,10 +1,11 @@
 import type { Fn, NOmit } from '@bemedev/types';
-import type { ActionConfig } from '~actions';
+import type { ActionConfig, ActionResult } from '~actions';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
 import type { Machine } from '~machine';
 import type { NodeConfigWithInitials, StateValue } from '~states';
-import type { KeyU, PrimitiveObject } from '~types';
+import type { FnMap, KeyU, PrimitiveObject } from '~types';
+import type { Decompose3 } from './functions';
 import type {
   ChildS,
   Config,
@@ -66,7 +67,7 @@ export interface AnyMachine<
   pContext: Pc;
   eventsMap: E;
   promiseesMap: P;
-  events: ToEvents<E, P>;
+  __events: ToEvents<E, P>;
   actions: any;
   predicates: any;
   delays: any;
@@ -78,16 +79,45 @@ export interface AnyMachine<
   initialValue: StateValue;
 
   addInitials: Fn<[any], any>;
-  provideInitials: Fn<[any], any>;
-
-  providePrivateContext: Fn<[any], any>;
-  provideContext: Fn<[any], any>;
-  provideEvents: Fn<[any], any>;
 
   isInitial: Fn<[string], boolean>;
   retrieveParentFromInitial: Fn<[string], NodeConfigWithInitials>;
   toNode: Fn<[StateValue], NodeConfigWithInitials>;
 }
+
+export type Assign_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = <
+  D = Decompose3<{
+    pContext: Pc;
+    context: Tc;
+  }>,
+  K extends keyof D = keyof D,
+  R = D[K],
+>(
+  key: K,
+  fn: FnMap<E, P, Pc, Tc, R>,
+) => (
+  pContext: Pc,
+  context: Tc,
+  eventsMap: ToEvents<E, P>,
+) => ActionResult<Pc, Tc>;
+
+export type Void_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (
+  fn: () => void | undefined,
+) => (
+  pContext: Pc,
+  context: Tc,
+  eventsMap: ToEvents<E, P>,
+) => ActionResult<Pc, Tc>;
 
 export type AddOption_F<
   E extends EventsMap = EventsMap,
@@ -125,6 +155,8 @@ export type AddOption_F<
     },
     ...subscribers: Subscriber<E, P, Pc, T>[]
   ) => ChildS<E, P, Pc, T>;
+  assign: Assign_F<E, P, Pc, Tc>;
+  voidAction: Void_F<E, P, Pc, Tc>;
 }) => Mo | undefined;
 
 export type AddOptions_F<

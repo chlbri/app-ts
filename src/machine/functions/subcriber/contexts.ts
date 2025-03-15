@@ -18,13 +18,13 @@ export type AssignByBey_F = <
   value: R,
 ) => T;
 // #endregion
-export interface AssignByBey {
+export interface AssignByKey {
   (obj: any, key: string, value: any): any;
   low: (obj: any, key: string, value: any) => any;
   typed: AssignByBey_F;
 }
 
-const _assignByKey: AssignByBey['low'] = (obj, key, value) => {
+const _assignByKey: AssignByKey['low'] = (obj, key, value) => {
   const out: any = obj;
   const keys = (key as string).split('.');
 
@@ -41,11 +41,11 @@ const _assignByKey: AssignByBey['low'] = (obj, key, value) => {
 
   return out;
 };
-export const assignByBey: AssignByBey = (obj, key, value) => {
+export const assignByKey: AssignByKey = (obj, key, value) => {
   return _assignByKey(obj, key, value);
 };
-assignByBey.low = _assignByKey;
-assignByBey.typed = _assignByKey;
+assignByKey.low = _assignByKey;
+assignByKey.typed = _assignByKey;
 
 // #region type GetByKey_F
 export type GetByKey_F = <T extends Ru, K extends keyof Decompose<T>>(

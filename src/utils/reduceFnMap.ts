@@ -33,7 +33,7 @@ export type ReduceFnMap_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Tc = any,
   R = any,
 >(
   events: E,

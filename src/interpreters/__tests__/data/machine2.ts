@@ -114,65 +114,49 @@ export const machine2 = createMachine(
     },
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
-).provideOptions(({ isNotValue, isValue, createChild }) => ({
-  actions: {
-    inc: (pContext, context) => {
-      context.iterator++;
-      return { context, pContext };
+).provideOptions(
+  ({ isNotValue, isValue, createChild, assign, voidAction }) => ({
+    actions: {
+      inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
+      inc2: assign('context.iterator', (_, { iterator }) => iterator + 4),
+      sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
+      askUsertoInput: voidAction(() => console.log('Input, please !!')),
+      write: assign('context.input', {
+        WRITE: (_, __, { value }) => value,
+      }),
+      insertData: assign('context.data', {
+        'fetch::then': (_, { data }, payload) => {
+          data.push(...payload);
+          return data;
+        },
+      }),
     },
-    inc2: (pContext, context) => {
-      context.iterator += 4;
-      return { context, pContext };
+    predicates: {
+      isInputEmpty: isValue('context.input', ''),
+      isInputNotEmpty: isNotValue('context.input', ''),
     },
-    sendPanelToUser: (pContext, context) => {
-      console.log('sendPanelToUser');
-      return { context, pContext };
-    },
-    write: {
-      WRITE: (pContext, context, { value }) => {
-        context.input = value;
-        return { context, pContext };
+    promises: {
+      fetch: async (_, { input }) => {
+        return fakeDB.filter(item => item.name.includes(input));
       },
     },
-    askUsertoInput: (pContext, context) => {
-      console.log('Input, please !!');
-      return {
-        pContext,
-        context,
-      };
+    delays: {
+      DELAY,
+      DELAY2: 2 * DELAY,
     },
-    insertData: {
-      'fetch::then': (pContext, context, payload) => {
-        context.data.push(...payload);
-        return { context, pContext };
-      },
+    machines: {
+      machine1: createChild(
+        machine1,
+        {
+          pContext: {},
+          context: { iterator: 0 },
+        },
+        {
+          events: EVENTS_FULL,
+          contexts: { iterator: 'iterator' },
+        },
+      ),
     },
-  },
-  predicates: {
-    isInputEmpty: isValue('context.input', ''),
-    isInputNotEmpty: isNotValue('context.input', ''),
-  },
-  promises: {
-    fetch: async (_, { input }) => {
-      return fakeDB.filter(item => item.name.includes(input));
-    },
-  },
-  delays: {
-    DELAY,
-    DELAY2: 2 * DELAY,
-  },
-  machines: {
-    machine1: createChild(
-      machine1,
-      {
-        pContext: {},
-        context: { iterator: 0 },
-      },
-      {
-        events: EVENTS_FULL,
-        contexts: { iterator: 'iterator' },
-      },
-    ),
-  },
-}));
+  }),
+);
 // #endregion

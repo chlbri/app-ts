@@ -242,6 +242,12 @@ export type AddSubscriber_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (subscriber: FnMapReduced<E, P, Tc>) => Subscriber<E, P, Tc>;
 
+export type Subscribe_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (subscriber: FnMapReduced<E, P, Tc>) => Subscriber<E, P, Tc>;
+
 export type Selector_F<T = any> = <
   D extends Decompose2<T>,
   K extends Extract<keyof D, string>,
@@ -275,11 +281,11 @@ export interface AnyInterpreter<
   pause: () => void;
   resume: () => void;
   stop: () => void;
-  providePrivateContext: (pContext: Pc) => AnyMachine<E, P, Pc, Tc>;
-  ppC: (pContext: Pc) => AnyMachine<E, P, Pc, Tc>;
-  provideContext: (context: Tc) => AnyMachine<E, P, Pc, Tc>;
+  _providePrivateContext: (pContext: Pc) => AnyMachine<E, P, Pc, Tc>;
+  _ppC: (pContext: Pc) => AnyMachine<E, P, Pc, Tc>;
+  _provideContext: (context: Tc) => AnyMachine<E, P, Pc, Tc>;
 
-  addSubscriber: AddSubscriber_F<E, P, Tc>;
+  subscribeWeak: AddSubscriber_F<E, P, Tc>;
 
   send: (event: EventArg<E, P>) => void;
   flushSubscribers: () => void;
