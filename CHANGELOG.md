@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.1.2-canary] - 2024-03-14 _00:00_
+
+- <u>Test coverage **100%%**</u>
+- Add helpers
+- Documentation comming...
+
+<br/>
+
 ## [0.1.0-beta] - 2024-03-04 _15:30_
 
 - <u>Test coverage **100%%**</u>
