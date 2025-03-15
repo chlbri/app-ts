@@ -524,6 +524,9 @@ export class Interpreter<
   };
 
   #merge = ({ pContext, context }: ActionResult<Pc, Tc>) => {
+    const previousPContext = cloneDeep(this.#pContext);
+    const previousContext = structuredClone(this.#context);
+
     this.#pContext = merge(this.#pContext, pContext);
     this.#context = merge(this.#context, context);
 
@@ -532,18 +535,24 @@ export class Interpreter<
       this.#schedule(callback);
     });
 
-    this.#subscribers.forEach(f => {
-      const callback = () =>
-        f({
-          scheduleds: this.scheduleds,
-          value: this.value,
-          status: this.status,
-          context: this.#context,
-          mode: this.#mode,
-        });
+    const check =
+      !equal(previousPContext, this.#pContext) ||
+      !equal(previousContext, this.#context);
 
-      this.#schedule(callback);
-    });
+    if (check) {
+      this.#subscribers.forEach(f => {
+        const callback = () =>
+          f({
+            scheduleds: this.scheduleds,
+            value: this.value,
+            status: this.status,
+            context: this.#context,
+            mode: this.#mode,
+          });
+
+        this.#schedule(callback);
+      });
+    }
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
