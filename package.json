@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "0.1.9-beta",
+  "version": "0.1.10-beta",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -102,7 +102,7 @@
   "dependencies": {
     "@bemedev/basifun": "^0.3.3",
     "@bemedev/boolean-recursive": "^0.0.3",
-    "@bemedev/decompose": "^0.8.0",
+    "@bemedev/decompose": "^0.8.1",
     "@bemedev/interval2": "^0.1.1",
     "@bemedev/sleep": "^0.1.2",
     "@bemedev/types": "^0.1.5",
