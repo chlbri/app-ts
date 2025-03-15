@@ -56,6 +56,14 @@ const machine = createMachine({
 View changelog
 </summary>
 
+## [0.1.3-beta] - 2024-03-14 _00:00_
+
+- <u>Test coverage **100%%**</u>
+- Add helpers
+- Documentation comming...
+
+<br/>
+
 ## [0.1.0-beta] - 2024-03-04 _15:30_
 
 - <u>Test coverage **100%%**</u>
