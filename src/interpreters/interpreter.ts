@@ -1191,6 +1191,16 @@ export class Interpreter<
     return () => this.#subscribers.delete(sub);
   };
 
+  getSnapshot = (): State<Tc> => {
+    return {
+      status: this.status,
+      value: this.value,
+      context: this.context,
+      scheduleds: this.scheduleds,
+      mode: this.mode,
+    };
+  };
+
   #addFullSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
