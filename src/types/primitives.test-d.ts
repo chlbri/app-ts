@@ -81,7 +81,7 @@ expectTypeOf({
     },
     '@my': 'yyt',
   },
-}).toExtend<TT11>();
+}).toEqualTypeOf<TT11>();
 
 expectTypeOf({
   arg1: {
@@ -104,7 +104,7 @@ expectTypeOf({
   arg3: {
     arg31: { arg311: 'string' },
   },
-}).toExtend<TT12>();
+}).toEqualTypeOf<TT12>();
 
 expectTypeOf({
   ert1: { arg12: 45, ert11: 'string' },
@@ -112,9 +112,12 @@ expectTypeOf({
   ert3: {
     arg31: { arg311: 'string' },
   },
-}).toExtend<TT13>();
+}).toEqualTypeOf<TT13>();
 
 expectTypeOf<{
   user: string;
   password: string;
 }>().toExtend<PrimitiveObject>();
+
+expectTypeOf<TT11>().toExtend<PrimitiveObject>();
+expectTypeOf<TT13>().toExtend<PrimitiveObject>();
