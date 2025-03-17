@@ -7,10 +7,11 @@ import type {
   Subscriber,
 } from '~machines';
 import type { KeyU } from '~types';
+import { typings } from '~utils';
 
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
 
-export const createConfig: CreateConfig_F = config => config;
+export const createConfig: CreateConfig_F = typings.cast;
 
 export type CreateChildS_F = <
   T extends KeyU<'preConfig' | 'context' | 'pContext'>,

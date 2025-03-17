@@ -28,7 +28,7 @@ import {
   type StateValue,
 } from '~states';
 import type { PrimitiveObject, RecordS } from '~types';
-import { merge } from '~utils';
+import { merge, typings } from '~utils';
 import { expandFnMap } from './functions';
 import { createChildS, type CreateChild_F } from './functions/create';
 import type {
@@ -76,7 +76,7 @@ class Machine<
    * Just use for typing
    */
   get __events() {
-    return t.unknown<ToEvents<E, P>>();
+    return typings<ToEvents<E, P>>();
   }
 
   /**
@@ -84,7 +84,7 @@ class Machine<
    * Just use for typing
    */
   get __actionFn() {
-    return t.unknown<Action<E, P, Pc, Tc>>();
+    return typings<Action<E, P, Pc, Tc>>();
   }
 
   /**
@@ -92,7 +92,7 @@ class Machine<
    * Just use for typing
    */
   get __actionKey() {
-    return t.unknown<keyof (typeof this)['options']['actions']>();
+    return typings<keyof (typeof this)['options']['actions']>();
   }
 
   /**
@@ -100,7 +100,7 @@ class Machine<
    * Just use for typing
    */
   get __actionParams() {
-    return t.unknown<{ pContext: Pc; context: Tc; map: E }>();
+    return typings<{ pContext: Pc; context: Tc; map: E }>();
   }
 
   /**
@@ -108,7 +108,7 @@ class Machine<
    * Just use for typing
    */
   get __guard() {
-    return t.unknown<keyof (typeof this)['options']['predicates']>();
+    return typings<keyof (typeof this)['options']['predicates']>();
   }
 
   /**
@@ -116,7 +116,7 @@ class Machine<
    * Just use for typing
    */
   get __predictate() {
-    return t.unknown<PredicateS<E, P, Pc, Tc>>();
+    return typings<PredicateS<E, P, Pc, Tc>>();
   }
 
   /**
@@ -124,7 +124,7 @@ class Machine<
    * Just use for typing
    */
   get __delayKey() {
-    return t.unknown<keyof (typeof this)['options']['delays']>();
+    return typings<keyof (typeof this)['options']['delays']>();
   }
 
   /**
@@ -132,7 +132,7 @@ class Machine<
    * Just use for typing
    */
   get __delay() {
-    return t.unknown<Delay<E, P, Pc, Tc>>();
+    return typings<Delay<E, P, Pc, Tc>>();
   }
 
   /**
@@ -140,7 +140,7 @@ class Machine<
    * Just use for typing
    */
   get __definedValue() {
-    return t.unknown<DefinedValue<Pc, Tc>>();
+    return typings<DefinedValue<Pc, Tc>>();
   }
 
   /**
@@ -148,7 +148,7 @@ class Machine<
    * Just use for typing
    */
   get __src() {
-    return t.unknown<keyof (typeof this)['options']['promises']>();
+    return typings<keyof (typeof this)['options']['promises']>();
   }
 
   /**
@@ -156,7 +156,7 @@ class Machine<
    * Just use for typing
    */
   get __promise() {
-    return t.unknown<PromiseFunction<E, P, Pc, Tc>>();
+    return typings<PromiseFunction<E, P, Pc, Tc>>();
   }
 
   /**
@@ -164,7 +164,7 @@ class Machine<
    * Just use for typing
    */
   get __child() {
-    return t.unknown<keyof (typeof this)['options']['machines']>();
+    return typings<keyof (typeof this)['options']['machines']>();
   }
 
   /**
@@ -172,7 +172,7 @@ class Machine<
    * Just use for typing
    */
   get __machine() {
-    return t.unknown<this>();
+    return typings<this>();
   }
   // #endregion
 
@@ -527,7 +527,7 @@ class Machine<
     const machines = this.#machines;
     const initials = this.#initials;
 
-    return t.unknown<Mo>({
+    const out = typings.forceCast<Mo>({
       predicates,
       actions,
       delays,
@@ -535,6 +535,8 @@ class Machine<
       machines,
       initials,
     });
+
+    return out;
   }
 
   get #isValue() {
@@ -569,8 +571,8 @@ class Machine<
   };
 
   voidAction: Void_F<E, P, Pc, Tc> = fn => {
-    return (pContext, context) => {
-      fn();
+    return (pContext, context, map) => {
+      fn(pContext, context, map);
       return t.any({ pContext, context });
     };
   };
@@ -630,7 +632,7 @@ export const getExits = partialCall(getIO, 'exit');
 
 export type { Machine };
 
-type CreateMachine_F = <
+export type CreateMachine_F = <
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,

@@ -33,17 +33,17 @@ const complexObject2 = {
   f: new TC(),
 };
 
-assertType<PrimitiveObject>(ttString);
-assertType<PrimitiveObject>(ttNumber);
-assertType<PrimitiveObject>(ttBoolean);
-expectTypeOf(ttArra1).not.toMatchTypeOf<PrimitiveObject>();
-expectTypeOf(ttArray2).not.toMatchTypeOf<PrimitiveObject>();
-assertType<PrimitiveObject>(ttObject);
-expectTypeOf(ttFunction).not.toMatchTypeOf<PrimitiveObject>();
-expectTypeOf(ttArrowFunction).not.toMatchTypeOf<PrimitiveObject>();
-expectTypeOf(ttClass).not.toMatchTypeOf<PrimitiveObject>();
-assertType<PrimitiveObject>(complexObject1);
-expectTypeOf(complexObject2).not.toMatchTypeOf<PrimitiveObject>();
+expectTypeOf(ttString).toExtend<PrimitiveObject>();
+expectTypeOf(ttNumber).toExtend<PrimitiveObject>();
+expectTypeOf(ttBoolean).toExtend<PrimitiveObject>();
+expectTypeOf(ttArra1).not.toExtend<PrimitiveObject>();
+expectTypeOf(ttArray2).toExtend<PrimitiveObject>();
+expectTypeOf(ttObject).toExtend<PrimitiveObject>();
+expectTypeOf(ttFunction).not.toExtend<PrimitiveObject>();
+expectTypeOf(ttArrowFunction).not.toExtend<PrimitiveObject>();
+expectTypeOf(ttClass).not.toExtend<PrimitiveObject>();
+expectTypeOf(complexObject1).toExtend<PrimitiveObject>();
+expectTypeOf(complexObject2).not.toExtend<PrimitiveObject>();
 
 type _TT1 = {
   arg1: {
@@ -67,7 +67,7 @@ type TT13 = Simplify<
   >
 >;
 
-assertType<TT11>({
+expectTypeOf({
   arg1: {
     arg11: 'example',
     arg12: 'str',
@@ -81,9 +81,9 @@ assertType<TT11>({
     },
     '@my': 'yyt',
   },
-});
+}).toEqualTypeOf<TT11>();
 
-assertType<TT11>({
+expectTypeOf({
   arg1: {
     arg11: 'example',
     arg12: '42',
@@ -91,31 +91,33 @@ assertType<TT11>({
   },
   arg2: '100',
   arg3: {
-    // @ts-expect-error Test typing
     arg31: {
       arg311: 'example',
     },
     '@my': 'yyt',
   },
-});
+}).not.toExtend<TT11>();
 
-assertType<TT12>({
+expectTypeOf({
   arg1: { arg12: 45, ert11: 'string' },
   arg2: 5,
   arg3: {
     arg31: { arg311: 'string' },
   },
-});
+}).toEqualTypeOf<TT12>();
 
-assertType<TT13>({
+expectTypeOf({
   ert1: { arg12: 45, ert11: 'string' },
   arg2: 5,
   ert3: {
     arg31: { arg311: 'string' },
   },
-});
+}).toEqualTypeOf<TT13>();
 
 expectTypeOf<{
   user: string;
   password: string;
-}>().toMatchTypeOf<PrimitiveObject>();
+}>().toExtend<PrimitiveObject>();
+
+expectTypeOf<TT11>().toExtend<PrimitiveObject>();
+expectTypeOf<TT13>().toExtend<PrimitiveObject>();

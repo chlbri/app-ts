@@ -1,6 +1,6 @@
-import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
 import { createConfig } from '~machines';
+import { typings } from '~utils';
 
 export const config3 = createConfig({
   description: 'cdd',
@@ -81,14 +81,14 @@ export const config3 = createConfig({
 export const machine3 = createMachine(
   config3,
   {
-    pContext: { data: t.string },
-    context: { age: t.number },
+    pContext: { data: typings.string() },
+    context: { age: typings.number() },
     eventsMap: {
-      EVENT: { password: t.string, username: t.string },
-      EVENT2: t.boolean,
-      EVENT3: { login: t.string, pwd: t.string },
+      EVENT: { password: typings.string(), username: typings.string() },
+      EVENT2: typings.boolean(),
+      EVENT3: { login: typings.string(), pwd: typings.string() },
     },
-    promiseesMap: {},
+    promiseesMap: typings.object,
   },
   { '/': 'state1', '/state1': 'state11', '/state1/state11': 'state111' },
 );

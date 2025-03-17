@@ -22,11 +22,14 @@ describe(TEXT, () => {
     context: { iterator: 0, input: '', data: [] },
   });
 
-  const subscriber = service.subscribeWeak({
+  const subscriber = service.addWeakSubscriber({
     WRITE: (_, { value }) => console.log('WRITE with', ':', `"${value}"`),
     NEXT: () => console.log('NEXT time, you will see!!'),
     else: nothing,
   });
+
+  const dumbFn = vi.fn();
+  const unsubscribe = service.subscribe(dumbFn);
 
   const log = vi.spyOn(console, 'log');
 
@@ -474,10 +477,15 @@ describe(TEXT, () => {
       });
     });
 
-    test('#03 => Log the time of all tests', () => {
+    test('#03 => Length of calls of warn is "95"', () => {
+      expect(dumbFn).toBeCalledTimes(95);
+      unsubscribe();
+    });
+
+    test('#04 => Log the time of all tests', () => {
       console.timeEnd(TEXT);
     });
 
-    test('#04 => dispose', service[Symbol.asyncDispose].bind(service));
+    test('#05 => dispose', service[Symbol.asyncDispose].bind(service));
   });
 });

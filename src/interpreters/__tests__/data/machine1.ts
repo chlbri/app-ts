@@ -1,5 +1,5 @@
-import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
+import { typings } from '~utils';
 import { DELAY } from './constants';
 
 // #region machine1
@@ -18,12 +18,15 @@ export const machine1 = createMachine(
     },
   },
   {
-    eventsMap: {
-      NEXT: {},
-    },
-    context: t.buildObject({ iterator: t.number }),
-    pContext: t.object,
-    promiseesMap: {},
+    eventsMap: { NEXT: typings.object },
+    // eventsMap: {
+    //   NEXT: {},
+    // },
+    context: typings.context(
+      typings.recordAll(typings.number(), 'iterator'),
+    ),
+    pContext: typings.object,
+    promiseesMap: typings.object,
   },
   { '/': 'idle' },
 );

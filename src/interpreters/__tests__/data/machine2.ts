@@ -1,6 +1,6 @@
-import { t } from '@bemedev/types';
 import { createMachine } from '~machine';
 import { createConfig, EVENTS_FULL } from '~machines';
+import { typings } from '~utils';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
@@ -98,19 +98,22 @@ export const machine2 = createMachine(
   },
   {
     eventsMap: {
-      NEXT: {},
-      FETCH: {},
-      WRITE: { value: t.string },
-      FINISH: {},
+      NEXT: typings.object,
+      FETCH: typings.object,
+      WRITE: { value: typings.string() },
+      FINISH: typings.object,
     },
-    context: t.unknown<{
-      iterator: number;
-      input: string;
-      data: string[];
-    }>(),
-    pContext: t.unknown<{ iterator: number }>(),
+    context: {
+      iterator: typings.number(),
+      input: typings.string(),
+      data: typings.array(typings.string()),
+    },
+    pContext: typings.recordAll(typings.number(), 'iterator'),
     promiseesMap: {
-      fetch: { then: t.array(t.string), catch: t.object },
+      fetch: typings.promiseDef(
+        typings.array(typings.string()),
+        typings.object,
+      ),
     },
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },

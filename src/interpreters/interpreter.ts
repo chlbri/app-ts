@@ -86,26 +86,27 @@ import type {
 import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
 import { IS_TEST, replaceAll } from '~utils';
 import { merge } from './../utils/merge';
-import type {
-  _Send_F,
-  AddSubscriber_F,
-  AnyInterpreter,
-  Collected0,
-  CreateInterval2_F,
-  ExecuteActivities_F,
-  Interpreter_F,
-  Mode,
-  PerformAction_F,
-  PerformAfter_F,
-  PerformAlway_F,
-  PerformDelay_F,
-  PerformPredicate_F,
-  PerformPromise_F,
-  PerformPromisee_F,
-  PerformTransition_F,
-  PerformTransitions_F,
-  Selector_F,
-  WorkingStatus,
+import {
+  type _Send_F,
+  type AddSubscriber_F,
+  type AnyInterpreter,
+  type Collected0,
+  type CreateInterval2_F,
+  type ExecuteActivities_F,
+  type Interpreter_F,
+  type Mode,
+  type PerformAction_F,
+  type PerformAfter_F,
+  type PerformAlway_F,
+  type PerformDelay_F,
+  type PerformPredicate_F,
+  type PerformPromise_F,
+  type PerformPromisee_F,
+  type PerformTransition_F,
+  type PerformTransitions_F,
+  type Selector_F,
+  type State,
+  type WorkingStatus,
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
 import { createSubscriber, type Subscriber } from './subscriber';
@@ -392,7 +393,7 @@ export class Interpreter<
   };
 
   flushSubscribers = () => {
-    this.#subscribers.forEach(this.#scheduleSubscriber);
+    this.#weakSubscribers.forEach(this.#scheduleSubscriber);
   };
 
   #selfTransitionsCounter = 0;
@@ -523,6 +524,9 @@ export class Interpreter<
   };
 
   #merge = ({ pContext, context }: ActionResult<Pc, Tc>) => {
+    const previousPContext = cloneDeep(this.#pContext);
+    const previousContext = structuredClone(this.#context);
+
     this.#pContext = merge(this.#pContext, pContext);
     this.#context = merge(this.#context, context);
 
@@ -530,6 +534,25 @@ export class Interpreter<
       const callback = () => f.reduced(this.#context, this.#event);
       this.#schedule(callback);
     });
+
+    const check =
+      !equal(previousPContext, this.#pContext) ||
+      !equal(previousContext, this.#context);
+
+    if (check) {
+      this.#subscribers.forEach(f => {
+        const callback = () =>
+          f({
+            scheduleds: this.scheduleds,
+            value: this.value,
+            status: this.status,
+            context: this.#context,
+            mode: this.#mode,
+          });
+
+        this.#schedule(callback);
+      });
+    }
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
@@ -1089,7 +1112,7 @@ export class Interpreter<
   pause = () => {
     this.#rinitIntervals();
     this.#fullSubscribers.forEach(f => f.close());
-    this.#subscribers.forEach(f => f.close());
+    this.#weakSubscribers.forEach(f => f.close());
     this.#childrenServices.forEach(c => c.pause());
     this.#status = 'paused';
   };
@@ -1099,7 +1122,7 @@ export class Interpreter<
       this.#status = 'working';
       this.#performActivities();
       this.#fullSubscribers.forEach(f => f.open());
-      this.#subscribers.forEach(f => f.open());
+      this.#weakSubscribers.forEach(f => f.open());
       this.#childrenServices.forEach(c => c.resume());
     }
   };
@@ -1107,7 +1130,7 @@ export class Interpreter<
   stop = () => {
     this.pause();
     this.#fullSubscribers.forEach(f => f.unsubscribe());
-    this.#subscribers.forEach(f => f.unsubscribe());
+    this.#weakSubscribers.forEach(f => f.unsubscribe());
     this.#childrenServices.forEach(c => c.stop());
     this.#status = 'stopped';
   };
@@ -1154,10 +1177,12 @@ export class Interpreter<
     return this.#machine.addOptions;
   }
 
-  #subscribers = new Set<Subscriber<E, P, Tc>>();
+  #weakSubscribers = new Set<Subscriber<E, P, Tc>>();
   #fullSubscribers = new Set<Subscriber<E, P, Tc>>();
 
-  subscribeWeak: AddSubscriber_F<E, P, Tc> = _subscriber => {
+  #subscribers = new Set<(state: State<Tc>) => void>();
+
+  addWeakSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
 
@@ -1166,11 +1191,26 @@ export class Interpreter<
       promiseesMap,
       _subscriber,
     );
-    this.#subscribers.add(subcriber);
+    this.#weakSubscribers.add(subcriber);
     return subcriber;
   };
 
-  subscribe: AddSubscriber_F<E, P, Tc> = _subscriber => {
+  subscribe = (sub: (state: State<Tc>) => void) => {
+    this.#subscribers.add(sub);
+    return () => this.#subscribers.delete(sub);
+  };
+
+  getSnapshot = (): State<Tc> => {
+    return {
+      status: this.status,
+      value: this.value,
+      context: this.context,
+      scheduleds: this.scheduleds,
+      mode: this.mode,
+    };
+  };
+
+  #addFullSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
 
@@ -1458,7 +1498,7 @@ export class Interpreter<
 
     this.#childrenServices.push(t.any(service));
 
-    const subscriber = service.subscribe((_, { type }) => {
+    const subscriber = service.#addFullSubscriber((_, { type }) => {
       const _subscribers = toArray.typed(subscribers);
 
       _subscribers.forEach(({ contexts, events }) => {
@@ -1540,10 +1580,11 @@ export const interpret: Interpreter_F = (
   machine,
   { context, pContext, mode },
 ) => {
+  //@ts-expect-error for build
   const out = new Interpreter(machine, mode);
 
   out._ppC(pContext);
   out._provideContext(context);
 
-  return out;
+  return out as any;
 };

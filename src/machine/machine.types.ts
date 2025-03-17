@@ -112,7 +112,11 @@ export type Void_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
-  fn: () => void | undefined,
+  fn: (
+    pContext: Pc,
+    context: Tc,
+    eventsMap: ToEvents<E, P>,
+  ) => void | undefined,
 ) => (
   pContext: Pc,
   context: Tc,

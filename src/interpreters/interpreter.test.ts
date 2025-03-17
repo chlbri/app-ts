@@ -332,8 +332,18 @@ describe('Interpreter', () => {
 
     const service = interpret(machine, defaultC);
 
-    test('#01 => Start the service', () => {
-      service.start();
+    test('#00 => Start the service', service.start.bind(service));
+
+    test('#01 => Check the snapshot', () => {
+      const actaul = service.getSnapshot();
+      const expected = {
+        status: 'working',
+        value: 'idle',
+        context: {},
+        scheduleds: 2,
+        mode: 'strict',
+      };
+      expect(actaul).toStrictEqual(expected);
     });
 
     test('#02 => Send NEXT', () => {

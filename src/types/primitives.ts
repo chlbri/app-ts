@@ -101,7 +101,7 @@ export interface PrimitiveObjectMap {
   readonly [key: string]: SingleOrArray<PrimitiveObject>;
 }
 
-export type PrimitiveObject = Primitive | PrimitiveObjectMap;
+export type PrimitiveObject = Primitive | Primitive[] | PrimitiveObjectMap;
 
 export type DeUnionize<T> = T extends any ? T : never;
 
