@@ -115,9 +115,6 @@ export const machine2 = createMachine(
         typings.object,
       ),
     },
-    // promiseesMap: {
-    //   fetch: { then: t.array(t.string), catch: t.object },
-    // },
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
 ).provideOptions(

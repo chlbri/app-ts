@@ -7,6 +7,7 @@ import {
   type Ru,
 } from '@bemedev/types';
 import { expectTypeOf } from 'vitest';
+import type { EventsMap, PromiseeMap } from '~events';
 import { config2, machine2 } from '~fixturesData';
 import type { InterpreterFrom } from '~interpreter';
 import type {
@@ -15,6 +16,7 @@ import type {
   ConfigFrom,
   createMachine,
 } from '~machines';
+import type { PrimitiveObject } from '~types';
 import { typings } from './typings';
 
 // Test de la fonction principale
@@ -140,3 +142,102 @@ expectTypeOf(stringLiteralType).toEqualTypeOf<'hello'>();
 
 const complexFnType = typings.function('test', Promise.resolve(42));
 expectTypeOf(complexFnType).toEqualTypeOf<Fn<[string], Promise<number>>>();
+
+// #region recordS et recordAll
+const recordSValue = typings.recordS(42);
+expectTypeOf(recordSValue).toEqualTypeOf<Record<string, number>>();
+
+const recordAllValue = typings.recordAll('test', 'id', 'name', 'value');
+expectTypeOf(recordAllValue).toEqualTypeOf<
+  Record<'id' | 'name' | 'value', string>
+>();
+// #endregion
+
+// #region forceCast et cast
+const originalValue = { name: 'test' };
+const forceCastValue = typings.forceCast<string>(originalValue);
+expectTypeOf(forceCastValue).toEqualTypeOf<string>();
+
+const castValue = typings.cast('hello');
+expectTypeOf(castValue).toEqualTypeOf<'hello'>();
+// #endregion
+
+// #region context
+type TestContext = {
+  count: number;
+  items: string[];
+};
+const contextValue1 = typings.context<TestContext>();
+expectTypeOf(contextValue1).toEqualTypeOf<TestContext>();
+
+const contextValue2 = typings.context({
+  count: 0,
+  age: 42,
+  name: 'Levi',
+});
+expectTypeOf(contextValue2).toEqualTypeOf<{
+  count: number;
+  age: number;
+  name: string;
+}>();
+
+// Test avec un contexte primitif
+const primitiveContextValue = typings.context();
+expectTypeOf(primitiveContextValue).toEqualTypeOf<PrimitiveObject>();
+// #endregion
+
+// #region promiseDef, toEventsR, toEvents
+interface FetchResult {
+  data: string[];
+}
+interface FetchError {
+  message: string;
+}
+
+const promiseDefValue = typings.promiseDef<FetchResult, FetchError>(
+  { data: [] },
+  { message: 'Error' },
+);
+expectTypeOf(promiseDefValue).toEqualTypeOf<{
+  then: FetchResult;
+  catch: FetchError;
+}>();
+
+// Définition d'événements et promesses pour les tests
+interface TestEventsMap extends EventsMap {
+  FETCH: { id: string };
+  UPDATE: { data: number };
+}
+
+interface TestPromiseeMap extends PromiseeMap {
+  fetch: {
+    then: string[];
+    catch: Error;
+  };
+}
+
+const testEvents: TestEventsMap = {
+  FETCH: { id: '' },
+  UPDATE: { data: 0 },
+};
+
+const testPromisees: TestPromiseeMap = {
+  fetch: {
+    then: [],
+    catch: new Error(),
+  },
+};
+
+const toEventsRValue = typings.toEventsR(testEvents, testPromisees);
+// Vérifier que le type est correct
+expectTypeOf(toEventsRValue).not.toBeNever();
+
+const toEventsValue = typings.toEvents(testEvents, testPromisees);
+expectTypeOf(toEventsValue).not.toBeNever();
+// #endregion
+
+// #region Utilités restantes
+// Test pour any
+const anyValue = typings.any;
+expectTypeOf(anyValue).toEqualTypeOf<any>();
+// #endregion

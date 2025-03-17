@@ -15,6 +15,8 @@ type Keys = string | number | symbol;
 
 type _TypingsFn = <T = any>(value?: unknown) => T;
 export type Typings = _TypingsFn & {
+  forceCast: <T = any>(value: unknown) => T;
+  cast: <const T = any>(value: T) => T;
   interpret: <T extends AnyMachine>(machine: T) => InterpreterFrom<T>;
   number: <T extends number = number>(value?: T) => T;
   string: <T extends string = string>(value?: T) => T;
@@ -70,12 +72,15 @@ export type Typings = _TypingsFn & {
   symbol: symbol;
   bigint: bigint;
   object: {};
+  any: any;
 };
 
 const _fn0 = () => undefined as any;
 const ERROR = new Error('This is a never type') as never;
 
 export const typings: Typings = () => _fn0();
+typings.forceCast = value => value as any;
+typings.cast = value => value;
 typings.interpret = _fn0;
 typings.number = _fn0;
 typings.string = _fn0;
@@ -109,3 +114,4 @@ typings.ra = _fn0();
 typings.symbol = _fn0();
 typings.bigint = _fn0();
 typings.object = _fn0();
+typings.any = _fn0();

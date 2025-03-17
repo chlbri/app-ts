@@ -217,4 +217,69 @@ describe('typings', () => {
       expect(actual).toStrictEqual(expected);
     });
   });
+
+  describe('#05 => Events and Promises helpers', () => {
+    test('#01 => promiseDef', () => {
+      const thenValue = ['data'];
+      const catchValue = new Error('error');
+      const actual = typings.promiseDef(thenValue, catchValue);
+      expect(actual).toEqual({
+        then: thenValue,
+        catch: catchValue,
+      });
+    });
+
+    test('#02 => toEventsR', () => {
+      const events = {
+        FETCH: { id: typings.string() },
+      };
+      const promisees = {
+        fetch: {
+          then: typings.array(typings.string()),
+          catch: typings.object,
+        },
+      };
+      const actual = typings.toEventsR(events, promisees);
+      expect(actual).toEqual(expected);
+    });
+
+    test('#03 => toEvents', () => {
+      const events = {
+        FETCH: { id: typings.string() },
+      };
+      const promisees = {
+        fetch: {
+          then: typings.array(typings.string()),
+          catch: typings.object,
+        },
+      };
+      const actual = typings.toEvents(events, promisees);
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('#06 => Utility helpers', () => {
+    test('#01 => undefiny', () => {
+      const input = 'test';
+      const actual = typings.undefiny(input);
+      expect(actual).toBe(expected);
+    });
+
+    test('#02 => forceCast', () => {
+      const input = { name: 'test' };
+      const actual = typings.forceCast(input);
+      expect(actual).toBe(input);
+    });
+
+    test('#03 => cast', () => {
+      const input = { value: 42 };
+      const actual = typings.cast(input);
+      expect(actual).toBe(input);
+    });
+
+    test('#04 => any', () => {
+      const actual = typings.any;
+      expect(actual).toStrictEqual(expected);
+    });
+  });
 });
