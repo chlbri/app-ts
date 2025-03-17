@@ -630,7 +630,7 @@ export const getExits = partialCall(getIO, 'exit');
 
 export type { Machine };
 
-type CreateMachine_F = <
+export type CreateMachine_F = <
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
