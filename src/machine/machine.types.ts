@@ -1,6 +1,6 @@
 import type { Fn, NOmit } from '@bemedev/types';
 import type { ActionConfig, ActionResult } from '~actions';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
+import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
 import type { Machine } from '~machine';
 import type { NodeConfigWithInitials, StateValue } from '~states';
@@ -11,8 +11,10 @@ import type {
   Config,
   ConfigWithInitials,
   ContextFrom,
+  EventsMapFrom,
   MachineOptions,
   PrivateContextFrom,
+  PromiseesMapFrom,
   SimpleMachineOptions2,
   Subscriber,
 } from './types';
@@ -123,6 +125,27 @@ export type Void_F<
   eventsMap: ToEvents<E, P>,
 ) => ActionResult<Pc, Tc>;
 
+export type Sender_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = <T extends AnyMachine>(
+  _?: T,
+) => (
+  fn: FnMap<
+    E,
+    P,
+    Pc,
+    Tc,
+    { to: string; event: EventArg<EventsMapFrom<T>, PromiseesMapFrom<T>> }
+  >,
+) => (
+  pContext: Pc,
+  context: Tc,
+  eventsMap: ToEvents<E, P>,
+) => ActionResult<Pc, Tc>;
+
 export type AddOption_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -161,6 +184,7 @@ export type AddOption_F<
   ) => ChildS<E, P, Pc, T>;
   assign: Assign_F<E, P, Pc, Tc>;
   voidAction: Void_F<E, P, Pc, Tc>;
+  sender: Sender_F<E, P, Pc, Tc>;
 }) => Mo | undefined;
 
 export type AddOptions_F<

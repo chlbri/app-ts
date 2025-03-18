@@ -54,7 +54,7 @@ export type ConfigNodeWithInitials =
   | NodeConfigCompoundWithInitials
   | NodeConfigParallelWithInitials;
 
-export type MachineConfig = (Describer & { id?: string }) | string;
+export type MachineConfig = Describer | string;
 
 export type Config = ConfigNode & {
   readonly machines?: SingleOrArrayL<MachineConfig>;

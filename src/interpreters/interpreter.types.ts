@@ -62,6 +62,7 @@ export type Interpreter_F = <M extends AnyMachine>(
     pContext: PrivateContextFrom<M>;
     context: ContextFrom<M>;
     mode?: Mode;
+    exact?: boolean;
   },
 ) => InterpreterFrom<M>;
 
@@ -234,7 +235,10 @@ export type AddSubscriber_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (subscriber: FnMapReduced<E, P, Tc>) => Subscriber<E, P, Tc>;
+> = (
+  subscriber: FnMapReduced<E, P, Tc>,
+  id?: string,
+) => Subscriber<E, P, Tc>;
 
 export type Subscribe_F<
   E extends EventsMap = EventsMap,

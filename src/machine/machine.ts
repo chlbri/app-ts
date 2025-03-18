@@ -28,7 +28,7 @@ import {
   type StateValue,
 } from '~states';
 import type { PrimitiveObject, RecordS } from '~types';
-import { merge, typings } from '~utils';
+import { merge, reduceFnMap, typings } from '~utils';
 import { expandFnMap } from './functions';
 import { createChildS, type CreateChild_F } from './functions/create';
 import type {
@@ -38,6 +38,7 @@ import type {
   Assign_F,
   Elements,
   GetIO_F,
+  Sender_F,
   Void_F,
 } from './machine.types';
 import type {
@@ -409,6 +410,7 @@ class Machine<
     out.#context = context;
     out.#eventsMap = events;
     out.#promiseesMap = promisees;
+    out.__sentEvents = this.__sentEvents;
 
     out.#addPredicates(predicates);
     out.#addActions(actions);
@@ -555,11 +557,31 @@ class Machine<
     return isNotDefinedS<E, P, Pc, Tc>;
   }
 
-  createChild: CreateChild_F<E, P, Pc> = (...args) => {
+  #createChild: CreateChild_F<E, P, Pc> = (...args) => {
     return createChildS(...args);
   };
 
-  assign: Assign_F<E, P, Pc, Tc> = (key, fn) => {
+  /**
+   * @deprecated
+   * Used internally
+   */
+  __sentEvents: { to: string; event: any }[] = [];
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  #createSend: Sender_F<E, P, Pc, Tc> = <T extends AnyMachine>(_?: T) => {
+    return fn => {
+      const fn2 = reduceFnMap(this.eventsMap, this.promiseesMap, fn);
+      return (pContext, context, eventsMap) => {
+        const { event, to } = fn2(pContext, context, eventsMap);
+        // this.__sendTo?.(to, event);
+        this.__sentEvents.push({ to, event });
+
+        return t.any({ pContext, context });
+      };
+    };
+  };
+
+  #assign: Assign_F<E, P, Pc, Tc> = (key, fn) => {
     const out = expandFnMap(
       this.#eventsMap,
       this.#promiseesMap,
@@ -570,7 +592,11 @@ class Machine<
     return out;
   };
 
-  voidAction: Void_F<E, P, Pc, Tc> = fn => {
+  /**
+   * @deprecated
+   * used internally
+   */
+  __voidAction: Void_F<E, P, Pc, Tc> = fn => {
     return (pContext, context, map) => {
       fn(pContext, context, map);
       return t.any({ pContext, context });
@@ -582,9 +608,10 @@ class Machine<
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
     const isNotDefined = this.#isNotDefined;
-    const createChild = this.createChild;
-    const assign = this.assign;
-    const voidAction = this.voidAction;
+    const createChild = this.#createChild;
+    const assign = this.#assign;
+    const voidAction = this.__voidAction;
+    const sender = this.#createSend.bind(this);
 
     const out = func({
       isValue,
@@ -594,6 +621,7 @@ class Machine<
       createChild,
       assign,
       voidAction,
+      sender,
     });
 
     this.#addActions(out?.actions);

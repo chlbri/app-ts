@@ -1,4 +1,5 @@
 import type { TimerState } from '@bemedev/interval2';
+import { nanoid } from 'nanoid';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import { PrimitiveObject } from '~types';
 import { nothing, reduceFnMap2 } from '~utils';
@@ -29,10 +30,15 @@ class Subscriber<
 
   #state: TimerState = 'idle';
 
+  get id() {
+    return this._id;
+  }
+
   constructor(
     eventsMap: E,
     promiseesMap: P,
     subscriber: FnMapReduced<E, P, Tc, R>,
+    private _id: string,
   ) {
     this.#subscriber = subscriber;
     this.#eventsMap = eventsMap;
@@ -85,12 +91,19 @@ export type CreateSubscriber_F = <
   eventsMap: E,
   promiseesMap: P,
   subscriber: FnMapReduced<E, P, Tc, R>,
+  id?: string,
 ) => Subscriber<E, P, Tc, R>;
 
 export const createSubscriber: CreateSubscriber_F = (
   eventsMap,
   promiseesMap,
   subscriber,
+  id,
 ) => {
-  return new Subscriber(eventsMap, promiseesMap, subscriber);
+  return new Subscriber(
+    eventsMap,
+    promiseesMap,
+    subscriber,
+    id ?? nanoid(),
+  );
 };

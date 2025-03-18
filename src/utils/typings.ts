@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 import {
   Fn,
   type DeepPartial,
@@ -11,12 +10,16 @@ import type { InterpreterFrom } from '~interpreter';
 import type { AnyMachine, Config, CreateMachine_F } from '~machines';
 import type { PrimitiveObject } from '~types';
 
+export type EmptyObject = NonNullable<unknown>;
+export type EmptyO = EmptyObject;
+
 type Keys = string | number | symbol;
 
 type _TypingsFn = <T = any>(value?: unknown) => T;
 export type Typings = _TypingsFn & {
   forceCast: <T = any>(value: unknown) => T;
   cast: <const T = any>(value: T) => T;
+  anify: (value?: unknown) => any;
   interpret: <T extends AnyMachine>(machine: T) => InterpreterFrom<T>;
   number: <T extends number = number>(value?: T) => T;
   string: <T extends string = string>(value?: T) => T;
@@ -71,7 +74,7 @@ export type Typings = _TypingsFn & {
   ra: Ra;
   symbol: symbol;
   bigint: bigint;
-  object: {};
+  object: EmptyObject;
   any: any;
 };
 
@@ -81,6 +84,7 @@ const ERROR = new Error('This is a never type') as never;
 export const typings: Typings = () => _fn0();
 typings.forceCast = value => value as any;
 typings.cast = value => value;
+typings.anify = value => value;
 typings.interpret = _fn0;
 typings.number = _fn0;
 typings.string = _fn0;
