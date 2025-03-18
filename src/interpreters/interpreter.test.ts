@@ -1,8 +1,9 @@
 import { t } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { MAX_SELF_TRANSITIONS, MIN_ACTIVITY_TIME } from '~constants';
-import { DELAY, fakeDB } from '~fixturesData';
+import { DELAY, fakeDB, machine1 } from '~fixturesData';
 import { createMachine } from '~machine';
+import { EVENTS_FULL } from '~machines';
 import type { StateValue } from '~states';
 import { nothing } from '~utils';
 import { machine21 } from './__tests__/data/machine21';
@@ -530,12 +531,15 @@ describe('Interpreter', () => {
         exact: true,
       });
 
-      const subscriber = service.addWeakSubscriber({
-        WRITE: (_, { value }) =>
-          console.log('WRITE with', ':', `"${value}"`),
-        NEXT: () => console.log('NEXT time, you will see!!'),
-        else: nothing,
-      });
+      const subscriber = service.addWeakSubscriber(
+        {
+          WRITE: (_, { value }) =>
+            console.log('WRITE with', ':', `"${value}"`),
+          NEXT: () => console.log('NEXT time, you will see!!'),
+          else: nothing,
+        },
+        'idSub',
+      );
 
       const log = vi.spyOn(console, 'log');
 
@@ -985,6 +989,21 @@ describe('Interpreter', () => {
       test('#37 => machine1.value', () => {
         const child = service.at('machine1');
         expect(child?.value).toStrictEqual('final');
+      });
+
+      test('#38 => Resend idSub', () => {
+        service.addWeakSubscriber(nothing, 'idSub');
+      });
+
+      test('#39 => Resend machine1', () => {
+        service.subscribeM('machine1', {
+          machine: machine1,
+          initials: { context: { iterator: 0 }, pContext: {} },
+          subscribers: {
+            events: EVENTS_FULL,
+            contexts: {},
+          },
+        });
       });
 
       describe('#40 => Close the service', async () => {

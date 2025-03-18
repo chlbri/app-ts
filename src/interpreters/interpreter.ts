@@ -386,10 +386,10 @@ export class Interpreter<
 
   start = () => {
     this.#throwing();
-
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#performChildMachines();
+    this.#throwing();
     return this._next();
   };
 
@@ -1213,7 +1213,6 @@ export class Interpreter<
   addWeakSubscriber: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
-    //TODO: check if id is unique
     const find = Array.from(this.#weakSubscribers).find(f => f.id === id);
     if (find) return find;
 
@@ -1518,7 +1517,6 @@ export class Interpreter<
 
   protected interpretChild = interpret;
 
-  //TODO: Test subscribeM
   /**
    * Subscribes a child machine to the current machine.
    *
