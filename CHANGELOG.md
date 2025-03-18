@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.1.11-beta] - 2024-03-18 _02:30_
+
+- Possibility to send event to a child
+
+<br/>
+
 ## [0.1.10-beta] - 2024-03-15 _17:00_
 
 - Fix library import @bemedev/decompose
