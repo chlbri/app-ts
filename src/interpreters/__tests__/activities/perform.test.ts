@@ -1,8 +1,8 @@
 import { t } from '@bemedev/types';
 import { DELAY, fakeDB } from '~fixturesData';
+import { interpret } from '~interpreter';
 import type { StateValue } from '~states';
 import { nothing } from '~utils';
-import { interpretTest } from '../../interpreterTest';
 import { machine22 } from '../data/machine22';
 import { fakeWaiter } from '../fixtures';
 
@@ -15,11 +15,12 @@ const TEXT = 'Activities Integration Test';
 describe(TEXT, () => {
   // #region Config
 
-  const service = interpretTest(machine22, {
+  const service = interpret(machine22, {
     pContext: {
       iterator: 0,
     },
     context: { iterator: 0, input: '', data: [] },
+    exact: true,
   });
 
   const subscriber = service.addWeakSubscriber({

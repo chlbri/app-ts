@@ -12,7 +12,7 @@ import type { SingleOrArray } from '@bemedev/boolean-recursive';
 import { decomposeSV } from '@bemedev/decompose';
 import { createInterval, type Interval2 } from '@bemedev/interval2';
 import sleep from '@bemedev/sleep';
-import { t, type Fn } from '@bemedev/types';
+import { t } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
 import { EOL } from 'os';
@@ -35,6 +35,7 @@ import {
   possibleEvents,
   transformEventArg,
   type EventArg,
+  type EventObject,
   type EventsMap,
   type PromiseeMap,
   type ToEvents,
@@ -48,7 +49,6 @@ import {
   reduceEvents,
   toMachine,
   type AnyMachine,
-  type ChildS,
   type Config,
   type ConfigFrom,
   type ContextFrom,
@@ -84,7 +84,8 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
-import { IS_TEST, replaceAll } from '~utils';
+import { IS_TEST, replaceAll, typings } from '~utils';
+import { ChildS } from './../machine/types';
 import { merge } from './../utils/merge';
 import {
   type _Send_F,
@@ -111,6 +112,20 @@ import {
 import { Scheduler } from './scheduler';
 import { createSubscriber, type Subscriber } from './subscriber';
 
+/**
+ * The `Interpreter` class is responsible for interpreting and managing the state of a machine.
+ * It provides methods to start, stop, pause, and resume the machine, as well as to send events
+ * and subscribe to state changes.
+ *
+ * @template C - The configuration type for the machine.
+ * @template Pc - The private context type.
+ * @template Tc - The context type.
+ * @template E - The events map type.
+ * @template P - The promise map type.
+ * @template Mo - The machine options type.
+ *
+ * @implements {AnyInterpreter<E, P, Pc, Tc>}
+ */
 export class Interpreter<
   const C extends Config = Config,
   Pc = any,
@@ -137,7 +152,15 @@ export class Interpreter<
   #context!: Tc;
   #scheduler: Scheduler;
 
-  #childrenServices: AnyInterpreter<E, P, Pc, Tc>[] = [];
+  #childrenServices: (AnyInterpreter2 & { id: string })[] = [];
+
+  get children() {
+    return this.#childrenServices;
+  }
+
+  getChildAt = (id: string) => this.children.find(f => f.id === id);
+  at = this.getChildAt;
+
   get #childrenMachines() {
     const _machines = toArray.typed(this.#machine.preConfig.machines);
     return _machines.map(this.toMachine).filter(isDefined);
@@ -168,6 +191,7 @@ export class Interpreter<
   constructor(
     machine: Machine<C, Pc, Tc, E, P, Mo>,
     mode: Mode = 'strict',
+    exact = false,
   ) {
     this.#machine = machine.renew;
 
@@ -175,7 +199,7 @@ export class Interpreter<
     this.#initialNode = this.#resolveNode(this.#initialConfig);
     this.#mode = mode;
     this.#config = this.#initialConfig;
-
+    this.#exact = exact;
     this.#performConfig(true);
     this.#scheduler = new Scheduler();
 
@@ -365,7 +389,7 @@ export class Interpreter<
 
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
-    this.#performMachines();
+    this.#performChildMachines();
     return this._next();
   };
 
@@ -541,17 +565,14 @@ export class Interpreter<
 
     if (check) {
       this.#subscribers.forEach(f => {
-        const callback = () =>
-          f({
-            scheduleds: this.scheduleds,
-            value: this.value,
-            status: this.status,
-            context: this.#context,
-            mode: this.#mode,
-          });
-
+        const callback = () => f(this.snapshot);
         this.#schedule(callback);
       });
+    }
+
+    const sentEvent = this.#machine.__sentEvents.pop();
+    if (sentEvent) {
+      this.#sendTo(sentEvent.to, sentEvent.event);
     }
   };
 
@@ -629,22 +650,29 @@ export class Interpreter<
     return outs;
   };
 
+  #exact: boolean;
+
   protected createInterval: CreateInterval2_F = ({
     callback,
     id,
     interval,
   }) => {
+    const exact = this.#exact;
     const out = createInterval({
       callback,
       id,
       interval,
-      exact: false,
+      exact,
     });
 
     return out;
   };
 
   protected _cachedIntervals: Interval2[] = [];
+
+  get intervalsArePaused() {
+    return this._cachedIntervals.every(({ state }) => state === 'paused');
+  }
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';
@@ -935,7 +963,7 @@ export class Interpreter<
       });
   };
 
-  #performMachines = () => {
+  #performChildMachines = () => {
     this.#childrenMachines.forEach(({ id, ...child }) => {
       this.#reduceChild(t.any(child), id);
     });
@@ -1182,14 +1210,18 @@ export class Interpreter<
 
   #subscribers = new Set<(state: State<Tc>) => void>();
 
-  addWeakSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
+  addWeakSubscriber: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
+    //TODO: check if id is unique
+    const find = Array.from(this.#weakSubscribers).find(f => f.id === id);
+    if (find) return find;
 
     const subcriber = createSubscriber(
       eventsMap,
       promiseesMap,
       _subscriber,
+      id,
     );
     this.#weakSubscribers.add(subcriber);
     return subcriber;
@@ -1200,7 +1232,7 @@ export class Interpreter<
     return () => this.#subscribers.delete(sub);
   };
 
-  getSnapshot = (): State<Tc> => {
+  get snapshot(): State<Tc> {
     return {
       status: this.status,
       value: this.value,
@@ -1208,16 +1240,19 @@ export class Interpreter<
       scheduleds: this.scheduleds,
       mode: this.mode,
     };
-  };
+  }
 
-  #addFullSubscriber: AddSubscriber_F<E, P, Tc> = _subscriber => {
+  #addFullSubscriber: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
+    const find = Array.from(this.#fullSubscribers).find(f => f.id === id);
+    if (find) return find;
 
     const subcriber = createSubscriber(
       eventsMap,
       promiseesMap,
       _subscriber,
+      id,
     );
     this.#fullSubscribers.add(subcriber);
     return subcriber;
@@ -1481,22 +1516,51 @@ export class Interpreter<
     );
   };
 
-  protected interpretChild: Fn = interpret;
+  protected interpretChild = interpret;
+
+  //TODO: Test subscribeM
+  /**
+   * Subscribes a child machine to the current machine.
+   *
+   * @template T - The type of the child machine, extending from AnyMachine.
+   * @param  id - The unique identifier for the child machine.
+   * @param  child - The child machine to be subscribed.
+   * @returns The result of the child machine subscription.
+   *
+   */
+  subscribeM = <T extends AnyMachine = AnyMachine>(
+    id: string,
+    child: ChildS<E, P, Tc, T>,
+  ) => {
+    return this.#reduceChild(child, id);
+  };
+
+  /**
+   * @deprecated
+   * Used internally
+   */
+  #sendTo = <T extends EventObject>(to: string, event: T) => {
+    const service = this.#childrenServices.find(({ id }) => id === to);
+
+    if (service) {
+      console.warn('Sending event to child machine');
+      service.send(typings.anify(event));
+    }
+  };
 
   #reduceChild = <T extends AnyMachine = AnyMachine>(
     { subscribers, machine, initials }: ChildS<E, P, Tc, T>,
-    id?: string,
+    id: string,
   ) => {
-    let service = t.unknown<InterpreterFrom<T>>(
+    let service = typings.forceCast<InterpreterFrom<T>>(
       this.#childrenServices.find(f => f.id === id),
     );
 
     if (!service) {
       service = this.interpretChild(machine, initials);
       service.id = id;
+      this.#childrenServices.push(typings.forceCast(service));
     }
-
-    this.#childrenServices.push(t.any(service));
 
     const subscriber = service.#addFullSubscriber((_, { type }) => {
       const _subscribers = toArray.typed(subscribers);
@@ -1548,7 +1612,7 @@ export class Interpreter<
           }
         }
       });
-    });
+    }, id);
 
     return subscriber;
   };
@@ -1558,8 +1622,9 @@ export class Interpreter<
     this.#scheduler.stop();
   };
 
-  get [Symbol.asyncDispose]() {
-    return asyncfy(this[Symbol.dispose]);
+  [Symbol.asyncDispose]() {
+    const out = asyncfy(this[Symbol.dispose]);
+    return out();
   }
 }
 
@@ -1578,10 +1643,10 @@ export type InterpreterFrom<M extends AnyMachine> = Interpreter<
 
 export const interpret: Interpreter_F = (
   machine,
-  { context, pContext, mode },
+  { context, pContext, mode, exact },
 ) => {
   //@ts-expect-error for build
-  const out = new Interpreter(machine, mode);
+  const out = new Interpreter(machine, mode, exact);
 
   out._ppC(pContext);
   out._provideContext(context);

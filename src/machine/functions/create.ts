@@ -4,13 +4,14 @@ import type {
   Config,
   ContextFrom,
   PrivateContextFrom,
-  Subscriber,
+  SubscriberType,
 } from '~machines';
 import type { KeyU } from '~types';
+import { typings } from '~utils';
 
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
 
-export const createConfig: CreateConfig_F = config => config;
+export const createConfig: CreateConfig_F = typings.cast;
 
 export type CreateChildS_F = <
   T extends KeyU<'preConfig' | 'context' | 'pContext'>,
@@ -23,7 +24,7 @@ export type CreateChildS_F = <
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
   },
-  ...subscribers: Subscriber<E, P, Pc, T>[]
+  ...subscribers: SubscriberType<E, P, Pc, T>[]
 ) => ChildS<E, P, Pc, T>;
 
 export type CreateChild_F<
@@ -36,7 +37,7 @@ export type CreateChild_F<
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
   },
-  ...subscribers: Subscriber<E, P, Pc, T>[]
+  ...subscribers: SubscriberType<E, P, Pc, T>[]
 ) => ChildS<E, P, Pc, T>;
 
 export const createChildS: CreateChildS_F = (

@@ -7,7 +7,7 @@ import {
   fakeWaiter,
 } from 'src/interpreters/__tests__/fixtures';
 import { DELAY, fakeDB, machine2 } from '~fixturesData';
-import { interpret, interpretTest } from '~interpreters';
+import { interpret } from '~interpreters';
 import { createMachine, getEntries } from '~machine';
 import type { StateValue } from '~states';
 import { nothing } from '~utils';
@@ -23,11 +23,12 @@ describe('machine coverage', () => {
     describe(TEXT, () => {
       // #region Config
 
-      const service = interpretTest(machine2, {
+      const service = interpret(machine2, {
         pContext: {
           iterator: 0,
         },
         context: { iterator: 0, input: '', data: [] },
+        exact: true,
       });
 
       const subscriber = service.addWeakSubscriber({

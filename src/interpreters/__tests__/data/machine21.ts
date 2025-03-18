@@ -7,7 +7,7 @@ import { machine1 } from './machine1';
 
 // #region machine2
 
-export const config2 = createConfig({
+export const config21 = createConfig({
   states: {
     idle: {
       activities: {
@@ -23,7 +23,9 @@ export const config2 = createConfig({
         DELAY2: 'inc2',
       },
       on: {
-        FINISH: '/final',
+        SEND: {
+          actions: 'send',
+        },
       },
       states: {
         fetch: {
@@ -91,17 +93,17 @@ export const config2 = createConfig({
   },
 });
 
-export const machine2 = createMachine(
+export const machine21 = createMachine(
   {
     machines: 'machine1',
-    ...config2,
+    ...config21,
   },
   {
     eventsMap: {
       NEXT: typings.object,
       FETCH: typings.object,
       WRITE: { value: typings.string() },
-      FINISH: typings.object,
+      SEND: typings.object,
     },
     context: {
       iterator: typings.number(),
@@ -118,7 +120,7 @@ export const machine2 = createMachine(
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
 ).provideOptions(
-  ({ isNotValue, isValue, createChild, assign, voidAction }) => ({
+  ({ isNotValue, isValue, createChild, assign, voidAction, sender }) => ({
     actions: {
       inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
       inc2: assign('context.iterator', (_, { iterator }) => iterator + 4),
@@ -133,6 +135,7 @@ export const machine2 = createMachine(
           return data;
         },
       }),
+      send: sender(machine1)(() => ({ to: 'machine1', event: 'NEXT' })),
     },
     predicates: {
       isInputEmpty: isValue('context.input', ''),
