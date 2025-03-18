@@ -17,7 +17,7 @@ export type SubscriberMap<
   // close: () => void;
 };
 
-class Subscriber<
+class SubscriberClass<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -80,7 +80,7 @@ class Subscriber<
   }
 }
 
-export type { Subscriber };
+export type { SubscriberClass as Subscriber };
 
 export type CreateSubscriber_F = <
   E extends EventsMap,
@@ -92,7 +92,7 @@ export type CreateSubscriber_F = <
   promiseesMap: P,
   subscriber: FnMapReduced<E, P, Tc, R>,
   id?: string,
-) => Subscriber<E, P, Tc, R>;
+) => SubscriberClass<E, P, Tc, R>;
 
 export const createSubscriber: CreateSubscriber_F = (
   eventsMap,
@@ -100,7 +100,7 @@ export const createSubscriber: CreateSubscriber_F = (
   subscriber,
   id,
 ) => {
-  return new Subscriber(
+  return new SubscriberClass(
     eventsMap,
     promiseesMap,
     subscriber,

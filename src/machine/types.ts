@@ -224,7 +224,7 @@ type SubEventsKeys<E extends EventsMap, P extends PromiseeMap> =
 
 export const EVENTS_FULL = 'machine$$full';
 
-export type Subscriber<
+export type SubscriberType<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -267,7 +267,7 @@ export type ChildS<
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
   };
-  subscribers: SingleOrArrayL<Subscriber<E, P, Pc, NoInfer<T>>>;
+  subscribers: SingleOrArrayL<SubscriberType<E, P, Pc, NoInfer<T>>>;
 };
 
 export type FnMapFrom<

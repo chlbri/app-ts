@@ -16,7 +16,7 @@ import type {
   PrivateContextFrom,
   PromiseesMapFrom,
   SimpleMachineOptions2,
-  Subscriber,
+  SubscriberType,
 } from './types';
 
 export type _ProvideInitials_F<C extends Config> = (
@@ -180,7 +180,7 @@ export type AddOption_F<
       pContext: PrivateContextFrom<T>;
       context: ContextFrom<T>;
     },
-    ...subscribers: Subscriber<E, P, Pc, T>[]
+    ...subscribers: SubscriberType<E, P, Pc, T>[]
   ) => ChildS<E, P, Pc, T>;
   assign: Assign_F<E, P, Pc, Tc>;
   voidAction: Void_F<E, P, Pc, Tc>;

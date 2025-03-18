@@ -7,7 +7,7 @@ import type {
   FnMapFrom,
   GetEventsFromMachine,
   PromiseesMapFrom,
-  Subscriber,
+  SubscriberType,
 } from './types';
 
 type TT2 = keyof FnMapFrom<typeof machine2>;
@@ -23,7 +23,7 @@ expectTypeOf<GEFC1>().toMatchTypeOf<{
   WRITE: PrimitiveObject;
 }>();
 
-type Sub1 = Subscriber<
+type Sub1 = SubscriberType<
   EventsMapFrom<typeof machine2>,
   PromiseesMapFrom<typeof machine2>,
   ContextFrom<typeof machine2>,
@@ -56,7 +56,7 @@ expectTypeOf<Sub1>().branded.toEqualTypeOf<{
   }>;
 }>();
 
-type Sub2 = Subscriber<
+type Sub2 = SubscriberType<
   {},
   {},
   string,
