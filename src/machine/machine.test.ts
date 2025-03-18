@@ -1249,4 +1249,42 @@ describe('machine coverage', () => {
   test('#05 => getEntries - coverage', () => {
     expect(getEntries()).toStrictEqual([]);
   });
+
+  describe('#06 => machine id is not defined', () => {
+    const idM = 'machineNotDefined';
+    const machineT = createMachine(
+      {
+        machines: idM,
+        states: {
+          idle: {},
+        },
+      },
+      defaultT,
+      { '/': 'idle' },
+    );
+
+    const service = interpret(machineT, defaultC);
+
+    test('#00 => start', service.start.bind(service));
+
+    describe('#01 => log', () => {
+      test('#01 => errors is empty', () => {
+        const actual = service._errorsCollector;
+        expect(actual).toHaveLength(0);
+      });
+
+      describe('#02 => It has some watnings', () => {
+        test('#01 => warnings is not empty', () => {
+          const actual = service._warningsCollector;
+          expect(actual).not.toHaveLength(0);
+          expect(actual).toHaveLength(1);
+        });
+
+        test(`#02 => contains warning for machine : "${idM}"`, () => {
+          const expected = `Machine (${idM}) is not defined`;
+          expect(service._warningsCollector).toContain(expected);
+        });
+      });
+    });
+  });
 });

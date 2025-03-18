@@ -56,6 +56,13 @@ const machine = createMachine({
 View changelog
 </summary>
 
+## [0.1.12-beta] - 2024-03-18 _16:00_
+
+- 100% coverage
+- Ready for production
+
+<br/>
+
 ## [0.1.11-beta] - 2024-03-18 _02:30_
 
 - Possibility to send event to a child
