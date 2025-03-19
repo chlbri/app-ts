@@ -83,7 +83,7 @@ describe(TEXT, () => {
   };
 
   const useIteratorC = (num: number, index: number) => {
-    const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
+    const invite = `#${index < 10 ? '0' + index : index} => private iterator is "${num}"`;
     return t.tuple(invite, async () => {
       expect(service._pSelect('iterator')).toBe(num);
     });

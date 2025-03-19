@@ -293,7 +293,7 @@ export interface AnyInterpreter<
   ) => PredicateS<E, P, Pc, Tc> | undefined;
   toPromiseSrc: (src: string) => PromiseFunction<E, P, Pc, Tc> | undefined;
   toDelay: (delay: string) => Delay<E, P, Pc, Tc> | undefined;
-  toMachine: (machine: ActionConfig) => ChildS<E, P, Tc> | undefined;
+  toMachine: (machine: ActionConfig) => ChildS<E, P, Pc> | undefined;
   id?: string;
 }
 
