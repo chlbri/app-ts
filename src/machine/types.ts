@@ -270,6 +270,29 @@ export type ChildS<
   subscribers: SingleOrArrayL<SubscriberType<E, P, Pc, NoInfer<T>>>;
 };
 
+export type ChildS2<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
+    'preConfig' | 'context' | 'pContext'
+  >,
+> = {
+  machine: T;
+  initials: FnMap<
+    E,
+    P,
+    Pc,
+    Tc,
+    {
+      pContext: PrivateContextFrom<T>;
+      context: ContextFrom<T>;
+    }
+  >;
+  subscribers: SingleOrArrayL<SubscriberType<E, P, Pc, NoInfer<T>>>;
+};
+
 export type FnMapFrom<
   T extends KeyU<'eventsMap' | 'pContext' | 'context' | 'promiseesMap'>,
   R = any,

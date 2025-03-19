@@ -84,8 +84,8 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
-import { IS_TEST, replaceAll, typings } from '~utils';
-import { ChildS } from './../machine/types';
+import { IS_TEST, reduceFnMap, replaceAll, typings } from '~utils';
+import { ChildS, type ChildS2 } from './../machine/types';
 import { merge } from './../utils/merge';
 import {
   type _Send_F,
@@ -1528,8 +1528,24 @@ export class Interpreter<
    */
   subscribeM = <T extends AnyMachine = AnyMachine>(
     id: string,
-    child: ChildS<E, P, Tc, T>,
+    { initials: _initials, ...rest }: ChildS2<E, P, Pc, Tc, T>,
   ) => {
+    const context = this.#context;
+    const pContext = this.#pContext;
+    const event = this.#event;
+    const reduced = reduceFnMap(
+      this.#machine.eventsMap,
+      this.#machine.promiseesMap,
+      _initials,
+    );
+
+    const initials = reduced(pContext, context, event);
+
+    const child = typings.cast<ChildS<E, P, Pc, T>>({
+      initials,
+      ...rest,
+    });
+
     return this.#reduceChild(child, id);
   };
 
@@ -1547,7 +1563,7 @@ export class Interpreter<
   };
 
   #reduceChild = <T extends AnyMachine = AnyMachine>(
-    { subscribers, machine, initials }: ChildS<E, P, Tc, T>,
+    { subscribers, machine, initials }: ChildS<E, P, Pc, T>,
     id: string,
   ) => {
     let service = typings.forceCast<InterpreterFrom<T>>(

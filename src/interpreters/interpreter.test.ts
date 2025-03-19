@@ -5,7 +5,7 @@ import { DELAY, fakeDB, machine1 } from '~fixturesData';
 import { createMachine } from '~machine';
 import { EVENTS_FULL } from '~machines';
 import type { StateValue } from '~states';
-import { nothing } from '~utils';
+import { nothing, toFunction } from '~utils';
 import { machine21 } from './__tests__/data/machine21';
 import { machine3 } from './__tests__/data/machine3';
 import { defaultC, defaultT, fakeWaiter } from './__tests__/fixtures';
@@ -593,7 +593,7 @@ describe('Interpreter', () => {
       };
 
       const useIteratorC = (num: number, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
+        const invite = `#${index < 10 ? '0' + index : index} => private iterator is "${num}"`;
         return t.tuple(invite, async () => {
           expect(service._pSelect('iterator')).toBe(num);
         });
@@ -998,7 +998,7 @@ describe('Interpreter', () => {
       test('#39 => Resend machine1', () => {
         service.subscribeM('machine1', {
           machine: machine1,
-          initials: { context: { iterator: 0 }, pContext: {} },
+          initials: toFunction({ context: { iterator: 0 }, pContext: {} }),
           subscribers: {
             events: EVENTS_FULL,
             contexts: {},
