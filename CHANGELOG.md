@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.1.13-beta] - 2024-03-19 _23:30_
+
+- 100% coverage
+- Ameliorate subscribeM
+
+<br/>
+
 ## [0.1.12-beta] - 2024-03-18 _16:00_
 
 - 100% coverage
