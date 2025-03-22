@@ -1041,7 +1041,7 @@ describe('Interpreter', () => {
             expect(log).toBeCalledTimes(strings.length);
           });
 
-          test('#02 => Log is called "73" times', () => {
+          test('#02 => Log is called "85" times', () => {
             expect(log).toBeCalledTimes(85);
           });
         });

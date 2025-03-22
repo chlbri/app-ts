@@ -504,7 +504,7 @@ describe('machine coverage', () => {
             expect(log).toBeCalledTimes(strings.length);
           });
 
-          test('#02 => Log is called "73" times', () => {
+          test('#02 => Log is called "78" times', () => {
             expect(log).toBeCalledTimes(78);
           });
         });
