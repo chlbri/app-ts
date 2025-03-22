@@ -1,8 +1,12 @@
 import type { Unionize } from '@bemedev/types';
-import type { MaxExceededEvent } from 'src/constants/events';
 
 import type { PrimitiveObject } from '~types';
-import type { ALWAYS_EVENT, INIT_EVENT } from './constants';
+import type {
+  AFTER_EVENT,
+  ALWAYS_EVENT,
+  INIT_EVENT,
+  MAX_EXCEEDED_EVENT_TYPE,
+} from './constants';
 
 export type EventObject<T = any> = {
   type: string;
@@ -20,6 +24,14 @@ export type PromiseeMap = Record<string, PromiseeDef>;
 
 export type InitEvent = typeof INIT_EVENT;
 export type AlwaysEvent = `${string}::${typeof ALWAYS_EVENT}`;
+export type AfterEvent = `${string}::${typeof AFTER_EVENT}`;
+export type MaxExceededEvent = typeof MAX_EXCEEDED_EVENT_TYPE;
+
+export type EventStrings =
+  | InitEvent
+  | AlwaysEvent
+  | AfterEvent
+  | MaxExceededEvent;
 
 type _EventsR<T extends EventsMap> =
   Unionize<T> extends infer U
@@ -51,6 +63,7 @@ export type ToEvents<E extends EventsMap, P extends PromiseeMap> =
   | ToEventsR<E, P>
   | InitEvent
   | AlwaysEvent
+  | AfterEvent
   | MaxExceededEvent;
 
 export type EventArg<E extends EventsMap, P extends PromiseeMap> =

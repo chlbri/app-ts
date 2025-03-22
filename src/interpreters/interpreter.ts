@@ -30,6 +30,8 @@ import {
 } from '~constants';
 import { toDelay } from '~delays';
 import {
+  AFTER_EVENT,
+  ALWAYS_EVENT,
   eventToType,
   INIT_EVENT,
   possibleEvents,
@@ -391,6 +393,7 @@ export class Interpreter<
   };
 
   start = () => {
+    this.#flushE();
     this.#throwing();
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
@@ -423,7 +426,7 @@ export class Interpreter<
   };
 
   #weakFlush = () => {
-    this.#weakSubscribers.forEach(this.#scheduleSubscriber);
+    this.#valueSubscribers.forEach(this.#scheduleSubscriber);
   };
 
   #selfTransitionsCounter = 0;
@@ -433,7 +436,6 @@ export class Interpreter<
     this.#weakFlush();
     this.#rinitIntervals();
     this.#performActivities();
-    this.#flush();
     await this.#performSelfTransitions();
   };
 
@@ -452,6 +454,8 @@ export class Interpreter<
 
       const currentValue = this.#value;
       check = !equal(previousValue, currentValue);
+
+      if (check) this.#flush();
 
       const duration = Date.now() - startTime;
       const check2 = duration > TIME_TO_RINIT_SELF_COUNTER;
@@ -552,17 +556,25 @@ export class Interpreter<
     return out;
   };
 
-  #flush = () => {
+  #flushSubscribers = () => {
     const context = cloneDeep(this.#context);
     const event = cloneDeep(this.#event);
     this.#subscribers.forEach(f => {
-      const callback = toFunction(f(this.snapshot));
-      this.#schedule(callback);
-    });
-    this.#fullSubscribers.forEach(f => {
       const callback = toFunction(f.reduced(context, event));
       this.#schedule(callback);
     });
+  };
+
+  #flushState = () => {
+    this.#stateSubscribers.forEach(f => {
+      const callback = toFunction(f(this.snapshot));
+      this.#schedule(callback);
+    });
+  };
+
+  #flush = () => {
+    this.#flushState();
+    this.#flushSubscribers();
   };
 
   #sendInnerEvents = () => {
@@ -573,16 +585,12 @@ export class Interpreter<
   };
 
   #merge = ({ pContext, context }: ActionResult<Pc, Tc>) => {
-    const previousPContext = cloneDeep(this.#pContext);
     const previousContext = structuredClone(this.#context);
 
     this.#pContext = merge(this.#pContext, pContext);
     this.#context = merge(this.#context, context);
 
-    const check =
-      !equal(previousPContext, this.#pContext) ||
-      !equal(previousContext, this.#context);
-
+    const check = !equal(previousContext, this.#context);
     if (check) this.#flush();
 
     this.#sendInnerEvents();
@@ -777,10 +785,11 @@ export class Interpreter<
 
         const handlePromise = (type: 'then' | 'catch', payload: any) => {
           const out = () => {
-            this.#event = t.any({
+            const event = {
               type: `${src}::${type}`,
               payload,
-            });
+            };
+            this.#changeEvent(t.any(event));
 
             const transitions = toArray.typed(
               type === 'then' ? then : _catch,
@@ -888,6 +897,7 @@ export class Interpreter<
     const check5 = promises.length < 1;
     if (check5) return;
 
+    this.#event = `${from}::${AFTER_EVENT}`;
     const promise = anyPromises(from, ...promises);
     return promise;
   };
@@ -1013,6 +1023,8 @@ export class Interpreter<
     return entries;
   }
 
+  //TODO check and rebuild subscribers (all)
+
   /**
    * @deprecated
    * used only for testing
@@ -1027,11 +1039,18 @@ export class Interpreter<
     return;
   }
 
+  #changeEvent = (event: ToEvents<E, P>) => {
+    this.#event = event;
+    this.#flushE();
+    this.#flushSubscribers();
+  };
+
   get #collecteds() {
     const entries = Array.from(this.#collecteds0);
     const out = entries.map(([from, { after, always, promisee }]) => {
       const promise = async () => {
         if (always) {
+          this.#changeEvent(`${from}::${ALWAYS_EVENT}`);
           const cb = () => {
             const { diffEntries, diffExits } = this.#diffNext(
               always.target,
@@ -1059,6 +1078,7 @@ export class Interpreter<
 
         const promises: TimeoutPromise<void>[] = [];
         if (after) {
+          this.#changeEvent(`${from}::${AFTER_EVENT}`);
           const _after = async () => {
             return after().then(transition => {
               if (transition) {
@@ -1136,7 +1156,13 @@ export class Interpreter<
   #performSelfTransitions = async () => {
     this.#status = 'busy';
     this.#makeBusy();
+
+    const pEvent = this.#event;
     await Promise.all(this.#collecteds.map(f => f()));
+    const cEvent = this.#event;
+    const check = !equal(pEvent, cEvent);
+    if (check) this.#flushE();
+
     this.#makeWork();
   };
 
@@ -1151,8 +1177,8 @@ export class Interpreter<
 
   pause = () => {
     this.#rinitIntervals();
-    this.#fullSubscribers.forEach(f => f.close());
-    this.#weakSubscribers.forEach(f => f.close());
+    this.#subscribers.forEach(f => f.close());
+    this.#valueSubscribers.forEach(f => f.close());
     this.#childrenServices.forEach(c => c.pause());
     this.#status = 'paused';
   };
@@ -1161,16 +1187,16 @@ export class Interpreter<
     if (this.#status === 'paused') {
       this.#status = 'working';
       this.#performActivities();
-      this.#fullSubscribers.forEach(f => f.open());
-      this.#weakSubscribers.forEach(f => f.open());
+      this.#subscribers.forEach(f => f.open());
+      this.#valueSubscribers.forEach(f => f.open());
       this.#childrenServices.forEach(c => c.resume());
     }
   };
 
   stop = () => {
     this.pause();
-    this.#fullSubscribers.forEach(f => f.unsubscribe());
-    this.#weakSubscribers.forEach(f => f.unsubscribe());
+    this.#subscribers.forEach(f => f.unsubscribe());
+    this.#valueSubscribers.forEach(f => f.unsubscribe());
     this.#childrenServices.forEach(c => c.stop());
     this.#status = 'stopped';
   };
@@ -1217,15 +1243,15 @@ export class Interpreter<
     return this.#machine.addOptions;
   }
 
-  #weakSubscribers = new Set<Subscriber<E, P, Tc>>();
-  #fullSubscribers = new Set<Subscriber<E, P, Tc>>();
+  #valueSubscribers = new Set<Subscriber<E, P, Tc>>();
+  #eventSubscribers = new Set<Subscriber<E, P, Tc>>();
+  #subscribers = new Set<Subscriber<E, P, Tc>>();
+  #stateSubscribers = new Set<(state: State<Tc>) => void>();
 
-  #subscribers = new Set<(state: State<Tc>) => void>();
-
-  addWeakSubscriber: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
+  subscribeValue: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
-    const find = Array.from(this.#weakSubscribers).find(f => f.id === id);
+    const find = Array.from(this.#valueSubscribers).find(f => f.id === id);
     if (find) return find;
 
     const subcriber = createSubscriber(
@@ -1234,13 +1260,49 @@ export class Interpreter<
       _subscriber,
       id,
     );
-    this.#weakSubscribers.add(subcriber);
+    this.#valueSubscribers.add(subcriber);
     return subcriber;
   };
 
-  subscribe = (sub: (state: State<Tc>) => void) => {
-    this.#subscribers.add(sub);
-    return () => this.#subscribers.delete(sub);
+  /**
+   * @deprecated
+   * use internally
+   */
+  ___subscribeEvent: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
+    const eventsMap = this.#machine.eventsMap;
+    const promiseesMap = this.#machine.promiseesMap;
+    const find = Array.from(this.#eventSubscribers).find(f => f.id === id);
+    if (find) return find;
+
+    const subcriber = createSubscriber(
+      eventsMap,
+      promiseesMap,
+      _subscriber,
+      id,
+    );
+    this.#eventSubscribers.add(subcriber);
+    return subcriber;
+  };
+
+  /**
+   * @deprecated
+   * use internally
+   */
+  get ___subscribeE() {
+    return this.___subscribeEvent;
+  }
+
+  #flushE = () => {
+    this.#eventSubscribers.forEach(this.#scheduleSubscriber);
+  };
+
+  /**
+   * @deprecated
+   * use internally
+   */
+  __subscribeState = (sub: (state: State<Tc>) => void) => {
+    this.#stateSubscribers.add(sub);
+    return () => this.#stateSubscribers.delete(sub);
   };
 
   get snapshot(): State<Tc> {
@@ -1255,10 +1317,10 @@ export class Interpreter<
     );
   }
 
-  #addFullSubscriber: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
+  subscribe: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
-    const find = Array.from(this.#fullSubscribers).find(f => f.id === id);
+    const find = Array.from(this.#subscribers).find(f => f.id === id);
     if (find) return find;
 
     const subcriber = createSubscriber(
@@ -1267,7 +1329,7 @@ export class Interpreter<
       _subscriber,
       id,
     );
-    this.#fullSubscribers.add(subcriber);
+    this.#subscribers.add(subcriber);
     return subcriber;
   };
 
@@ -1313,8 +1375,9 @@ export class Interpreter<
   // #region Next
 
   protected _send: _Send_F<E, P, Pc, Tc> = event => {
-    // type PR = PromiseeResult<E, Pc, Tc>;
-
+    this.#changeEvent(event);
+    this.#status = 'sending';
+    this.#weakFlush();
     let result = this.#contexts;
     let sv = this.#value;
     const entriesFlat = Object.entries(this.#flat);
@@ -1382,8 +1445,6 @@ export class Interpreter<
     const check = this.#cannotEvent(_event);
     if (check) return;
     const event = transformEventArg(_event);
-    this.#event = event;
-    this.#status = 'sending';
     const { result, next } = this._send(event);
     this.#merge(result);
 
@@ -1570,10 +1631,7 @@ export class Interpreter<
   #sendTo = <T extends EventObject>(to: string, event: T) => {
     const service = this.#childrenServices.find(({ id }) => id === to);
 
-    if (service) {
-      console.warn('Sending event to child machine');
-      service.send(typings.anify(event));
-    }
+    if (service) service.send(typings.anify(event));
   };
 
   #reduceChild = <T extends AnyMachine = AnyMachine>(
@@ -1590,7 +1648,7 @@ export class Interpreter<
       this.#childrenServices.push(typings.forceCast(service));
     }
 
-    const subscriber = service.#addFullSubscriber((_, { type }) => {
+    const subscriber = service.subscribe((_, { type }) => {
       const _subscribers = toArray.typed(subscribers);
 
       _subscribers.forEach(({ contexts, events }) => {

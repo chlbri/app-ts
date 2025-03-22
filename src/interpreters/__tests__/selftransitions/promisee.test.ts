@@ -198,7 +198,7 @@ describe('promisee', () => {
     describe('#01 => max is not defined', () => {
       const service = interpret(machine, defaultC);
       const useValue = constructValue(service);
-      const log = vi.spyOn(console, 'log');
+      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
       const error = 'Delay (DELAY) is not defined';
 
       test('#01 => Start', () => {

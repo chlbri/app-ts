@@ -283,7 +283,7 @@ export interface AnyInterpreter<
   _ppC: (pContext: Pc) => AnyMachine<E, P, Pc, Tc>;
   _provideContext: (context: Tc) => AnyMachine<E, P, Pc, Tc>;
 
-  addWeakSubscriber: AddSubscriber_F<E, P, Tc>;
+  subscribeValue: AddSubscriber_F<E, P, Tc>;
 
   send: (event: EventArg<E, P>) => void;
   toAction: (action: ActionConfig) => Action<E, P, Pc, Tc> | undefined;
