@@ -1023,8 +1023,6 @@ export class Interpreter<
     return entries;
   }
 
-  //TODO check and rebuild subscribers (all)
-
   /**
    * @deprecated
    * used only for testing
