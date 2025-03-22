@@ -84,7 +84,13 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
-import { IS_TEST, reduceFnMap, replaceAll, typings } from '~utils';
+import {
+  IS_TEST,
+  reduceFnMap,
+  replaceAll,
+  toFunction,
+  typings,
+} from '~utils';
 import { ChildS, type ChildS2 } from './../machine/types';
 import { merge } from './../utils/merge';
 import {
@@ -416,7 +422,7 @@ export class Interpreter<
     this.#schedule(callback);
   };
 
-  flushSubscribers = () => {
+  #weakFlush = () => {
     this.#weakSubscribers.forEach(this.#scheduleSubscriber);
   };
 
@@ -424,9 +430,10 @@ export class Interpreter<
 
   #next = async () => {
     this.#selfTransitionsCounter++;
-    this.flushSubscribers();
+    this.#weakFlush();
     this.#rinitIntervals();
     this.#performActivities();
+    this.#flush();
     await this.#performSelfTransitions();
   };
 
@@ -443,14 +450,12 @@ export class Interpreter<
 
       await this.#next();
 
-      const currentConfig = this.#value;
-      check = !equal(previousValue, currentConfig);
+      const currentValue = this.#value;
+      check = !equal(previousValue, currentValue);
 
       const duration = Date.now() - startTime;
       const check2 = duration > TIME_TO_RINIT_SELF_COUNTER;
-      if (check2) {
-        this.#selfTransitionsCounter = 0;
-      }
+      if (check2) this.#selfTransitionsCounter = 0;
     } while (check);
 
     this.#selfTransitionsCounter = 0;
@@ -547,6 +552,26 @@ export class Interpreter<
     return out;
   };
 
+  #flush = () => {
+    const context = cloneDeep(this.#context);
+    const event = cloneDeep(this.#event);
+    this.#subscribers.forEach(f => {
+      const callback = toFunction(f(this.snapshot));
+      this.#schedule(callback);
+    });
+    this.#fullSubscribers.forEach(f => {
+      const callback = toFunction(f.reduced(context, event));
+      this.#schedule(callback);
+    });
+  };
+
+  #sendInnerEvents = () => {
+    const sentEvent = this.#machine.__sentEvents.pop();
+    if (sentEvent) {
+      this.#sendTo(sentEvent.to, sentEvent.event);
+    }
+  };
+
   #merge = ({ pContext, context }: ActionResult<Pc, Tc>) => {
     const previousPContext = cloneDeep(this.#pContext);
     const previousContext = structuredClone(this.#context);
@@ -554,26 +579,13 @@ export class Interpreter<
     this.#pContext = merge(this.#pContext, pContext);
     this.#context = merge(this.#context, context);
 
-    this.#fullSubscribers.forEach(f => {
-      const callback = () => f.reduced(this.#context, this.#event);
-      this.#schedule(callback);
-    });
-
     const check =
       !equal(previousPContext, this.#pContext) ||
       !equal(previousContext, this.#context);
 
-    if (check) {
-      this.#subscribers.forEach(f => {
-        const callback = () => f(this.snapshot);
-        this.#schedule(callback);
-      });
-    }
+    if (check) this.#flush();
 
-    const sentEvent = this.#machine.__sentEvents.pop();
-    if (sentEvent) {
-      this.#sendTo(sentEvent.to, sentEvent.event);
-    }
+    this.#sendInnerEvents();
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
@@ -1232,13 +1244,15 @@ export class Interpreter<
   };
 
   get snapshot(): State<Tc> {
-    return {
-      status: this.status,
-      value: this.value,
-      context: this.context,
-      scheduleds: this.scheduleds,
-      mode: this.mode,
-    };
+    return Object.freeze(
+      cloneDeep({
+        status: this.status,
+        value: this.value,
+        context: this.context,
+        scheduleds: this.scheduleds,
+        mode: this.mode,
+      }),
+    );
   }
 
   #addFullSubscriber: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
