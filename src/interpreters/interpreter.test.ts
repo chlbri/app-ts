@@ -269,7 +269,6 @@ describe('Interpreter', () => {
       predicates: {
         condition: isValue('context.condition', false),
         limit: (_, { iterator }) => {
-          console.log('iterator', '=>', iterator);
           return iterator < 99;
         },
       },
@@ -345,7 +344,6 @@ describe('Interpreter', () => {
         status: 'working',
         value: 'idle',
         context: {},
-        scheduleds: 2,
         mode: 'strict',
       };
       expect(actaul).toStrictEqual(expected);
@@ -518,9 +516,8 @@ describe('Interpreter', () => {
   });
 
   describe('#07 => sender', () => {
-    const TEXT = 'Activities Integration Test from perform';
-
-    describe(TEXT, () => {
+    describe('Activities Integration Test from perform', () => {
+      const TEXT = 'Activities Integration Test from perform';
       // #region Config
 
       const service = interpret(machine21, {
@@ -531,7 +528,7 @@ describe('Interpreter', () => {
         exact: true,
       });
 
-      const subscriber = service.addWeakSubscriber(
+      const subscriber = service.subscribeValue(
         {
           WRITE: (_, { value }) =>
             console.log('WRITE with', ':', `"${value}"`),
@@ -541,7 +538,10 @@ describe('Interpreter', () => {
         'idSub',
       );
 
-      const log = vi.spyOn(console, 'log');
+      const dumbFn = vi.fn();
+      service.___subscribeE(dumbFn, 'id');
+      service.___subscribeE(dumbFn, 'id');
+      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       beforeAll(() => {
         log.mockClear();
@@ -549,11 +549,8 @@ describe('Interpreter', () => {
       });
 
       type SE = Parameters<typeof service.send>[0];
-
       const INPUT = 'a';
-
       const FAKES = fakeDB.filter(({ name }) => name.includes(INPUT));
-
       const strings: (string | string[])[] = [];
 
       // #region Hooks
@@ -689,7 +686,13 @@ describe('Interpreter', () => {
         test(...useIterator(6, 2));
         test(...useIteratorC(6, 3));
 
-        describe(...useConsole(4, 'NEXT time, you will see!!'));
+        describe(
+          ...useConsole(
+            4,
+            'NEXT time, you will see!!',
+            'NEXT time, you will see!!',
+          ),
+        );
       });
 
       test(...useWaiter(6, 5));
@@ -783,7 +786,13 @@ describe('Interpreter', () => {
         test(...useIterator(42, 2));
         test(...useIteratorC(24, 3));
         test(...useInput('', 4));
-        describe(...useConsole(5, ['WRITE with', ':', '""']));
+        describe(
+          ...useConsole(
+            5,
+            ['WRITE with', ':', '""'],
+            ['WRITE with', ':', '""'],
+          ),
+        );
       });
 
       test(...useWaiter(12, 16));
@@ -836,7 +845,13 @@ describe('Interpreter', () => {
         test(...useIterator(66, 2));
         test(...useIteratorC(36, 3));
         test(...useInput('', 4));
-        describe(...useConsole(5, ['WRITE with', ':', `"${INPUT}"`]));
+        describe(
+          ...useConsole(
+            5,
+            ['WRITE with', ':', `"${INPUT}"`],
+            ['WRITE with', ':', `"${INPUT}"`],
+          ),
+        );
       });
 
       test(...useWaiter(12, 20));
@@ -883,7 +898,9 @@ describe('Interpreter', () => {
         test(...useIterator(90, 2));
         test(...useIteratorC(48, 3));
         test(...useInput(INPUT, 4));
-        describe(...useConsole(5, 'nothing call nothing'));
+        describe(
+          ...useConsole(5, 'nothing call nothing', 'nothing call nothing'),
+        );
       });
 
       test(...useWaiter(6, 25));
@@ -928,7 +945,7 @@ describe('Interpreter', () => {
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));
         describe(
-          ...useConsole(6, ...Array(2).fill('nothing call nothing')),
+          ...useConsole(6, ...Array(3).fill('nothing call nothing')),
         );
       });
 
@@ -982,9 +999,14 @@ describe('Interpreter', () => {
       });
 
       test(...useSend('SEND', 34));
-
       test(...useWaiter(6, 35));
-      describe(...useConsole(36, ...Array(6).fill('sendPanelToUser')));
+      describe(
+        ...useConsole(
+          36,
+          'nothing call nothing',
+          ...Array(6).fill('sendPanelToUser'),
+        ),
+      );
 
       test('#37 => machine1.value', () => {
         const child = service.at('machine1');
@@ -992,7 +1014,7 @@ describe('Interpreter', () => {
       });
 
       test('#38 => Resend idSub', () => {
-        service.addWeakSubscriber(nothing, 'idSub');
+        service.subscribeValue(nothing, 'idSub');
       });
 
       test('#39 => Resend machine1', () => {
@@ -1018,16 +1040,20 @@ describe('Interpreter', () => {
             expect(log).toBeCalledTimes(strings.length);
           });
 
-          test('#02 => Log is called "73" times', () => {
-            expect(log).toBeCalledTimes(79);
+          test('#02 => Log is called "85" times', () => {
+            expect(log).toBeCalledTimes(85);
           });
         });
 
-        test('#03 => Log the time of all tests', () => {
+        test('#03', () => {
+          expect(dumbFn).toBeCalledTimes(9);
+        });
+
+        test('#04 => Log the time of all tests', () => {
           console.timeEnd(TEXT);
         });
 
-        test('#04 => dispose', service[Symbol.asyncDispose].bind(service));
+        test('#05 => dispose', service[Symbol.asyncDispose].bind(service));
       });
     });
   });

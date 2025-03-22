@@ -31,14 +31,14 @@ describe('machine coverage', () => {
         exact: true,
       });
 
-      const subscriber = service.addWeakSubscriber({
+      const subscriber = service.subscribeValue({
         WRITE: (_, { value }) =>
           console.log('WRITE with', ':', `"${value}"`),
         NEXT: () => console.log('NEXT time, you will see!!'),
         else: nothing,
       });
 
-      const log = vi.spyOn(console, 'log');
+      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       beforeAll(() => {
         console.time(TEXT);
@@ -185,7 +185,13 @@ describe('machine coverage', () => {
         test(...useIterator(6, 2));
         test(...useIteratorC(6, 3));
 
-        describe(...useConsole(4, 'NEXT time, you will see!!'));
+        describe(
+          ...useConsole(
+            4,
+            'NEXT time, you will see!!',
+            'NEXT time, you will see!!',
+          ),
+        );
       });
 
       test(...useWaiter(6, 5));
@@ -279,7 +285,13 @@ describe('machine coverage', () => {
         test(...useIterator(42, 2));
         test(...useIteratorC(24, 3));
         test(...useInput('', 4));
-        describe(...useConsole(5, ['WRITE with', ':', '""']));
+        describe(
+          ...useConsole(
+            5,
+            ['WRITE with', ':', '""'],
+            ['WRITE with', ':', '""'],
+          ),
+        );
       });
 
       test(...useWaiter(12, 16));
@@ -332,7 +344,13 @@ describe('machine coverage', () => {
         test(...useIterator(66, 2));
         test(...useIteratorC(36, 3));
         test(...useInput('', 4));
-        describe(...useConsole(5, ['WRITE with', ':', `"${INPUT}"`]));
+        describe(
+          ...useConsole(
+            5,
+            ['WRITE with', ':', `"${INPUT}"`],
+            ['WRITE with', ':', `"${INPUT}"`],
+          ),
+        );
       });
 
       test(...useWaiter(12, 20));
@@ -379,7 +397,9 @@ describe('machine coverage', () => {
         test(...useIterator(90, 2));
         test(...useIteratorC(48, 3));
         test(...useInput(INPUT, 4));
-        describe(...useConsole(5, 'nothing call nothing'));
+        describe(
+          ...useConsole(5, 'nothing call nothing', 'nothing call nothing'),
+        );
       });
 
       test(...useWaiter(6, 25));
@@ -424,7 +444,7 @@ describe('machine coverage', () => {
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));
         describe(
-          ...useConsole(6, ...Array(2).fill('nothing call nothing')),
+          ...useConsole(6, ...Array(3).fill('nothing call nothing')),
         );
       });
 
@@ -484,8 +504,8 @@ describe('machine coverage', () => {
             expect(log).toBeCalledTimes(strings.length);
           });
 
-          test('#02 => Log is called "73" times', () => {
-            expect(log).toBeCalledTimes(73);
+          test('#02 => Log is called "78" times', () => {
+            expect(log).toBeCalledTimes(78);
           });
         });
 

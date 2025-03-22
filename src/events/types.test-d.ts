@@ -1,6 +1,10 @@
-import type { MaxExceededEvent } from 'src/constants/events';
-
-import type { AlwaysEvent, InitEvent, ToEvents } from './types';
+import type {
+  AfterEvent,
+  AlwaysEvent,
+  InitEvent,
+  MaxExceededEvent,
+  ToEvents,
+} from './types';
 
 type TT1 = ToEvents<
   {
@@ -26,5 +30,6 @@ expectTypeOf<TT1>().toEqualTypeOf<
     }
   | InitEvent
   | AlwaysEvent
+  | AfterEvent
   | MaxExceededEvent
 >();

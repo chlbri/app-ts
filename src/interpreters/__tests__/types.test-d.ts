@@ -1,5 +1,9 @@
-import type { AlwaysEvent, InitEvent } from '~events';
-import type { MaxExceededEvent } from '../../constants/events';
+import type {
+  AfterEvent,
+  AlwaysEvent,
+  InitEvent,
+  MaxExceededEvent,
+} from '~events';
 import type {
   ActionKeysFrom,
   ConfigFrom,
@@ -63,6 +67,7 @@ expectTypeOf<TTE>().toEqualTypeOf<
     }
   | InitEvent
   | AlwaysEvent
+  | AfterEvent
   | MaxExceededEvent
 >();
 
