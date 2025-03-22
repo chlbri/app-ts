@@ -42,7 +42,7 @@ import type {
 } from '~transitions';
 import type { FnMapReduced, PrimitiveObject } from '~types';
 import type { InterpreterFrom } from './interpreter';
-import type { Subscriber } from './subscriber';
+import type { SubscriberClass } from './subscriber';
 
 export type WorkingStatus =
   | 'idle'
@@ -238,13 +238,13 @@ export type AddSubscriber_F<
 > = (
   subscriber: FnMapReduced<E, P, Tc>,
   id?: string,
-) => Subscriber<E, P, Tc>;
+) => SubscriberClass<E, P, Tc>;
 
 export type Subscribe_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (subscriber: FnMapReduced<E, P, Tc>) => Subscriber<E, P, Tc>;
+> = (subscriber: FnMapReduced<E, P, Tc>) => SubscriberClass<E, P, Tc>;
 
 export type Selector_F<T = any> = <
   D extends Decompose2<T>,
@@ -303,7 +303,6 @@ export type CreateInterval2_F = (
 export type State<Tc extends PrimitiveObject> = {
   context?: Tc;
   mode?: Mode;
-  scheduleds: number;
   status: WorkingStatus;
   value?: StateValue;
 };

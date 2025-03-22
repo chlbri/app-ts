@@ -80,7 +80,7 @@ class SubscriberClass<
   }
 }
 
-export type { SubscriberClass as Subscriber };
+export type { SubscriberClass };
 
 export type CreateSubscriber_F = <
   E extends EventsMap,

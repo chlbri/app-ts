@@ -344,7 +344,6 @@ describe('Interpreter', () => {
         status: 'working',
         value: 'idle',
         context: {},
-        scheduleds: 2,
         mode: 'strict',
       };
       expect(actaul).toStrictEqual(expected);

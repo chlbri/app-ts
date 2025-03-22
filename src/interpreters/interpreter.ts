@@ -118,7 +118,7 @@ import {
   type WorkingStatus,
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
-import { createSubscriber, type Subscriber } from './subscriber';
+import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
  * The `Interpreter` class is responsible for interpreting and managing the state of a machine.
@@ -413,14 +413,14 @@ export class Interpreter<
     return this.#scheduler.schedule;
   }
 
-  #produceSubscriberCallback = (subscriber: Subscriber<E, P, Tc>) => {
+  #produceSubscriberCallback = (subscriber: SubscriberClass<E, P, Tc>) => {
     const context = cloneDeep(this.#context);
     const event = structuredClone(this.#event);
     const callback = () => subscriber.reduced(context, event);
     return callback;
   };
 
-  #scheduleSubscriber = (subscriber: Subscriber<E, P, Tc>) => {
+  #scheduleSubscriber = (subscriber: SubscriberClass<E, P, Tc>) => {
     const callback = this.#produceSubscriberCallback(subscriber);
     this.#schedule(callback);
   };
@@ -1243,9 +1243,9 @@ export class Interpreter<
     return this.#machine.addOptions;
   }
 
-  #valueSubscribers = new Set<Subscriber<E, P, Tc>>();
-  #eventSubscribers = new Set<Subscriber<E, P, Tc>>();
-  #subscribers = new Set<Subscriber<E, P, Tc>>();
+  #valueSubscribers = new Set<SubscriberClass<E, P, Tc>>();
+  #eventSubscribers = new Set<SubscriberClass<E, P, Tc>>();
+  #subscribers = new Set<SubscriberClass<E, P, Tc>>();
   #stateSubscribers = new Set<(state: State<Tc>) => void>();
 
   subscribeValue: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
@@ -1311,7 +1311,6 @@ export class Interpreter<
         status: this.status,
         value: this.value,
         context: this.context,
-        scheduleds: this.scheduleds,
         mode: this.mode,
       }),
     );
