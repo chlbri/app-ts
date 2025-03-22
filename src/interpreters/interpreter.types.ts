@@ -286,7 +286,6 @@ export interface AnyInterpreter<
   addWeakSubscriber: AddSubscriber_F<E, P, Tc>;
 
   send: (event: EventArg<E, P>) => void;
-  flushSubscribers: () => void;
   toAction: (action: ActionConfig) => Action<E, P, Pc, Tc> | undefined;
   toPredicate: (
     guard: GuardConfig,

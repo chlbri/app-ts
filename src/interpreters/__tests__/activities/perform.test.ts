@@ -479,7 +479,7 @@ describe(TEXT, () => {
     });
 
     test('#03 => Length of calls of warn is "95"', () => {
-      expect(dumbFn).toBeCalledTimes(95);
+      expect(dumbFn).toBeCalledTimes(102);
       unsubscribe();
     });
 
