@@ -1,9 +1,12 @@
 import type {
+  AllEvent,
   EventArg,
+  EventObject,
   EventsMap,
   PromiseeMap,
   ToEventsR,
 } from '../types';
+import { isStringEvent } from './isStringEvent';
 
 export type TransformEventArg = <
   E extends EventsMap,
@@ -17,4 +20,10 @@ export const transformEventArg: TransformEventArg = event => {
   if (check1) return { type: event, payload: {} } as any;
 
   return event;
+};
+
+export const transformAllEvent = (value: AllEvent): EventObject => {
+  return isStringEvent(value)
+    ? { type: value, payload: {} }
+    : transformEventArg(value);
 };
