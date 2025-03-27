@@ -339,29 +339,44 @@ describe('Interpreter', () => {
     test('#00 => Start the service', service.start.bind(service));
 
     test('#01 => Check the snapshot', () => {
-      const actaul = service.snapshot;
+      const actual = service.snapshot;
       const expected = {
         status: 'working',
         value: 'idle',
         context: {},
         mode: 'strict',
+        event: 'machine$$init',
       };
-      expect(actaul).toStrictEqual(expected);
+
+      expect(actual).toStrictEqual(expected);
     });
 
     test('#02 => Send NEXT', () => {
       service.send('NEXT');
     });
 
-    test('#03 => inc is called', () => {
+    test('#03 => Check the snapshot', () => {
+      const actual = service.snapshot;
+      const expected = {
+        status: 'working',
+        value: 'idle',
+        context: {},
+        mode: 'strict',
+        event: { type: 'NEXT', payload: {} },
+      };
+
+      expect(actual).toStrictEqual(expected);
+    });
+
+    test('#04 => inc is called', () => {
       expect(inc).toBeCalledTimes(1);
     });
 
-    test('#04 => Send NEXT again', () => {
+    test('#05 => Send NEXT again', () => {
       service.send('NEXT');
     });
 
-    test('#05 => inc is called again', () => {
+    test('#06 => inc is called again', () => {
       expect(inc).toBeCalledTimes(2);
     });
   });
