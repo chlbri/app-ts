@@ -35,7 +35,6 @@ import {
   eventToType,
   INIT_EVENT,
   possibleEvents,
-  transformAllEvent,
   transformEventArg,
   type EventArg,
   type EventObject,
@@ -1310,7 +1309,7 @@ export class Interpreter<
       value: this.value,
       context: this.context,
       mode: this.mode,
-      event: transformAllEvent(this.#event),
+      event: this.#event,
     };
 
     return Object.freeze(cloneDeep(out));
