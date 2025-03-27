@@ -56,6 +56,12 @@ const machine = createMachine({
 View changelog
 </summary>
 
+## [0.1.17-beta] - 2024-03-27 _11:00_
+
+- Add current event to state
+
+<br/>
+
 ## [0.1.15-beta] - 2024-03-22 _19:00_
 
 - Ameliorate subscription

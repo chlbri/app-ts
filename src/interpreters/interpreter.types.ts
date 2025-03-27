@@ -10,7 +10,9 @@ import type {
 import type { Delay } from '~delays';
 import type {
   EventArg,
+  EventObject,
   EventsMap,
+  EventStrings,
   PromiseeMap,
   ToEvents,
   ToEventsR,
@@ -301,10 +303,11 @@ export type CreateInterval2_F = (
 ) => Interval2;
 
 export type State<Tc extends PrimitiveObject> = {
-  context?: Tc;
-  mode?: Mode;
+  context: Tc;
+  mode: Mode;
   status: WorkingStatus;
-  value?: StateValue;
+  value: StateValue;
+  event: EventObject | EventStrings;
 };
 
 export type Subcription = { unsubscribe: () => void };

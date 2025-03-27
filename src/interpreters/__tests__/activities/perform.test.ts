@@ -498,8 +498,8 @@ describe(TEXT, () => {
       });
     });
 
-    test('#03 => Length of calls of warn is "95"', () => {
-      expect(dumbFn).toBeCalledTimes(36);
+    test('#03 => Length of calls of warn is "42"', () => {
+      expect(dumbFn).toBeCalledTimes(42);
       unsubscribe();
     });
 

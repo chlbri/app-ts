@@ -1040,7 +1040,7 @@ export class Interpreter<
   #changeEvent = (event: ToEvents<E, P>) => {
     this.#event = event;
     this.#flushE();
-    this.#flushSubscribers();
+    this.#flush();
   };
 
   get #collecteds() {
@@ -1304,14 +1304,15 @@ export class Interpreter<
   };
 
   get snapshot(): State<Tc> {
-    return Object.freeze(
-      cloneDeep({
-        status: this.status,
-        value: this.value,
-        context: this.context,
-        mode: this.mode,
-      }),
-    );
+    const out = {
+      status: this.status,
+      value: this.value,
+      context: this.context,
+      mode: this.mode,
+      event: this.#event,
+    };
+
+    return Object.freeze(cloneDeep(out));
   }
 
   subscribe: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
