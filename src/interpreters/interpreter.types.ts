@@ -12,6 +12,7 @@ import type {
   EventArg,
   EventObject,
   EventsMap,
+  EventStrings,
   PromiseeMap,
   ToEvents,
   ToEventsR,
@@ -306,7 +307,7 @@ export type State<Tc extends PrimitiveObject> = {
   mode: Mode;
   status: WorkingStatus;
   value: StateValue;
-  event: EventObject;
+  event: EventObject | EventStrings;
 };
 
 export type Subcription = { unsubscribe: () => void };

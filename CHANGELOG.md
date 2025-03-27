@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.1.19-beta] - 2024-03-27 _15:00_
+
+- BREAKING CHANGE : rewind last versions
+
+<br/>
+
 ## [0.1.18-beta] - 2024-03-27 _12:00_
 
 - Simplify event in state
