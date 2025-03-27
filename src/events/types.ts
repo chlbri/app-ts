@@ -10,7 +10,7 @@ import type {
 
 export type EventObject<T = any> = {
   type: string;
-  payload?: T;
+  payload: T;
 };
 
 export type EventsMap = Record<string, PrimitiveObject>;
@@ -32,6 +32,8 @@ export type EventStrings =
   | AlwaysEvent
   | AfterEvent
   | MaxExceededEvent;
+
+export type AllEvent = EventObject | EventStrings;
 
 type _EventsR<T extends EventsMap> =
   Unionize<T> extends infer U

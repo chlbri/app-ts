@@ -345,7 +345,7 @@ describe('Interpreter', () => {
         value: 'idle',
         context: {},
         mode: 'strict',
-        event: 'machine$$init',
+        event: { type: 'machine$$init', payload: {} },
       };
 
       expect(actual).toStrictEqual(expected);
