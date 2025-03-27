@@ -1309,7 +1309,7 @@ export class Interpreter<
       value: this.value,
       context: this.context,
       mode: this.mode,
-      event: this.#event,
+      event: this.#event, // Directly assigning this.#event as requested
     };
 
     return Object.freeze(cloneDeep(out));
