@@ -1,0 +1,535 @@
+QCM
+
+
+
+Généralités
+1)	Qu'est-ce qu'un ordinateur ?
+a)	Un appareil qui lit des vidéos
+b)	Un appareil électronique qui traite des données et exécute des programmes
+c)	Un appareil de stockage de données
+d)	Un appareil qui imprime des documents
+
+2)	Quels sont les principaux composants d'un ordinateur ?
+a)	Processeur, RAM, Disque dur, Carte mère, Alimentation
+b)	Processeur, RAM, Carte graphique, Imprimante
+c)	Processeur, Écran, Clavier, Souris
+d)	RAM, Disque dur, Modem, Clé USB
+
+3)	À quoi sert le processeur ?
+a)	Stocker les données
+b)	Exécuter les instructions des programmes
+c)	Connecter l'ordinateur à Internet
+d)	Gérer la mémoire
+
+4)	Qu'est-ce qu'un SSD ?
+a)	Un type de mémoire vive
+b)	Un type de processeur
+c)	Un type de disque dur plus rapide et fiable qu'un HDD
+d)	Un périphérique de sortie
+
+5)	Qu'est-ce qu'un logiciel ?
+a)	Un périphérique matériel
+b)	Un programme informatique qui permet d’effectuer des tâches spécifiques
+c)	Un type de stockage
+d)	Un type de processeur
+
+6)	Qu'est-ce qu'internet ?
+a)	Un type de logiciel
+b)	Un réseau mondial d'ordinateurs interconnectés
+c)	Un disque dur virtuel
+d)	Une application mobile
+7)	Qu'est-ce qu'un moteur de recherche ?
+a)	Un appareil pour connecter un ordinateur à Internet
+b)	Un site qui permet de trouver des informations sur Internet
+c)	Un logiciel qui protège les ordinateurs des virus
+d)	Un réseau social
+
+8)	Qu'est-ce qu'un antivirus ?
+a)	Un programme qui empêche les virus de se propager
+b)	Un programme qui permet de traiter des images
+c)	Un programme qui permet de programmer des applications
+d)	Un programme de messagerie instantanée
+
+9)	Quelle est la différence entre un écran LCD et OLED ?
+a)	OLED est plus vieux que LCD
+b)	OLED offre de meilleurs contrastes et couleurs que LCD
+c)	LCD est plus rapide qu'OLED
+d)	Il n'y a pas de différence entre LCD et OLED
+
+10)	À quoi sert un VPN ?
+a)	À protéger contre les virus
+b)	À sécuriser la connexion Internet et masquer l’IP
+c)	À augmenter la vitesse de connexion
+d)	À envoyer des emails
+11. Qu'est-ce que la 5G ?
+a) Un type de connexion Bluetooth
+b) La cinquième génération de réseau mobile
+c) Une version avancée de Wi-Fi
+d) Un nouveau type de câble USB
+12. Qu'est-ce qu'un fichier exécutable ?
+a) Un fichier qui est compressé
+b) Un fichier qui permet de stocker des informations
+c) Un fichier qui lance un programme lorsqu'il est ouvert
+d) Un fichier qui contient uniquement du texte
+13. Quel logiciel permet de lire un fichier PDF ?
+a) Microsoft Word
+b) Adobe Acrobat Reader
+c) Notepad
+d) VLC Media Player
+14. Que signifie "cloud computing" ?
+a) Un type de logiciel de traitement de texte
+b) Un service qui stocke des données sur Internet
+c) Un périphérique de stockage externe
+d) Une technologie de communication par satellite
+15. Qu'est-ce qu'un bug ?
+a) Un virus informatique
+b) Une erreur dans un programme informatique
+c) Un type de fichier malveillant
+d) Un logiciel pour corriger des erreurs
+16. Qu'est-ce qu'un fichier compressé ?
+a) Un fichier réduit en taille pour économiser de l’espace (ZIP, RAR)
+b) Un fichier qui contient plusieurs types de documents
+c) Un fichier qui est protégé par un mot de passe
+d) Un fichier contenant des données cryptées
+17. Qu'est-ce qu'un périphérique d'entrée ?
+a) Un appareil utilisé pour entrer des données (clavier, souris)
+b) Un appareil utilisé pour afficher des informations (écran)
+c) Un appareil qui imprime des documents (imprimante)
+d) Un appareil qui stocke des données (disque dur)
+18. Qu'est-ce qu'un périphérique de sortie ?
+a) Un appareil utilisé pour entrer des données (clavier, souris)
+b) Un appareil utilisé pour afficher des informations (écran)
+c) Un appareil qui stocke des données (disque dur)
+d) Un appareil qui permet de connecter des périphériques à un ordinateur (USB)
+19. Quelle est la différence entre un disque dur (HDD) et un SSD ?
+a) Un SSD est plus rapide et plus fiable qu'un HDD, qui utilise des disques mécaniques
+b) Un HDD est plus rapide qu'un SSD
+c) Un SSD est plus volumineux qu'un HDD
+d) Il n'y a aucune différence entre un HDD et un SSD
+20. Qu'est-ce qu'un réseau social ?
+a) Un site qui permet de partager des vidéos en ligne
+b) Un site où l'on peut interagir avec des amis, partager des informations (Facebook, Twitter)
+c) Un site de commerce en ligne
+d) Un site qui permet de stocker des fichiers
+
+Sécurité Informatique
+Qu’est-ce qu’un virus informatique ?
+a) Un programme malveillant qui infecte un ordinateur
+b) Un antivirus qui protège l'ordinateur
+c) Un logiciel permettant de crypter les fichiers
+d) Un fichier qui permet de télécharger d'autres programmes
+Comment se protéger des virus ?
+a) Installer un antivirus et ne pas ouvrir de fichiers suspects
+b) Toujours connecter l'ordinateur à Internet
+c) Désactiver la sécurité de l'ordinateur
+d) Utiliser uniquement des systèmes d'exploitation Linux
+Qu’est-ce qu’un mot de passe sécurisé ?
+a) Un mot de passe long avec lettres, chiffres et caractères spéciaux
+b) Un mot de passe composé de 6 chiffres
+c) Un mot de passe facile à retenir
+d) Un mot de passe identique à l'identifiant
+Que signifie HTTPS ?
+a) HyperText Transfer Protocol Secure, un protocole sécurisé pour les sites web
+b) Hyper Transfer Protocol Secure, un protocole utilisé pour sécuriser les réseaux
+c) High Tech Secure Protocol, une norme pour les connexions Internet
+d) Hypertext Transmission Secure Protocol, un protocole de messagerie
+Qu'est-ce qu'un pare-feu (firewall) ?
+a) Un système de protection contre les intrusions
+b) Un logiciel de gestion de fichiers
+c) Un type de virus informatique
+d) Un périphérique d'entrée
+________________________________________
+4. Bureautique et Logiciels
+Qu’est-ce qu’un traitement de texte ?
+a) Un logiciel permettant de créer et éditer des documents (Word, Google Docs)
+b) Un logiciel de création graphique
+c) Un outil pour gérer les e-mails
+d) Un logiciel pour créer des tableaux de calculs
+Quel est l’équivalent gratuit de Microsoft Office ?
+a) LibreOffice ou Google Docs
+b) Notepad++ et Paint
+c) Microsoft Word Online
+d) Adobe Acrobat
+Qu'est-ce qu'un tableur ?
+a) Un logiciel permettant de créer des tableaux et des calculs (Excel)
+b) Un logiciel de traitement d'images
+c) Un programme pour faire des présentations
+d) Un outil pour programmer des scripts
+Qu'est-ce qu'une présentation PowerPoint ?
+a) Un diaporama contenant du texte, des images et des animations
+b) Un programme pour créer des fichiers audio
+c) Un logiciel pour programmer des applications mobiles
+d) Un outil de gestion des tâches et des projets
+Comment convertir un document Word en PDF ?
+a) En l’enregistrant au format PDF via "Enregistrer sous"
+b) En l'ouvrant avec un lecteur PDF
+c) En utilisant un convertisseur en ligne
+d) En cliquant sur "Fichier > Exporter"
+Qu'est-ce qu’un fichier compressé ?
+a) Un fichier réduit en taille pour économiser de l’espace (ZIP, RAR)
+b) Un fichier contenant plusieurs images
+c) Un fichier vide
+d) Un fichier avec un mot de passe de sécurité
+Quel logiciel permet de lire un fichier PDF ?
+a) Adobe Acrobat Reader, Edge, ou Chrome
+b) Notepad
+c) Microsoft Word
+d) VLC Media Player
+Comment insérer une image dans un document Word ?
+a) En utilisant "Insertion > Image"
+b) En copiant et collant l'image
+c) En cliquant sur "Image > Insérer"
+d) En glissant-déposant l'image dans le document
+Qu’est-ce qu’un copier-coller ?
+a) Une action permettant de dupliquer du texte ou des fichiers
+b) Une fonction pour imprimer des documents
+c) Un processus pour copier des images
+d) Un moyen de télécharger des fichiers depuis Internet
+Quels sont les raccourcis clavier pour copier et coller ?
+a) Ctrl + C (copier), Ctrl + V (coller)
+b) Ctrl + X (copier), Ctrl + P (coller)
+c) Ctrl + A (copier), Ctrl + T (coller)
+d) Ctrl + D (copier), Ctrl + F (coller)
+5. Matériel Informatique
+À quoi sert une souris d’ordinateur ?
+a) À déplacer le curseur et sélectionner des éléments
+b) À changer la couleur de l'écran
+c) À connecter l'ordinateur à Internet
+d) À imprimer des documents
+Quelle est la différence entre un écran LCD et OLED ?
+a) OLED offre de meilleurs contrastes et couleurs que LCD
+b) LCD est plus clair que OLED
+c) OLED est plus économique en énergie que LCD
+d) LCD a une meilleure qualité d'image que OLED
+Qu’est-ce qu’un périphérique d’entrée ?
+a) Un appareil utilisé pour entrer des données (clavier, souris)
+b) Un appareil pour afficher des images (écran)
+c) Un appareil pour stocker des données (disque dur)
+d) Un appareil qui imprime des documents (imprimante)
+Qu’est-ce qu’un périphérique de sortie ?
+a) Un appareil recevant des données (écran, imprimante)
+b) Un appareil permettant d’entrer des données (clavier, souris)
+c) Un disque qui stocke des informations
+d) Un câble de connexion à Internet
+Qu’est-ce qu’une imprimante ?
+a) Un appareil qui imprime des documents sur papier
+b) Un appareil qui envoie des données à un autre ordinateur
+c) Un dispositif permettant de copier des fichiers
+d) Un périphérique pour lire des documents PDF
+Que signifie USB ?
+a) Universal Serial Bus, un port standard pour brancher des périphériques
+b) Un logiciel de connexion Internet
+c) Un type de carte mémoire
+d) Un standard de connexion sans fil
+Quelle est la capacité typique d'une clé USB ?
+a) De 4 Go à 1 To
+b) De 128 Mo à 1 Go
+c) De 100 Mo à 500 Mo
+d) De 1 Go à 10 Go
+Quelle est la différence entre HDMI et VGA ?
+a) HDMI transmet l’image et le son en haute qualité, VGA est plus ancien
+b) HDMI est utilisé uniquement pour les vidéos, VGA pour le son
+c) HDMI est un format plus lent que VGA
+d) VGA transmet une meilleure qualité d'image que HDMI
+Que signifie Bluetooth ?
+a) Une technologie sans fil pour connecter des appareils à courte distance
+b) Un type de câble de connexion
+c) Une technologie de stockage sans fil
+d) Une norme pour les disques durs externes
+Qu’est-ce qu’un disque dur externe ?
+a) Un périphérique de stockage portable
+b) Un appareil permettant de connecter plusieurs ordinateurs
+c) Un type de mémoire vive
+d) Un périphérique d’entrée
+________________________________________
+6. Réseaux Sociaux et Communication
+Quel est le réseau social le plus utilisé ?
+a) Facebook
+b) Instagram
+c) Twitter
+d) LinkedIn
+Quelle est la différence entre un message privé et un commentaire ?
+a) Un message privé est personnel, un commentaire est public
+b) Un commentaire est privé, un message privé est public
+c) Un commentaire peut être supprimé par l’auteur, un message privé non
+d) Il n’y a pas de différence
+Qu’est-ce qu’un hashtag (#) ?
+a) Un mot-clé utilisé sur les réseaux sociaux
+b) Une sorte de message privé
+c) Un type de message groupé
+d) Un style d’emoji
+À quoi sert WhatsApp ?
+a) À envoyer des messages et appels via Internet
+b) À consulter des vidéos en ligne
+c) À publier des photos en public
+d) À créer des blogs
+Que signifie DM sur Instagram ?
+a) Direct Message (message privé)
+b) Digital Media
+c) Digital Message
+d) Direct Media
+Qu’est-ce qu’un emoji ?
+a) Une petite image utilisée pour exprimer une émotion
+b) Un message écrit en texte stylisé
+c) Un programme pour communiquer sur les réseaux sociaux
+d) Un type de vidéo animée
+Comment signaler un contenu inapproprié sur Facebook ?
+a) En cliquant sur "Signaler"
+b) En envoyant un message à l’administrateur
+c) En le commentant
+d) En le partageant avec un message
+Qu’est-ce qu’un influenceur ?
+a) Une personne influente sur les réseaux sociaux
+b) Un logiciel de gestion des réseaux sociaux
+c) Un outil pour augmenter le nombre de vues sur un poste
+d) Une personne qui gère des publicités
+Quelle est la limite de caractères sur Twitter ?
+a) 280 caractères
+b) 200 caractères
+c) 500 caractères
+d) 140 caractères
+Qu’est-ce qu’un blog ?
+a) Un site personnel où l'on partage des articles
+b) Une plateforme de vente en ligne
+c) Un programme de partage de vidéos
+d) Un outil de gestion des e-mails
+________________________________________
+7. Cloud et Stockage en Ligne
+Qu’est-ce que le cloud computing ?
+a) Un service qui stocke des données sur Internet
+b) Un type de disque dur interne
+c) Un logiciel de traitement de données
+d) Un outil pour améliorer la vitesse d’Internet
+Citez un exemple de service cloud.
+a) Google Drive, Dropbox, OneDrive
+b) Adobe Acrobat, Photoshop
+c) Microsoft Excel, PowerPoint
+d) VLC, Windows Media Player
+Quels sont les avantages du cloud ?
+a) Accessibilité, sauvegarde, et partage facile
+b) Permet de créer des applications mobiles
+c) Empêche toute perte de données
+d) Augmente la vitesse du réseau Internet
+
+Qu’est-ce qu’un téléchargement ?
+a) L’action de récupérer un fichier depuis Internet
+b) L’action d’envoyer un fichier sur Internet
+c) L’action d’archiver des fichiers dans le cloud
+d) L’action de copier des fichiers depuis un autre appareil
+Quelle est la différence entre "upload" et "download" ?
+a) Upload = envoyer un fichier, Download = télécharger un fichier
+b) Upload = télécharger un fichier, Download = envoyer un fichier
+c) Upload = stocker un fichier, Download = supprimer un fichier
+d) Upload = compresser un fichier, Download = l’extraire
+Qu’est-ce qu’un serveur ?
+a) Un ordinateur qui héberge et distribue des données
+b) Un appareil qui se connecte à Internet
+c) Un périphérique pour imprimer des documents
+d) Un réseau privé d’ordinateurs
+Comment libérer de l’espace de stockage sur un téléphone ?
+a) En supprimant des fichiers inutiles et en vidant le cache
+b) En ajoutant de nouveaux fichiers
+c) En installant un antivirus
+d) En réinitialisant le téléphone
+Qu’est-ce qu’un NAS ?
+a) Un stockage en réseau utilisé pour sauvegarder des données
+b) Un type de disque dur externe
+c) Une plateforme de partage de fichiers
+d) Un logiciel de gestion de fichiers
+Pourquoi sauvegarder ses données ?
+a) Pour éviter de les perdre en cas de panne
+b) Pour les partager avec d’autres personnes
+c) Pour augmenter la capacité de stockage
+d) Pour les compresser et gagner de l’espace
+Comment transférer des fichiers volumineux ?
+a) Avec WeTransfer, Google Drive, ou une clé USB
+b) Par e-mail
+c) Avec des câbles USB uniquement
+d) Par message instantané
+Voici le QCM finalisé pour les dernières questions de votre liste :
+
+
+8. Programmation et Développement
+Qu’est-ce que la programmation informatique ?
+a) L’écriture de code pour créer des logiciels
+b) La création de graphiques et de designs pour des sites web
+c) La gestion des bases de données
+d) La mise à jour des systèmes d’exploitation
+Citez un langage de programmation.
+a) Python, Java, C++, JavaScript
+b) Excel, Word, PowerPoint
+c) Photoshop, Illustrator, InDesign
+d) HTML, CSS, PHP
+Qu'est-ce qu'un algorithme ?
+a) Une suite d'instructions pour résoudre un problème
+b) Un programme qui compile des données
+c) Un langage de programmation spécifique
+d) Un type de base de données
+À quoi sert HTML ?
+a) À créer des pages web
+b) À coder des programmes informatiques
+c) À gérer des bases de données
+d) À styliser des pages web
+Qu’est-ce qu’une application mobile ?
+a) Un logiciel conçu pour smartphones et tablettes
+b) Un programme informatique installé sur un ordinateur
+c) Un système d’exploitation
+d) Une application Web accessible depuis un navigateur
+Qu’est-ce qu’une base de données ?
+a) Un système de stockage structuré d’informations
+b) Un logiciel permettant de programmer des applications
+c) Un serveur de communication pour les données
+d) Un fichier contenant des données texte
+Que signifie SQL ?
+a) Structured Query Language, un langage pour gérer les bases de données
+b) Super Query Language, un langage pour la recherche d’informations
+c) Système Query Language, utilisé pour les applications mobiles
+d) Simple Query Language, un langage pour gérer les systèmes de fichiers
+Qu’est-ce qu’un site responsive ?
+a) Un site web qui s’adapte aux écrans mobiles et ordinateurs
+b) Un site web qui se charge très rapidement
+c) Un site web réservé à un usage professionnel
+d) Un site web avec des animations interactives
+À quoi sert CSS ?
+a) À styliser les pages web
+b) À créer des bases de données
+c) À programmer des algorithmes
+d) À concevoir des programmes mobiles
+Qu’est-ce qu’un bug ?
+a) Une erreur dans un programme informatique
+b) Une fonctionnalité d’un programme
+c) Un type de logiciel de sécurité
+d) Un outil de développement
+________________________________________
+9. Intelligence Artificielle et Nouveaux Concepts
+Qu'est-ce que l'intelligence artificielle (IA) ?
+a) Une technologie qui permet aux machines d'apprendre et de résoudre des problèmes
+b) Un type de logiciel pour améliorer les graphismes
+c) Une méthode de communication entre ordinateurs
+d) Un langage de programmation spécifique
+Qu’est-ce qu’un chatbot ?
+a) Un programme qui répond automatiquement aux utilisateurs
+b) Un logiciel de traitement d’image
+c) Une méthode de cryptage des données
+d) Un réseau social
+À quoi sert la reconnaissance faciale ?
+a) À identifier des personnes via une caméra
+b) À scanner des codes-barres
+c) À analyser la qualité d’image d’une caméra
+d) À connecter des appareils entre eux
+Qu’est-ce que la réalité virtuelle ?
+a) Une simulation numérique immersive
+b) Une technique de retouche photo
+c) Un programme d’édition vidéo
+d) Un système de gestion des réseaux sociaux
+Quelle est la différence entre réalité virtuelle et réalité augmentée ?
+a) La réalité augmentée ajoute des éléments virtuels au monde réel
+b) La réalité virtuelle est plus coûteuse que la réalité augmentée
+c) La réalité virtuelle est un type de jeu vidéo, la réalité augmentée est un outil éducatif
+d) La réalité augmentée remplace entièrement le monde réel
+Qu’est-ce qu’un deepfake ?
+a) Une vidéo modifiée grâce à l'IA pour imiter quelqu'un
+b) Un type de jeu vidéo interactif
+c) Une application de réalité virtuelle
+d) Un type de logiciel de gestion des réseaux sociaux
+Qu’est-ce que la cybersécurité ?
+a) La protection des systèmes informatiques contre les attaques
+b) La surveillance des comportements des utilisateurs en ligne
+c) La création de programmes de cryptage
+d) Un type de technologie pour les jeux vidéo
+Qu’est-ce que la blockchain ?
+a) Un registre sécurisé utilisé pour les cryptomonnaies
+b) Un type de système d’exploitation
+c) Un réseau social sécurisé
+d) Un logiciel de gestion des données financières
+À quoi sert un VPN ?
+a) À sécuriser la connexion Internet et masquer l’IP
+b) À surveiller l’activité des utilisateurs sur le web
+c) À créer des réseaux sociaux privés
+d) À configurer des serveurs
+Qu’est-ce que le Metaverse ?
+a) Un univers virtuel interactif
+b) Un réseau social dédié aux jeux vidéo
+c) Un type de cryptomonnaie
+d) Un service de streaming
+________________________________________
+10. Divers
+Qu’est-ce qu’un QR Code ?
+a) Un code-barres lisible par un smartphone
+b) Un format de fichier pour les vidéos
+c) Un outil de gestion des mots de passe
+d) Un type de fichier image
+Que signifie GIF ?
+a) Graphics Interchange Format, un format d’image animée
+b) General Image Format, un format d’image fixe
+c) Graphical Internet Format, un format pour les vidéos
+d) Grouped Image Format, un format pour les photos
+Que signifie JPEG ?
+a) Joint Photographic Experts Group, un format d’image
+b) Java Personal Encoding Group, un format pour les vidéos
+c) Joint Pixel Export Group, un format pour les applications
+d) Java Picture Efficient Group, un format pour les documents
+Qu’est-ce que la 5G ?
+a) La cinquième génération de réseau mobile
+b) Une technologie pour le stockage des données
+c) Un langage de programmation
+d) Un format de fichier audio
+
+Que signifie IoT ?
+a) Internet of Things (Internet des Objets)
+b) Internet of Texts (Internet des Textes)
+c) International Online Technology
+d) Integrated Online Technology
+
+Qu’est-ce qu’un fichier exécutable ?
+a) Un fichier qui lance un programme lorsqu’il est ouvert (exemple : .exe sous Windows)
+b) Un fichier texte lisible uniquement par des éditeurs
+c) Un fichier contenant des images compressées
+d) Un fichier crypté
+Quelle est la différence entre un logiciel libre et un logiciel propriétaire ?
+a) Un logiciel libre peut être modifié et distribué librement, tandis qu’un logiciel propriétaire est protégé par des droits d’auteur
+b) Un logiciel libre est plus cher qu’un logiciel propriétaire
+c) Un logiciel libre ne fonctionne que sur Linux
+d) Un logiciel propriétaire est uniquement en version d’essai
+Qu'est-ce qu'un raccourci clavier pour ouvrir le gestionnaire des tâches sous Windows ?
+a) Ctrl + Shift + Échap (ou Ctrl + Alt + Suppr, puis "Gestionnaire des tâches")
+b) Alt + Tab
+c) Windows + R
+d) Ctrl + Alt + Del
+Qu'est-ce que le mode avion sur un smartphone ?
+a) Un mode qui désactive les connexions réseau (Wi-Fi, Bluetooth, données mobiles)
+b) Un mode qui économise la batterie
+c) Un mode pour activer toutes les connexions sans fil
+d) Un mode pour bloquer les appels entrants
+Qu’est-ce qu’un malware ?
+a) Un logiciel malveillant conçu pour nuire à un système informatique
+b) Un logiciel permettant de crypter des fichiers
+c) Un programme pour gérer les sauvegardes
+d) Un type de virus informatique
+Qu’est-ce qu’une extension de fichier ?
+a) Les lettres après un point dans un nom de fichier qui indiquent son type (.jpg, .pdf, .mp3)
+b) Une fonctionnalité permettant de modifier un fichier
+c) Un type de fichier spécifique
+d) Une application installée sur l’ordinateur
+Que signifie "plug and play" ?
+a) Un système permettant de brancher un périphérique et de l’utiliser sans installation manuelle
+b) Un système qui nécessite un logiciel pour fonctionner
+c) Une fonctionnalité d’un système d’exploitation
+d) Un type de périphérique mobile
+Qu’est-ce qu’un cookie sur Internet ?
+a) Un petit fichier stocké par un site web pour enregistrer des informations sur l’utilisateur
+b) Un virus informatique
+c) Une fonctionnalité pour la navigation privée
+d) Un format de fichier pour les images
+Que signifie "cloud gaming" ?
+a) Une technologie permettant de jouer à des jeux vidéo en streaming sans les installer sur son appareil
+b) Un service de sauvegarde dans le cloud
+c) Un type de jeu vidéo pour les consoles
+d) Un logiciel de création de jeux vidéo
+Comment prendre une capture d’écran sous Windows ?
+a) Touche Impr. Écran (ou Windows + Shift + S pour sélectionner une zone)
+b) Alt + Print Screen
+c) Windows + E
+d) Ctrl + S
+
+

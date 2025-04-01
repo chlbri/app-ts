@@ -42,7 +42,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "pnpm run rm:lib && pnpm run rollup",
+    "build": "pnpm run rollup",
     "ci": "pnpm run config:off && pnpm run lint && pnpm run test",
     "ci:admin": "pnpm run rm && pnpm run upgrade && pnpm run ci",
     "clean": "pnpm run remove && pnpm run config",
@@ -60,7 +60,6 @@
     "rinit": "pnpm run rm && pnpm run config",
     "rinit:off": "pnpm run rm && pnpm run config:off",
     "rm": "pnpm rm -rf node_modules pnpm-lock.yaml",
-    "rm:lib": "pnpm rm -rf lib",
     "rollup": "rollup -c",
     "test": "pnpm run test:coverage --no-coverage",
     "test:coverage": "vitest run",

@@ -1,6 +1,5 @@
 import type { NotUndefined } from '@bemedev/types';
 import { aliasTs } from '@bemedev/vitest-alias';
-import { exclude } from '@bemedev/vitest-exclude';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
 import tsconfig from '../tsconfig.json';
 
@@ -9,20 +8,20 @@ type Plugins = ViteUserConfig['plugins'];
 
 const plugins = [
   aliasTs(tsconfig as any),
-  exclude({
-    ignoreCoverageFiles: [
-      '**/index.ts',
-      '**/types.ts',
-      '**/*.example.ts',
-      '**/*.types.ts',
-      '**/*.typegen.ts',
-      '**/*.fixtures.ts',
-      '**/experimental.ts',
-      '**/fixtures.ts',
-      '**/fixture.ts',
-      '**/*.fixture.ts',
-    ],
-  }),
+  // exclude({
+  //   ignoreCoverageFiles: [
+  //     '**/index.ts',
+  //     '**/types.ts',
+  //     '**/*.example.ts',
+  //     '**/*.types.ts',
+  //     '**/*.typegen.ts',
+  //     '**/*.fixtures.ts',
+  //     '**/experimental.ts',
+  //     '**/fixtures.ts',
+  //     '**/fixture.ts',
+  //     '**/*.fixture.ts',
+  //   ],
+  // }),
 ] satisfies Plugins;
 
 const commonTest = {
@@ -38,6 +37,26 @@ const commonTest = {
     reportsDirectory: '.coverage',
     all: true,
     provider: 'v8',
+    include: ['src/**/*.{ts,tsx}'],
+    exclude: [
+      '**/.vitest.ts',
+      '**/index.ts',
+      '**/types.ts',
+      '**/*.test-d.ts',
+      '**/*.example.ts',
+      '**/*.types.ts',
+      '**/*.typegen.ts',
+      '**/*.fixtures.ts',
+      '**/experimental.ts',
+      '**/fixtures.ts',
+      '**/fixture.ts',
+      '**/*.fixture.ts',
+      '**/tests/**',
+      '**/__tests__/**',
+      '**/__mocks__/**',
+      '**/__tests__/**',
+      '**/__mocks__/**',
+    ],
   },
   environment: 'node',
 } satisfies Inline;
