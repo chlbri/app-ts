@@ -83,9 +83,9 @@
     "@eslint/js": "^9.23.0",
     "@types/clone-deep": "^4.0.4",
     "@types/node": "^22.13.14",
-    "@typescript-eslint/eslint-plugin": "^8.28.0",
-    "@typescript-eslint/parser": "^8.28.0",
-    "@vitest/coverage-v8": "^3.0.9",
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.29.0",
+    "@vitest/coverage-v8": "^3.1.1",
     "eslint": "^9.23.0",
     "glob": "^11.0.1",
     "globals": "^16.0.0",
@@ -93,11 +93,11 @@
     "onchange": "^7.1.0",
     "prettier": "^3.5.3",
     "pretty-quick": "^4.1.1",
-    "rollup": "^4.37.0",
+    "rollup": "^4.38.0",
     "tslib": "^2.8.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
-    "vitest": "^3.0.9"
+    "vitest": "^3.1.1"
   },
   "dependencies": {
     "@bemedev/basifun": "^0.3.3",
