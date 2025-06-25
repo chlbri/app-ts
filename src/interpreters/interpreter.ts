@@ -1294,11 +1294,7 @@ export class Interpreter<
     this.#eventSubscribers.forEach(this.#scheduleSubscriber);
   };
 
-  /**
-   * @deprecated
-   * use internally
-   */
-  __subscribeState = (sub: (state: State<Tc>) => void) => {
+  subscribe = (sub: (state: State<Tc>) => void) => {
     this.#stateSubscribers.add(sub);
     return () => this.#stateSubscribers.delete(sub);
   };
@@ -1315,7 +1311,11 @@ export class Interpreter<
     return Object.freeze(cloneDeep(out));
   }
 
-  subscribe: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
+  /**
+   * @deprecated
+   * use internally
+   */
+  __subscribeInner: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
     const find = Array.from(this.#subscribers).find(f => f.id === id);
@@ -1646,7 +1646,7 @@ export class Interpreter<
       this.#childrenServices.push(typings.forceCast(service));
     }
 
-    const subscriber = service.subscribe((_, { type }) => {
+    const subscriber = service.__subscribeInner((_, { type }) => {
       const _subscribers = toArray.typed(subscribers);
 
       _subscribers.forEach(({ contexts, events }) => {

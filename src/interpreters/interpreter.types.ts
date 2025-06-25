@@ -312,7 +312,8 @@ export type State<Tc extends PrimitiveObject> = {
 
 export type Subcription = { unsubscribe: () => void };
 
-export type Observer<Tc extends PrimitiveObject> = ((
-  state: State<Tc>,
-) => void) &
-  Subcription;
+export interface Observer<T> {
+  next: (value: T) => void;
+  error: (err: any) => void;
+  complete: () => void;
+}
