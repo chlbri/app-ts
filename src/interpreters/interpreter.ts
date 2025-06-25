@@ -86,13 +86,7 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
-import {
-  IS_TEST,
-  reduceFnMap,
-  replaceAll,
-  toFunction,
-  typings,
-} from '~utils';
+import { IS_TEST, reduceFnMap, replaceAll, typings } from '~utils';
 import { ChildS, type ChildS2 } from './../machine/types';
 import { merge } from './../utils/merge';
 import {
@@ -560,14 +554,14 @@ export class Interpreter<
     const context = cloneDeep(this.#context);
     const event = cloneDeep(this.#event);
     this.#subscribers.forEach(f => {
-      const callback = toFunction(f.reduced(context, event));
+      const callback = () => f.reduced(context, event);
       this.#schedule(callback);
     });
   };
 
   #flushState = () => {
     this.#stateSubscribers.forEach(f => {
-      const callback = toFunction(f(this.snapshot));
+      const callback = () => f(this.snapshot);
       this.#schedule(callback);
     });
   };
