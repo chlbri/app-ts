@@ -1,3 +1,4 @@
+export { decompose, decomposeSV, recompose } from '@bemedev/decompose';
 export * from './environment';
 export * from './merge';
 export * from './nothing';
