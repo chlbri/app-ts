@@ -1299,13 +1299,14 @@ export class Interpreter<
     return () => this.#stateSubscribers.delete(sub);
   };
 
-  get snapshot(): State<Tc> {
-    const out = {
+  get snapshot() {
+    const out: State<Tc> = {
       status: this.status,
       value: this.value,
       context: this.context,
       mode: this.mode,
-      event: this.#event, // Directly assigning this.#event as requested
+      tags: this.#config.tags,
+      event: this.#event,
     };
 
     return Object.freeze(cloneDeep(out));

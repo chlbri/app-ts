@@ -308,12 +308,13 @@ export type State<Tc extends PrimitiveObject> = {
   status: WorkingStatus;
   value: StateValue;
   event: EventObject | EventStrings;
+  tags?: string | readonly string[];
 };
 
 export type Subcription = { unsubscribe: () => void };
 
-export interface Observer<T> {
+export type Observer<T> = {
   next: (value: T) => void;
   error: (err: any) => void;
   complete: () => void;
-}
+};
