@@ -63,6 +63,7 @@ export interface AnyMachine<
 > {
   options: any;
   preConfig: Config;
+  preflat: Record<string, any>;
   postConfig: NodeConfigWithInitials;
   initials: any;
   context: Tc;
