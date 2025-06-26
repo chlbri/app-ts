@@ -345,6 +345,7 @@ describe('Interpreter', () => {
         value: 'idle',
         context: {},
         mode: 'strict',
+        tags: undefined,
         event: 'machine$$init',
       };
 
@@ -362,6 +363,7 @@ describe('Interpreter', () => {
         value: 'idle',
         context: {},
         mode: 'strict',
+        tags: undefined,
         event: { type: 'NEXT', payload: {} },
       };
 

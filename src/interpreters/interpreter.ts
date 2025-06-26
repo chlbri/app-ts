@@ -86,13 +86,7 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
-import {
-  IS_TEST,
-  reduceFnMap,
-  replaceAll,
-  toFunction,
-  typings,
-} from '~utils';
+import { IS_TEST, reduceFnMap, replaceAll, typings } from '~utils';
 import { ChildS, type ChildS2 } from './../machine/types';
 import { merge } from './../utils/merge';
 import {
@@ -425,7 +419,7 @@ export class Interpreter<
     this.#schedule(callback);
   };
 
-  #weakFlush = () => {
+  #flushValue = () => {
     this.#valueSubscribers.forEach(this.#scheduleSubscriber);
   };
 
@@ -433,7 +427,7 @@ export class Interpreter<
 
   #next = async () => {
     this.#selfTransitionsCounter++;
-    this.#weakFlush();
+    this.#flushValue();
     this.#rinitIntervals();
     this.#performActivities();
     await this.#performSelfTransitions();
@@ -560,14 +554,14 @@ export class Interpreter<
     const context = cloneDeep(this.#context);
     const event = cloneDeep(this.#event);
     this.#subscribers.forEach(f => {
-      const callback = toFunction(f.reduced(context, event));
+      const callback = () => f.reduced(context, event);
       this.#schedule(callback);
     });
   };
 
   #flushState = () => {
     this.#stateSubscribers.forEach(f => {
-      const callback = toFunction(f(this.snapshot));
+      const callback = () => f(this.snapshot);
       this.#schedule(callback);
     });
   };
@@ -1294,28 +1288,29 @@ export class Interpreter<
     this.#eventSubscribers.forEach(this.#scheduleSubscriber);
   };
 
-  /**
-   * @deprecated
-   * use internally
-   */
-  __subscribeState = (sub: (state: State<Tc>) => void) => {
+  subscribe = (sub: (state: State<Tc>) => void) => {
     this.#stateSubscribers.add(sub);
     return () => this.#stateSubscribers.delete(sub);
   };
 
-  get snapshot(): State<Tc> {
-    const out = {
+  get snapshot() {
+    const out: State<Tc> = {
       status: this.status,
       value: this.value,
       context: this.context,
       mode: this.mode,
-      event: this.#event, // Directly assigning this.#event as requested
+      tags: this.#config.tags,
+      event: this.#event,
     };
 
     return Object.freeze(cloneDeep(out));
   }
 
-  subscribe: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
+  /**
+   * @deprecated
+   * use internally
+   */
+  __subscribeInner: AddSubscriber_F<E, P, Tc> = (_subscriber, id) => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
     const find = Array.from(this.#subscribers).find(f => f.id === id);
@@ -1375,7 +1370,7 @@ export class Interpreter<
   protected _send: _Send_F<E, P, Pc, Tc> = event => {
     this.#changeEvent(event);
     this.#status = 'sending';
-    this.#weakFlush();
+    this.#flushValue();
     let result = this.#contexts;
     let sv = this.#value;
     const entriesFlat = Object.entries(this.#flat);
@@ -1646,7 +1641,7 @@ export class Interpreter<
       this.#childrenServices.push(typings.forceCast(service));
     }
 
-    const subscriber = service.subscribe((_, { type }) => {
+    const subscriber = service.__subscribeInner((_, { type }) => {
       const _subscribers = toArray.typed(subscribers);
 
       _subscribers.forEach(({ contexts, events }) => {
