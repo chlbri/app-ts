@@ -419,7 +419,7 @@ export class Interpreter<
     this.#schedule(callback);
   };
 
-  #weakFlush = () => {
+  #flushValue = () => {
     this.#valueSubscribers.forEach(this.#scheduleSubscriber);
   };
 
@@ -427,7 +427,7 @@ export class Interpreter<
 
   #next = async () => {
     this.#selfTransitionsCounter++;
-    this.#weakFlush();
+    this.#flushValue();
     this.#rinitIntervals();
     this.#performActivities();
     await this.#performSelfTransitions();
@@ -1370,7 +1370,7 @@ export class Interpreter<
   protected _send: _Send_F<E, P, Pc, Tc> = event => {
     this.#changeEvent(event);
     this.#status = 'sending';
-    this.#weakFlush();
+    this.#flushValue();
     let result = this.#contexts;
     let sv = this.#value;
     const entriesFlat = Object.entries(this.#flat);
