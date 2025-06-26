@@ -1,7 +1,7 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "0.1.23",
-  "description": "A reprogramming method to code better //TODO: Add exports with github copilot",
+  "version": "0.2.0",
+  "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
     "name": "chlbri",
@@ -16,6 +16,17 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "module": "lib/index.js",
+  "exports": {
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./package.json": "./package.json",
+    "./utils/*": {
+      "import": "./lib/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    }
+  },
   "maintainers": [
     {
       "email": "bri_lvi@icloud.com",
