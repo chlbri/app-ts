@@ -8,10 +8,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.2.4-beta] - 2024-03-28 _15:20_
+
+- Fix bindings for subscribeMap and subscribe classes
+- <u>Test coverage **_99.9%_**</u>
+
+<br/>
 ## [0.2.2-beta] - 2024-03-28 _01:50_
 
 - Add subscribe to be compliant with "from" style
-- <u>Test coverage \*_100_</u>
+- <u>Test coverage **_100%_**</u>
 
 <br/>
 

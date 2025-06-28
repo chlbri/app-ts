@@ -1696,10 +1696,10 @@ export class Interpreter<
     this.#scheduler.stop();
   };
 
-  [Symbol.asyncDispose]() {
+  [Symbol.asyncDispose] = () => {
     const out = asyncfy(this[Symbol.dispose]);
     return out();
-  }
+  };
 }
 
 export const TIME_TO_RINIT_SELF_COUNTER = MIN_ACTIVITY_TIME * 2;
