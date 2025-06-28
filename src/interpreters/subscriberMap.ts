@@ -89,18 +89,18 @@ class SubscriberMapClass<
     return this.#state;
   }
 
-  close() {
+  close = () => {
     if (this.state !== 'disposed') this.#state = 'paused';
-  }
+  };
 
-  open() {
+  open = () => {
     if (this.state !== 'disposed') this.#state = 'active';
-  }
+  };
 
-  unsubscribe() {
+  unsubscribe = () => {
     this.close();
     this.#state = 'disposed';
-  }
+  };
 }
 
 export type { SubscriberMapClass };
