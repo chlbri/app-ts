@@ -1,4 +1,5 @@
 export { decompose, decomposeSV, recompose } from '@bemedev/decompose';
+export { default as deepEqual } from 'fast-deep-equal';
 export * from './environment';
 export * from './merge';
 export * from './nothing';
