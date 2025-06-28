@@ -1,6 +1,10 @@
 import { t } from '@bemedev/types';
-import { MAX_EXCEEDED_EVENT_TYPE } from '~constants';
-import { INIT_EVENT, type EventsMap, type PromiseeMap } from '~events';
+import {
+  INIT_EVENT,
+  MAX_EXCEEDED_EVENT_TYPE,
+  type EventsMap,
+  type PromiseeMap,
+} from '~events';
 import type { FnMap, FnMapReduced } from '~types';
 import { reduceFnMap, reduceFnMap2, toEventsMap } from './reduceFnMap';
 

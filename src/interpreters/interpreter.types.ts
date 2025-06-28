@@ -42,9 +42,10 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '~transitions';
-import type { FnMapReduced, PrimitiveObject } from '~types';
+import type { PrimitiveObject } from '~types';
 import type { InterpreterFrom } from './interpreter';
-import type { SubscriberClass } from './subscriber';
+import type { SubscriberOptions } from './subscriber';
+import type { SubscriberMapClass } from './subscriberMap';
 
 export type WorkingStatus =
   | 'idle'
@@ -233,20 +234,55 @@ export type _Send_F<
   next?: NodeConfigWithInitials;
 };
 
+export type StateR<
+  Tc extends PrimitiveObject = PrimitiveObject,
+  P = any,
+> = {
+  context: Tc;
+  status: WorkingStatus;
+  value: StateValue;
+  event: P;
+  tags?: string | readonly string[];
+};
+
+type _FnMapR<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  R = any,
+  TT extends ToEventsR<E, P> = ToEventsR<E, P>,
+> = {
+  [key in TT['type']]?: (
+    state: StateR<Tc, Extract<TT, { type: key }>>,
+  ) => R;
+} & {
+  else?: (state: State<Tc>) => R;
+};
+
+export type FnSubReduced<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  R = any,
+  TT extends ToEventsR<E, P> = ToEventsR<E, P>,
+> =
+  | ((state: StateR<Tc, Extract<TT, { type: string }>['payload']>) => R)
+  | _FnMapR<E, P, Tc, R, ToEventsR<E, P>>;
+
 export type AddSubscriber_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
-  subscriber: FnMapReduced<E, P, Tc>,
-  id?: string,
-) => SubscriberClass<E, P, Tc>;
+  subscriber: FnSubReduced<E, P, Tc>,
+  options?: SubscriberOptions<Tc>,
+) => SubscriberMapClass<E, P, Tc>;
 
 export type Subscribe_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (subscriber: FnMapReduced<E, P, Tc>) => SubscriberClass<E, P, Tc>;
+> = (subscriber: FnSubReduced<E, P, Tc>) => SubscriberMapClass<E, P, Tc>;
 
 export type Selector_F<T = any> = <
   D extends Decompose2<T>,
@@ -285,7 +321,7 @@ export interface AnyInterpreter<
   _ppC: (pContext: Pc) => AnyMachine<E, P, Pc, Tc>;
   _provideContext: (context: Tc) => AnyMachine<E, P, Pc, Tc>;
 
-  subscribeValue: AddSubscriber_F<E, P, Tc>;
+  subscribeMap: AddSubscriber_F<E, P, Tc>;
 
   send: (event: EventArg<E, P>) => void;
   toAction: (action: ActionConfig) => Action<E, P, Pc, Tc> | undefined;
@@ -302,14 +338,10 @@ export type CreateInterval2_F = (
   config: NOmit<IntervalParams, 'exact'>,
 ) => Interval2;
 
-export type State<Tc extends PrimitiveObject> = {
-  context: Tc;
-  mode: Mode;
-  status: WorkingStatus;
-  value: StateValue;
-  event: EventObject | EventStrings;
-  tags?: string | readonly string[];
-};
+export type State<Tc extends PrimitiveObject> = StateR<
+  Tc,
+  EventObject | EventStrings
+>;
 
 export type Subcription = { unsubscribe: () => void };
 

@@ -1,7 +1,7 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "0.1.23-beta",
-  "description": "A reprogramming method to code better //TODO: Add exports with github copilot",
+  "version": "0.2.2-beta",
+  "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
     "name": "chlbri",
@@ -42,7 +42,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "pnpm rm:lib && pnpm run rollup",
+    "build": "pnpm run rollup",
     "ci": "pnpm run config:off && pnpm run lint && pnpm run test",
     "ci:admin": "pnpm run rm && pnpm run upgrade && pnpm run ci",
     "clean": "pnpm run remove && pnpm run config",
@@ -59,8 +59,7 @@
     "prettier": "prettier --write \"src/**/*.{ts,tsx}\" --log-level silent",
     "rinit": "pnpm run rm && pnpm run config",
     "rinit:off": "pnpm run rm && pnpm run config:off",
-    "rm": "rm -rf node_modules pnpm-lock.yaml",
-    "rm:lib": "rm -rf lib",
+    "rm": "rimraf ./node_modules ./pnpm-lock.yaml",
     "rollup": "rollup -c",
     "test": "pnpm run test:coverage --no-coverage",
     "test:coverage": "vitest run",
