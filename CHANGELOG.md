@@ -8,7 +8,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
-## [0.1.20-beta] - 2024-03-28 _01:50_
+## [0.2.2-beta] - 2024-03-28 _01:50_
 
 - Add subscribe to be compliant with "from" style
 - <u>Test coverage \*_100_</u>
