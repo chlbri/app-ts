@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.2.2-beta] - 2024-03-28 _01:50_
+
+- Add subscribe to be compliant with "from" style
+- <u>Test coverage \*_100_</u>
+
+<br/>
+
 ## [0.1.19-beta] - 2024-03-27 _15:00_
 
 - BREAKING CHANGE : rewind last versions
@@ -84,14 +91,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.3-beta] - 2024-03-14 _00:00_
 
-- <u>Test coverage **100%%**</u>
+- <u>Test coverage **100**</u>
 - Documentation comming...
 
 <br/>
 
 ## [0.1.2-canary] - 2024-03-14 _00:00_
 
-- <u>Test coverage **100%%**</u>
+- <u>Test coverage **100%**</u>
 - Add helpers
 - Documentation comming...
 
@@ -99,14 +106,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0-beta] - 2024-03-04 _15:30_
 
-- <u>Test coverage **100%%**</u>
+- <u>Test coverage **100%**</u>
 - Documentation comming...
 
 <br/>
 
 ## [0.1.0-canary] - 2024-03-04 _15:30_
 
-- <u>Test coverage **100%%**</u>
+- <u>Test coverage **100%**</u>
 
 <br/>
 

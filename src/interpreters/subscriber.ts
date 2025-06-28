@@ -1,32 +1,12 @@
 import type { TimerState } from '@bemedev/interval2';
+import equal from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import { PrimitiveObject } from '~types';
-import { nothing, reduceFnMap2 } from '~utils';
-import { type FnMapReduced } from '../types/primitives';
+import type { State } from './interpreter.types';
 
-export type SubscriberMap<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  R = any,
-> = {
-  func: FnMapReduced<E, P, Tc, R>;
-  id: string;
-  // status: string;
-  // close: () => void;
-};
-
-class SubscriberClass<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  R = any,
-> {
-  #subscriber: FnMapReduced<E, P, Tc, R>;
-
-  #eventsMap: E;
-  #promiseesMap: P;
+class SubscriberClass<Tc extends PrimitiveObject = PrimitiveObject> {
+  #subscriber: (state: State<Tc>) => void;
+  #equals: (a: State<Tc>, b: State<Tc>) => boolean;
 
   #state: TimerState = 'idle';
 
@@ -35,30 +15,14 @@ class SubscriberClass<
   }
 
   constructor(
-    eventsMap: E,
-    promiseesMap: P,
-    subscriber: FnMapReduced<E, P, Tc, R>,
-    private _id: string,
+    subscriber: (state: State<Tc>) => void,
+    equals: (a: State<Tc>, b: State<Tc>) => boolean = equal,
+    private _id: string = nanoid(),
   ) {
     this.#subscriber = subscriber;
-    this.#eventsMap = eventsMap;
-    this.#promiseesMap = promiseesMap;
+    this.#equals = equals;
 
     this.#state = 'active';
-  }
-
-  get reduced(): (context: Tc, events: ToEvents<E, P>) => R {
-    if (this.#state === 'paused') return nothing as any;
-
-    const func = (context: Tc, events: ToEvents<E, P>) => {
-      return reduceFnMap2(
-        this.#eventsMap,
-        this.#promiseesMap,
-        this.#subscriber,
-      )(context, events);
-    };
-
-    return func;
   }
 
   /* v8 ignore next 3*/
@@ -66,44 +30,46 @@ class SubscriberClass<
     return this.#state;
   }
 
-  close() {
+  get cannotPerform() {
+    return !(this.#state === 'active');
+  }
+
+  fn = (previous: State<Tc>, next: State<Tc>) => {
+    if (this.cannotPerform) return;
+
+    const _equals = this.#equals(previous, next);
+    if (_equals) return;
+
+    this.#subscriber(next);
+  };
+
+  close = () => {
     if (this.state !== 'disposed') this.#state = 'paused';
-  }
+  };
 
-  open() {
+  open = () => {
     if (this.state !== 'disposed') this.#state = 'active';
-  }
+  };
 
-  unsubscribe() {
+  unsubscribe = () => {
     this.close();
     this.#state = 'disposed';
-  }
+  };
 }
 
 export type { SubscriberClass };
-
-export type CreateSubscriber_F = <
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+export type SubscriberOptions<
   Tc extends PrimitiveObject = PrimitiveObject,
-  R = any,
->(
-  eventsMap: E,
-  promiseesMap: P,
-  subscriber: FnMapReduced<E, P, Tc, R>,
-  id?: string,
-) => SubscriberClass<E, P, Tc, R>;
+> = {
+  id?: string;
+  equals?: (a: State<Tc>, b: State<Tc>) => boolean;
+};
 
-export const createSubscriber: CreateSubscriber_F = (
-  eventsMap,
-  promiseesMap,
-  subscriber,
-  id,
+export const createSubscriber = <
+  Tc extends PrimitiveObject = PrimitiveObject,
+>(
+  subscriber: (state: State<Tc>) => void,
+  options?: SubscriberOptions<Tc>,
 ) => {
-  return new SubscriberClass(
-    eventsMap,
-    promiseesMap,
-    subscriber,
-    id ?? nanoid(),
-  );
+  return new SubscriberClass(subscriber, options?.equals, options?.id);
 };

@@ -1,5 +1,6 @@
 import { t } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
+import equal from 'fast-deep-equal';
 import { MAX_SELF_TRANSITIONS, MIN_ACTIVITY_TIME } from '~constants';
 import { DELAY, fakeDB, machine1 } from '~fixturesData';
 import { createMachine } from '~machine';
@@ -344,7 +345,6 @@ describe('Interpreter', () => {
         status: 'working',
         value: 'idle',
         context: {},
-        mode: 'strict',
         tags: undefined,
         event: 'machine$$init',
       };
@@ -362,7 +362,6 @@ describe('Interpreter', () => {
         status: 'working',
         value: 'idle',
         context: {},
-        mode: 'strict',
         tags: undefined,
         event: { type: 'NEXT', payload: {} },
       };
@@ -473,12 +472,18 @@ describe('Interpreter', () => {
       context: { iterator: 0 },
     });
 
+    test('#00 => Reset all mocks', () => {
+      inc.mockClear();
+      inc2.mockClear();
+      src.mockClear();
+    });
+
     test('#01 => Start the service', () => {
       service.start();
     });
 
-    test('#02 => src is called', () => {
-      expect(src).toBeCalledTimes(3);
+    test('#02 => src is called 1 times', () => {
+      expect(src).toBeCalledTimes(1);
     });
 
     test('#03 => inc2 is not called', () => {
@@ -489,7 +494,7 @@ describe('Interpreter', () => {
       return vi.advanceTimersByTimeAsync(1000);
     });
 
-    test('#05 => inc is called', () => {
+    test('#05 => inc2 is called', () => {
       expect(inc2).toBeCalledTimes(1);
     });
 
@@ -530,6 +535,12 @@ describe('Interpreter', () => {
         });
       });
     });
+
+    // test('#07 => Reset all mocks', () => {
+    //   inc.mockReset();
+    //   inc2.mockReset();
+    //   src.mockReset();
+    // });
   });
 
   describe('#07 => sender', () => {
@@ -545,19 +556,28 @@ describe('Interpreter', () => {
         exact: true,
       });
 
-      const subscriber = service.subscribeValue(
+      const subscriber = service.subscribeMap(
         {
-          WRITE: (_, { value }) =>
-            console.log('WRITE with', ':', `"${value}"`),
+          WRITE: ({
+            event: {
+              payload: { value },
+            },
+          }) => console.log('WRITE with', ':', `"${value}"`),
           NEXT: () => console.log('NEXT time, you will see!!'),
           else: nothing,
         },
-        'idSub',
+        { id: 'idSub', equals: (a, b) => equal(a.value, b.value) },
       );
 
       const dumbFn = vi.fn();
-      service.___subscribeE(dumbFn, 'id');
-      service.___subscribeE(dumbFn, 'id');
+      service.subscribe(dumbFn, {
+        id: 'id',
+        equals: (s1, s2) => {
+          return equal(s1.event, s2.event);
+        },
+      });
+      service.subscribe(dumbFn, { id: 'id' });
+
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       beforeAll(() => {
@@ -682,7 +702,7 @@ describe('Interpreter', () => {
         test(...useState('idle', 1));
         test(...useIterator(6, 2));
         test(...useIteratorC(6, 3));
-        describe(...useConsole(4, 'nothing call nothing'));
+        describe(...useConsole(4));
       });
 
       test(...useSend('NEXT', 3));
@@ -703,13 +723,7 @@ describe('Interpreter', () => {
         test(...useIterator(6, 2));
         test(...useIteratorC(6, 3));
 
-        describe(
-          ...useConsole(
-            4,
-            'NEXT time, you will see!!',
-            'NEXT time, you will see!!',
-          ),
-        );
+        describe(...useConsole(4, 'NEXT time, you will see!!'));
       });
 
       test(...useWaiter(6, 5));
@@ -803,13 +817,7 @@ describe('Interpreter', () => {
         test(...useIterator(42, 2));
         test(...useIteratorC(24, 3));
         test(...useInput('', 4));
-        describe(
-          ...useConsole(
-            5,
-            ['WRITE with', ':', '""'],
-            ['WRITE with', ':', '""'],
-          ),
-        );
+        describe(...useConsole(5, ['WRITE with', ':', '""']));
       });
 
       test(...useWaiter(12, 16));
@@ -862,13 +870,7 @@ describe('Interpreter', () => {
         test(...useIterator(66, 2));
         test(...useIteratorC(36, 3));
         test(...useInput('', 4));
-        describe(
-          ...useConsole(
-            5,
-            ['WRITE with', ':', `"${INPUT}"`],
-            ['WRITE with', ':', `"${INPUT}"`],
-          ),
-        );
+        describe(...useConsole(5, ['WRITE with', ':', `"${INPUT}"`]));
       });
 
       test(...useWaiter(12, 20));
@@ -915,9 +917,7 @@ describe('Interpreter', () => {
         test(...useIterator(90, 2));
         test(...useIteratorC(48, 3));
         test(...useInput(INPUT, 4));
-        describe(
-          ...useConsole(5, 'nothing call nothing', 'nothing call nothing'),
-        );
+        describe(...useConsole(5));
       });
 
       test(...useWaiter(6, 25));
@@ -961,9 +961,7 @@ describe('Interpreter', () => {
         test(...useIteratorC(54, 3));
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));
-        describe(
-          ...useConsole(6, ...Array(3).fill('nothing call nothing')),
-        );
+        describe(...useConsole(6));
       });
 
       test('#29 => Await the fetch', () => fakeWaiter());
@@ -1017,13 +1015,7 @@ describe('Interpreter', () => {
 
       test(...useSend('SEND', 34));
       test(...useWaiter(6, 35));
-      describe(
-        ...useConsole(
-          36,
-          'nothing call nothing',
-          ...Array(6).fill('sendPanelToUser'),
-        ),
-      );
+      describe(...useConsole(36, ...Array(6).fill('sendPanelToUser')));
 
       test('#37 => machine1.value', () => {
         const child = service.at('machine1');
@@ -1031,7 +1023,7 @@ describe('Interpreter', () => {
       });
 
       test('#38 => Resend idSub', () => {
-        service.subscribeValue(nothing, 'idSub');
+        service.subscribeMap(nothing, { id: 'idSub' });
       });
 
       test('#39 => Resend machine1', () => {
@@ -1058,12 +1050,12 @@ describe('Interpreter', () => {
           });
 
           test('#02 => Log is called "85" times', () => {
-            expect(log).toBeCalledTimes(85);
+            expect(log).toBeCalledTimes(75);
           });
         });
 
         test('#03', () => {
-          expect(dumbFn).toBeCalledTimes(9);
+          expect(dumbFn).toBeCalledTimes(6);
         });
 
         test('#04 => Log the time of all tests', () => {
