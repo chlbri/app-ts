@@ -328,7 +328,7 @@ export type FnMapReduced<
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > =
-  | ((context: Tc, eventsMap: ToEventsR<E, P>) => R)
+  | ((state: Tc, eventsMap: ToEventsR<E, P>) => R)
   | _FnMapR<E, P, Tc, R, ToEventsR<E, P>>;
 
 export type EventsMapFromFn<F extends FnMap> =

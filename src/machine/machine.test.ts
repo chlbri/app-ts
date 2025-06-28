@@ -1,4 +1,5 @@
 import { t } from '@bemedev/types';
+import equal from 'fast-deep-equal';
 import {
   constructSend,
   constructValue,
@@ -31,12 +32,22 @@ describe('machine coverage', () => {
         exact: true,
       });
 
-      const subscriber = service.subscribeValue({
-        WRITE: (_, { value }) =>
-          console.log('WRITE with', ':', `"${value}"`),
-        NEXT: () => console.log('NEXT time, you will see!!'),
-        else: nothing,
-      });
+      const subscriber = service.subscribeMap(
+        {
+          WRITE: ({
+            event: {
+              payload: { value },
+            },
+          }) => console.log('WRITE with', ':', `"${value}"`),
+          NEXT: () => console.log('NEXT time, you will see!!'),
+          else: nothing,
+        },
+        {
+          equals: (s1, s2) => {
+            return equal(s1.event, s2.event);
+          },
+        },
+      );
 
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -164,7 +175,7 @@ describe('machine coverage', () => {
         test(...useState('idle', 1));
         test(...useIterator(6, 2));
         test(...useIteratorC(6, 3));
-        describe(...useConsole(4, 'nothing call nothing'));
+        describe(...useConsole(4));
       });
 
       test(...useSend('NEXT', 3));
@@ -185,13 +196,7 @@ describe('machine coverage', () => {
         test(...useIterator(6, 2));
         test(...useIteratorC(6, 3));
 
-        describe(
-          ...useConsole(
-            4,
-            'NEXT time, you will see!!',
-            'NEXT time, you will see!!',
-          ),
-        );
+        describe(...useConsole(4, 'NEXT time, you will see!!'));
       });
 
       test(...useWaiter(6, 5));
@@ -285,13 +290,7 @@ describe('machine coverage', () => {
         test(...useIterator(42, 2));
         test(...useIteratorC(24, 3));
         test(...useInput('', 4));
-        describe(
-          ...useConsole(
-            5,
-            ['WRITE with', ':', '""'],
-            ['WRITE with', ':', '""'],
-          ),
-        );
+        describe(...useConsole(5, ['WRITE with', ':', '""']));
       });
 
       test(...useWaiter(12, 16));
@@ -347,7 +346,7 @@ describe('machine coverage', () => {
         describe(
           ...useConsole(
             5,
-            ['WRITE with', ':', `"${INPUT}"`],
+
             ['WRITE with', ':', `"${INPUT}"`],
           ),
         );
@@ -397,9 +396,7 @@ describe('machine coverage', () => {
         test(...useIterator(90, 2));
         test(...useIteratorC(48, 3));
         test(...useInput(INPUT, 4));
-        describe(
-          ...useConsole(5, 'nothing call nothing', 'nothing call nothing'),
-        );
+        describe(...useConsole(5));
       });
 
       test(...useWaiter(6, 25));
@@ -443,9 +440,7 @@ describe('machine coverage', () => {
         test(...useIteratorC(54, 3));
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));
-        describe(
-          ...useConsole(6, ...Array(3).fill('nothing call nothing')),
-        );
+        describe(...useConsole(6));
       });
 
       test('#29 => Await the fetch', () => fakeWaiter());
@@ -505,7 +500,7 @@ describe('machine coverage', () => {
           });
 
           test('#02 => Log is called "78" times', () => {
-            expect(log).toBeCalledTimes(78);
+            expect(log).toBeCalledTimes(69);
           });
         });
 
