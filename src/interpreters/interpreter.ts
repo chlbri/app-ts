@@ -15,7 +15,6 @@ import sleep from '@bemedev/sleep';
 import { t } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
-import { EOL } from 'os';
 import {
   reduceAction,
   toAction,
@@ -408,7 +407,7 @@ export class Interpreter<
   #startStatus = (): WorkingStatus => this.#setStatus('started');
 
   #displayConsole = (messages: Iterable<string>) => {
-    return Array.from(messages).join(EOL);
+    return Array.from(messages).join('\n');
   };
 
   #flush = () => {
