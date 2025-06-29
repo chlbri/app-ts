@@ -8,12 +8,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.2.5] - 2024-03-29 _23:10_
+
+- Fix: no use of node:util
+- <u>Test coverage **_99.9%_**</u>
+
+<br/>
+
 ## [0.2.4-beta] - 2024-03-28 _15:20_
 
 - Fix bindings for subscribeMap and subscribe classes
 - <u>Test coverage **_99.9%_**</u>
 
 <br/>
+
 ## [0.2.2-beta] - 2024-03-28 _01:50_
 
 - Add subscribe to be compliant with "from" style
