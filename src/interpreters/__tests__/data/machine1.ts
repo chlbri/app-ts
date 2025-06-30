@@ -19,9 +19,6 @@ export const machine1 = createMachine(
   },
   {
     eventsMap: { NEXT: typings.object },
-    // eventsMap: {
-    //   NEXT: {},
-    // },
     context: typings.context(
       typings.recordAll(typings.number(), 'iterator'),
     ),

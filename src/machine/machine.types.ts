@@ -4,7 +4,7 @@ import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
 import type { Machine } from '~machine';
 import type { NodeConfigWithInitials, StateValue } from '~states';
-import type { FnMap, KeyU, PrimitiveObject } from '~types';
+import type { FnMap, FnR, KeyU, PrimitiveObject } from '~types';
 import type { Decompose3 } from './functions';
 import type {
   ChildS,
@@ -14,7 +14,6 @@ import type {
   EventsMapFrom,
   MachineOptions,
   PrivateContextFrom,
-  PromiseesMapFrom,
   SimpleMachineOptions2,
   SubscriberType,
 } from './types';
@@ -88,7 +87,14 @@ export interface AnyMachine<
   toNode: Fn<[StateValue], NodeConfigWithInitials>;
 }
 
-export type Assign_F<
+export type ActionResult_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
+
+export type AssignAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -103,13 +109,9 @@ export type Assign_F<
 >(
   key: K,
   fn: FnMap<E, P, Pc, Tc, R>,
-) => (
-  pContext: Pc,
-  context: Tc,
-  eventsMap: ToEvents<E, P>,
-) => ActionResult<Pc, Tc>;
+) => ActionResult_F<E, P, Pc, Tc>;
 
-export type Void_F<
+export type VoidAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -120,13 +122,9 @@ export type Void_F<
     context: Tc,
     eventsMap: ToEvents<E, P>,
   ) => void | undefined,
-) => (
-  pContext: Pc,
-  context: Tc,
-  eventsMap: ToEvents<E, P>,
-) => ActionResult<Pc, Tc>;
+) => ActionResult_F<E, P, Pc, Tc>;
 
-export type Sender_F<
+export type SendAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -139,13 +137,60 @@ export type Sender_F<
     P,
     Pc,
     Tc,
-    { to: string; event: EventArg<EventsMapFrom<T>, PromiseesMapFrom<T>> }
+    { to: string; event: EventArg<EventsMapFrom<T>> }
   >,
-) => (
-  pContext: Pc,
-  context: Tc,
-  eventsMap: ToEvents<E, P>,
-) => ActionResult<Pc, Tc>;
+) => ActionResult_F<E, P, Pc, Tc>;
+
+export type ValueCheckerGuard_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (
+  path: DefinedValue<Pc, Tc>,
+  ...values: any[]
+) => FnR<E, P, Pc, Tc, boolean>;
+
+export type DefineGuard_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (path: DefinedValue<Pc, Tc>) => FnR<E, P, Pc, Tc, boolean>;
+
+export type ChildProvider_F<
+  E extends EventsMap,
+  P extends PromiseeMap,
+  Pc,
+> = <
+  const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
+    'pContext' | 'context' | 'preConfig'
+  >,
+>(
+  machine: T,
+  initials: {
+    pContext: PrivateContextFrom<T>;
+    context: ContextFrom<T>;
+  },
+  ...subscribers: SubscriberType<E, P, Pc, T>[]
+) => ChildS<E, P, Pc, T>;
+
+export type AllActions_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = AssignAction_F<E, P, Pc, Tc> | VoidAction_F<E, P, Pc, Tc>;
+
+export type DebounceAction_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = <T extends ActionResult_F<E, P, Pc, Tc>>(
+  fn: T,
+  ms?: number,
+) => ActionResult_F<E, P, Pc, Tc>;
 
 export type AddOption_F<
   E extends EventsMap = EventsMap,
@@ -157,35 +202,15 @@ export type AddOption_F<
     'initials'
   >,
 > = (option: {
-  isDefined: (
-    path: DefinedValue<Pc, Tc>,
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
-  isNotDefined: (
-    path: DefinedValue<Pc, Tc>,
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
-  isValue: (
-    path: DefinedValue<Pc, Tc>,
-    ...values: any[]
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
-  isNotValue: (
-    path: DefinedValue<Pc, Tc>,
-    ...values: any[]
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
-  createChild: <
-    const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
-      'pContext' | 'context' | 'preConfig'
-    >,
-  >(
-    machine: T,
-    initials: {
-      pContext: PrivateContextFrom<T>;
-      context: ContextFrom<T>;
-    },
-    ...subscribers: SubscriberType<E, P, Pc, T>[]
-  ) => ChildS<E, P, Pc, T>;
-  assign: Assign_F<E, P, Pc, Tc>;
-  voidAction: Void_F<E, P, Pc, Tc>;
-  sender: Sender_F<E, P, Pc, Tc>;
+  isDefined: DefineGuard_F<E, P, Pc, Tc>;
+  isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
+  isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
+  isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
+  createChild: ChildProvider_F<E, P, Pc>;
+  assign: AssignAction_F<E, P, Pc, Tc>;
+  voidAction: VoidAction_F<E, P, Pc, Tc>;
+  sender: SendAction_F<E, P, Pc, Tc>;
+  debounce: DebounceAction_F<E, P, Pc, Tc>;
 }) => Mo | undefined;
 
 export type AddOptions_F<
@@ -198,3 +223,8 @@ export type AddOptions_F<
     'initials'
   >,
 > = (option: AddOption_F<E, P, Pc, Tc, Mo>) => void;
+
+export type ScheduledData<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = { data: ActionResult<Pc, Tc>; ms: number };

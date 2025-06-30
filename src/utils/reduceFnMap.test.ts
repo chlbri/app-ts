@@ -10,7 +10,7 @@ import { reduceFnMap, reduceFnMap2, toEventsMap } from './reduceFnMap';
 
 describe('toEventsMap', () => {
   test('combine correctement les événements et les promisees', () => {
-    // Arrange
+    // #region Arrange
     const events: EventsMap = {
       EVENT1: t.string,
       EVENT2: { data: t.number },
@@ -26,11 +26,13 @@ describe('toEventsMap', () => {
         catch: { error: t.string },
       },
     };
+    // #endregion
 
-    // Act
+    // #region Act
     const result = toEventsMap(events, promisees);
+    // #endregion
 
-    // Assert
+    // #region Assert
     expect(result).toEqual({
       EVENT1: t.string,
       EVENT2: { data: t.number },
@@ -39,6 +41,7 @@ describe('toEventsMap', () => {
       'promise2::then': { success: t.boolean },
       'promise2::catch': { error: t.string },
     });
+    // #endregion
   });
 
   test('fonctionne avec un objet promisees vide', () => {

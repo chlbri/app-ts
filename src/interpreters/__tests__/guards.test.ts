@@ -241,11 +241,6 @@ describe('Interpret for guards', () => {
       { '/': 'state1' },
     );
 
-    // machine.addPredicates({
-    //   returnTrue,
-    //   returnFalse,
-    // });
-
     machine.addOptions(({ isDefined, isNotDefined }) => ({
       predicates: {
         returnFalse: isNotDefined('events'),

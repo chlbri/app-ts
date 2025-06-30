@@ -323,7 +323,7 @@ export interface AnyInterpreter<
 
   subscribeMap: AddSubscriber_F<E, P, Tc>;
 
-  send: (event: EventArg<E, P>) => void;
+  send: (event: EventArg<E>) => void;
   toAction: (action: ActionConfig) => Action<E, P, Pc, Tc> | undefined;
   toPredicate: (
     guard: GuardConfig,

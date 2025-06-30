@@ -269,7 +269,6 @@ describe('Interpreter integration ofr activities coverage', () => {
     test(...useValue('state2', 9));
     test(...useSendNext(10));
     test(...useValue('state1', 11));
-    // Wait also remaining time
     test(...useWaiter(12, 3));
     describe('#13 => Check Activity', () => {
       test('#01 => activity2 is called one time', () => {

@@ -35,11 +35,12 @@ import type {
   AddOption_F,
   AddOptions_F,
   AnyMachine,
-  Assign_F,
+  AssignAction_F,
   Elements,
   GetIO_F,
-  Sender_F,
-  Void_F,
+  ScheduledData,
+  SendAction_F,
+  VoidAction_F,
 } from './machine.types';
 import type {
   Config,
@@ -567,13 +568,14 @@ class Machine<
    */
   __sentEvents: { to: string; event: any }[] = [];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  #createSend: Sender_F<E, P, Pc, Tc> = <T extends AnyMachine>(_?: T) => {
+  #createSend: SendAction_F<E, P, Pc, Tc> = <T extends AnyMachine>(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _?: T,
+  ) => {
     return fn => {
       const fn2 = reduceFnMap(this.eventsMap, this.promiseesMap, fn);
       return (pContext, context, eventsMap) => {
         const { event, to } = fn2(pContext, context, eventsMap);
-        // this.__sendTo?.(to, event);
         this.__sentEvents.push({ to, event });
 
         return t.any({ pContext, context });
@@ -581,7 +583,7 @@ class Machine<
     };
   };
 
-  #assign: Assign_F<E, P, Pc, Tc> = (key, fn) => {
+  #assign: AssignAction_F<E, P, Pc, Tc> = (key, fn) => {
     const out = expandFnMap(
       this.#eventsMap,
       this.#promiseesMap,
@@ -596,12 +598,17 @@ class Machine<
    * @deprecated
    * used internally
    */
-  __voidAction: Void_F<E, P, Pc, Tc> = fn => {
+  __voidAction: VoidAction_F<E, P, Pc, Tc> = fn => {
     return (pContext, context, map) => {
       fn(pContext, context, map);
       return t.any({ pContext, context });
     };
   };
+
+  /**
+   * @deprecated
+   * used internally
+   */
 
   addOptions: AddOptions_F<E, P, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
     const isValue = this.#isValue;
@@ -611,7 +618,7 @@ class Machine<
     const createChild = this.#createChild;
     const assign = this.#assign;
     const voidAction = this.__voidAction;
-    const sender = this.#createSend.bind(this);
+    const sender = this.#createSend;
 
     const out = func({
       isValue,
@@ -622,6 +629,23 @@ class Machine<
       assign,
       voidAction,
       sender,
+      debounce: (fn, ms = 100) => {
+        return (pContext, context, map) => {
+          const data = fn(
+            cloneDeep(pContext),
+            structuredClone(context),
+            map,
+          );
+
+          const __data: ScheduledData<Pc, Tc> = { data, ms };
+
+          return t.any({
+            pContext,
+            context,
+            __data,
+          });
+        };
+      },
     });
 
     this.#addActions(out?.actions);

@@ -91,6 +91,8 @@ export const config2 = createConfig({
   },
 });
 
+const _config2 = createConfig({ ...config2, entry: 'debounce' });
+
 export const machine2 = createMachine(
   {
     machines: 'machine1',
@@ -159,6 +161,72 @@ export const machine2 = createMachine(
           contexts: { iterator: 'iterator' },
         },
       ),
+    },
+  }),
+);
+
+export const _machine2 = createMachine(
+  {
+    ..._config2,
+  },
+  {
+    eventsMap: {
+      NEXT: typings.object,
+      FETCH: typings.object,
+      WRITE: { value: typings.string() },
+      FINISH: typings.object,
+    },
+    context: {
+      iterator: typings.number(),
+      input: typings.string(),
+      data: typings.array(typings.string()),
+    },
+    pContext: typings.recordAll(typings.number(), 'iterator'),
+    promiseesMap: {
+      fetch: typings.promiseDef(
+        typings.array(typings.string()),
+        typings.object,
+      ),
+    },
+  },
+  { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
+).provideOptions(
+  ({ isNotValue, isValue, assign, voidAction, debounce: _debounce }) => ({
+    actions: {
+      inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
+      inc2: assign('context.iterator', (_, { iterator }) => iterator + 4),
+      sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
+      askUsertoInput: voidAction(() => console.log('Input, please !!')),
+      write: assign('context.input', {
+        WRITE: (_, __, { value }) => value,
+      }),
+      insertData: assign('context.data', {
+        'fetch::then': (_, { data }, payload) => {
+          data.push(...payload);
+          return data;
+        },
+      }),
+      debounce: _debounce(
+        assign('context.iterator', () => {
+          console.warn('Debounced action executed');
+          console.log('Debounced action executed');
+          return 1000;
+        }),
+        10_000,
+      ),
+    },
+    predicates: {
+      isInputEmpty: isValue('context.input', ''),
+      isInputNotEmpty: isNotValue('context.input', ''),
+    },
+    promises: {
+      fetch: async (_, { input }) => {
+        return fakeDB.filter(item => item.name.includes(input));
+      },
+    },
+    delays: {
+      DELAY,
+      DELAY2: 2 * DELAY,
     },
   }),
 );

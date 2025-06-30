@@ -265,6 +265,21 @@ export type ReduceArray<T> = T extends readonly (infer U1)[]
     ? U2
     : T;
 
+export type FnR<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc = any,
+  R = any,
+> = (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R;
+
+export type FnR2<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Tc = any,
+  R = any,
+> = (context: Tc, eventsMap: ToEvents<E, P>) => R;
+
 export type FnMap2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -277,7 +292,7 @@ export type FnMap2<
     payload: Extract<TT, { type: key }>['payload'],
   ) => R;
 } & {
-  else?: (context: Tc, eventsMap: ToEvents<E, P>) => R;
+  else?: FnR2<E, P, Tc, R>;
 };
 
 type _FnMap<
@@ -294,7 +309,7 @@ type _FnMap<
     payload: Extract<TT, { type: key }>['payload'],
   ) => R;
 } & {
-  else?: (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R;
+  else?: FnR<E, P, Pc, Tc, R>;
 };
 
 type _FnMapR<
@@ -309,7 +324,7 @@ type _FnMapR<
     payload: Extract<TT, { type: key }>['payload'],
   ) => R;
 } & {
-  else?: (context: Tc, eventsMap: ToEvents<E, P>) => R;
+  else?: FnR2<E, P, Tc, R>;
 };
 
 export type FnMap<
@@ -318,9 +333,7 @@ export type FnMap<
   Pc = any,
   Tc = any,
   R = any,
-> =
-  | ((pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R)
-  | _FnMap<E, P, Pc, Tc, R, ToEventsR<E, P>>;
+> = FnR<E, P, Pc, Tc, R> | _FnMap<E, P, Pc, Tc, R, ToEventsR<E, P>>;
 
 export type FnMapReduced<
   E extends EventsMap = EventsMap,

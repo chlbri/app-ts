@@ -35,7 +35,7 @@ export type EventStrings =
 
 export type AllEvent = EventObject | EventStrings;
 
-type _EventsR<T extends EventsMap> =
+export type _EventsR<T extends EventsMap> =
   Unionize<T> extends infer U
     ? U extends any
       ? { type: keyof U & string; payload: U[keyof U] }
@@ -68,14 +68,17 @@ export type ToEvents<E extends EventsMap, P extends PromiseeMap> =
   | AfterEvent
   | MaxExceededEvent;
 
-export type EventArg<E extends EventsMap, P extends PromiseeMap> =
-  ToEventsR<E, P> extends infer To
+export type EventArg<E extends EventsMap> =
+  _EventsR<E> extends infer To
     ? To extends EventObject
       ? object extends To['payload']
         ? To['type'] | To
         : To
       : never
     : never;
+
+export type EventArgT<E extends EventsMap> =
+  _EventsR<E> extends infer To extends EventObject ? To['type'] : never;
 
 export type ToEventsMap<
   E extends EventsMap,

@@ -1,19 +1,8 @@
-import type {
-  // AllEvent,
-  EventArg,
-  // EventObject,
-  EventsMap,
-  PromiseeMap,
-  ToEventsR,
-} from '../types';
-// import { isStringEvent } from './isStringEvent';
+import type { _EventsR, EventArg, EventsMap } from '../types';
 
-export type TransformEventArg = <
-  E extends EventsMap,
-  P extends PromiseeMap,
->(
-  event: EventArg<E, P>,
-) => ToEventsR<E, P>;
+export type TransformEventArg = <E extends EventsMap>(
+  event: EventArg<E>,
+) => _EventsR<E>;
 
 export const transformEventArg: TransformEventArg = event => {
   const check1 = typeof event === 'string';
@@ -21,9 +10,3 @@ export const transformEventArg: TransformEventArg = event => {
 
   return event;
 };
-
-// export const transformAllEvent = (value: AllEvent): EventObject => {
-//   return isStringEvent(value)
-//     ? { type: value, payload: {} }
-//     : transformEventArg(value);
-// };

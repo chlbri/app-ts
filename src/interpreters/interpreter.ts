@@ -36,10 +36,12 @@ import {
   possibleEvents,
   transformEventArg,
   type EventArg,
+  type EventArgT,
   type EventObject,
   type EventsMap,
   type PromiseeMap,
   type ToEvents,
+  type ToEventsR,
 } from '~events';
 import { toPredicate, type GuardConfig } from '~guards';
 import { getEntries, getExits, type Machine } from '~machine';
@@ -60,6 +62,7 @@ import {
   type MachineOptionsFrom,
   type PrivateContextFrom,
   type PromiseesMapFrom,
+  type ScheduledData,
   type SimpleMachineOptions2,
 } from '~machines';
 import {
@@ -415,14 +418,16 @@ export class Interpreter<
     this.#flushSubscribers();
   };
 
+  #timeoutActions: NodeJS.Timeout[] = [];
+
   start = () => {
-    // this.#flushE();
     this.#flush();
     this.#throwing();
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#performChildMachines();
     this.#throwing();
+
     return this._next();
   };
 
@@ -448,8 +453,6 @@ export class Interpreter<
 
   #next = async () => {
     this.#selfTransitionsCounter++;
-    // this.#flushValue();
-    // this.#flush();
     this.#rinitIntervals();
     this.#performActivities();
     await this.#performSelfTransitions();
@@ -472,7 +475,6 @@ export class Interpreter<
       check = !equal(previousValue, currentValue);
 
       if (check) {
-        // this.#flush2();
         this.#flush();
       }
 
@@ -495,8 +497,16 @@ export class Interpreter<
 
   #executeAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this.#makeBusy();
-    const { pContext, context } = this.#performAction(action);
-
+    const { pContext, context, __data } = t.any(
+      this.#performAction(action),
+    );
+    if (__data) {
+      const { data, ms } = __data as ScheduledData<Pc, Tc>;
+      const timer = setTimeout(() => {
+        this.#merge(data);
+      }, ms);
+      this.#timeoutActions.push(timer);
+    }
     this.#makeWork();
     return { pContext, context };
   };
@@ -576,8 +586,6 @@ export class Interpreter<
   };
 
   #flushSubscribers = () => {
-    // const context = cloneDeep(this.#context);
-    // const event = cloneDeep(this.#event);
     this.#mapSubscribers.forEach(f => {
       const callback = () => f.reduced(this.#previousState, this.#state);
       this.#schedule(callback);
@@ -600,7 +608,6 @@ export class Interpreter<
     this.#performStates({ context });
 
     const check = !equal(previousContext, this.#context);
-    // this.#flushState();
     this.#flush();
     if (check) this.#flushSubscribers();
 
@@ -908,7 +915,6 @@ export class Interpreter<
     const check5 = promises.length < 1;
     if (check5) return;
 
-    // const event: ToEvents<E, P> = `${from}::${AFTER_EVENT}`;
     this.#changeEvent(`${from}::${AFTER_EVENT}`);
     const promise = anyPromises(from, ...promises);
     return promise;
@@ -1052,8 +1058,6 @@ export class Interpreter<
   #changeEvent = (event: ToEvents<E, P>) => {
     this.#performStates({ event });
     this.#event = event;
-    // this.#flush();
-    // this.#flush2();
   };
 
   get #collecteds() {
@@ -1172,7 +1176,6 @@ export class Interpreter<
     const cEvent = this.#event;
     const check = !equal(pEvent, cEvent);
     if (check) {
-      // this.#flushE();
       this.#flush();
     }
 
@@ -1183,6 +1186,7 @@ export class Interpreter<
     const actions = getEntries(this.#initialConfig);
     const cb = () => {
       const result = this.#performActions(this.#contexts, ...actions);
+
       this.#merge(result);
     };
     this.#schedule(cb);
@@ -1211,6 +1215,7 @@ export class Interpreter<
     this.#mapSubscribers.forEach(f => f.unsubscribe());
     this.#subscribers.forEach(f => f.unsubscribe());
     this.#childrenServices.forEach(c => c.stop());
+    this.#timeoutActions.forEach(clearTimeout);
     this.#setStatus('stopped');
   };
 
@@ -1220,7 +1225,6 @@ export class Interpreter<
 
   #setStatus = (status: WorkingStatus) => {
     this.#performStates({ status });
-    // this.#flush();
     return (this.#status = status);
   };
 
@@ -1275,13 +1279,11 @@ export class Interpreter<
     sub: (state: State<Tc>) => void,
     options?: SubscriberOptions<Tc>,
   ) => {
-    // this.#stateSubscribers.add(sub);
     const find = Array.from(this.#subscribers).find(
       f => f.id === options?.id,
     );
     if (find) return find;
     const _sub = createSubscriber(sub, options);
-    // this.#stateSubscribers.add(sub);
     this.#subscribers.add(_sub);
     return _sub;
   };
@@ -1360,8 +1362,6 @@ export class Interpreter<
   protected _send: _Send_F<E, P, Pc, Tc> = event => {
     this.#changeEvent(event);
     this.#setStatus('sending');
-    // this.#flushValue();
-    // this.#flush();
     let result = this.#contexts;
     let sv = this.#value;
     const entriesFlat = Object.entries(this.#flat);
@@ -1419,13 +1419,24 @@ export class Interpreter<
     return possibleEvents(this.#flat);
   }
 
-  #cannotEvent = (_event: EventArg<E, P>) => {
+  #cannotEvent = (_event: EventArg<E>) => {
     const type = eventToType(_event);
     const check = !this.#possibleEvents.includes(type);
     return check;
   };
 
-  send = (_event: EventArg<E, P>) => {
+  sender = <T extends EventArgT<E>>(type: T) => {
+    type Arg = Extract<ToEventsR<E, P>, { type: T }>['payload'];
+    type Payload = object extends Arg ? [] : [Arg];
+
+    return (...data: Payload) => {
+      const payload = data.length === 1 ? data[0] : {};
+      const event = { type, payload } as EventArg<E>;
+      return this.send(event);
+    };
+  };
+
+  send = (_event: EventArg<E>) => {
     const check = this.#cannotEvent(_event);
     if (check) return;
     const event = transformEventArg(_event);
@@ -1465,6 +1476,7 @@ export class Interpreter<
     const diffExits: ActionConfig[] = [];
 
     // #region Entry actions
+
     // These actions are from next config states that are not inside the previous
     keysNext.forEach(key => {
       const check2 = !keys.includes(key);
@@ -1477,6 +1489,7 @@ export class Interpreter<
     // #endregion
 
     // #region Exit actions
+
     // These actions are from previous config states that are not inside the next
     entriesCurrent.forEach(([key, node]) => {
       const check2 = !keysNext.includes(key);

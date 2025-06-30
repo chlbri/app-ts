@@ -374,7 +374,8 @@ describe('Interpreter', () => {
     });
 
     test('#05 => Send NEXT again', () => {
-      service.send('NEXT');
+      const sendText = service.sender('NEXT');
+      sendText();
     });
 
     test('#06 => inc is called again', () => {
@@ -441,15 +442,10 @@ describe('Interpreter', () => {
             },
             promises: {
               src: 'src',
-              then: { actions: 'inc' /* , target: '/next' */ },
+              then: { actions: 'inc' },
               catch: { actions: 'inc' },
             },
           },
-          // next: {
-          //   after: {
-          //     DELAY: '/idle',
-          //   },
-          // },
         },
       },
       { ...defaultT, context: { iterator: t.number } },
@@ -535,12 +531,6 @@ describe('Interpreter', () => {
         });
       });
     });
-
-    // test('#07 => Reset all mocks', () => {
-    //   inc.mockReset();
-    //   inc2.mockReset();
-    //   src.mockReset();
-    // });
   });
 
   describe('#07 => sender', () => {
@@ -601,9 +591,10 @@ describe('Interpreter', () => {
       const useWrite = (value: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
 
-        return t.tuple(invite, () =>
-          service.send({ type: 'WRITE', payload: { value } }),
-        );
+        return t.tuple(invite, () => {
+          const sendWrite = service.sender('WRITE');
+          return sendWrite({ value });
+        });
       };
 
       const useWaiter = (times: number, index: number) => {
