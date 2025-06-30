@@ -1,5 +1,8 @@
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { MAX_TIME_PROMISE, MIN_ACTIVITY_TIME } from '~constants';
+import {
+  DEFAULT_MAX_TIME_PROMISE,
+  DEFAULT_MIN_ACTIVITY_TIME,
+} from '~constants';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
 import { constructSend, constructValue, defaultC } from '../fixtures';
@@ -142,7 +145,7 @@ describe('Interpreter integration ofr activities coverage', () => {
           activity1,
         },
         delays: {
-          DELAY: MIN_ACTIVITY_TIME / 2,
+          DELAY: DEFAULT_MIN_ACTIVITY_TIME / 2,
         },
       }));
 
@@ -182,7 +185,7 @@ describe('Interpreter integration ofr activities coverage', () => {
           activity1,
         },
         delays: {
-          DELAY: MAX_TIME_PROMISE * 1.5,
+          DELAY: DEFAULT_MAX_TIME_PROMISE * 1.5,
         },
       }));
 
@@ -215,7 +218,7 @@ describe('Interpreter integration ofr activities coverage', () => {
         service.stop();
       });
 
-      test(...createFakeWaiter.all(vi)(6, MAX_TIME_PROMISE * 2));
+      test(...createFakeWaiter.all(vi)(6, DEFAULT_MAX_TIME_PROMISE * 2));
     });
   });
 

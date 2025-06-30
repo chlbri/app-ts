@@ -1,6 +1,17 @@
 import type { EventsMap, PromiseeMap } from '~events';
 import type { FnMap, PrimitiveObject } from '~types';
 
+/**
+ * Delay type definition.
+ * The function takes in a context object and returns a delay in milliseconds.
+ * @template : type {@linkcode EventsMap} [E] - The events map.
+ * @template : type {@linkcode PromiseeMap} [P] - The promisees map.
+ * @template : [Pc] - The type of the private context.
+ * @template : type {@linkcode PrimitiveObject} [Tc] - The type of the context.
+ * @returns : A number or a function that returns a number.
+ *
+ * @see {@linkcode FnMap}
+ */
 export type Delay<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -8,6 +19,15 @@ export type Delay<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = number | FnMap<E, P, Pc, Tc, number>;
 
+/**
+ * Delay configuration map.
+ * Maps a string key to a {@linkcode Delay} function.
+ * @template : type {@linkcode EventsMap} [E] - The events map.
+ * @template : type {@linkcode PromiseeMap} [P] - The promisees map.
+ * @template : [Pc] - The type of the private context.
+ * @template : type {@linkcode PrimitiveObject} [Tc] - The type of the context.
+ * @returns : A partial record where each key is a string and each value is a {@linkcode Delay}<[E], [P], [Pc], [Tc]>.
+ */
 export type DelayMap<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,

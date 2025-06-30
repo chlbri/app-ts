@@ -23,9 +23,9 @@ import {
 } from '~actions';
 import {
   DEFAULT_DELIMITER,
-  MAX_SELF_TRANSITIONS,
-  MAX_TIME_PROMISE,
-  MIN_ACTIVITY_TIME,
+  DEFAULT_MAX_SELF_TRANSITIONS,
+  DEFAULT_MAX_TIME_PROMISE,
+  DEFAULT_MIN_ACTIVITY_TIME,
 } from '~constants';
 import { toDelay } from '~delays';
 import {
@@ -465,7 +465,7 @@ export class Interpreter<
       const previousValue = this.#value;
 
       const checkCounter =
-        this.#selfTransitionsCounter >= MAX_SELF_TRANSITIONS;
+        this.#selfTransitionsCounter >= DEFAULT_MAX_SELF_TRANSITIONS;
       if (checkCounter) return this.#throwMaxCounter();
       this.#throwing();
 
@@ -529,7 +529,7 @@ export class Interpreter<
   };
 
   #throwMaxCounter() {
-    const error = `Too much self transitions, exceeded ${MAX_SELF_TRANSITIONS} transitions`;
+    const error = `Too much self transitions, exceeded ${DEFAULT_MAX_SELF_TRANSITIONS} transitions`;
     if (IS_TEST) {
       this._addError(error);
       this.#throwing();
@@ -649,13 +649,13 @@ export class Interpreter<
       if (check0) return [];
       const interval = this.#executeDelay(delayF);
 
-      const check11 = interval < MIN_ACTIVITY_TIME;
+      const check11 = interval < DEFAULT_MIN_ACTIVITY_TIME;
       if (check11) {
         this._addWarning(`Delay (${_delay}) is too short`);
         return [];
       }
 
-      const check12 = interval > MAX_TIME_PROMISE;
+      const check12 = interval > DEFAULT_MAX_TIME_PROMISE;
       if (check12) {
         this._addWarning(`Delay (${_delay}) is too long`);
         return [];
@@ -850,7 +850,7 @@ export class Interpreter<
             .then(partialCall(handlePromise, 'then'))
             .catch(partialCall(handlePromise, 'catch'));
 
-        const MAX_POMS = [MAX_TIME_PROMISE];
+        const MAX_POMS = [DEFAULT_MAX_TIME_PROMISE];
 
         const check3 = isDefined(maxS);
         if (check3) {
@@ -896,7 +896,7 @@ export class Interpreter<
 
       const delay = this.#executeDelay(delayF);
 
-      const check1 = delay > MAX_TIME_PROMISE;
+      const check1 = delay > DEFAULT_MAX_TIME_PROMISE;
       if (check1) {
         this._addWarning(`Delay ${_delay} is too long`);
         return;
@@ -1735,7 +1735,7 @@ export class Interpreter<
   };
 }
 
-export const TIME_TO_RINIT_SELF_COUNTER = MIN_ACTIVITY_TIME * 2;
+export const TIME_TO_RINIT_SELF_COUNTER = DEFAULT_MIN_ACTIVITY_TIME * 2;
 
 export type AnyInterpreter2 = Interpreter<any, any, any, any, any, any>;
 

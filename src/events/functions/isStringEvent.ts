@@ -7,6 +7,12 @@ import {
 import type { EventStrings } from '../types';
 
 const VALUES = [INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE];
+
+/**
+ * Checks if the provided event is a {@linkcode EventStrings}.
+ * @param event any - The event to check
+ * @returns  boolean - Returns true if the event is a {@linkcode EventStrings}
+ */
 export const isStringEvent = (event: any): event is EventStrings => {
   const out =
     typeof event === 'string' &&

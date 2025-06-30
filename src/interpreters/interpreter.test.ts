@@ -1,7 +1,10 @@
 import { t } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
-import { MAX_SELF_TRANSITIONS, MIN_ACTIVITY_TIME } from '~constants';
+import {
+  DEFAULT_MAX_SELF_TRANSITIONS,
+  DEFAULT_MIN_ACTIVITY_TIME,
+} from '~constants';
 import { DELAY, fakeDB, machine1 } from '~fixturesData';
 import { createMachine } from '~machine';
 import { EVENTS_FULL } from '~machines';
@@ -274,7 +277,7 @@ describe('Interpreter', () => {
         },
       },
       delays: {
-        DELAY: MIN_ACTIVITY_TIME,
+        DELAY: DEFAULT_MIN_ACTIVITY_TIME,
       },
     }));
 
@@ -284,7 +287,7 @@ describe('Interpreter', () => {
       mode: 'normal',
     });
 
-    const error = `Too much self transitions, exceeded ${MAX_SELF_TRANSITIONS} transitions`;
+    const error = `Too much self transitions, exceeded ${DEFAULT_MAX_SELF_TRANSITIONS} transitions`;
 
     test('#01 => Start the service', async () => {
       vi.advanceTimersByTimeAsync(TIME_TO_RINIT_SELF_COUNTER);

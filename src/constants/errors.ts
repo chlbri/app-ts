@@ -73,6 +73,13 @@ const produceErrors = <const T extends STR[]>(...types: T) => {
   return out as UnionToIntersection<Out>;
 };
 
+/**
+ * Contains error messages for various machine components.
+ * Each component (action, guard, delay, promise, machine) has three types of errors:
+ * - `notDefined`: Indicates that the component is not defined.
+ * - `notDescribed`: Indicates that the component is not described.
+ * - `notProvided`: Indicates that the component is not provided.
+ */
 export const ERRORS = produceErrors(
   action,
   guard,

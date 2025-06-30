@@ -16,6 +16,14 @@ export type ToAction_F = <
   actions?: ActionMap<E, P, Pc, Tc>,
 ) => Fn<[Pc, Tc, ToEvents<E, P>], ActionResult<Pc, Tc>> | undefined;
 
+/**
+ * Converts an ActionConfig to a function that can be executed with the provided eventsMap and promisees.
+ * @param events - The events map to use for resolving the action.
+ * @param promisees - The promisees map to use for resolving the action.
+ * @param action - The action configuration to convert.
+ * @param actions - The actions map containing functions to execute.
+ * @returns A function that executes the action or undefined if not found.
+ */
 export const toAction: ToAction_F = (
   events,
   promisees,
