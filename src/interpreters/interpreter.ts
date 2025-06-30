@@ -418,7 +418,7 @@ export class Interpreter<
     this.#flushSubscribers();
   };
 
-  #timeoutActions: NodeJS.Timeout[] = [];
+  #timeoutActions: { id: string; timer: NodeJS.Timeout }[] = [];
 
   start = () => {
     this.#flush();
@@ -495,18 +495,24 @@ export class Interpreter<
     return action(pContext, context, event);
   };
 
+  #performScheduled = (scheduled: ScheduledData<Pc, Tc>) => {
+    const { data, ms, id } = scheduled;
+    const timer = setTimeout(() => {
+      this.#merge(data);
+    }, ms);
+    this.#timeoutActions.push({ timer, id });
+  };
+
   #executeAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this.#makeBusy();
-    const { pContext, context, __data } = t.any(
+    const { pContext, context, scheduled } = t.any(
       this.#performAction(action),
     );
-    if (__data) {
-      const { data, ms } = __data as ScheduledData<Pc, Tc>;
-      const timer = setTimeout(() => {
-        this.#merge(data);
-      }, ms);
-      this.#timeoutActions.push(timer);
+
+    if (scheduled) {
+      this.#performScheduled(scheduled);
     }
+
     this.#makeWork();
     return { pContext, context };
   };
@@ -1215,7 +1221,7 @@ export class Interpreter<
     this.#mapSubscribers.forEach(f => f.unsubscribe());
     this.#subscribers.forEach(f => f.unsubscribe());
     this.#childrenServices.forEach(c => c.stop());
-    this.#timeoutActions.forEach(clearTimeout);
+    this.#timeoutActions.forEach(({ timer }) => clearTimeout(timer));
     this.#setStatus('stopped');
   };
 

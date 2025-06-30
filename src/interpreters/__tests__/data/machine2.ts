@@ -212,7 +212,7 @@ export const _machine2 = createMachine(
           console.log('Debounced action executed');
           return 1000;
         }),
-        10_000,
+        { ms: 10_000, id: 'debounce-action' },
       ),
     },
     predicates: {

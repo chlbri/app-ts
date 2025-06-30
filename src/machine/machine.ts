@@ -629,7 +629,7 @@ class Machine<
       assign,
       voidAction,
       sender,
-      debounce: (fn, ms = 100) => {
+      debounce: (fn, { id, ms = 100 }) => {
         return (pContext, context, map) => {
           const data = fn(
             cloneDeep(pContext),
@@ -637,12 +637,12 @@ class Machine<
             map,
           );
 
-          const __data: ScheduledData<Pc, Tc> = { data, ms };
+          const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
 
           return t.any({
             pContext,
             context,
-            __data,
+            scheduled,
           });
         };
       },

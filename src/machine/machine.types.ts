@@ -189,7 +189,10 @@ export type DebounceAction_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = <T extends ActionResult_F<E, P, Pc, Tc>>(
   fn: T,
-  ms?: number,
+  options: {
+    ms?: number;
+    id: string;
+  },
 ) => ActionResult_F<E, P, Pc, Tc>;
 
 export type AddOption_F<
@@ -227,4 +230,4 @@ export type AddOptions_F<
 export type ScheduledData<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = { data: ActionResult<Pc, Tc>; ms: number };
+> = { data: ActionResult<Pc, Tc>; ms: number; id: string };
