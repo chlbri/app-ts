@@ -9,10 +9,23 @@ type ToPaths<
   T,
   D extends string = '.',
   P extends string = '',
+  Parent extends boolean = false,
 > = T extends Ru
-  ? Required<{
-      [K in keyof T]: ToPaths<T[K], D, `${P}${K & string}${D}`>;
-    }>[keyof T]
+  ?
+      | Required<{
+          [K in keyof T]: ToPaths<
+            T[K],
+            D,
+            `${P}${K & string}${D}`,
+            Parent
+          >;
+        }>[keyof T]
+      | (Parent extends true
+          ? {
+              path: P;
+              type: T;
+            }
+          : never)
   : {
       path: P extends `${infer P}${D}` ? P : never;
       type: T;
@@ -33,9 +46,32 @@ type FromPaths<
 /**
  * From "Acid Coder"
  */
-export type Decompose3<T extends Ru, D extends string = '.'> = FromPaths<
-  ToPaths<T, D>
->;
+type _Decompose3<
+  T extends Ru,
+  D extends string = '.',
+  Parent extends boolean = false,
+> = Omit<FromPaths<ToPaths<T, D, '', Parent>>, ''>;
+
+type DecomposeOpions = {
+  sep?: string;
+  parent?: boolean;
+};
+
+export type Decompose3<
+  T extends Ru,
+  O extends DecomposeOpions = { sep: '.'; parent: false },
+> =
+  _Decompose3<
+    T,
+    O['sep'] extends string ? O['sep'] : '.',
+    O['parent'] extends boolean ? O['parent'] : false
+  > extends infer Ty
+    ? {
+        [K in keyof Ty as K extends `${infer K1}${O['sep'] extends string ? O['sep'] : '.'}`
+          ? K1
+          : K]: Ty[K];
+      }
+    : never;
 
 export type ExpandFnMap = <
   Pc,

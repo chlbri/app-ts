@@ -495,7 +495,8 @@ export class Interpreter<
     return action(pContext, context, event);
   };
 
-  #performScheduled = (scheduled: ScheduledData<Pc, Tc>) => {
+  #performScheduled = (scheduled?: ScheduledData<Pc, Tc>) => {
+    if (!scheduled) return;
     const { data, ms, id } = scheduled;
     const timer = setTimeout(() => {
       this.#merge(data);
@@ -503,15 +504,25 @@ export class Interpreter<
     this.#timeoutActions.push({ timer, id });
   };
 
+  #performResend = (resend?: EventArg<E>) => {
+    if (!resend) return;
+    this.send(resend);
+  };
+
+  #performForceSend = (forceSend?: EventArg<E>) => {
+    if (!forceSend) return;
+    this.#send(forceSend);
+  };
+
   #executeAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this.#makeBusy();
-    const { pContext, context, scheduled } = t.any(
+    const { pContext, context, scheduled, resend, forceSend } = t.any(
       this.#performAction(action),
     );
 
-    if (scheduled) {
-      this.#performScheduled(scheduled);
-    }
+    this.#performScheduled(scheduled);
+    this.#performResend(resend);
+    this.#performForceSend(forceSend);
 
     this.#makeWork();
     return { pContext, context };
@@ -1442,9 +1453,7 @@ export class Interpreter<
     };
   };
 
-  send = (_event: EventArg<E>) => {
-    const check = this.#cannotEvent(_event);
-    if (check) return;
+  #send = (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
     const { result, next } = this._send(event);
     this.#merge(result);
@@ -1455,6 +1464,12 @@ export class Interpreter<
       this.#makeWork();
       this._next();
     } else this.#makeWork();
+  };
+
+  send = (_event: EventArg<E>) => {
+    const check = this.#cannotEvent(_event);
+    if (check) return;
+    this.#send(_event);
   };
 
   #proposedNextSV = (target: string) => nextSV(this.#value, target);

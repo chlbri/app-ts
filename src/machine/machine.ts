@@ -4,7 +4,7 @@ import cloneDeep from 'clone-deep';
 import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { Delay } from '~delays';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
+import { type EventsMap, type PromiseeMap, type ToEvents } from '~events';
 import {
   isDefinedS,
   isNotDefinedS,
@@ -643,6 +643,24 @@ class Machine<
             pContext,
             context,
             scheduled,
+          });
+        };
+      },
+      resend: resend => {
+        return (pContext, context) => {
+          return t.any({
+            pContext,
+            context,
+            resend,
+          });
+        };
+      },
+      forceSend: forceSend => {
+        return (pContext, context) => {
+          return t.any({
+            pContext,
+            context,
+            forceSend,
           });
         };
       },

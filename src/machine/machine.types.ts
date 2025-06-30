@@ -111,6 +111,13 @@ export type AssignAction_F<
   fn: FnMap<E, P, Pc, Tc, R>,
 ) => ActionResult_F<E, P, Pc, Tc>;
 
+export type ResendAction_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (event: EventArg<E>) => ActionResult_F<E, P, Pc, Tc>;
+
 export type VoidAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -214,6 +221,8 @@ export type AddOption_F<
   voidAction: VoidAction_F<E, P, Pc, Tc>;
   sender: SendAction_F<E, P, Pc, Tc>;
   debounce: DebounceAction_F<E, P, Pc, Tc>;
+  resend: ResendAction_F<E, P, Pc, Tc>;
+  forceSend: ResendAction_F<E, P, Pc, Tc>;
 }) => Mo | undefined;
 
 export type AddOptions_F<
