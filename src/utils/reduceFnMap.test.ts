@@ -5,7 +5,7 @@ import {
   type EventsMap,
   type PromiseeMap,
 } from '~events';
-import type { FnMap, FnMapReduced } from '~types';
+import type { FnMap, FnMapR } from '~types';
 import { reduceFnMap, reduceFnMap2, toEventsMap } from './reduceFnMap';
 
 describe('toEventsMap', () => {
@@ -221,12 +221,7 @@ describe('reduceFnMap2', () => {
     const promisees: PromiseeMap = {};
     const elseSpy = vi.fn().mockReturnValue('else result');
 
-    const fnMap: FnMapReduced<
-      typeof events,
-      typeof promisees,
-      any,
-      string
-    > = {
+    const fnMap: FnMapR<typeof events, typeof promisees, any, string> = {
       EVENT1: () => 'event1 result',
       else: elseSpy,
     };
@@ -252,12 +247,7 @@ describe('reduceFnMap2', () => {
     const event2Fn = vi.fn().mockReturnValue('event2 result');
     const elseFn = vi.fn().mockReturnValue('else result');
 
-    const fnMap: FnMapReduced<
-      typeof events,
-      typeof promisees,
-      any,
-      string
-    > = {
+    const fnMap: FnMapR<typeof events, typeof promisees, any, string> = {
       EVENT1: event1Fn,
       EVENT2: event2Fn,
       else: elseFn,
@@ -291,10 +281,9 @@ describe('reduceFnMap2', () => {
     };
     const promisees: PromiseeMap = {};
 
-    const fnMap: FnMapReduced<typeof events, typeof promisees, any, any> =
-      {
-        EVENT1: () => 'event1 result',
-      };
+    const fnMap: FnMapR<typeof events, typeof promisees, any, any> = {
+      EVENT1: () => 'event1 result',
+    };
 
     // Act
     const reducedFn = reduceFnMap2(events, promisees, fnMap);
@@ -317,12 +306,7 @@ describe('reduceFnMap2', () => {
     const thenFn = vi.fn().mockReturnValue('then result');
     const catchFn = vi.fn().mockReturnValue('catch result');
 
-    const fnMap: FnMapReduced<
-      typeof events,
-      typeof promisees,
-      any,
-      string
-    > = {
+    const fnMap: FnMapR<typeof events, typeof promisees, any, string> = {
       'promise1::then': thenFn,
       'promise1::catch': catchFn,
     };

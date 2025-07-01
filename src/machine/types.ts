@@ -4,6 +4,7 @@ import type {
   NotUndefined,
   Primitive,
   Ru,
+  SubType,
 } from '@bemedev/types';
 import type { Action, FromActionConfig } from '~actions';
 import type { Delay } from '~delays';
@@ -23,9 +24,9 @@ import type {
   NodesConfig,
 } from '~states';
 import type {
-  ExtractActionsFromTransitions,
-  ExtractDelaysFromTransitions,
-  ExtractGuardsFromTransitions,
+  ExtractActionKeysFromTransitions,
+  ExtractDelayKeysFromTransitions,
+  ExtractGuardKeysFromTransitions,
   ExtractSrcFromTransitions,
   TransitionsConfig,
 } from '~transitions';
@@ -38,7 +39,6 @@ import type {
   RecordS,
   ReduceArray,
   SingleOrArrayL,
-  SubType,
   TrueObject,
 } from '~types';
 import type { EVENTS_FULL } from './constants';
@@ -119,13 +119,15 @@ export type InitialsFromConfig<C extends Config> = GetInititalsFromFlat<
  * @see {@linkcode TransitionsConfig} for the structure of transitions.
  * @see {@linkcode ActivityConfig} for the structure of activities.
  * @see {@linkcode FromActionConfig} for extracting action names from action configurations.
- * @see {@linkcode ExtractActionsFromTransitions} for extracting actions from transitions.
+ * @see {@linkcode ExtractActionKeysFromTransitions} for extracting actions from transitions.
  * @see {@linkcode ExtractActionsFromActivity} for extracting actions from activities.
  * @see {@linkcode ReduceArray} for reducing arrays to a single type.
  */
 type _GetKeyActionsFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]:
-    | ExtractActionsFromTransitions<Extract<Flat[key], TransitionsConfig>>
+    | ExtractActionKeysFromTransitions<
+        Extract<Flat[key], TransitionsConfig>
+      >
     | ExtractActionsFromActivity<
         Extract<Flat[key], { activities: ActivityConfig }>
       >
@@ -148,12 +150,14 @@ type _GetKeyActionsFromFlat<Flat extends FlatMapN> = {
  *
  * @see {@linkcode TransitionsConfig} for the structure of transitions.
  * @see {@linkcode ActivityConfig} for the structure of activities.
- * @see {@linkcode ExtractGuardsFromTransitions} for extracting guards from transitions.
+ * @see {@linkcode ExtractGuardKeysFromTransitions} for extracting guards from transitions.
  * @see {@linkcode ExtractGuardsFromActivity} for extracting guards from activities.
  */
 type _GetKeyGuardsFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]:
-    | ExtractGuardsFromTransitions<Extract<Flat[key], TransitionsConfig>>
+    | ExtractGuardKeysFromTransitions<
+        Extract<Flat[key], TransitionsConfig>
+      >
     | ExtractGuardsFromActivity<
         Extract<Flat[key], { activities: ActivityConfig }>
       > extends infer V
@@ -198,12 +202,14 @@ type _GetEventKeysFromFlat<Flat extends FlatMapN> = {
  *
  * @see {@linkcode TransitionsConfig} for the structure of transitions.
  * @see {@linkcode ActivityConfig} for the structure of activities.
- * @see {@linkcode ExtractDelaysFromTransitions} for extracting delays from transitions.
+ * @see {@linkcode ExtractDelayKeysFromTransitions} for extracting delays from transitions.
  * @see {@linkcode ExtractDelaysFromActivity} for extracting delays from activities.
  */
 type _GetDelayKeysFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]:
-    | ExtractDelaysFromTransitions<Extract<Flat[key], TransitionsConfig>>
+    | ExtractDelayKeysFromTransitions<
+        Extract<Flat[key], TransitionsConfig>
+      >
     | ExtractDelaysFromActivity<Flat[key]> extends infer V
     ? unknown extends V
       ? never

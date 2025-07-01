@@ -6,33 +6,46 @@ import type {
   NotUndefined,
   Primitive,
   Ru,
-  TuplifyUnion,
   UnionToIntersection,
 } from '@bemedev/types';
-import type {
-  EventObject,
-  EventsMap,
-  PromiseeMap,
-  ToEvents,
-  ToEventsR,
-} from '~events';
-import type { StateType, StateValue } from '~states';
+import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
 import { checkKeys } from '~utils';
 
 export type IsString_F = (value: unknown) => value is string;
+
+/**
+ * Single or readonly array type of {@linkcode T}.
+ */
 export type SingleOrArrayR<T> = T | readonly T[];
+
+/**
+ * Single or readonly array type of {@linkcode T} with at least one element.
+ * This type is useful when you want to ensure that the value is either a single
+ * element of type {@linkcode T} or an array containing at least one element of
+ * type {@linkcode T}.
+ */
 export type SingleOrArrayL<T> = T | readonly [...(readonly T[]), T];
 
+/**
+ * Describer keys used to define the name and description of an object.
+ */
 export const DESCRIBER_KEYS = ['name', 'description'] as const;
 
+/**
+ * Describer type that contains a name and a description.
+ */
 export type Describer = Record<(typeof DESCRIBER_KEYS)[number], string>;
 
+/**
+ * Retrieves the name property from a Describer type.
+ */
 export type FromDescriber<T extends Describer> = T['name'];
 
+/**
+ * A {@linkcode Describer} type where the description property is optional.
+ */
 export type Describer2 = NOmit<Describer, 'description'> &
   Partial<Pick<Describer, 'description'>>;
-
-export type ToDescriber_F = (arg: string | Describer) => Describer2;
 
 export const isFunction = (value: unknown): value is Fn => {
   return typeof value === 'function';
@@ -47,90 +60,58 @@ export const isDescriber = (arg: any): arg is Describer => {
   return out;
 };
 
-export type ExtractLargeKeys<T> = string extends T
-  ? never
-  : number extends T
-    ? never
-    : symbol extends T
-      ? never
-      : T;
-
-type _Simplify<T> = T extends { new: any }
-  ? T
-  : T extends Fn
-    ? Fn<SimplifyArray<Parameters<T>>, ReturnType<T>>
-    : T extends object
-      ? {
-          [P in keyof T as ExtractLargeKeys<P>]: T[P] extends object
-            ? Simplify<T[P]>
-            : T[P];
-        }
-      : T;
-
-export type Simplify<T, S = unknown> = Extract<_Simplify<T>, S>;
-
-export type IdxOf<T extends any[]> = Exclude<keyof T, keyof any[]>;
-
-export type _SimplifyArray<T extends any[]> = {
-  [K in IdxOf<T>]: Simplify<T[K]>;
-};
-
-export type SimplifyArray<T extends any[]> = TuplifyUnion<
-  ValuesOf<_SimplifyArray<T>>
->;
-
+/**
+ * Can be used after
+ */
 export type NotReadonly<T> = {
   -readonly [P in keyof T]: T[P];
 };
 
-export type NotR<T> = NotReadonly<T>;
-
-export type Expr<
-  TContext extends object = object,
-  TEvents extends EventObject = EventObject,
-  T = any,
-> = Fn<[TContext, TEvents], T>;
-
+/**
+ * Can be used after
+ */
 export type Define<T, U> = T extends undefined
   ? U
   : undefined extends T
     ? NotUndefined<T>
     : T;
 
-export interface PrimitiveObjectMap {
+interface PrimitiveObjectMap {
   readonly [key: string]: SingleOrArray<PrimitiveObject>;
 }
 
+/**
+ * A type that represents a primitive value, which can be a string, number, boolean,
+ * null, undefined, or an object.
+ */
 export type PrimitiveObject = Primitive | Primitive[] | PrimitiveObjectMap;
 
-export type DeUnionize<T> = T extends any ? T : never;
-
-export type DefaultReturn = <T>(params: {
-  _return?: T;
-  error: Error;
-  config: {
-    strict?: boolean;
-    value: T;
-  };
-}) => T;
-
-export type ReducedDefaultReturn<T> = (error: Error, _return?: T) => T;
-export type RDR<T> = ReducedDefaultReturn<T>;
-
-export type PropertyToChange<T extends object> = [keyof T, string];
-export type PtC<T extends object> = PropertyToChange<T>;
-
+/**
+ * Option for changing a property access in an object.
+ */
 type ChangePropertyOption =
   | 'readonly'
   | 'readonly_undefined'
   | 'normal'
   | 'undefined';
 
+/**
+ * Changes the property access of a specific property in an object type.
+ *
+ * @template T - The object type to change.
+ * @template name - The name of the property of {@linkcode T} to change.
+ * @template replace - The name of the property to replace the original property with.
+ * @template : {@linkcode ChangePropertyOption} [option] - The option for changing the property access.
+ *
+ * @remarks Can be used
+ *
+ * @see {@linkcode NOmit} for removing a property from an object type.
+ */
 export type ChangeProperty<
   T extends object,
   name extends keyof T,
   replace extends string,
-  option extends ChangePropertyOption = 'undefined',
+  option extends ChangePropertyOption = 'normal',
 > = NOmit<T, name> &
   (name extends any
     ? option extends 'readonly'
@@ -141,12 +122,6 @@ export type ChangeProperty<
           ? { [key in replace]+?: T[name] }
           : { [key in replace]: T[name] }
     : never);
-
-export interface StringMap {
-  [key: string]: _StringMap;
-}
-
-type _StringMap = string | StringMap;
 
 type _KeyStrings<
   T extends object,
@@ -159,7 +134,7 @@ type _KeyStrings<
           ? UnionToIntersection<_KeyStrings<T2, AddObjectKey>>
           : never) &
           (AddObjectKey extends true
-            ? { '@my': string }
+            ? { [key in HighMy]: string }
             : NonNullable<object>);
       }
     : { [key in Key]: string }
@@ -210,6 +185,19 @@ type _ChangeProperties<
       : Tn
     : never;
 
+/**
+ * Changes the properties of an object type based on a partial object type.
+ *
+ * @template T - The object type to change.
+ * @template U - The partial object type that defines the changes.
+ * @template : {@linkcode ChangePropertyOption} [option] - The option for changing the property access.
+ *
+ * @remarks This can be usefull after
+ *
+ * @see {@linkcode DeepPartial} for creating a deep partial type.
+ * @see {@linkcode KeyStrings} for creating a type with string keys.
+ * @see {@linkcode _ChangeProperties} for changing a single property access.
+ */
 export type ChangeProperties<
   T extends object,
   U extends DeepPartial<KeyStrings<T>> = DeepPartial<KeyStrings<T>>,
@@ -222,57 +210,57 @@ export type ChangeProperties<
     ? T
     : _ChangeProperties<T, U, option>;
 
+/**
+ * Remap an object by adding an `__id` property.
+ *
+ * @template T - The object type to remap.
+ */
 export type Identitfy<T> = T extends object ? T & { __id: string } : T;
 
-export type Identify_F = <const T>(
-  arg?: Record<string, T>,
-) => Identitfy<T>[];
-
-export type Asyncfy_F = <P extends any[], R = any>(
-  fn: Fn<P, R>,
-) => Fn<P, Promise<R>>;
-
-export type AnifyReturn<T extends Fn> = (...args: Parameters<T>) => any;
-
-export type CheckKeys_F = <T extends object>(
-  arg: T,
-  ...keys: string[]
-) => boolean;
-
-export interface ToArray_F {
-  <T>(obj: any): T[];
-  typed: <T>(obj: T | T[] | readonly T[]) => Exclude<T, undefined>[];
-}
-
-export type ToArray<T> = T extends any[] ? T : T[];
-
-export type EscapeRexExp_F = (arg: string) => string;
-
-export type ReplaceAll_F = (params: {
-  entry: string;
-  match: string;
-  replacement: string;
-}) => string;
-
-export type RecomposeSV_F = Fn<[arg?: string], StateValue>;
-
-export type DeleteFirst_F = Fn<[arg: string, toDelete: string], string>;
-export type DeleteF_F = Fn<[arg: string, toDelete?: string], string>;
-
+/**
+ * A helper type to reduce an array type to its element type.
+ * It extracts the element type from an array type, whether it is a readonly array or a
+ * mutable array.
+ *
+ * @template T - The type to reduce.
+ */
 export type ReduceArray<T> = T extends readonly (infer U1)[]
   ? U1
   : T extends (infer U2)[]
     ? U2
     : T;
 
+/**
+ * An helper to write common function signatures.
+ *
+ * @template : {@linkcode EventsMap} [E] - The events map used in the function.
+ * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the function.
+ * @template Pc - The private context.
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template R - The return type of the function, defaults to any.
+ *
+ * @see {@linkcode ToEvents} for converting events and promisees to a map.
+ */
 export type FnR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > = (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R;
 
+/**
+ * A helper type to reduce a function signature to its context and events map.
+ *
+ * @template : {@linkcode EventsMap} [E] - The events map used in the function.
+ * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the function.
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template R - The return type of the function, defaults to any.
+ *
+ * @remarks This function signature is a reduced version of {@linkcode FnR} without the private context.
+ *
+ * @see {@linkcode ToEvents} for converting events and promisees to a map.
+ */
 export type FnReduced<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -280,6 +268,18 @@ export type FnReduced<
   R = any,
 > = (context: Tc, eventsMap: ToEvents<E, P>) => R;
 
+/**
+ * A helper type to reduce a function signature to its context and events map.
+ *
+ * @template : {@linkcode EventsMap} [E] - The events map used in the function.
+ * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the function.
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template R - The return type of the function, defaults to any.
+ *
+ * @see {@linkcode ToEvents} for converting events and promisees to a map.
+ * @see {@linkcode FnReduced} for a more generic function signature.
+ * @see {@linkcode Extract}
+ */
 export type FnMap2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -299,7 +299,7 @@ type _FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
   TT extends ToEventsR<E, P> = ToEventsR<E, P>,
 > = {
@@ -331,11 +331,11 @@ export type FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > = FnR<E, P, Pc, Tc, R> | _FnMap<E, P, Pc, Tc, R, ToEventsR<E, P>>;
 
-export type FnMapReduced<
+export type FnMapR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -344,42 +344,75 @@ export type FnMapReduced<
   | ((state: Tc, eventsMap: ToEventsR<E, P>) => R)
   | _FnMapR<E, P, Tc, R, ToEventsR<E, P>>;
 
-export type EventsMapFromFn<F extends FnMap> =
-  F extends FnMap<infer P> ? P : never;
-
-export type ExtractPrivateFromFn<F extends FnMap> =
-  F extends FnMap<any, infer Pc> ? Pc : never;
-
-export type ExtractContextFromFn<F extends FnMap> =
-  F extends FnMap<any, any, infer Tc> ? Tc : never;
-
-export type ExtractReturnFromFn<F extends FnMap> =
-  F extends FnMap<any, any, any, infer R> ? R : never;
-
+/**
+ * A type that represents a record with string keys and values of type {@linkcode T}.
+ *
+ * @see {@linkcode Record} for more details.
+ */
 export type RecordS<T> = Record<string, T>;
 
-export type Keys<T> = keyof NotUndefined<T>;
-
+/**
+ * A type that represents all values of type {@linkcode T},
+ *
+ * @see {@linkcode NotUndefined}
+ */
 export type ValuesOf<T> = NotUndefined<
   NotUndefined<T>[keyof NotUndefined<T>]
 >;
 
-export type StateMap = {
-  states?: Record<string, StateMap>;
-  type: StateType;
-  id: string;
-};
-
+/**
+ * A type that represents a record with string keys and values of type {@linkcode R}.
+ *
+ * @template S - The string keys of the record.
+ * @template R - The type of the values in the record, optional
+ *
+ * @see {@linkcode Record} for more details.
+ * @remarks Simplified version of {@linkcode Record}
+ */
 export type KeyU<S extends string, R = unknown> = Record<S, R>;
 
+/**
+ * The partial version of {@linkcode KeyU}.
+ *
+ * @template S - The string keys of the record.
+ * @template R - The type of the values in the record, optional
+ *
+ * @see {@linkcode Partial}
+ */
 export type KeyO<S extends string, R = unknown> = Partial<KeyU<S, R>>;
 
+/**
+ * Extracts the string type from a union type {@linkcode T}.
+ *
+ * @template T - The union type to extract the string type from.
+ *
+ * @see {@linkcode Extract} for more details.
+ */
 export type ExtractS<T> = Extract<T, string>;
 
+/**
+ * A type that represents a true object, which is an object that does not have
+ * any iterable properties or the `SymbolConstructor` property.
+ *
+ * @remarks This type is useful to ensure that the object is a plain object
+ * without any special properties.
+ *
+ * @see {@linkcode Ru} for a utility type that represents a true object.
+ * @see {@linkcode SymbolConstructor} for the symbol constructor type.
+ */
 export type TrueObject = Ru & {
   [Symbol.iterator]?: never;
   //@ts-expect-error - 'SymbolConstructor' does not exist on type 'object'
   [SymbolConstructor]?: never;
 };
 
+/**
+ * A type that represents a not defined.
+ *
+ * @remarks This type is useful when you want to allow a value to be absent or
+ * explicitly set to `null` or `undefined`.
+ *
+ * @remarks Can be usefull after.
+ *
+ */
 export type NoValue = void | undefined | null;

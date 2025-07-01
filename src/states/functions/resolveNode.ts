@@ -22,6 +22,24 @@ export type ResolveNode_F = <
   options?: NOmit<SimpleMachineOptions<E, P, Pc, Tc>, 'initials'>,
 ) => Node<E, P, Pc, Tc>;
 
+/**
+ * Resolves a node configuration into a full node with all functions.
+ *
+ * @param events - The events map used for action and transition resolution.
+ * @param promisees - The promisees map used for promise resolution.
+ * @param config - The node configuration to resolve.
+ * @param options - Optional machine options that may include actions and promises configurations.
+ * @returns A structured representation of the node with its properties and transitions.
+ *
+ * @see {@linkcode ResolveNode_F} for more details
+ * @see {@linkcode toAction} for converting actions
+ * @see {@linkcode toTransition} for converting transitions
+ * @see {@linkcode toPromise} for converting promises
+ * @see {@linkcode toArray.typed} for ensuring typed arrays
+ * @see {@linkcode stateType} for determining the type of the state
+ * @see {@linkcode identify} for identifying properties in the configuration
+ *
+ */
 export const resolveNode: ResolveNode_F = (
   events,
   promisees,

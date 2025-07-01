@@ -4,7 +4,17 @@ import type { NodeConfig, NodeConfigCompoundWithInitials } from '../types';
 
 type Url_F = <T>(shape: string, value: T) => any;
 
-export const recomposeObjectUrl: Url_F = (shape, value) => {
+/**
+ * Recompose an object URL based on the provided shape and value.
+ *
+ * @param shape - The shape of the URL to recompose.
+ * @param value - The value to recompose into the URL.
+ * @returns A recomposed object URL.
+ *
+ * @see {@linkcode Url_F} for type details.
+ * @see {@linkcode DEFAULT_DELIMITER} for the default delimiter used in the URL.
+ */
+const recomposeObjectUrl: Url_F = (shape, value) => {
   const obj: any = {};
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { states, ...rest } = value as any;
@@ -36,6 +46,16 @@ export type RecomposeConfig_F = <
   shape: T,
 ) => NodeConfigCompoundWithInitials;
 
+/**
+ * Recompose a configuration object into a nested structure based on the provided shape.
+ *
+ * @param shape - The shape of the configuration to recompose.
+ * @returns A recomposed configuration object.
+ *
+ * @see {@linkcode RecomposeConfig_F} for type details.
+ * @see {@linkcode recomposeObjectUrl} for the implementation of the recomposition logic.
+ * @see {@linkcode merge} for merging objects.
+ */
 export const recomposeConfig: RecomposeConfig_F = shape => {
   const entries = Object.entries(shape);
   const arr: any[] = [];

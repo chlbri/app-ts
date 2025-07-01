@@ -12,7 +12,7 @@ import type {
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type {
   ExtractActionsFromTransition,
-  ExtractGuardsFromDelayed,
+  ExtractGuardKeysFromDelayed,
   SingleOrArrayT,
   Transition,
   TransitionConfigMapA,
@@ -167,12 +167,12 @@ export type ExtractMaxFromPromisee<T extends { max: string }> = T['max'];
  * @template : {@linkcode PromiseeConfig} T - The type of the promisee configuration, which should have `then`, `catch`, and `finally` properties.
  * @returns A union of guard configurations extracted from the delayed parts of the promisee configuration.
  *
- * @see {@linkcode ExtractGuardsFromDelayed} for extracting guards from a delayed part.
+ * @see {@linkcode ExtractGuardKeysFromDelayed} for extracting guards from a delayed part.
  */
 export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
-  | ExtractGuardsFromDelayed<T['then']>
-  | ExtractGuardsFromDelayed<T['catch']>
-  | ExtractGuardsFromDelayed<T['finally']>;
+  | ExtractGuardKeysFromDelayed<T['then']>
+  | ExtractGuardKeysFromDelayed<T['catch']>
+  | ExtractGuardKeysFromDelayed<T['finally']>;
 
 /**
  * A big one !
