@@ -6,7 +6,11 @@ import {
   type PromiseeMap,
 } from '~events';
 import type { FnMap, FnMapR } from '~types';
-import { reduceFnMap, reduceFnMap2, toEventsMap } from './reduceFnMap';
+import {
+  reduceFnMap,
+  reduceFnMapReduced,
+  toEventsMap,
+} from './reduceFnMap';
 
 describe('toEventsMap', () => {
   test('combine correctement les événements et les promisees', () => {
@@ -206,7 +210,7 @@ describe('reduceFnMap2', () => {
     const directFn = () => 'result';
 
     // Act
-    const result = reduceFnMap2(events, promisees, directFn);
+    const result = reduceFnMapReduced(events, promisees, directFn);
 
     // Assert
     expect(result).toBe(directFn);
@@ -227,7 +231,7 @@ describe('reduceFnMap2', () => {
     };
 
     // Act
-    const reducedFn = reduceFnMap2(events, promisees, fnMap);
+    const reducedFn = reduceFnMapReduced(events, promisees, fnMap);
     const result = reducedFn({}, INIT_EVENT);
 
     // Assert
@@ -254,7 +258,7 @@ describe('reduceFnMap2', () => {
     };
 
     // Act
-    const reducedFn = reduceFnMap2(events, promisees, fnMap);
+    const reducedFn = reduceFnMapReduced(events, promisees, fnMap);
     const result1 = reducedFn({}, { type: 'EVENT1', payload: 'test' });
     const result2 = reducedFn(
       {},
@@ -286,7 +290,7 @@ describe('reduceFnMap2', () => {
     };
 
     // Act
-    const reducedFn = reduceFnMap2(events, promisees, fnMap);
+    const reducedFn = reduceFnMapReduced(events, promisees, fnMap);
     const result = reducedFn({}, { type: 'UNKNOWN', payload: null });
 
     // Assert
@@ -312,7 +316,7 @@ describe('reduceFnMap2', () => {
     };
 
     // Act
-    const reducedFn = reduceFnMap2(events, promisees, fnMap);
+    const reducedFn = reduceFnMapReduced(events, promisees, fnMap);
     const result1 = reducedFn(
       {},
       { type: 'promise1::then', payload: 'success' },
