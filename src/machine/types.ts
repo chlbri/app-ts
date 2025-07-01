@@ -415,14 +415,17 @@ export type SimpleMachineOptions<
   machines?: Partial<RecordS<any>>;
 };
 
-export type SimpleMachineOptions2 = {
-  initials: any;
-  actions?: any;
-  predicates?: any;
-  promises?: any;
-  delays?: any;
-  machines?: any;
-};
+export type SimpleMachineOptions2 = Partial<
+  Record<
+    | 'initials'
+    | 'actions'
+    | 'predicates'
+    | 'promises'
+    | 'delays'
+    | 'machines',
+    any
+  >
+>;
 
 export type PromiseFunction<
   E extends EventsMap = EventsMap,
