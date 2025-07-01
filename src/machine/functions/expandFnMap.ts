@@ -1,6 +1,6 @@
 import { type Ru } from '@bemedev/types';
-import type { ActionResult } from '~actions';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
+import type { ActionResultFn } from '~actions';
+import type { EventsMap, PromiseeMap } from '~events';
 import { type FnMap, type PrimitiveObject } from '~types';
 import { reduceFnMap } from '~utils';
 import { assignByKey } from './subcriber';
@@ -141,19 +141,19 @@ export type ExpandFnMap = <
   promisees: P,
   key: K,
   fn: FnMap<E, P, Pc, Tc, R>,
-) => (
-  pContext: Pc,
-  context: Tc,
-  eventsMap: ToEvents<E, P>,
-) => ActionResult<Pc, Tc>;
-
+) => ActionResultFn<E, P, Pc, Tc>;
 /**
  *
  * @param events : type {@linkcode EventsMap} [E] - The events map.
  * @param promisees  : type {@linkcode PromiseeMap} [P] - The promisees map.
  * @param key  : type {@linkcode Decompose3} [D] - The key to assign the result to in the context and the private context.
  * @param fn  : type {@linkcode FnMap} [E, P, Pc, Tc, R] - The function to reduce the events and promisees and performs the action.
- * @returns  : A function that takes the private context, context, and events map, and returns an {@linkcode ActionResult}.
+ * @returns a {@linkcode ActionResultFn} function.
+ *
+ * @see {@linkcode assignByKey} for assigning the result to the context and private context.
+ * @see {@linkcode reduceFnMap} for reducing the events and promisees.
+ * @see {@linkcode Decompose3} for decomposing the private context and context into paths.
+ *
  */
 export const expandFnMap: ExpandFnMap = (events, promisees, key, fn) => {
   const _fn = reduceFnMap(events, promisees, fn);

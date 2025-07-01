@@ -1,7 +1,23 @@
 import type { Fn } from '@bemedev/types';
 
+/**
+ * A callback function type that takes no arguments and returns void.
+ *
+ * @see {@linkcode Fn} for more details.
+ */
 type Cb = Fn<[], void>;
 
+/**
+ * Represents the status of the scheduler.
+ *
+ * @enum
+ * - 'idle': The scheduler is not initialized or processing any tasks.
+ * - 'initialized': The scheduler has been initialized and is ready to process tasks.
+ * - 'processing': The scheduler is currently processing a task.
+ * - 'paused': The scheduler is paused and not processing tasks.
+ * - 'working': The scheduler is actively working on a task.
+ * - 'stopped': The scheduler has been stopped and will not process any more tasks.
+ */
 type Status =
   | 'idle'
   | 'initialized'
@@ -10,6 +26,9 @@ type Status =
   | 'working'
   | 'stopped';
 
+/**
+ * A class that manages a queue of tasks and their execution status.
+ */
 export class Scheduler {
   #queue: Array<Cb> = [];
 
@@ -19,37 +38,41 @@ export class Scheduler {
     return this.#performeds;
   }
 
-  #status: Status = 'idle';
+  #currentStatus: Status = 'idle';
 
   /* v8 ignore next 3*/
   get status() {
-    return this.#status;
+    return this.#currentStatus;
   }
 
   initialize = (callback?: Cb) => {
-    const check = this.#status !== 'idle';
+    const check = this.#currentStatus !== 'idle';
     if (check) return;
-    this.#status = 'initialized';
+    this.#currentStatus = 'initialized';
 
     if (callback) {
       this.#process(callback);
     }
 
-    this.#flushEvents();
+    this.#flush();
   };
 
-  get processing() {
-    return this.#status === 'processing';
+  get #processing() {
+    return this.#currentStatus === 'processing';
   }
 
+  /**
+   * Schedules a callback function for execution.
+   * @param task of type {@linkcode Cb} The callback function to be scheduled for execution.
+   */
   schedule = (task: Cb) => {
-    const check0 = this.#status === 'stopped';
+    const check0 = this.#currentStatus === 'stopped';
     if (check0) return;
 
     const check1 =
-      this.processing ||
-      this.#status === 'idle' ||
-      this.#status === 'paused';
+      this.#processing ||
+      this.#currentStatus === 'idle' ||
+      this.#currentStatus === 'paused';
 
     if (check1) {
       this.#queue.push(task);
@@ -57,11 +80,11 @@ export class Scheduler {
     }
 
     this.#process(task);
-    this.#flushEvents();
+    this.#flush();
   };
 
   pause = () => {
-    this.#status = 'paused';
+    this.#currentStatus = 'paused';
   };
 
   #clear = () => {
@@ -70,11 +93,11 @@ export class Scheduler {
 
   stop = () => {
     this.pause();
-    this.#status = 'stopped';
+    this.#currentStatus = 'stopped';
     this.#clear();
   };
 
-  #flushEvents = () => {
+  #flush = () => {
     let nextCallback = this.#queue.shift();
     while (nextCallback) {
       this.#process(nextCallback);
@@ -82,18 +105,24 @@ export class Scheduler {
     }
   };
 
+  /**
+   * Immediately processes the callback function, updates the status, and increments the performed count.
+   *
+   * @param callback of type {@linkcode Cb} The callback function to be executed immediately.
+   */
   processImmediate = (callback: Cb) => {
     callback();
     this.#performeds++;
-    this.#status = 'working';
+    this.#currentStatus = 'working';
   };
 
   #process = (callback: Cb) => {
     const check =
-      this.#status === 'working' || this.#status === 'initialized';
+      this.#currentStatus === 'working' ||
+      this.#currentStatus === 'initialized';
 
     if (check) {
-      this.#status = 'processing';
+      this.#currentStatus = 'processing';
       this.processImmediate(callback);
     }
   };

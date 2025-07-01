@@ -1,5 +1,5 @@
 import type { Fn, NOmit } from '@bemedev/types';
-import type { ActionConfig, ActionResult } from '~actions';
+import type { ActionConfig, ActionResult, ActionResultFn } from '~actions';
 import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
 import type { Machine } from '~machine';
@@ -87,13 +87,6 @@ export interface AnyMachine<
   toNode: Fn<[StateValue], NodeConfigWithInitials>;
 }
 
-export type ActionResult_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
-
 export type AssignAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -109,14 +102,14 @@ export type AssignAction_F<
 >(
   key: K,
   fn: FnMap<E, P, Pc, Tc, R>,
-) => ActionResult_F<E, P, Pc, Tc>;
+) => ActionResultFn<E, P, Pc, Tc>;
 
 export type ResendAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (event: EventArg<E>) => ActionResult_F<E, P, Pc, Tc>;
+> = (event: EventArg<E>) => ActionResultFn<E, P, Pc, Tc>;
 
 export type VoidAction_F<
   E extends EventsMap = EventsMap,
@@ -129,7 +122,7 @@ export type VoidAction_F<
     context: Tc,
     eventsMap: ToEvents<E, P>,
   ) => void | undefined,
-) => ActionResult_F<E, P, Pc, Tc>;
+) => ActionResultFn<E, P, Pc, Tc>;
 
 export type SendAction_F<
   E extends EventsMap = EventsMap,
@@ -146,7 +139,7 @@ export type SendAction_F<
     Tc,
     { to: string; event: EventArg<EventsMapFrom<T>> }
   >,
-) => ActionResult_F<E, P, Pc, Tc>;
+) => ActionResultFn<E, P, Pc, Tc>;
 
 export type ValueCheckerGuard_F<
   E extends EventsMap = EventsMap,
@@ -194,13 +187,13 @@ export type DebounceAction_F<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = <T extends ActionResult_F<E, P, Pc, Tc>>(
+> = <T extends ActionResultFn<E, P, Pc, Tc>>(
   fn: T,
   options: {
     ms?: number;
     id: string;
   },
-) => ActionResult_F<E, P, Pc, Tc>;
+) => ActionResultFn<E, P, Pc, Tc>;
 
 export type AddOption_F<
   E extends EventsMap = EventsMap,

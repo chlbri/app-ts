@@ -273,7 +273,7 @@ export type FnR<
   R = any,
 > = (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R;
 
-export type FnR2<
+export type FnReduced<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Tc = any,
@@ -292,7 +292,7 @@ export type FnMap2<
     payload: Extract<TT, { type: key }>['payload'],
   ) => R;
 } & {
-  else?: FnR2<E, P, Tc, R>;
+  else?: FnReduced<E, P, Tc, R>;
 };
 
 type _FnMap<
@@ -324,7 +324,7 @@ type _FnMapR<
     payload: Extract<TT, { type: key }>['payload'],
   ) => R;
 } & {
-  else?: FnR2<E, P, Tc, R>;
+  else?: FnReduced<E, P, Tc, R>;
 };
 
 export type FnMap<

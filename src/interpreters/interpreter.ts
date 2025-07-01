@@ -895,7 +895,7 @@ export class Interpreter<
 
   #flushMapSubscribers = () => {
     this.#mapSubscribers.forEach(f => {
-      const callback = () => f.reduced(this.#previousState, this.#state);
+      const callback = () => f.fn(this.#previousState, this.#state);
       this.#schedule(callback);
     });
   };

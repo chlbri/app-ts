@@ -51,6 +51,19 @@ import type {
   SimpleMachineOptions2,
 } from './types';
 
+/**
+ * A class representing a state machine.
+ * It provides methods to manage states, actions, predicates, delays, promises, and machines.
+ *
+ * @template : {@linkcode Config} [C] - The configuration type of the machine.
+ * @template Pc : The private context type of the machine.
+ * @template : {@linkcode PrimitiveObject} [Pc] - The context type of the machine.
+ * @template : {@linkcode GetEventsFromConfig}<{@linkcode C}> [E] - The events map type derived from the configuration.
+ * @template : {@linkcode PromiseeMap} [P] - The promisees map type derived from the configuration. Defaults to {@linkcode GetPromiseeSrcFromConfig}<{@linkcode C}>.
+ * @template : {@linkcode SimpleMachineOptions2} [Mo] - The options type for the machine, which includes actions, predicates, delays, promises, and machines. Defaults to {@linkcode MachineOptions}<[{@linkcode C} , {@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} ]>.
+ *
+ * @implements {@linkcode AnyMachine}<{@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} >
+ */
 class Machine<
   const C extends Config = Config,
   Pc = any,
@@ -60,22 +73,68 @@ class Machine<
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 > implements AnyMachine<E, P, Pc, Tc>
 {
+  /**
+   * The configuration of the machine for this {@linkcode Machine}.
+   *
+   * @see {@linkcode Config}
+   * @see {@linkcode C}
+   */
   #config: C;
+
+  /**
+   * The flat map of the configuration for this {@linkcode Machine}.
+   *
+   * @see {@linkcode FlatMapN}
+   * @see {@linkcode Config}
+   * @see {@linkcode C}
+   */
   #flat: FlatMapN<C, true>;
+
+  /**
+   * The map of events for this {@linkcode Machine}.
+   *
+   * @see {@linkcode EventsMap}
+   * @see {@linkcode E}
+   */
   #eventsMap!: E;
+
+  /**
+   * The map of promisees for this {@linkcode Machine}.
+   *
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   */
   #promiseesMap!: P;
 
+  /**
+   * Public accessor for the events map for this {@linkcode Machine}.
+   *
+   * @see {@linkcode EventsMap}
+   * @see {@linkcode E}   */
   get eventsMap() {
     return this.#eventsMap;
   }
 
+  /**
+   * Public accessor for the promisees map for this {@linkcode Machine}.
+   *
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   */
   get promiseesMap() {
     return this.#promiseesMap;
   }
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the events map for this {@linkcode Machine} as a type.
+   *
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode P}
+   *
+   * @remarks Used for typing purposes only.
    */
   get __events() {
     return typings<ToEvents<E, P>>();
@@ -83,7 +142,17 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   * This property provides the action function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __actionFn() {
     return typings<Action<E, P, Pc, Tc>>();
@@ -91,7 +160,10 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any action key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
   get __actionKey() {
     return typings<keyof (typeof this)['options']['actions']>();
@@ -99,7 +171,16 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the action parameters of action function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __actionParams() {
     return typings<{ pContext: Pc; context: Tc; map: E }>();
@@ -107,15 +188,30 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any guard key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
-  get __guard() {
+  get __guardKey() {
     return typings<keyof (typeof this)['options']['predicates']>();
   }
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the predicate function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode PredicateS}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __predictate() {
     return typings<PredicateS<E, P, Pc, Tc>>();
@@ -123,7 +219,10 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any delay key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
   get __delayKey() {
     return typings<keyof (typeof this)['options']['delays']>();
@@ -131,7 +230,19 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the delay function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode Delay}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __delay() {
     return typings<Delay<E, P, Pc, Tc>>();
@@ -139,7 +250,15 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any {@linkcode DefinedValue} for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode DefinedValue}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __definedValue() {
     return typings<DefinedValue<Pc, Tc>>();
@@ -147,7 +266,10 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any promise key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
   get __src() {
     return typings<keyof (typeof this)['options']['promises']>();
@@ -155,7 +277,19 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the promise function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode PromiseFunction}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __promise() {
     return typings<PromiseFunction<E, P, Pc, Tc>>();
@@ -163,9 +297,12 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any machine key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
-  get __child() {
+  get __childKey() {
     return typings<keyof (typeof this)['options']['machines']>();
   }
 

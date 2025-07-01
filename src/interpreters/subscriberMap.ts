@@ -9,6 +9,15 @@ import { isFunction } from '../types/primitives';
 import type { FnSubReduced, State } from './interpreter.types';
 import type { SubscriberOptions } from './subscriber';
 
+/**
+ * Subscriber class that manages the subscription state and provides methods
+ * to handle state changes and unsubscribe.
+ *
+ * @template : {@linkcode EventsMap} [E] - Type of the events map
+ * @template : {@linkcode PromiseeMap} [P] - Type of the promisees map
+ * @template : {@linkcode PrimitiveObject} [Tc] - Type of the context
+ * @template : [R] - Type of the return value
+ */
 class SubscriberMapClass<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -18,15 +27,30 @@ class SubscriberMapClass<
   #subscriber: FnSubReduced<E, P, Tc, R>;
 
   #eventsMap: E;
+
   #promiseesMap: P;
 
   #state: TimerState = 'idle';
-  #equals: (a: State<Tc>, b: State<Tc>) => boolean;
+
+  /**
+   * Function to compare two {@linkcode State}s for equality.
+   * @param previous of type {@linkcode State} - First state to compare
+   * @param next of type {@linkcode State} - Second state to compare
+   */
+  #equals: (previous: State<Tc>, next: State<Tc>) => boolean;
 
   get id() {
     return this._id;
   }
 
+  /**
+   * Creates an instance of SubscriberMapClass.
+   * @param eventsMap - {@linkcode EventsMap} [E] - The events map.
+   * @param promiseesMap - {@linkcode PromiseeMap} [P] - The promisees map.
+   * @param subscriber - The {@linkcode FnSubReduced} subscriber function or object.
+   * @param equals - Function to compare two {@linkcode State}s for equality (optional).
+   * @param _id - Unique identifier for the subscriber (optional).
+   */
   constructor(
     eventsMap: E,
     promiseesMap: P,
@@ -42,7 +66,17 @@ class SubscriberMapClass<
     this.#state = 'active';
   }
 
-  #reduceFn = () => {
+  /**
+   * Function that returns a reduced function based on the subscriber's logic.
+   * @returns A function that reduces the state based on the subscriber's logic.
+   *
+   * @see {@linkcode isFunction} to check if the subscriber is a function.
+   * @see {@linkcode toEventsMap} to convert the events and promisees maps
+   * to a unified map.
+   * @see {@linkcode nothing} to provide a default action if no event matches.
+   * @see {@linkcode t} to ensure type safety in the returned function.
+   */
+  get #reduceFn() {
     const sub = this.#subscriber;
     const check1 = isFunction(sub);
     if (check1) return t.any(sub);
@@ -69,19 +103,30 @@ class SubscriberMapClass<
 
       return t.any(_else(state));
     };
-  };
+  }
 
-  get cannotPerform() {
+  get #cannotPerform() {
     return !(this.#state === 'active');
   }
 
-  reduced = (previous: State<Tc>, next: State<Tc>) => {
-    if (this.cannotPerform) return;
+  /**
+   * Function to handle state changes.
+   * @param previous of type {@linkcode State} - Previous state
+   * @param next of type {@linkcode State} - Next state
+   *
+   * @remarks
+   * This function checks if the subscriber can perform its action,
+   * compares the previous and next states using the provided equality function,
+   * and if they are not equal, it calls the subscriber with the next state.
+   * If the states are equal or if the subscriber cannot perform its action,
+   */
+  fn = (previous: State<Tc>, next: State<Tc>) => {
+    if (this.#cannotPerform) return;
 
     const _equals = this.#equals(previous, next);
     if (_equals) return;
 
-    return this.#reduceFn()(next);
+    return this.#reduceFn(next);
   };
 
   /* v8 ignore next 3*/
@@ -117,6 +162,20 @@ type CreateSubscriber_F = <
   options?: SubscriberOptions<Tc>,
 ) => SubscriberMapClass<E, P, Tc, R>;
 
+/**
+ * Creates a new instance of SubscriberMapClass.
+ *
+ * @param eventsMap : {@linkcode EventsMap} [E] - The events map.
+ * @param promiseesMap : {@linkcode PromiseeMap} [P] - The promisees map.
+ * @param subscriber - The subscriber function that will be called with the {@linkcode State}.
+ * @param options - Optional parameters for the subscriber, including equality function and ID.
+ * @returns A new instance of {@linkcode SubscriberMapClass} that manages the subscription state and provides methods to handle state changes and unsubscribe.
+ *
+ * @remarks
+ * This function maps the provided events and promisees.
+ *
+ * This allows for efficient subscription management and state handling depending on the events and promisees.
+ */
 export const createSubscriberMap: CreateSubscriber_F = (
   eventsMap,
   promiseesMap,

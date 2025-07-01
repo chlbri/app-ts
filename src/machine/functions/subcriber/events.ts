@@ -1,6 +1,6 @@
 import { toArray } from '@bemedev/basifun';
-import { EVENTS_FULL } from '../../types';
 import type { RecordS } from '~types';
+import { EVENTS_FULL } from '../../types';
 
 export type ReduceEvents_F = (
   events: (RecordS<string | string[]> | string)[] | typeof EVENTS_FULL,
@@ -9,6 +9,17 @@ export type ReduceEvents_F = (
   ...toChecks: string[]
 ) => boolean;
 
+/**
+ * Reduces the events to check if any of the specified events are present.
+ * @param _events - The events to check, can be an array of strings or objects.
+ * @param firstEvent - The first event to check against.
+ * @param toChecks - The events to check for presence.
+ * @returns true if any of the specified events are found, false otherwise.
+ *
+ * @see {@linkcode EVENTS_FULL} for the full events constant.
+ * @see {@linkcode toArray} for converting values to an array.
+ * @see {@linkcode RecordS} for the record type used in events.
+ */
 export const reduceEvents: ReduceEvents_F = (
   _events,
   firstEvent,

@@ -1,8 +1,9 @@
-import type { DeepPartial, Fn } from '@bemedev/types';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
+import type { DeepPartial } from '@bemedev/types';
+import type { EventsMap, PromiseeMap } from '~events';
 import type {
   Describer,
   FnMap,
+  FnR,
   FromDescriber,
   PrimitiveObject,
 } from '~types';
@@ -48,6 +49,13 @@ export type ActionMap<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Partial<Record<string, Action<E, P, Pc, Tc>>>;
 
+export type ActionResultFn<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
+
 /**
  * Represents the result of executing an action, which includes the private context and the context.
  *
@@ -68,4 +76,4 @@ export type Action2<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Fn<[Pc, Tc, ToEvents<E, P>], ActionResult<Pc, Tc>>;
+> = ActionResultFn<E, P, Pc, Tc>;

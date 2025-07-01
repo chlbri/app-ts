@@ -41,9 +41,20 @@ const _assignByKey: AssignByKey['low'] = (obj, key, value) => {
 
   return out;
 };
-export const assignByKey: AssignByKey = (obj, key, value) => {
-  return _assignByKey(obj, key, value);
+
+/**
+ * Assigns a value to a path in an object.
+ * @param obj The object to assign the value to
+ * @param path The key to assign the value to, can be a nested key (e.g. 'a.b.c')
+ * @param value The value to assign to the key
+ * @returns The modified object with the value assigned to the specified key
+ *
+ * @see {@linkcode Decompose} for more details on object decomposition.
+ */
+export const assignByKey: AssignByKey = (obj, path, value) => {
+  return _assignByKey(obj, path, value);
 };
+
 assignByKey.low = _assignByKey;
 assignByKey.typed = _assignByKey;
 
@@ -64,7 +75,17 @@ const _getByKey: GetByKey['low'] = (obj, key) => {
   const decomposed = func(obj);
   return decomposed[key];
 };
+
+/**
+ * Retrieves a value from an object by a specified key.
+ * @param obj The object to retrieve the value from
+ * @param key The key to retrieve the value for, can be a nested key (e.g. 'a.b.c')
+ * @returns The value associated with the specified key in the object
+ *
+ * @see {@linkcode Decompose} for more details on object decomposition.
+ */
 export const getByKey: GetByKey = (obj, key) => _getByKey(obj, key);
+
 getByKey.low = _getByKey;
 getByKey.typed = _getByKey;
 
@@ -100,6 +121,15 @@ const _mergeByKey: MergeByKey['low'] = () => {
     return out;
   };
 };
+
+/**
+ * Creates a function that merges a value into an object at a specified key path.
+ * @param obj The object to merge the value into
+ * @returns A function that takes a key and a value, and merges the value into the object at the specified key path
+ *
+ * @see {@linkcode Decompose} for more details on object decomposition.
+ */
 export const mergeByKey: MergeByKey = obj => _mergeByKey(obj);
+
 mergeByKey.low = _mergeByKey;
 mergeByKey.typed = _mergeByKey;

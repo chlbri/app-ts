@@ -519,14 +519,14 @@ describe('machine coverage', () => {
       '__actionFn',
       '__actionKey',
       '__actionParams',
-      '__guard',
+      '__guardKey',
       '__predictate',
       '__delayKey',
       '__delay',
       '__definedValue',
       '__src',
       '__promise',
-      '__child',
+      '__childKey',
       '__machine',
     ] as const;
 
