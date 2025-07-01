@@ -24,6 +24,17 @@ const _merge = deepmergeCustom<
   mergeArrays: false,
 });
 
+/**
+ * A custom implement of `deepmerge-ts` ({@linkcode deepmergeCustom}) for better suitability with this library.
+ * @param value The value to merge into.
+ * @param mergers The values to merge with the original value
+ * @returns The merged value, which is a new object containing the properties of the original value and the mergers.
+ *
+ * @see {@linkcode equal} for deep equality check
+ * @see {@linkcode DeepPartial} for partial type definition
+ * @see {@linkcode t.any} for type assertion
+ * @see {@linkcode NoInfer} for type inference utility
+ */
 export const merge = <T = any>(
   value: T,
   ...mergers: (DeepPartial<NoInfer<T>> | NoInfer<T> | undefined)[]
