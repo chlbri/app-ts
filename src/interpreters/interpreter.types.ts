@@ -59,14 +59,16 @@ export type WorkingStatus =
 
 export type Mode = 'normal' | 'strict' | 'strictest';
 
+export type InterpreterOptions<M extends AnyMachine> = {
+  pContext: PrivateContextFrom<M>;
+  context: ContextFrom<M>;
+  mode?: Mode;
+  exact?: boolean;
+};
+
 export type Interpreter_F = <M extends AnyMachine>(
   machine: M,
-  config: {
-    pContext: PrivateContextFrom<M>;
-    context: ContextFrom<M>;
-    mode?: Mode;
-    exact?: boolean;
-  },
+  config: InterpreterOptions<M>,
 ) => InterpreterFrom<M>;
 
 export type ToAction_F<
@@ -324,12 +326,14 @@ export interface AnyInterpreter<
   subscribeMap: AddSubscriber_F<E, P, Tc>;
 
   send: (event: EventArg<E>) => void;
-  toAction: (action: ActionConfig) => Action<E, P, Pc, Tc> | undefined;
-  toPredicate: (
+  toActionFn: (action: ActionConfig) => Action<E, P, Pc, Tc> | undefined;
+  toPredicateFn: (
     guard: GuardConfig,
   ) => PredicateS<E, P, Pc, Tc> | undefined;
-  toPromiseSrc: (src: string) => PromiseFunction<E, P, Pc, Tc> | undefined;
-  toDelay: (delay: string) => Delay<E, P, Pc, Tc> | undefined;
+  toPromiseSrcFn: (
+    src: string,
+  ) => PromiseFunction<E, P, Pc, Tc> | undefined;
+  toDelayFn: (delay: string) => Delay<E, P, Pc, Tc> | undefined;
   toMachine: (machine: ActionConfig) => ChildS<E, P, Pc> | undefined;
   id?: string;
 }
@@ -354,4 +358,10 @@ export type Observer<T> = {
 export type TimeOutAction = {
   id: string;
   timer: NodeJS.Timeout;
+};
+
+export type DiffNext = {
+  sv: StateValue;
+  diffEntries: ActionConfig[];
+  diffExits: ActionConfig[];
 };

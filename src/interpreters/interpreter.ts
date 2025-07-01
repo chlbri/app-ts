@@ -97,6 +97,7 @@ import {
   type AnyInterpreter,
   type Collected0,
   type CreateInterval2_F,
+  type DiffNext,
   type ExecuteActivities_F,
   type Interpreter_F,
   type Mode,
@@ -323,8 +324,11 @@ export class Interpreter<
 
   /**
    * The number of operations scheduled by the inner
-   * {@linkcode Scheduler} of this {@linkcode Interpreter} service.
+   * //
    *
+   * {@linkcode Scheduler.performeds} of this {@linkcode Interpreter} service.
+   *
+   * //
    *
    * @see {@linkcode Scheduler}
    */
@@ -837,7 +841,7 @@ export class Interpreter<
     ...actions: ActionConfig[]
   ) => {
     return actions
-      .map(this.toAction)
+      .map(this.toActionFn)
       .filter(f => f !== undefined)
       .map(this.#executeAction)
       .reduce((acc, value) => {
@@ -867,7 +871,7 @@ export class Interpreter<
   #performPredicates = (...guards: GuardConfig[]) => {
     if (guards.length < 1) return true;
     return guards
-      .map(this.toPredicate)
+      .map(this.toPredicateFn)
       .filter(isDefined)
       .map(this.#executePredicate)
       .every(b => b);
@@ -934,7 +938,7 @@ export class Interpreter<
         continue;
       }
 
-      const delayF = this.toDelay(_delay);
+      const delayF = this.toDelayFn(_delay);
       const check0 = !isDefined(delayF);
       if (check0) return [];
       const interval = this.#executeDelay(delayF);
@@ -1123,7 +1127,7 @@ export class Interpreter<
 
     promisees.forEach(
       ({ src, then, catch: _catch, finally: _finally, max: maxS }) => {
-        const promiseF = this.toPromiseSrc(src);
+        const promiseF = this.toPromiseSrcFn(src);
         if (!promiseF) return;
 
         const handlePromise = (type: 'then' | 'catch', payload: any) => {
@@ -1162,7 +1166,7 @@ export class Interpreter<
 
         const check3 = isDefined(maxS);
         if (check3) {
-          const delayF = this.toDelay(maxS);
+          const delayF = this.toDelayFn(maxS);
           const check4 = !isDefined(delayF);
           if (check4) return this.#throwing();
           const max = this.#performDelay(delayF);
@@ -1202,7 +1206,7 @@ export class Interpreter<
     >[] = [];
 
     entries.forEach(([_delay, transition]) => {
-      const delayF = this.toDelay(_delay);
+      const delayF = this.toDelayFn(_delay);
       const check0 = !isDefined(delayF);
 
       if (check0) return;
@@ -1756,12 +1760,19 @@ export class Interpreter<
     return possibleEvents(this.#flat);
   }
 
-  #cannotEvent = (_event: EventArg<E>) => {
+  #cannotPerformEvents = (_event: EventArg<E>) => {
     const type = eventToType(_event);
     const check = !this.#possibleEvents.includes(type);
     return check;
   };
 
+  /**
+   * Creates a sender function for the given event type.
+   * @param type - the {@linkcode EventArgT} type of the event to send.
+   * @returns a function with the payload as Parameter that sends the event with the given type and payload.
+   *
+   * @see {@linkcode send} for sending events directly.
+   */
   sender = <T extends EventArgT<E>>(type: T) => {
     type Arg = Extract<ToEventsR<E, P>, { type: T }>['payload'];
     type Payload = object extends Arg ? [] : [Arg];
@@ -1773,6 +1784,12 @@ export class Interpreter<
     };
   };
 
+  /**
+   * Sends an event without cheching to the current {@linkcode Interpreter} service.
+   *
+   * @param _event - the {@linkcode EventArg} event to send.
+   *
+   */
   #send = (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
     const { result, next } = this._send(event);
@@ -1786,14 +1803,47 @@ export class Interpreter<
     } else this.#makeWork();
   };
 
+  /**
+   * Sends an event to the current {@linkcode Interpreter} service.
+   *
+   * @param _event - the {@linkcode EventArg} event to send.
+   *
+   * @remarks
+   * If the event cannot be performed, it will not be sent.
+   * If the event is sent, it will be processed and the state will be updated.
+   */
   send = (_event: EventArg<E>) => {
-    const check = this.#cannotEvent(_event);
+    const check = this.#cannotPerformEvents(_event);
     if (check) return;
     this.#send(_event);
   };
 
+  /**
+   * Proposes the next state value based on the current state value and the target.
+   * @param target - the target state to propose the next state value.
+   * @returns the next {@linkcode StateValue} based on the current state value and the target.
+   *
+   * @remarks
+   * This method calculates the next state value based on the current state value and the target.
+   * It does not change the current state value, but returns the proposed next state value.
+   * It is used internally to calculate the next state value before sending an event.
+   */
   #proposedNextSV = (target: string) => nextSV(this.#value, target);
 
+  /**
+   * Proposes the next configuration based on the current state value and the target.
+   * @param target - the target state to propose the next configuration.
+   * @returns the proposed next {@linkcode NodeConfigWithInitials} based on the current state value and the target.
+   *
+   * @remarks
+   * Only proposes next config, does not change the current config.
+   *
+   * //
+   *
+   * @see {@linkcode Machine.valueToConfig} for more details.
+   *
+   * //
+   */
   protected proposedNextConfig = (target: string) => {
     const nextValue = this.#proposedNextSV(target);
     const out = this.#machine.valueToConfig(nextValue);
@@ -1801,7 +1851,16 @@ export class Interpreter<
     return out;
   };
 
-  #diffNext = (target?: string) => {
+  /**
+   * Calculates the difference between the current and next configuration.
+   * @param target - the target state to calculate the difference.
+   * @returns an {@linkcode DiffNext} object containing the proposed next state value, entry actions, and exit actions.
+   *
+   * @remarks
+   * This method is used to calculate the entry and exit actions when transitioning to a new state.
+   * It compares the current configuration with the proposed next configuration and returns the differences.
+   */
+  #diffNext = (target?: string): DiffNext => {
     if (!target) {
       return { sv: this.#value, diffEntries: [], diffExits: [] };
     }
@@ -1844,9 +1903,14 @@ export class Interpreter<
     return { sv, diffEntries, diffExits };
   };
 
-  #isInsideValue = (_state: string) => {
+  /**
+   * Checks if the given value is inside the current state value.
+   * @param value - the state value to check if it is inside the current state value.
+   * @returns true if the value is inside the current state value, false otherwise.
+   */
+  #isInsideValue = (value: string) => {
     const values = decomposeSV(this.#value);
-    const entry = _state.substring(1);
+    const entry = value.substring(1);
     const state = replaceAll({
       entry,
       match: DEFAULT_DELIMITER,
@@ -1856,10 +1920,19 @@ export class Interpreter<
     return values.includes(state);
   };
 
+  /**
+   * Changes the current {@linkcode Interpreter} service status to 'working'.
+   * @returns the current {@linkcode WorkingStatus} of this {@linkcode Interpreter} service.
+   */
   #makeWork = () => this.#setStatus('working');
 
   // #endregion
 
+  /**
+   * Returns the output value with a warning if it is not defined.
+   * @param out of type [T], the output value to check if it is defined.
+   * @param messages - the messages to add to the warnings collector if the output is not defined. it's a parram array
+   */
   #returnWithWarning = <T = any>(
     out: T | undefined,
     ...messages: string[]
@@ -1871,7 +1944,7 @@ export class Interpreter<
     return;
   };
 
-  toAction = (action: ActionConfig) => {
+  toActionFn = (action: ActionConfig) => {
     const events = this.#machine.eventsMap;
     const promisees = this.#machine.promiseesMap;
     const actions = this.#machine.actions;
@@ -1882,7 +1955,7 @@ export class Interpreter<
     );
   };
 
-  toPredicate = (guard: GuardConfig) => {
+  toPredicateFn = (guard: GuardConfig) => {
     const events = this.#machine.eventsMap;
     const promisees = this.#machine.promiseesMap;
     const predicates = this.#machine.predicates;
@@ -1897,7 +1970,7 @@ export class Interpreter<
     return this.#returnWithWarning(predicate, ...errors);
   };
 
-  toPromiseSrc = (src: string) => {
+  toPromiseSrcFn = (src: string) => {
     const events = this.#machine.eventsMap;
     const promisees = this.#machine.promiseesMap;
     const promises = this.#machine.promises;
@@ -1908,7 +1981,7 @@ export class Interpreter<
     );
   };
 
-  toDelay = (delay: string) => {
+  toDelayFn = (delay: string) => {
     const events = this.#machine.eventsMap;
     const promisees = this.#machine.promiseesMap;
     const delays = this.#machine.delays;
@@ -1933,13 +2006,12 @@ export class Interpreter<
   /**
    * Subscribes a child machine to the current machine.
    *
-   * @template T - The type of the child machine, extending from AnyMachine.
-   * @param  id - The unique identifier for the child machine.
-   * @param  child - The child machine to be subscribed.
-   * @returns The result of the child machine subscription.
+   * @param id - The unique identifier for the child machine.
+   * @param {@linkcode ChildS2} - The child machine configuration to subscribe.
+   * @returns a {@linkcode SubscriberMapClass} result of the child machine subscription.
    *
    */
-  subscribeM = <T extends AnyMachine = AnyMachine>(
+  subscribeMachine = <T extends AnyMachine = AnyMachine>(
     id: string,
     { initials: _initials, ...rest }: ChildS2<E, P, Pc, Tc, T>,
   ) => {
@@ -1963,8 +2035,13 @@ export class Interpreter<
   };
 
   /**
-   * @deprecated
-   * Used internally
+   * Sends an event to a specific child service by its ID.
+   *
+   * @param to - The ID of the child service to which the event will be sent.
+   * @param : the {@linkcode EventObject} event to send to the child service.
+   *
+   * @see {@linkcode send} for sending events to the current service.
+   * @see {@linkcode typings} for type casting.
    */
   #sendTo = <T extends EventObject>(to: string, event: T) => {
     const service = this.#childrenServices.find(({ id }) => id === to);
@@ -1972,6 +2049,13 @@ export class Interpreter<
     if (service) service.send(typings.anify(event));
   };
 
+  /**
+   * Performs some computations to reduce a child machine configuration to a service and subscribes to it.
+   *
+   * @param : {@linkcode ChildS} - The child machine configuration to reduce.
+   * @param id - The unique identifier for the child service.
+   * @returns a {@linkcode SubscriberMapClass} result of the child service subscription.
+   */
   #reduceChild = <T extends AnyMachine = AnyMachine>(
     { subscribers, machine, initials }: ChildS<E, P, Pc, T>,
     id: string,
@@ -2045,6 +2129,7 @@ export class Interpreter<
     return subscriber;
   };
 
+  // #region Disposable
   [Symbol.dispose] = () => {
     this.stop();
     this.#scheduler.stop();
@@ -2054,12 +2139,25 @@ export class Interpreter<
     const out = asyncfy(this[Symbol.dispose]);
     return out();
   };
+  // #endregion
 }
 
 export const TIME_TO_RINIT_SELF_COUNTER = DEFAULT_MIN_ACTIVITY_TIME * 2;
 
 export type AnyInterpreter2 = Interpreter<any, any, any, any, any, any>;
 
+/**
+ * Retrieves the {@linkcode Interpreter} service from the given {@linkcode AnyMachine} machine.
+ *
+ * @template : type {@linkcode AnyMachine} [M] - The type of the machine from which to retrieve the interpreter.
+ *
+ * @see {@linkcode ConfigFrom}
+ * @see {@linkcode PrivateContextFrom}
+ * @see {@linkcode ContextFrom}
+ * @see {@linkcode EventsMapFrom}
+ * @see {@linkcode PromiseesMapFrom}
+ * @see {@linkcode MachineOptionsFrom}
+ */
 export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   ConfigFrom<M>,
   PrivateContextFrom<M>,
@@ -2069,6 +2167,15 @@ export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   MachineOptionsFrom<M>
 >;
 
+/**
+ * Creates an {@linkcode Interpreter} service from the given {@linkcode MachineConfig} machine.
+ *
+ * @param machine - The {@linkcode MachineConfig} machine to create the interpreter from.
+ * @param options - The options for the interpreter, including context, private context, mode, and exact.
+ * @returns an {@linkcode Interpreter} service.
+ *
+ * @see {@linkcode MachineConfig}
+ */
 export const interpret: Interpreter_F = (
   machine,
   { context, pContext, mode, exact },

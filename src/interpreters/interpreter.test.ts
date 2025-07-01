@@ -1021,7 +1021,7 @@ describe('Interpreter', () => {
       });
 
       test('#39 => Resend machine1', () => {
-        service.subscribeM('machine1', {
+        service.subscribeMachine('machine1', {
           machine: machine1,
           initials: toFunction({ context: { iterator: 0 }, pContext: {} }),
           subscribers: {
