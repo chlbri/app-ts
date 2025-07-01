@@ -14,8 +14,14 @@ export type IsDefinedS_F = <
 
 /**
  * Checks if the given path is defined (not undefined or null).
- * @param path : A {@linkcode DefinedValue} , the path to retrieve.
- * @returns A {@linkcode FnR}<{@linkcode EventsMap}[E], {@linkcode PromiseeMap}[P], [Pc], {@linkcode PrimitiveObject}[Tc]> function that returns true if the path is defined, false otherwise.
+ * @param path : A {@linkcode DefinedValue}, the path to retrieve.
+ * @returns A {@linkcode FnR} function that returns true if the path is defined, false otherwise.
+ *
+ * @see {@linkcode isNotValue} for more details.
+ * @see {@linkcode EventsMap}
+ * @see {@linkcode PromiseeMap}
+ * @see {@linkcode PrimitiveObject}
+ *
  */
 export const isDefinedS: IsDefinedS_F = path => {
   return isNotValue(path, undefined, null);
@@ -24,7 +30,12 @@ export const isDefinedS: IsDefinedS_F = path => {
 /**
  * Checks if the given path is undefined or null.
  * @param path : A {@linkcode DefinedValue} , the path to retrieve.
- * @returns A {@linkcode FnR}<{@linkcode EventsMap}[E], {@linkcode PromiseeMap}[P], [Pc], {@linkcode PrimitiveObject}[Tc]> function that returns true if the path is defined, false otherwise.
+ * @returns A {@linkcode FnR} function that returns true if the path is undefined or null, false otherwise.
+ *
+ * @see {@linkcode isValue} for more details.
+ * @see {@linkcode EventsMap}
+ * @see {@linkcode PromiseeMap}
+ * @see {@linkcode PrimitiveObject}
  */
 export const isNotDefinedS: IsDefinedS_F = path => {
   return isValue(path, undefined, null);

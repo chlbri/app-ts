@@ -1,7 +1,7 @@
 import { t } from '@bemedev/types';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
+import type { EventsMap, PromiseeMap } from '~events';
 import { getByKey } from '~machines';
-import type { PrimitiveObject } from '~types';
+import type { FnR, PrimitiveObject } from '~types';
 import type { DefinedValue } from '../../types';
 
 export type IsValueS_F = <
@@ -12,8 +12,37 @@ export type IsValueS_F = <
 >(
   path: DefinedValue<Pc, Tc>,
   ...values: any[]
-) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
+) => FnR<E, P, Pc, Tc, boolean>;
 
+/**
+ * Checks if the value at the specified path in pContext, context, or events matches any of the provided values.
+ * @param path of type {@linkcode DefinedValue}, the path to retrieve.
+ * @enum
+ * The path can be one of the following:
+ * - 'pContext': checks if the value in pContext is one of the provided values
+ * - 'context': checks if the value in context is one of the provided values
+ * - 'events': checks if the value in events is one of the provided values
+ * - 'context.[key]': checks if the value in context at the specified key is one of the provided values
+ * - 'pContext.[key]': checks if the value in pContext at the specified key is one of the provided values
+ * - 'events.[key]': checks if the value in events at the specified key is one of the provided values
+ * @param values the values to check against.
+ * @returns a {@linkcode FnR} function that takes pContext, context, and eventsMap and returns true if the value at the specified path matches any of the provided values, false otherwise.
+ *
+ * @example
+ * ```ts
+ * const guard = isValue('context.userId', '123', '456');
+ * const result = guard({ context: { userId: '123' } }, {}, {});
+ * console.log(result); // true
+ * ```
+ *
+ * @see {@linkcode EventsMap} for the type of the events map.
+ * @see {@linkcode PromiseeMap} for the type of the promisees map.
+ * @see {@linkcode PrimitiveObject} for the type of the context.
+ * @see {@linkcode getByKey} for retrieving values by key.
+ *  @see {@linkcode t} for type checking and validation.
+ *
+ * @see {@linkcode isNotValue} for the opposite check.
+ */
 export const isValue: IsValueS_F = (path, ...values) => {
   const start = path.startsWith.bind(path);
 
@@ -44,6 +73,35 @@ export const isValue: IsValueS_F = (path, ...values) => {
   };
 };
 
+/**
+ * Checks if the value at the specified path in pContext, context, or events doesn't matches any of the provided values.
+ * @param path of type {@linkcode DefinedValue}, the path to retrieve.
+ * @enum
+ * The path can be one of the following:
+ * - 'pContext': checks if the value in pContext is one of the provided values
+ * - 'context': checks if the value in context is one of the provided values
+ * - 'events': checks if the value in events is one of the provided values
+ * - 'context.[key]': checks if the value in context at the specified key is one of the provided values
+ * - 'pContext.[key]': checks if the value in pContext at the specified key is one of the provided values
+ * - 'events.[key]': checks if the value in events at the specified key is one of the provided values
+ * @param values the values to check against.
+ * @returns a {@linkcode FnR} function that takes pContext, context, and eventsMap and returns true if the value at the specified path matches doesn't any of the provided values, false otherwise.
+ *
+ * @example
+ * ```ts
+ * const guard = isNotValue('context.userId', '123', '456');
+ * const result = guard({ context: { userId: '123' } }, {}, {});
+ * console.log(result); // false
+ * ```
+ *
+ * @see {@linkcode EventsMap} for the type of the events map.
+ * @see {@linkcode PromiseeMap} for the type of the promisees map.
+ * @see {@linkcode PrimitiveObject} for the type of the context.
+ * @see {@linkcode getByKey} for retrieving values by key.
+ * @see {@linkcode t} for type checking and validation.
+ *
+ * @see {@linkcode isValue} for the opposite check.
+ */
 export const isNotValue: IsValueS_F = (path, ...values) => {
   const func = isValue(path, ...values);
 

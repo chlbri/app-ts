@@ -4,6 +4,7 @@ import {
   isFunction,
   type FnMap,
   type FnMapReduced,
+  type FnR,
   type PrimitiveObject,
 } from '~types';
 import { nothing } from './nothing';
@@ -39,7 +40,7 @@ export type ReduceFnMap_F = <
   events: E,
   promisees: P,
   fn: FnMap<E, P, Pc, Tc, R>,
-) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R;
+) => FnR<E, P, Pc, Tc, R>;
 
 export const reduceFnMap: ReduceFnMap_F = (events, promisees, fn) => {
   const check1 = isFunction(fn);

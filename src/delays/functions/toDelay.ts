@@ -21,15 +21,16 @@ export type ToDelay_F = <
  * If the delay is a number, it returns a function that returns that number.
  * If the delay is a function, it reduces the function map with the provided events and promisees.
  *
- * @param events - {@linkcode EventsMap} [E] - The events map to use for resolving the delay.
- * @param promisees - {@linkcode PromiseeMap} [P] - The promisees map to use for resolving the delay.
- * @param delay - The delay configuration.
- * @param delays - {@linkcode DelayMap}<[E], [P], [Pc], [Tc]> - The map of delays containing functions to execute.
- * @returns A function that returns the delay in milliseconds or undefined if not found.
+ * @param events of type {@linkcode EventsMap} [E], the events map to use for resolving the delay.
+ * @param promisees of type {@linkcode PromiseeMap} [P], the promisees map to use for resolving the delay.
+ * @param delay of type string,  The delay configuration.
+ * @param delays of type {@linkcode DelayMap}, the map of delays containing functions to execute.
+ * @returns a function that returns the delay in milliseconds or undefined if not found.
  *
  * @see {@linkcode Fn}
  * @see {@linkcode ToEvents}
  * @see {@linkcode PrimitiveObject}
+ * @see {@linkcode reduceFnMap}
  */
 export const toDelay: ToDelay_F = (events, promisees, delay, delays) => {
   const fn = delays?.[delay];

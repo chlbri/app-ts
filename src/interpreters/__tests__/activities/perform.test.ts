@@ -475,7 +475,7 @@ describe(TEXT, () => {
     test('#01 => Pause the service', service.pause.bind(service));
 
     test('#02 => All intervals are paused', () => {
-      expect(service.intervalsArePaused).toBe(true);
+      expect(service._intervalsArePaused).toBe(true);
     });
 
     describe('#02 => Calls of log', () => {

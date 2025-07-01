@@ -343,7 +343,7 @@ describe('Interpreter', () => {
     test('#00 => Start the service', service.start.bind(service));
 
     test('#01 => Check the snapshot', () => {
-      const actual = service.snapshot;
+      const actual = service.state;
       const expected = {
         status: 'working',
         value: 'idle',
@@ -360,7 +360,7 @@ describe('Interpreter', () => {
     });
 
     test('#03 => Check the snapshot', () => {
-      const actual = service.snapshot;
+      const actual = service.state;
       const expected = {
         status: 'working',
         value: 'idle',
@@ -1035,7 +1035,7 @@ describe('Interpreter', () => {
         test('#01 => Pause the service', service.pause.bind(service));
 
         test('#02 => All intervals are paused', () => {
-          expect(service.intervalsArePaused).toBe(true);
+          expect(service._intervalsArePaused).toBe(true);
         });
 
         describe('#02 => Calls of log', () => {

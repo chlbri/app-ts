@@ -91,6 +91,25 @@ const _toPredicate: _ToPredicateF = (
   return { func: { or }, errors };
 };
 
+/**
+ *
+ * @param events of type {@linkcode EventsMap} [E], the events map to use for resolving the predicate.
+ * @param promisees of type {@linkcode PromiseeMap} [P], the promisees map to use for resolving the predicate.
+ * @param guard of type {@linkcode GuardConfig}, the guard configuration to convert to a predicate.
+ * @param predicates of type {@linkcode PredicateMap}, the map of predicates containing functions to execute.
+ * @returns an object containing the predicate function and any errors encountered during the conversion.
+ *
+ * @see {@linkcode ToEvents}
+ * @see {@linkcode PrimitiveObject}
+ * @see {@linkcode PredicateS2}
+ * @see {@linkcode GuardDefUnion}
+ * @see {@linkcode reduceFnMap}
+ * @see {@linkcode isDescriber}
+ * @see {@linkcode isString}
+ * @see {@linkcode isDefined}
+ * @see {@linkcode GUARD_TYPE}
+ * @see {@linkcode recursive}
+ */
 export const toPredicate: ToPredicate_F = (
   events,
   promisees,

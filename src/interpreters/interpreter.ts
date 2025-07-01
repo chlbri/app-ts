@@ -77,7 +77,6 @@ import {
   nodeToValue,
   resolveNode,
   type ActivityConfig,
-  type Node,
   type NodeConfig,
   type NodeConfigWithInitials,
   type StateValue,
@@ -90,6 +89,7 @@ import type {
 import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
 import { IS_TEST, reduceFnMap, replaceAll, typings } from '~utils';
 import { ChildS, type ChildS2 } from './../machine/types';
+import { Node } from './../states/types';
 import { merge } from './../utils/merge';
 import {
   type _Send_F,
@@ -111,6 +111,7 @@ import {
   type PerformTransitions_F,
   type Selector_F,
   type State,
+  type TimeOutAction,
   type WorkingStatus,
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
@@ -129,14 +130,24 @@ import {
  * It provides methods to start, stop, pause, and resume the machine, as well as to send events
  * and subscribe to state changes.
  *
- * @template C - The configuration type for the machine.
- * @template Pc - The private context type.
- * @template Tc - The context type.
- * @template E - The events map type.
- * @template P - The promise map type.
- * @template Mo - The machine options type.
+ * @template : type {@linkcode Config} [C] - The configuration type of the machine.
+ * @template : [Pc] - The private context type, which can be any type.
+ * @template : type {@linkcode PrimitiveObject} [Tc] - The context type.
+ * @template : type {@linkcode EventsMap} [E] - The events map type, which maps event names to their types.
+ * @template : type {@linkcode PromiseeMap} [P] - The promisees map type, which maps promise names to their types.
+ * @template Mo : type {@linkcode SimpleMachineOptions2} - The machine options type, which includes various configurations for the machine. Default to {@linkcode MachineOptions}.
  *
- * @implements {AnyInterpreter<E, P, Pc, Tc>}
+ * @implements : {@linkcode AnyInterpreter}
+ *
+ * @remarks
+ * The `Interpreter` class is a core component of the state machine implementation,
+ * allowing for the execution of state transitions, handling of events, and management of the machine's lifecycle.
+ * It supports various modes of operation, including strict and normal modes,
+ * and provides mechanisms for error and warning handling.
+ * * It also allows for the execution of actions, predicates, and delays,
+ * * as well as the management of child interpreters and scheduled tasks.
+ *
+ * @see {@linkcode GetEventsFromConfig} for extracting events from the machine configuration.
  */
 export class Interpreter<
   const C extends Config = Config,
@@ -147,63 +158,190 @@ export class Interpreter<
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 > implements AnyInterpreter<E, P, Pc, Tc>
 {
+  /**
+   * The {@linkcode Machine} machine being interpreted.
+   */
   #machine: Machine<C, Pc, Tc, E, P, Mo>;
+
+  /**
+   * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.
+   */
   #status: WorkingStatus = 'idle';
+
+  /**
+   * The current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
+   */
   #config: NodeConfigWithInitials;
+
+  /**
+   * The {@linkcode RecordS}<{@linkcode NodeConfigWithInitials}> flat representation of all possible config states of this {@linkcode Interpreter} service.
+   */
   #flat!: RecordS<NodeConfigWithInitials>;
+
+  /**
+   * The current {@linkcode StateValue}> of this {@linkcode Interpreter} service.
+   */
   #value!: StateValue;
+
+  /**
+   * The {@linkcode Mode} of this {@linkcode Interpreter} service
+   */
   #mode: Mode;
+
+  /**
+   * The initial {@linkcode Node} of the inner {@linkcode Machine}.
+   */
   readonly #initialNode: Node<E, P, Pc, Tc>;
+
+  /**
+   * The current {@linkcode Node} of this {@linkcode Interpreter} service.
+   */
   #node!: Node<E, P, Pc, Tc>;
+
+  /**
+   * an iiner ietrator to count the number of operations performed by this {@linkcode Interpreter} service.
+   */
   #iterator = 0;
+
+  /**
+   * The current {@linkcode ToEvents} event of this {@linkcode Interpreter} service.
+   */
   #event: ToEvents<E, P> = INIT_EVENT;
+
+  /**
+   * The initial {@linkcode NodeConfigWithInitials} of the inner {@linkcode Machine}.
+   */
   readonly #initialConfig: NodeConfigWithInitials;
+
+  /**
+   * The initial {@linkcode Pc} private context of this {@linkcode Interpreter} service.
+   */
   #initialPpc!: Pc;
+
+  /**
+   * The initial {@linkcode Tc} context of this {@linkcode Interpreter} service.
+   */
   #initialContext!: Tc;
+
+  /**
+   * The current {@linkcode Pc} private context of this {@linkcode Interpreter} service.
+   */
   #pContext!: Pc;
+
+  /**
+   * The current {@linkcode Tc} context of this {@linkcode Interpreter} service.
+   */
   #context!: Tc;
+
+  /**
+   * The {@linkcode Scheduler} of this {@linkcode Interpreter} service.
+   */
   #scheduler: Scheduler;
+
+  /**
+   * All {@linkcode SubscriberMapClass} of this {@linkcode Interpreter} service.
+   * They subscribe to the state changes with the {@linkcode subscribe} function
+   * */
   #subscribers = new Set<SubscriberClass<Tc>>();
 
+  /**
+   * The previous {@linkcode State} of this {@linkcode Interpreter} service.
+   */
   #previousState!: State<Tc>;
+
+  /**
+   * The current {@linkcode State} of this {@linkcode Interpreter} service.
+   */
   #state!: State<Tc>;
 
+  /**
+   * All {@linkcode AnyInterpreter2} service subscribers of this {@linkcode Interpreter} service.
+   */
   #childrenServices: (AnyInterpreter2 & { id: string })[] = [];
 
+  /**
+   * Public getter of the service subscribers of this {@linkcode Interpreter} service.
+   */
   get children() {
     return this.#childrenServices;
   }
 
+  /**
+   * Returns a service subscriber of this {@linkcode Interpreter} service with a specific id.
+   * @param id - The id of the service subscriber to get.
+   * @return The service subscriber {@linkcode AnyInterpreter2} of this {@linkcode Interpreter} service with the specified id, or undefined if not found.
+   *
+   * @see {@linkcode children} for all children.
+   */
   getChildAt = (id: string) => this.children.find(f => f.id === id);
+
+  /**
+   * Allias of {@linkcode getChildAt} function.
+   */
   at = this.getChildAt;
 
+  /**
+   * Returns all child machines of this {@linkcode Interpreter}.
+   *
+   * @see {@linkcode toArray.typed} for converting the machines to an array.
+   * @see {@linkcode toMachine} for converting the machine config to a {@linkcode Machine}.
+   * @see {@linkcode isDefined} for filtering out undefined machines.
+   */
   get #childrenMachines() {
     const _machines = toArray.typed(this.#machine.preConfig.machines);
     return _machines.map(this.toMachine).filter(isDefined);
   }
 
+  /**
+   * The id of the current {@linkcode Interpreter} service.
+   * Used for child machines identification.
+   */
   id?: string;
 
+  /**
+   * The accessor of {@linkcode Mode} of this {@linkcode Interpreter} service
+   */
   get mode() {
     return this.#mode;
   }
 
+  /**
+   * The accessor of current {@linkcode ToEvents} of this {@linkcode Interpreter} service
+   *
+   * @remarks Usually for typings
+   */
   get event() {
     return this.#event;
   }
 
+  /**
+   * The accessor of the map of events from the inner {@linkcode Machine}.
+   */
   get eventsMap() {
     return this.#machine.eventsMap;
   }
 
+  /**
+   * The number of operations scheduled by the inner
+   * {@linkcode Scheduler} of this {@linkcode Interpreter} service.
+   *
+   *
+   * @see {@linkcode Scheduler}
+   */
   get scheduleds() {
     return this.#scheduler.performeds;
   }
 
+  /**
+   * Where everything is initialized
+   * @param machine, the {@linkcode Machine} to interpret.
+   * @param mode, the {@linkcode Mode} of the interpreter, default is 'strict'.
+   * @param exact, whether to use exact intervals or not, default is false.
+   */
   constructor(
     machine: Machine<C, Pc, Tc, E, P, Mo>,
     mode: Mode = 'strict',
-    exact = false,
+    exact = true,
   ) {
     this.#machine = machine.renew;
 
@@ -217,7 +355,7 @@ export class Interpreter<
     this.#state = this.#previousState = {
       status: this.#status,
       context: this.#context,
-      event: this.#event,
+      event: INIT_EVENT,
       value: this.#value,
       tags: this.#config.tags,
     };
@@ -225,18 +363,30 @@ export class Interpreter<
     this.#throwing();
   }
 
+  /**
+   * Checks if the current {@linkcode Mode} mode is 'strict'.
+   */
   get isStrict() {
     return this.#mode === 'strict';
   }
 
+  /**
+   * Checks if the current {@linkcode Mode} mode is 'normal'.
+   */
   get isNormal() {
     return this.#mode === 'normal';
   }
 
+  /**
+   * Checks if the current {@linkcode Mode} mode is 'strictest'.
+   */
   get isStrictest() {
     return this.#mode === 'strictest';
   }
 
+  /**
+   * Use to manage internal errors and warnings.
+   */
   #throwing = () => {
     if (this.isStrict) {
       const check1 = this.#warningsCollector.size > 0;
@@ -287,12 +437,22 @@ export class Interpreter<
     }
   };
 
+  /**
+   * Assign the current {@linkcode State} and the previous {@linkcode State} of the {@linkcode Interpreter} service and flush all subscribers.
+   * @param parts, Partial {@linkcode State}
+   *
+   * @see {@linkcode SubscriberClass}
+   * @see {@linkcode SubscriberMapClass}
+   */
   #performStates = (parts?: Partial<State<Tc>>) => {
     this.#previousState = cloneDeep(this.#state);
     this.#state = { ...this.#state, ...parts };
     this.#flush();
   };
 
+  /**
+   * Performs computations, after transitioning to the next target, to update the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service
+   */
   protected _performConfig = () => {
     const value = nodeToValue(this.#config);
     this.#value = value;
@@ -303,6 +463,10 @@ export class Interpreter<
     this.#flat = t.any(flatMap(configForFlat));
   };
 
+  /**
+   * Performs computations, to update the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service
+   * @param target, the target to perform the config for.
+   */
   #performConfig = (target?: string | true) => {
     if (target === true) return this._performConfig();
 
@@ -316,6 +480,19 @@ export class Interpreter<
 
   protected _iterate = () => this.#iterator++;
 
+  /**
+   * Resolves a {@linkcode Node} from the given {@linkcode NodeConfigWithInitials} configuration.
+   *
+   * @param config of type {@linkcode NodeConfigWithInitials}, the configuration to resolve.
+   *
+   * @returns a {@linkcode Node} resolved from the configuration.
+   *
+   * @see {@linkcode resolveNode} for the actual resolution logic.
+   * @see {@linkcode E}
+   * @see {@linkcode P}
+   * @see {@linkcode Pc}
+   * @see {@linkcode Tc}
+   */
   #resolveNode = (config: NodeConfigWithInitials) => {
     const options = this.#machine.options;
     const events = this.#machine.eventsMap;
@@ -324,42 +501,75 @@ export class Interpreter<
     return resolveNode<E, P, Pc, Tc>(events, promisees, config, options);
   };
 
+  /**
+   * The accessor of initial {@linkcode Node} of the inner {@linkcode Machine}.
+   */
   get initialNode() {
     return this.#initialNode;
   }
 
+  /**
+   * The accessor of current {@linkcode Node} of this {@linkcode Interpreter} service.
+   */
   get node() {
     return this.#node;
   }
 
+  /**
+   * Set the current {@linkcode Mode} of this {@linkcode Interpreter} service to 'strict'.
+   * In this mode, all errors are thrown and warnings are logged to the console.
+   */
   makeStrict = () => {
     this.#mode = 'strict';
   };
 
+  /**
+   * Set the current {@linkcode Mode} of this {@linkcode Interpreter} service to 'strictest'.
+   * In this mode, all errors and warnings are thrown.
+   */
   makeStrictest = () => {
     this.#mode = 'strictest';
   };
 
+  /**
+   * Set the current {@linkcode Mode} of this {@linkcode Interpreter} service to 'normal'.
+   * In this mode, errors are logged to the console, but not thrown.
+   */
   makeNormal = () => {
     this.#mode = 'normal';
   };
 
+  /**
+   * The public accessor of initial {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.
+   */
   get status() {
     return this.#status;
   }
 
+  /**
+   * The public accessor of initial {@linkcode NodeConfigWithInitials} of the inner {@linkcode Machine}.
+   */
   get initialConfig() {
-    return this.#machine.initialConfig;
+    return this.#initialConfig;
   }
 
+  /**
+   * The public accessor of initial {@linkcode StateValue} of the inner {@linkcode Machine}.
+   */
   get initialValue() {
     return this.#machine.initialValue;
   }
 
+  /**
+   * The public accessor of current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
+   */
   get config() {
     return this.#config;
   }
 
+  /**
+   * Create a new {@linkcode Interpreter} instance with the same initial configuration as this instance.
+   */
   get renew() {
     const out = new Interpreter(this.#machine);
     out._ppC(this.#initialPpc);
@@ -368,10 +578,16 @@ export class Interpreter<
     return out;
   }
 
+  /**
+   * The public accessor of current {@linkcode StateValue}> of this {@linkcode Interpreter} service.
+   */
   get value() {
     return this.#value;
   }
 
+  /**
+   * The public accessor of current {@linkcode Tc} context of this {@linkcode Interpreter} service.
+   */
   get context() {
     return this.#context;
   }
@@ -379,7 +595,10 @@ export class Interpreter<
   /**
    * @deprecated
    * Just use for testing
-   * returns nothing in prod
+   * @returns the current {@linkcode Pc} private context of this {@linkcode Interpreter} service.
+   * @remarks returns nothing in prod
+   *
+   * @see {@linkcode context} to get the current context.
    */
   get _pContext() {
     if (IS_TEST) {
@@ -390,12 +609,28 @@ export class Interpreter<
     return;
   }
 
-  select: Selector_F<Tc> = selector => getByKey(this.#context, selector);
+  /**
+   * Select a path from the current {@linkcode Tc} context of this {@linkcode Interpreter} service.
+   *
+   * @param path, the key to select from the current {@linkcode Tc} context of this {@linkcode Interpreter} service.
+   *
+   * @returns the value from the path from the current {@linkcode Tc} context of this {@linkcode Interpreter} service.
+   *
+   * @see {@linkcode getByKey} for retrieving values by key.
+   */
+  select: Selector_F<Tc> = path => getByKey(this.#context, path);
 
   /**
    * @deprecated
-   * Just use for testing
-   * returns nothing in prod
+   * Select a path from the current {@linkcode Pc} private context of this {@linkcode Interpreter} service.
+   *
+   * @param path, the key to select from the current {@linkcode Pc} private context of this {@linkcode Interpreter} service.
+   *
+   * @returns the value from the path from the current {@linkcode Pc} private context of this {@linkcode Interpreter} service.
+   *
+   * @remarks returns nothing in prod
+   *
+   * @see {@linkcode getByKey} for retrieving values by key.
    */
   _pSelect: Selector_F<Pc> = selector => {
     if (IS_TEST) {
@@ -407,22 +642,46 @@ export class Interpreter<
     return;
   };
 
+  /**
+   * Set the current {@linkcode WorkingStatus} private context of this {@linkcode Interpreter} service.
+   * @returns 'started'.
+   */
   #startStatus = (): WorkingStatus => this.#setStatus('started');
 
+  /**
+   * Helper to format inner errors and warnings.
+   * @param messages - an iterable of messages to format.
+   * @returns an array of messages joined by new line.
+   *
+   * @remarks Used to display console messages in a readable format.
+   */
   #displayConsole = (messages: Iterable<string>) => {
     return Array.from(messages).join('\n');
   };
 
+  /**
+   * Flushes all subscribers and map subscribers of this {@linkcode Interpreter} service.
+   *
+   * @see {@linkcode SubscriberClass} for more information about subscribers.
+   * @see {@linkcode SubscriberMapClass} for more information about map subscribers.
+   */
   #flush = () => {
-    this.#flush2();
     this.#flushSubscribers();
+    this.#flushMapSubscribers();
   };
 
-  #timeoutActions: { id: string; timer: NodeJS.Timeout }[] = [];
+  /**
+   * All actions that are currently scheduled to be performed.
+   * @returns an array of {@linkcode TimeOutAction} that are currently scheduled to be performed.
+   */
+  #timeoutActions: TimeOutAction[] = [];
 
+  /**
+   * Start this {@linkcode Interpreter} service.
+   */
   start = () => {
-    this.#flush();
     this.#throwing();
+    this.#flush();
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#performChildMachines();
@@ -431,6 +690,11 @@ export class Interpreter<
     return this._next();
   };
 
+  /**
+   * Pause the collection of all currents {@linkcode Interval2} intervals, related to current {@linkcode ActivityConfig}s of this {@linkcode Interpreter} service.
+   *
+   * @see {@linkcode Scheduler} for more information about scheduling.
+   */
   #rinitIntervals = () => {
     this._cachedIntervals.forEach(f => {
       const check = f.state === 'active';
@@ -438,19 +702,35 @@ export class Interpreter<
     });
   };
 
+  /**
+   * Schedule all activities of the current {@linkcode Node} of this {@linkcode Interpreter} service.
+   *
+   * @see {@linkcode Scheduler} for more information about scheduling.
+   */
   get #schedule() {
     return this.#scheduler.schedule;
   }
 
-  #flush2 = () => {
+  /**
+   * Flushes all subscribers of this {@linkcode Interpreter} service.
+   *
+   * @see {@linkcode SubscriberClass} for more information about subscribers.
+   */
+  #flushSubscribers = () => {
     this.#subscribers.forEach(({ fn }) => {
       const callback = () => fn(this.#previousState, this.#state);
       this.#schedule(callback);
     });
   };
 
+  /**
+   * Used to track number of self transitions
+   */
   #selfTransitionsCounter = 0;
 
+  /**
+   * Performs all self transitions and activities of this {@linkcode Interpreter} service.
+   */
   #next = async () => {
     this.#selfTransitionsCounter++;
     this.#rinitIntervals();
@@ -458,6 +738,10 @@ export class Interpreter<
     await this.#performSelfTransitions();
   };
 
+  /**
+   * Performs all self transitions and activities of this {@linkcode Interpreter} service.
+   * @remarks Throw if the number of self transitions exceeds {@linkcode DEFAULT_MAX_SELF_TRANSITIONS}.
+   */
   protected _next = async () => {
     let check = false;
     do {
@@ -495,11 +779,11 @@ export class Interpreter<
     return action(pContext, context, event);
   };
 
-  #performScheduled = (scheduled?: ScheduledData<Pc, Tc>) => {
+  #performScheduledAction = (scheduled?: ScheduledData<Pc, Tc>) => {
     if (!scheduled) return;
     const { data, ms, id } = scheduled;
     const timer = setTimeout(() => {
-      this.#merge(data);
+      this.#mergeContexts(data);
     }, ms);
     this.#timeoutActions.push({ timer, id });
   };
@@ -520,7 +804,7 @@ export class Interpreter<
       this.#performAction(action),
     );
 
-    this.#performScheduled(scheduled);
+    this.#performScheduledAction(scheduled);
     this.#performResend(resend);
     this.#performForceSend(forceSend);
 
@@ -528,6 +812,9 @@ export class Interpreter<
     return { pContext, context };
   };
 
+  /**
+   * Throws if the number of self transitions exceeds {@linkcode DEFAULT_MAX_SELF_TRANSITIONS}.
+   */
   #throwMaxCounter() {
     const error = `Too much self transitions, exceeded ${DEFAULT_MAX_SELF_TRANSITIONS} transitions`;
     if (IS_TEST) {
@@ -602,7 +889,7 @@ export class Interpreter<
     return out;
   };
 
-  #flushSubscribers = () => {
+  #flushMapSubscribers = () => {
     this.#mapSubscribers.forEach(f => {
       const callback = () => f.reduced(this.#previousState, this.#state);
       this.#schedule(callback);
@@ -616,7 +903,10 @@ export class Interpreter<
     }
   };
 
-  #merge = ({ pContext, context: __context }: ActionResult<Pc, Tc>) => {
+  #mergeContexts = ({
+    pContext,
+    context: __context,
+  }: ActionResult<Pc, Tc>) => {
     const previousContext = structuredClone(this.#context);
 
     this.#pContext = merge(this.#pContext, pContext);
@@ -626,7 +916,7 @@ export class Interpreter<
 
     const check = !equal(previousContext, this.#context);
     this.#flush();
-    if (check) this.#flushSubscribers();
+    if (check) this.#flushMapSubscribers();
 
     this.#sendInnerEvents();
   };
@@ -675,7 +965,7 @@ export class Interpreter<
                 this.#contexts,
                 activity,
               );
-              return this.#merge(result);
+              return this.#mergeContexts(result);
             }
 
             const check5 = this.#performPredicates(
@@ -683,7 +973,7 @@ export class Interpreter<
             );
             if (check5) {
               const actions = toArray.typed(activity.actions);
-              return this.#merge(
+              return this.#mergeContexts(
                 this.#performActions(this.#contexts, ...actions),
               );
             }
@@ -723,10 +1013,28 @@ export class Interpreter<
     return out;
   };
 
+  /**
+   * Collection of all currents {@linkcode Interval2} intervals, related to current {@linkcode ActivityConfig}s of this {@linkcode Interpreter} service.
+   */
   protected _cachedIntervals: Interval2[] = [];
 
-  get intervalsArePaused() {
-    return this._cachedIntervals.every(({ state }) => state === 'paused');
+  /**
+   * @deprecated
+   * Checks if all current {@linkcode Interval2} intervals are paused.
+   *
+   * @return true if all intervals are paused, false otherwise.
+   *
+   * @remarks only used in tests, not in production.
+   */
+  get _intervalsArePaused() {
+    if (IS_TEST) {
+      return this._cachedIntervals.every(
+        ({ state }) => state === 'paused',
+      );
+    }
+
+    console.error('collecteds0 is not available in production');
+    return;
   }
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
@@ -873,6 +1181,11 @@ export class Interpreter<
     return promise;
   };
 
+  /**
+   * Checks if sent events cannot be performed.
+   * @param from - the config value from which the events are sent.
+   * @returns true if the events cannot be performed, false otherwise.
+   */
   #cannotPerform = (from: string) => {
     const check = this.#sending || !this.#isInsideValue(from);
     return check;
@@ -1030,6 +1343,9 @@ export class Interpreter<
     });
   };
 
+  /**
+   * Get all brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
+   */
   get #collecteds0() {
     const entries = new Map<string, Collected0<E, P, Pc, Tc>>();
 
@@ -1060,8 +1376,10 @@ export class Interpreter<
 
   /**
    * @deprecated
-   * used only for testing
-   * returns nothing in prod
+   *
+   * @returns the brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
+   *
+   * @remarks returns nothing in prod
    */
   get _collecteds0() {
     if (IS_TEST) {
@@ -1072,6 +1390,11 @@ export class Interpreter<
     return;
   }
 
+  /**
+   * Changes the current {@linkcode ToEvents} event of this {@linkcode Interpreter} service.
+   *
+   * @param event - the {@linkcode ToEvents} event to change the current {@linkcode Interpreter} service state.
+   */
   #changeEvent = (event: ToEvents<E, P>) => {
     this.#performStates({ event });
     this.#event = event;
@@ -1092,15 +1415,15 @@ export class Interpreter<
               this.#contexts,
               ...diffExits,
             );
-            this.#merge(_exits);
+            this.#mergeContexts(_exits);
 
-            this.#merge(always.result);
+            this.#mergeContexts(always.result);
 
             const _entries = this.#performActions(
               this.#contexts,
               ...diffEntries,
             );
-            this.#merge(_entries);
+            this.#mergeContexts(_entries);
 
             this.#performConfig(always.target);
           };
@@ -1123,15 +1446,15 @@ export class Interpreter<
                     this.#contexts,
                     ...diffExits,
                   );
-                  this.#merge(_exits);
+                  this.#mergeContexts(_exits);
 
-                  this.#merge(transition.result);
+                  this.#mergeContexts(transition.result);
 
                   const _entries = this.#performActions(
                     this.#contexts,
                     ...diffEntries,
                   );
-                  this.#merge(_entries);
+                  this.#mergeContexts(_entries);
 
                   this.#performConfig(transition.target);
                 };
@@ -1155,15 +1478,15 @@ export class Interpreter<
                     this.#contexts,
                     ...diffExits,
                   );
-                  this.#merge(_exits);
+                  this.#mergeContexts(_exits);
 
-                  this.#merge(transition.result);
+                  this.#mergeContexts(transition.result);
 
                   const _entries = this.#performActions(
                     this.#contexts,
                     ...diffEntries,
                   );
-                  this.#merge(_entries);
+                  this.#mergeContexts(_entries);
 
                   this.#performConfig(transition.target);
                 };
@@ -1204,7 +1527,7 @@ export class Interpreter<
     const cb = () => {
       const result = this.#performActions(this.#contexts, ...actions);
 
-      this.#merge(result);
+      this.#mergeContexts(result);
     };
     this.#schedule(cb);
   };
@@ -1251,7 +1574,7 @@ export class Interpreter<
 
   /**
    * @deprecated
-   * Uses internal
+   * Used internally
    */
   _providePrivateContext = (pContext: Pc) => {
     this.#initialPpc = pContext;
@@ -1266,7 +1589,9 @@ export class Interpreter<
 
   /**
    * @deprecated
-   * Uses internally
+   * Used internally
+   *
+   * Alias of {@linkcode _providePrivateContext}
    */
   _ppC = this._providePrivateContext;
 
@@ -1286,6 +1611,9 @@ export class Interpreter<
     return this.#machine;
   };
 
+  /**
+   * Add options to the inner {@linkcode Machine} of this {@linkcode Interpreter} service.
+   */
   get addOptions() {
     return this.#machine.addOptions;
   }
@@ -1305,16 +1633,8 @@ export class Interpreter<
     return _sub;
   };
 
-  get snapshot() {
-    const out: State<Tc> = {
-      status: this.#status,
-      value: this.#value,
-      context: this.#context,
-      tags: this.#config.tags,
-      event: this.#event,
-    };
-
-    return Object.freeze(cloneDeep(out));
+  get state() {
+    return Object.freeze(cloneDeep(this.#state));
   }
 
   subscribeMap: AddSubscriber_F<E, P, Tc> = (_subscriber, options) => {
@@ -1341,7 +1661,7 @@ export class Interpreter<
   /**
    * @deprecated
    * Just use for testing
-   * returns nothing in prod
+   * @remarks returns nothing in prod
    */
   get _errorsCollector() {
     if (IS_TEST) {
@@ -1355,7 +1675,7 @@ export class Interpreter<
   /**
    * @deprecated
    * Just use for testing
-   * returns nothing in prod
+   * @remarks returns nothing in prod
    */
   get _warningsCollector() {
     if (IS_TEST) {
@@ -1456,7 +1776,7 @@ export class Interpreter<
   #send = (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
     const { result, next } = this._send(event);
-    this.#merge(result);
+    this.#mergeContexts(result);
 
     if (isDefined(next)) {
       this.#config = next;
@@ -1671,7 +1991,7 @@ export class Interpreter<
         const _subscribers = toArray.typed(subscribers);
 
         _subscribers.forEach(({ contexts, events }) => {
-          const type2 = eventToType(service.event);
+          const type2 = eventToType(service.#event);
 
           const checkEvents = reduceEvents(t.any(events), type, type2);
 
@@ -1679,7 +1999,7 @@ export class Interpreter<
           if (checkEvents) {
             if (checkContexts) {
               const pContext = t.any(service.#context);
-              const callback = () => this.#merge({ pContext });
+              const callback = () => this.#mergeContexts({ pContext });
               this.#scheduler.schedule(callback);
             } else {
               type _Contexts = SingleOrArray<
@@ -1708,7 +2028,8 @@ export class Interpreter<
                         getByKey(service.#context, pathChild),
                       );
 
-                      const callback = () => this.#merge({ pContext });
+                      const callback = () =>
+                        this.#mergeContexts({ pContext });
                       this.#scheduler.schedule(callback);
                     });
                   });

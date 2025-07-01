@@ -9,28 +9,22 @@ import type {
 
 /**
  * JSON configuration for an action.
+ *
+ * @see {@linkcode Describer} for more details.
  */
 export type ActionConfig = string | Describer;
 
 /**
  * Retrieves the name of the action if it is a describer, otherwise returns the action itself.
- * @template T ActionConfig to reduce
+ * @template : type {@linkcode ActionConfig} [T], ActionConfig to reduce
  * @returns The name of the action if it is a describer, otherwise the action itself.
+ *
+ * @see {@linkcode FromDescriber} for more details.
  */
 export type FromActionConfig<T extends ActionConfig> = T extends Describer
   ? FromDescriber<T>
   : T;
 
-/**
- * Represents an action function that can be executed with the provided context and events.
- * It takes in a context object and an events map, and returns an ActionResult.
- *
- * @template : type {@linkcode EventsMap}  [E], the events Map.
- * @template : type {@linkcode PromiseeMap} [P], the promisees map.
- * @template : [Pc] : The type of the private context.
- * @template : type {@linkcode PrimitiveObject} [Tc] : The type of the context.
- * @returns : An {@linkcode FnMap}
- */
 export type Action<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -43,9 +37,9 @@ export type Action<
  *
  * @template : type {@linkcode EventsMap}  [E], the events Map.
  * @template : type {@linkcode PromiseeMap} [P], the promisees map.
- * @template : [Pc] : The type of the private context.
- * @template : type {@linkcode PrimitiveObject} [Tc] : The type of the context.
- * @returns : A partial record where each key is a string and each value is an {@linkcode Action}.
+ * @template : [Pc], the type of the private context.
+ * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
+ * @returns a partial record where each key is a string and each value is an {@linkcode Action}.
  */
 export type ActionMap<
   E extends EventsMap,
@@ -59,7 +53,7 @@ export type ActionMap<
  *
  * @template : [Pc] : The type of the private context.
  * @template : type {@linkcode PrimitiveObject} [Tc] : The type of the context.
- * @returns : A deep partial object containing the private context and the context.
+ * @returns a {@linkcode DeepPartial} object containing the private context and the {@linkcode PrimitiveObject} context.
  */
 export type ActionResult<
   Pc = any,

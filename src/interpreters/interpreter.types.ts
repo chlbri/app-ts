@@ -350,3 +350,8 @@ export type Observer<T> = {
   error: (err: any) => void;
   complete: () => void;
 };
+
+export type TimeOutAction = {
+  id: string;
+  timer: NodeJS.Timeout;
+};
