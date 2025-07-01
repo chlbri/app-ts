@@ -66,7 +66,7 @@ import {
   type SimpleMachineOptions2,
 } from '~machines';
 import {
-  PromiseConfig,
+  PromiseeConfig,
   toPromiseSrc,
   type PromiseeResult,
 } from '~promises';
@@ -1083,7 +1083,7 @@ export class Interpreter<
     );
   };
 
-  #performFinally = (_finally?: PromiseConfig['finally']) => {
+  #performFinally = (_finally?: PromiseeConfig['finally']) => {
     const check1 = _finally === undefined;
     if (check1) return;
 
@@ -1265,7 +1265,7 @@ export class Interpreter<
 
   get #collectedPromisees() {
     const entriesFlat = Object.entries(this.#flat);
-    const entries: [from: string, ...promisees: PromiseConfig[]][] = [];
+    const entries: [from: string, ...promisees: PromiseeConfig[]][] = [];
 
     entriesFlat.forEach(([from, node]) => {
       const promisees = toArray.typed(node.promises);

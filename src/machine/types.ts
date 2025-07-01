@@ -1,20 +1,15 @@
 import type { Decompose } from '@bemedev/decompose';
 import type {
   DeepNotUndefined,
-  Fn,
   NotUndefined,
   Primitive,
   Ru,
 } from '@bemedev/types';
 import type { Action, FromActionConfig } from '~actions';
 import type { Delay } from '~delays';
-import type {
-  EventsMap,
-  PromiseeDef,
-  PromiseeMap,
-  ToEvents,
-} from '~events';
+import type { EventsMap, PromiseeDef, PromiseeMap } from '~events';
 import type { PredicateS } from '~guards';
+import type { PromiseFunction } from '~promises';
 import type {
   ActivityConfig,
   ExtractActionsFromActivity,
@@ -901,12 +896,6 @@ export type SimpleMachineOptions2 = Partial<
  * @see {@linkcode Promise}
  *
  */
-export type PromiseFunction<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, P, Pc, Tc, Promise<any>>;
 
 /**
  * Type representing a function that returns a promise.
@@ -921,12 +910,6 @@ export type PromiseFunction<
  * @remarks
  * This type is more flexible than {@linkcode PromiseFunction}
  */
-export type PromiseFunction2<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-  TC extends PrimitiveObject = PrimitiveObject,
-> = Fn<[Pc, TC, ToEvents<E, P>], Promise<any>>;
 
 /**
  * Type representing a map of child machines.

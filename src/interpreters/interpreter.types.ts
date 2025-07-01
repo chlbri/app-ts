@@ -24,12 +24,12 @@ import type {
   ContextFrom,
   Decompose2,
   PrivateContextFrom,
-  PromiseFunction2,
 } from '~machines';
 import type {
-  PromiseConfig,
+  PromiseeConfig,
   PromiseeResult,
   PromiseFunction,
+  PromiseFunction2,
 } from '~promises';
 import type {
   ActivityConfig,
@@ -189,7 +189,7 @@ export type PerformPromisee_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   from: string,
-  ...promisees: PromiseConfig[]
+  ...promisees: PromiseeConfig[]
 ) => TimeoutPromise<PromiseeResult<E, P, Pc, Tc> | undefined> | undefined;
 
 export type Contexts<
