@@ -63,6 +63,9 @@ export type Typings = _TypingsFn & {
 
   createMachine: CreateMachine_F;
   notUndefined: <T = any>(value?: T) => NonNullable<T>;
+  keysof: <T extends object>(value?: T) => keyof NonNullable<T>;
+  byKey: <T extends object, K extends keyof T>(value: T, key: K) => T[K];
+  extract: <T = any, K = any>(value: T, extractor: K) => Extract<T, K>;
   undefiny: <const T = any>(value: T) => T | undefined;
 
   date: Date;
@@ -119,3 +122,6 @@ typings.symbol = _fn0();
 typings.bigint = _fn0();
 typings.object = _fn0();
 typings.any = _fn0();
+typings.keysof = _fn0;
+typings.byKey = _fn0;
+typings.extract = _fn0;

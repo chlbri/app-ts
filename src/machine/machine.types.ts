@@ -2,32 +2,29 @@ import type { Fn, NOmit } from '@bemedev/types';
 import type { ActionConfig, ActionResult, ActionResultFn } from '~actions';
 import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
-import type { Machine } from '~machine';
 import type { NodeConfigWithInitials, StateValue } from '~states';
 import type { FnMap, FnR, KeyU, PrimitiveObject } from '~types';
 import type { Decompose3 } from './functions';
 import type {
   ChildS,
   Config,
-  ConfigWithInitials,
   ContextFrom,
   EventsMapFrom,
-  MachineOptions,
   PrivateContextFrom,
   SimpleMachineOptions2,
   SubscriberType,
 } from './types';
 
-export type _ProvideInitials_F<C extends Config> = (
-  initials: MachineOptions<C>['initials'],
-) => ConfigWithInitials;
-
-export type ProvideInitials_F<C extends Config> = (
-  initials: MachineOptions<C>['initials'],
-) => Machine<C>;
-
-export type _ProvideActions_F<T> = (actions: T) => void;
-
+/**
+ * Types for all meaningful elements of the machine.
+ *
+ * @template :  {@linkcode Config} [C] - type of the machine configuration
+ * @template :  {@linkcode EventsMap} [E] - type of the events map
+ * @template :  {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template :  any [Pc] - type of the private context
+ * @template :  {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template :  {@linkcode SimpleMachineOptions2} [Mo] - type of the machine options
+ */
 export type Elements<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
@@ -54,6 +51,20 @@ export type GetIO_F = (
   node?: NodeConfigWithInitials,
 ) => ActionConfig[];
 
+/**
+ * Simple representation of a machine with meaningful properties.
+ *
+ * @template :  {@linkcode EventsMap} [E] - type of the events map
+ * @template :  {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template :  any [Pc] - type of the private context
+ * @template :  {@linkcode PrimitiveObject} [Tc] - type of the context
+ *
+ * @see {@linkcode ToEvents} for converting events and promisees maps to a unified event type.
+ * @see {@linkcode NodeConfigWithInitials}  for the structure of node configurations with initials.
+ * @see {@linkcode StateValue} for the type of state values.
+ * @see {@linkcode Fn} for creating functions
+ *
+ */
 export interface AnyMachine<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -195,7 +206,7 @@ export type DebounceAction_F<
   },
 ) => ActionResultFn<E, P, Pc, Tc>;
 
-export type AddOption_F<
+export type AddOptionsParam_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -227,8 +238,16 @@ export type AddOptions_F<
     SimpleMachineOptions2,
     'initials'
   >,
-> = (option: AddOption_F<E, P, Pc, Tc, Mo>) => void;
+> = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => void;
 
+/**
+ * Represents a scheduled action with its data and execution time.
+ *
+ * @template :  any [Pc] - type of the private context
+ * @template :  {@linkcode PrimitiveObject} [Tc] - type of the context
+ *
+ * @see {@linkcode ActionResult} for the result of the action.
+ */
 export type ScheduledData<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,

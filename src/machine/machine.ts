@@ -1,5 +1,5 @@
 import { isDefined, partialCall, toArray } from '@bemedev/basifun';
-import { t, type NOmit } from '@bemedev/types';
+import { t, type AllowedNames, type NOmit } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
@@ -32,7 +32,6 @@ import { merge, reduceFnMap, typings } from '~utils';
 import { expandFnMap } from './functions';
 import { createChildS, type CreateChild_F } from './functions/create';
 import type {
-  AddOption_F,
   AddOptions_F,
   AnyMachine,
   AssignAction_F,
@@ -166,7 +165,9 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __actionKey() {
-    return typings<keyof (typeof this)['options']['actions']>();
+    return typings.notUndefined<
+      keyof (typeof this)['options']['actions']
+    >();
   }
 
   /**
@@ -186,6 +187,16 @@ class Machine<
     return typings<{ pContext: Pc; context: Tc; map: E }>();
   }
 
+  #typingsByKey = <
+    K extends AllowedNames<AnyMachine<E, P, Pc, Tc>, object | undefined>,
+  >(
+    key: K,
+  ) => {
+    const out1 = typings.byKey(typings.cast(this), key);
+    const out2 = typings.extract(out1, typings.object);
+    return typings.keysof(out2);
+  };
+
   /**
    * @deprecated
    *
@@ -194,7 +205,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __guardKey() {
-    return typings<keyof (typeof this)['options']['predicates']>();
+    return this.#typingsByKey('predicates');
   }
 
   /**
@@ -225,7 +236,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __delayKey() {
-    return typings<keyof (typeof this)['options']['delays']>();
+    return this.#typingsByKey('delays');
   }
 
   /**
@@ -272,7 +283,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __src() {
-    return typings<keyof (typeof this)['options']['promises']>();
+    return this.#typingsByKey('promises');
   }
 
   /**
@@ -303,7 +314,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __childKey() {
-    return typings<keyof (typeof this)['options']['machines']>();
+    return this.#typingsByKey('machines');
   }
 
   /**
@@ -561,7 +572,7 @@ class Machine<
    * @returns a new instance of the machine with the provided options applied.
    */
   provideOptions = (
-    option: AddOption_F<E, P, Pc, Tc, NOmit<Mo, 'initials'>>,
+    option: Parameters<(typeof this)['addOptions']>[0],
   ) => {
     const out = this.renew;
     out.addOptions(option);

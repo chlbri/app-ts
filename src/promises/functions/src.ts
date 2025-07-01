@@ -16,6 +16,17 @@ export type ToPromiseSrc_F = <
   promises?: SimpleMachineOptions<E, P, Pc, TC>['promises'],
 ) => PromiseFunction2<E, P, Pc, TC> | undefined;
 
+/**
+ * Converts a source string to a function that can be used to retrieve the promise.
+ * @param events of type {@linkcode EventsMap}, the events map.
+ * @param promisees of type {@linkcode PromiseeMap}, the promisees map.
+ * @param src of type string, the source string to convert.
+ * @param promises of type {@linkcode SimpleMachineOptions}, the machine options containing promises.
+ * @returns a function that retrieves the promise or undefined if not found.
+ *
+ * @see {@linkcode reduceFnMap} for reducing the function map.
+ * @see {@linkcode PromiseFunction2} for more details
+ */
 export const toPromiseSrc: ToPromiseSrc_F = (
   events,
   promisees,

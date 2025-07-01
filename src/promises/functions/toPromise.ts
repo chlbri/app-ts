@@ -8,7 +8,7 @@ import type { PrimitiveObject } from '~types';
 import type { Promisee } from '../types';
 import { toPromiseSrc } from './src';
 
-export type ToPromise_F = <
+type ToPromise_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -20,6 +20,19 @@ export type ToPromise_F = <
   promises?: NOmit<SimpleMachineOptions<E, P, Pc, TC>, 'initials'>,
 ) => Promisee<E, P, Pc, TC>;
 
+/**
+ * Converts a promise config to a promisee object with a source and transitions.
+ * @param events of type {@linkcode EventsMap}, the events map.
+ * @param promisees of type {@linkcode PromiseeMap}, the promisees map.
+ * @param promise of type {@linkcode PromiseConfig}, the promise configuration to convert.
+ * @param options of type {@linkcode SimpleMachineOptions}, the machine options.
+ * @returns a promisee object with a source and transitions.
+ *
+ * @see {@linkcode toPromiseSrc} for converting the source.
+ * @see {@linkcode toTransition} for converting transitions.
+ * @see {@linkcode toArray.typed} for the type of the context.
+ * @see {@linkcode ToPromise_F} formore details
+ */
 export const toPromise: ToPromise_F = (
   events,
   promisees,
