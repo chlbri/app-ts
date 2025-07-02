@@ -19,22 +19,22 @@ describe('typings', () => {
 
   describe('#02 => Type helpers', () => {
     test('#01 => number', () => {
-      const actual = typings.number();
+      const actual = typings.number.type;
       expect(actual).toStrictEqual(expected);
     });
 
     test('#02 => string', () => {
-      const actual = typings.string();
+      const actual = typings.string.type;
       expect(actual).toStrictEqual(expected);
     });
 
     test('#03 => boolean', () => {
-      const actual = typings.boolean();
+      const actual = typings.boolean.type;
       expect(actual).toStrictEqual(expected);
     });
 
     test('#04 => object', () => {
-      const actual = typings.object;
+      const actual = typings.emptyO.type;
       expect(actual).toStrictEqual(expected);
     });
 
@@ -49,12 +49,12 @@ describe('typings', () => {
     });
 
     test('#07 => array', () => {
-      const actual = typings.array();
+      const actual = typings.array.typings();
       expect(actual).toStrictEqual(expected);
     });
 
     test('#08 => tuple', () => {
-      const actual = typings.tuple(1, 2, 3);
+      const actual = typings.tuple.typings(1, 2, 3);
       expect(actual).toStrictEqual(expected);
     });
 
@@ -77,7 +77,7 @@ describe('typings', () => {
 
     describe('#03 => createMachine', () => {
       const { acceptation, success } = createTests(
-        typings.createMachine as unknown as Fn,
+        typings.machine as unknown as Fn,
       );
 
       describe('#00 => Acceptation', acceptation);
@@ -92,7 +92,7 @@ describe('typings', () => {
               eventsMap: {
                 NEXT: {},
                 FETCH: {},
-                WRITE: { value: typings.string() },
+                WRITE: { value: typings.string.type },
                 FINISH: {},
               },
               context: typings<{
@@ -103,8 +103,8 @@ describe('typings', () => {
               pContext: typings<{ iterator: number }>(),
               promiseesMap: {
                 fetch: {
-                  then: typings.array(typings.string()),
-                  catch: typings.object,
+                  then: typings.array(typings.string.type),
+                  catch: typings.emptyO,
                 },
               },
             },
@@ -120,7 +120,7 @@ describe('typings', () => {
     });
 
     describe('#03 => config', () => {
-      const { acceptation, success } = createTests(typings.config);
+      const { acceptation, success } = createTests(typings.config.typings);
 
       describe('#00 => Acceptation', acceptation);
 
@@ -231,12 +231,12 @@ describe('typings', () => {
 
     test('#02 => toEventsR', () => {
       const events = {
-        FETCH: { id: typings.string() },
+        FETCH: { id: typings.string.type },
       };
       const promisees = {
         fetch: {
-          then: typings.array(typings.string()),
-          catch: typings.object,
+          then: typings.array(typings.string.type),
+          catch: typings.emptyO,
         },
       };
       const actual = typings.toEventsR(events, promisees);
@@ -245,12 +245,12 @@ describe('typings', () => {
 
     test('#03 => toEvents', () => {
       const events = {
-        FETCH: { id: typings.string() },
+        FETCH: { id: typings.string.type },
       };
       const promisees = {
         fetch: {
-          then: typings.array(typings.string()),
-          catch: typings.object,
+          then: typings.array(typings.string.type),
+          catch: typings.emptyO,
         },
       };
       const actual = typings.toEvents(events, promisees);

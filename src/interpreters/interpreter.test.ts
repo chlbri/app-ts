@@ -20,6 +20,10 @@ beforeAll(() => {
   vi.useFakeTimers();
 });
 
+// test.runIf(IS_TEST)('## => debug', () => {
+//   console.log('debug', DEFAULT_CONFIG);
+// });
+
 describe('Interpreter', () => {
   const resultC = {
     pContext: { data: 'avion' },

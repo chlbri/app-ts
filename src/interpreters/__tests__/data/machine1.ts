@@ -18,12 +18,12 @@ export const machine1 = createMachine(
     },
   },
   {
-    eventsMap: { NEXT: typings.object },
+    eventsMap: { NEXT: typings.emptyO.type },
     context: typings.context(
-      typings.recordAll(typings.number(), 'iterator'),
+      typings.recordAll(typings.number.type, 'iterator'),
     ),
-    pContext: typings.object,
-    promiseesMap: typings.object,
+    pContext: typings.emptyO.type,
+    promiseesMap: typings.emptyO.type,
   },
   { '/': 'idle' },
 );

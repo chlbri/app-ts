@@ -100,21 +100,21 @@ export const machine2 = createMachine(
   },
   {
     eventsMap: {
-      NEXT: typings.object,
-      FETCH: typings.object,
-      WRITE: { value: typings.string() },
-      FINISH: typings.object,
+      NEXT: typings.emptyO.type,
+      FETCH: typings.emptyO.type,
+      WRITE: { value: typings.string.type },
+      FINISH: typings.emptyO.type,
     },
     context: {
-      iterator: typings.number(),
-      input: typings.string(),
-      data: typings.array(typings.string()),
+      iterator: typings.number.type,
+      input: typings.string.type,
+      data: typings.array(typings.string.type),
     },
-    pContext: typings.recordAll(typings.number(), 'iterator'),
+    pContext: typings.recordAll(typings.number.type, 'iterator'),
     promiseesMap: {
       fetch: typings.promiseDef(
-        typings.array(typings.string()),
-        typings.object,
+        typings.array(typings.string.type),
+        typings.emptyO.type,
       ),
     },
   },
@@ -171,21 +171,21 @@ export const _machine2 = createMachine(
   },
   {
     eventsMap: {
-      NEXT: typings.object,
-      FETCH: typings.object,
-      WRITE: { value: typings.string() },
-      FINISH: typings.object,
+      NEXT: typings.emptyO.type,
+      FETCH: typings.emptyO.type,
+      WRITE: { value: typings.string.type },
+      FINISH: typings.emptyO.type,
     },
-    context: {
-      iterator: typings.number(),
-      input: typings.string(),
-      data: typings.array(typings.string()),
-    },
-    pContext: typings.recordAll(typings.number(), 'iterator'),
+    context: typings.context({
+      iterator: typings.number.type,
+      input: typings.string.type,
+      data: typings.array(typings.string.type),
+    }),
+    pContext: typings.recordAll(typings.number.type, 'iterator'),
     promiseesMap: {
       fetch: typings.promiseDef(
-        typings.array(typings.string()),
-        typings.object,
+        typings.array(typings.string.type),
+        typings.emptyO.type,
       ),
     },
   },
@@ -208,7 +208,6 @@ export const _machine2 = createMachine(
       }),
       debounce: _debounce(
         assign('context.iterator', () => {
-          console.warn('Debounced action executed');
           console.log('Debounced action executed');
           return 1000;
         }),

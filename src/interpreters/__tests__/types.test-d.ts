@@ -12,7 +12,7 @@ import type {
   DelayKeysFrom,
   EventsFrom,
   EventsMapFrom,
-  PredicatesMapFrom,
+  GuardKeysFrom,
   PrivateContextFrom,
   PromiseKeysFrom,
 } from '../../machine/types';
@@ -87,7 +87,7 @@ expectTypeOf<ActionKeys>().toEqualTypeOf<
   | 'deal17'
 >();
 
-type GuardKeys = keyof PredicatesMapFrom<Machine3>;
+type GuardKeys = GuardKeysFrom<Machine3>;
 expectTypeOf<GuardKeys>().toEqualTypeOf<
   'guard' | 'guard2' | 'ert' | 'guar34' | 'guard4'
 >();

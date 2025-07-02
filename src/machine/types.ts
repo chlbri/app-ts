@@ -770,8 +770,7 @@ export type PredicateSFrom<T extends KeyU<'__predicate'>> = NotUndefined<
  * @see {@linkcode NotUndefined} for ensuring the predicates map is not undefined.
  * @see {@linkcode PredicatesMapFrom} for extracting guards from the machine.
  */
-export type GuardKeysFrom<T extends KeyU<'predicates'>> =
-  keyof PredicatesMapFrom<T>;
+export type GuardKeysFrom<T extends KeyU<'__guardKey'>> = T['__guardKey'];
 
 /**
  * Get all delays map from a machine.

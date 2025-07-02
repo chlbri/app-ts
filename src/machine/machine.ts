@@ -194,7 +194,7 @@ class Machine<
     key: K,
   ) => {
     const out1 = typings.byKey(typings.cast(this), key);
-    const out2 = typings.extract(out1, typings.object);
+    const out2 = typings.extract(out1, typings.object.type);
     return typings.keysof(out2);
   };
 

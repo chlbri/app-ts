@@ -81,14 +81,17 @@ export const config3 = createConfig({
 export const machine3 = createMachine(
   config3,
   {
-    pContext: { data: typings.string() },
-    context: { age: typings.number() },
+    pContext: { data: typings.string.type },
+    context: { age: typings.number.type },
     eventsMap: {
-      EVENT: { password: typings.string(), username: typings.string() },
-      EVENT2: typings.boolean(),
-      EVENT3: { login: typings.string(), pwd: typings.string() },
+      EVENT: {
+        password: typings.string.type,
+        username: typings.string.type,
+      },
+      EVENT2: typings.boolean.type,
+      EVENT3: { login: typings.string.type, pwd: typings.string.type },
     },
-    promiseesMap: typings.object,
+    promiseesMap: typings.emptyO.type,
   },
   { '/': 'state1', '/state1': 'state11', '/state1/state11': 'state111' },
 );

@@ -2168,7 +2168,7 @@ export class Interpreter<
     if (!service) {
       service = this.interpretChild(machine, initials);
       service.id = id;
-      this.#childrenServices.push(typings.forceCast(service));
+      this.#childrenServices.push(typings.anify(service));
     }
 
     const subscriber = service.subscribeMap(
