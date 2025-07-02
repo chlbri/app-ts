@@ -122,6 +122,13 @@ export type ResendAction_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (event: EventArg<E>) => ActionResultFn<E, P, Pc, Tc>;
 
+export type TimeAction_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (id: string) => ActionResultFn<E, P, Pc, Tc>;
+
 export type VoidAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -227,6 +234,12 @@ export type AddOptionsParam_F<
   debounce: DebounceAction_F<E, P, Pc, Tc>;
   resend: ResendAction_F<E, P, Pc, Tc>;
   forceSend: ResendAction_F<E, P, Pc, Tc>;
+  pauseActivity: TimeAction_F<E, P, Pc, Tc>;
+  resumeActivity: TimeAction_F<E, P, Pc, Tc>;
+  stopActivity: TimeAction_F<E, P, Pc, Tc>;
+  pauseTimer: TimeAction_F<E, P, Pc, Tc>;
+  resumeTimer: TimeAction_F<E, P, Pc, Tc>;
+  stopTimer: TimeAction_F<E, P, Pc, Tc>;
 }) => Mo | undefined;
 
 export type AddOptions_F<
@@ -252,3 +265,19 @@ export type ScheduledData<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = { data: ActionResult<Pc, Tc>; ms: number; id: string };
+
+export type ExtendedActionsParams<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = Partial<{
+  scheduled: ScheduledData<Pc, Tc>;
+  resend: EventArg<E>;
+  forceSend: EventArg<E>;
+  pauseActivity: string;
+  resumeActivity: string;
+  stopActivity: string;
+  pauseTimer: string;
+  resumeTimer: string;
+  stopTimer: string;
+}>;

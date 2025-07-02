@@ -10,9 +10,14 @@ import {
 } from '@bemedev/basifun';
 import type { SingleOrArray } from '@bemedev/boolean-recursive';
 import { decomposeSV } from '@bemedev/decompose';
-import { createInterval, type Interval2 } from '@bemedev/interval2';
+import {
+  createInterval,
+  createTimeout,
+  type Interval2,
+  type Timeout2,
+} from '@bemedev/interval2';
 import sleep from '@bemedev/sleep';
-import { t } from '@bemedev/types';
+import { t, type AllowedNames, type Fn } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
 import {
@@ -56,6 +61,7 @@ import {
   type ConfigFrom,
   type ContextFrom,
   type EventsMapFrom,
+  type ExtendedActionsParams,
   type GetEventsFromConfig,
   type MachineConfig,
   type MachineOptions,
@@ -112,7 +118,6 @@ import {
   type PerformTransitions_F,
   type Selector_F,
   type State,
-  type TimeOutAction,
   type WorkingStatus,
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
@@ -676,9 +681,9 @@ export class Interpreter<
 
   /**
    * All actions that are currently scheduled to be performed.
-   * @returns an array of {@linkcode TimeOutAction} that are currently scheduled to be performed.
+   * @returns an array of {@linkcode Timeout2} that are currently scheduled to be performed.
    */
-  #timeoutActions: TimeOutAction[] = [];
+  #timeoutActions: Timeout2[] = [];
 
   /**
    * Start this {@linkcode Interpreter} service.
@@ -699,11 +704,12 @@ export class Interpreter<
    *
    * @see {@linkcode Scheduler} for more information about scheduling.
    */
-  #rinitIntervals = () => {
-    this._cachedIntervals.forEach(f => {
-      const check = f.state === 'active';
-      if (check) this.#scheduler.schedule(f.pause.bind(f));
-    });
+  #pauseAllActivities = () => {
+    this._cachedIntervals.forEach(this.#pause);
+  };
+
+  #pauseCurrentActivities = () => {
+    this.#currentActivities?.forEach(this.#pause);
   };
 
   /**
@@ -737,7 +743,7 @@ export class Interpreter<
    */
   #next = async () => {
     this.#selfTransitionsCounter++;
-    this.#rinitIntervals();
+    this.#pauseAllActivities();
     this.#performActivities();
     await this.#performSelfTransitions();
   };
@@ -785,32 +791,90 @@ export class Interpreter<
 
   #performScheduledAction = (scheduled?: ScheduledData<Pc, Tc>) => {
     if (!scheduled) return;
-    const { data, ms, id } = scheduled;
-    const timer = setTimeout(() => {
+    const { data, ms: timeout, id } = scheduled;
+
+    const callback = () => {
       this.#mergeContexts(data);
-    }, ms);
-    this.#timeoutActions.push({ timer, id });
+    };
+
+    const timer = createTimeout({ callback, timeout, id });
+    this.#timeoutActions.push(timer);
   };
 
-  #performResend = (resend?: EventArg<E>) => {
+  #performResendAction = (resend?: EventArg<E>) => {
     if (!resend) return;
     this.send(resend);
   };
 
-  #performForceSend = (forceSend?: EventArg<E>) => {
+  #performForceSendAction = (forceSend?: EventArg<E>) => {
     if (!forceSend) return;
     this.#send(forceSend);
   };
 
+  #performPauseActivityAction = (id?: string) => {
+    if (!id) return;
+    this.#currentActivities?.filter(f => f.id !== id).forEach(this.#pause);
+  };
+
+  #performResumeActivityAction = (id?: string) => {
+    if (!id) return;
+    this.#currentActivities
+      ?.filter(f => f.id === id)
+      .forEach(this.#resume);
+  };
+
+  #performStopActivityAction = (id?: string) => {
+    if (!id) return;
+    this.#currentActivities
+      ?.filter(f => f.id === id)
+      .forEach(this.#dispose);
+  };
+
+  #performPauseTimerAction = (id?: string) => {
+    if (!id) return;
+    this.#timeoutActions.filter(f => f.id === id).forEach(this.#pause);
+  };
+
+  #performResumeTimerAction = (id?: string) => {
+    if (!id) return;
+    this.#timeoutActions.filter(f => f.id === id).forEach(this.#resume);
+  };
+
+  #performStopTimerAction = (id?: string) => {
+    if (!id) return;
+    this.#timeoutActions.filter(f => f.id === id).forEach(this.#stop);
+  };
+
+  #performsExtendedActions = ({
+    forceSend,
+    resend,
+    scheduled,
+    pauseActivity,
+    resumeActivity,
+    stopActivity,
+    pauseTimer,
+    resumeTimer,
+    stopTimer,
+  }: ExtendedActionsParams<E, Pc, Tc>) => {
+    this.#performScheduledAction(scheduled);
+    this.#performResendAction(resend);
+    this.#performForceSendAction(forceSend);
+
+    this.#performPauseActivityAction(pauseActivity);
+    this.#performResumeActivityAction(resumeActivity);
+    this.#performStopActivityAction(stopActivity);
+    this.#performPauseTimerAction(pauseTimer);
+    this.#performResumeTimerAction(resumeTimer);
+    this.#performStopTimerAction(stopTimer);
+  };
+
   #executeAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this.#makeBusy();
-    const { pContext, context, scheduled, resend, forceSend } = t.any(
+    const { pContext, context, ...extendeds } = t.any(
       this.#performAction(action),
     );
 
-    this.#performScheduledAction(scheduled);
-    this.#performResend(resend);
-    this.#performForceSend(forceSend);
+    this.#performsExtendedActions(extendeds);
 
     this.#makeWork();
     return { pContext, context };
@@ -1320,7 +1384,7 @@ export class Interpreter<
     return entries;
   }
 
-  #performActivities = () => {
+  get #currentActivities() {
     const collected = this.#collectedActivities;
     const check = collected.length < 1;
     if (check) return;
@@ -1330,11 +1394,11 @@ export class Interpreter<
       ids.push(...this.#executeActivities(...args));
     }
 
-    return this._cachedIntervals
-      .filter(({ id }) => ids.includes(id))
-      .forEach(f => {
-        f.start();
-      });
+    return this._cachedIntervals.filter(({ id }) => ids.includes(id));
+  }
+
+  #performActivities = () => {
+    return this.#currentActivities?.forEach(this.#start);
   };
 
   #performChildMachines = () => {
@@ -1536,30 +1600,67 @@ export class Interpreter<
     this.#schedule(cb);
   };
 
+  /**
+   * @deprecated
+   * A mapper function that returns a function to call a method on a value.
+   * @param key - the key of the method to be called on the value.
+   * @returns a function that calls the method on the value.
+   *
+   * @see {@linkcode AllowedNames} for more information about allowed names.
+   * @see {@linkcode Fn} for more information about function types.
+   */
+  #mapperFn = <T>(key: AllowedNames<T, Fn>) => {
+    return (value: T) => {
+      const fn = (value as any)[key];
+      this.#schedule(fn);
+    };
+  };
+
+  #pause = this.#mapperFn('pause');
+
+  #open = this.#mapperFn('open');
+  #start = this.#mapperFn('start');
+
+  #close = this.#mapperFn('close');
+
+  #resume = this.#mapperFn('resume');
+
+  #unsubscribe = this.#mapperFn('unsubscribe');
+
+  #stop = this.#mapperFn('stop');
+  #dispose = this.#mapperFn('dispose');
+
   pause = () => {
-    this.#rinitIntervals();
-    this.#mapSubscribers.forEach(f => f.close());
-    this.#subscribers.forEach(f => f.close());
-    this.#childrenServices.forEach(c => c.pause());
+    this.#pauseCurrentActivities();
+    this.#makeBusy();
+    this.#mapSubscribers.forEach(this.#close);
+    this.#subscribers.forEach(this.#close);
+    this.#childrenServices.forEach(this.#pause);
+    this.#timeoutActions.forEach(this.#pause);
     this.#setStatus('paused');
   };
 
   resume = () => {
     if (this.#status === 'paused') {
-      this.#makeWork();
       this.#performActivities();
-      this.#mapSubscribers.forEach(f => f.open());
-      this.#subscribers.forEach(f => f.open());
-      this.#childrenServices.forEach(c => c.resume());
+      this.#makeBusy();
+      this.#mapSubscribers.forEach(this.#open);
+      this.#subscribers.forEach(this.#open);
+      this.#timeoutActions.forEach(this.#resume);
+      this.#childrenServices.forEach(this.#resume);
+      this.#makeWork();
     }
   };
 
   stop = () => {
     this.pause();
-    this.#mapSubscribers.forEach(f => f.unsubscribe());
-    this.#subscribers.forEach(f => f.unsubscribe());
-    this.#childrenServices.forEach(c => c.stop());
-    this.#timeoutActions.forEach(({ timer }) => clearTimeout(timer));
+    this.#makeBusy();
+    this.#mapSubscribers.forEach(this.#unsubscribe);
+    this.#subscribers.forEach(this.#unsubscribe);
+    this.#childrenServices.forEach(this.#stop);
+    this._cachedIntervals.forEach(this.#dispose);
+    this.#timeoutActions.forEach(this.#stop);
+    this.#scheduler.stop();
     this.#setStatus('stopped');
   };
 
@@ -2130,10 +2231,14 @@ export class Interpreter<
   };
 
   // #region Disposable
-  [Symbol.dispose] = () => {
+
+  dispose = () => {
     this.stop();
-    this.#scheduler.stop();
+    this.#childrenServices.forEach(this.#dispose);
+    this.#timeoutActions.forEach(this.#dispose);
   };
+
+  [Symbol.dispose] = this.dispose;
 
   [Symbol.asyncDispose] = () => {
     const out = asyncfy(this[Symbol.dispose]);

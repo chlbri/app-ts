@@ -39,6 +39,7 @@ import type {
   GetIO_F,
   ScheduledData,
   SendAction_F,
+  TimeAction_F,
   VoidAction_F,
 } from './machine.types';
 import type {
@@ -985,6 +986,12 @@ class Machine<
     };
   };
 
+  #timeAction = (name: string): TimeAction_F<E, P, Pc, Tc> => {
+    return id => (pContext, context) => {
+      return t.any({ pContext, context, [name]: id });
+    };
+  };
+
   /**
    * Provides options for the machine.
    *
@@ -1027,6 +1034,7 @@ class Machine<
           });
         };
       },
+
       resend: resend => {
         return (pContext, context) => {
           return t.any({
@@ -1036,6 +1044,7 @@ class Machine<
           });
         };
       },
+
       forceSend: forceSend => {
         return (pContext, context) => {
           return t.any({
@@ -1045,6 +1054,13 @@ class Machine<
           });
         };
       },
+
+      pauseActivity: this.#timeAction('pauseActivity'),
+      resumeActivity: this.#timeAction('resumeActivity'),
+      stopActivity: this.#timeAction('stopActivity'),
+      pauseTimer: this.#timeAction('startActivity'),
+      resumeTimer: this.#timeAction('resumeTimer'),
+      stopTimer: this.#timeAction('stopTimer'),
     });
 
     this.#addActions(out?.actions);

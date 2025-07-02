@@ -169,7 +169,7 @@ describe('machine coverage', () => {
         describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
       });
 
-      test('#07 => pause', service.pause.bind(service));
+      test('#07 => pause', service.pause);
 
       describe('#08 => Check the service', () => {
         test(...useIterator(18, 2));
@@ -185,7 +185,7 @@ describe('machine coverage', () => {
         describe(...useConsole(4));
       });
 
-      test('#11 => resume', service.resume.bind(service));
+      test('#11 => resume', service.resume);
 
       test(...useWaiter(12, 12));
 
