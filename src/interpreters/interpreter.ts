@@ -49,7 +49,12 @@ import {
   type ToEventsR,
 } from '~events';
 import { toPredicate, type GuardConfig } from '~guards';
-import { getEntries, getExits, type Machine } from '~machine';
+import {
+  DEFAULT_MACHINE,
+  getEntries,
+  getExits,
+  type Machine,
+} from '~machine';
 import {
   assignByKey,
   getByKey,
@@ -2293,3 +2298,10 @@ export const interpret: Interpreter_F = (
 
   return out as any;
 };
+
+export const DEFAULT_SERVICE = interpret(DEFAULT_MACHINE, {
+  context: {
+    iterator: 0,
+  },
+  pContext: {},
+});

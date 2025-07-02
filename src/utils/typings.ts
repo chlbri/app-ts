@@ -6,22 +6,17 @@ import {
   type Ru,
 } from '@bemedev/types';
 import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
-import type { InterpreterFrom } from '~interpreter';
-import {
-  type AnyMachine,
-  type Config,
-  type CreateMachine_F,
-} from '~machines';
+import { type Config, type CreateMachine_F } from '~machines';
 import type { PrimitiveObject } from '~types';
 
 export type EmptyObject = NonNullable<unknown>;
 export type EmptyO = EmptyObject;
 
-type Keys = string | number | symbol;
+export type Keys = string | number | symbol;
 
 type _TypingsFn = <T = any>(value?: unknown) => T;
 
-type Options<T> = _OptionsFn<<U extends T = T>(value?: U) => U> & {
+export type Options<T> = _OptionsFn<<U extends T = T>(value?: U) => U> & {
   type: T;
   default: T;
   const: _OptionsFn<<const U extends T = T>(value: U) => U>;
@@ -31,7 +26,7 @@ type _OptionsFn<T extends Fn = Fn> = T & {
   typings: T;
 };
 
-type OptionsFn<
+export type OptionsFn<
   N extends Fn = Fn,
   C extends Fn = Fn<[never], never>,
 > = _OptionsFn<N> &
@@ -41,7 +36,7 @@ type OptionsFn<
         const: _OptionsFn<C>;
       });
 
-const options = <T>(_default: T) => {
+export const options = <T>(_default: T) => {
   const out = _optionsFn(identity) as Options<T>;
   out.type = _fn0();
   out.default = _default;
@@ -55,7 +50,7 @@ const _optionsFn = (fn: Fn) => {
   return out;
 };
 
-const optionsFn = <N extends Fn = Fn, C extends Fn = Fn>(
+export const optionsFn = <N extends Fn = Fn, C extends Fn = Fn>(
   normal: N,
   constant?: C,
 ) => {
@@ -92,12 +87,6 @@ export type Typings = _TypingsFn & {
    * Effectively removes all type information from the value.
    */
   anify: OptionsFn<(value?: unknown) => any>;
-
-  /**
-   * Creates an interpreter instance from an XState machine.
-   * Returns a properly typed interpreter for the given machine.
-   */
-  interpret: <T extends AnyMachine>(machine: T) => InterpreterFrom<T>;
 
   number: Options<number>;
 
@@ -188,12 +177,6 @@ export type Typings = _TypingsFn & {
    * Ensures the value conforms to Config type constraints.
    */
   config: Options<Config>;
-
-  /**
-   * Type-safe machine identity function.
-   * Preserves the exact machine type for XState compatibility.
-   */
-  machine: <T extends AnyMachine>(machine: T) => T;
 
   /**
    * Creates a promise definition object with then and catch handlers.
@@ -310,7 +293,7 @@ export type Typings = _TypingsFn & {
   identity: <T = any>(value?: T) => T;
 };
 
-const _fn0 = (() => undefined as any) as any;
+export const _fn0 = (() => undefined as any) as any;
 
 const identity = ((value?: unknown) => value) as any;
 
@@ -336,8 +319,6 @@ typings.forceCast =
 
 typings.anify = optionsFn(identity);
 
-typings.interpret = _fn0;
-
 typings.array = optionsFn(identityArray);
 typings.tuple = optionsFn(identityArray);
 
@@ -353,8 +334,6 @@ typings.function = _fn0 as any;
 typings.context = options<PrimitiveObject>({});
 
 typings.config = options({} as any);
-
-typings.machine = _fn0;
 
 typings.promiseDef = (then, _catch) => ({
   then,

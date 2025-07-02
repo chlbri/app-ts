@@ -1,7 +1,9 @@
-import type { Fn } from '@bemedev/types';
 import { createTests } from '@bemedev/vitest-extended';
-import { config2, machine1, machine2 } from '~fixturesData';
+import { config2, machine1 } from '~fixturesData';
+import { DEFAULT_SERVICE } from '~interpreter';
+import { DEFAULT_MACHINE } from '~machine';
 import { typings } from './typings';
+import { typingsExtended, typingsMachine } from './typings.extended';
 
 describe('typings', () => {
   const expected = undefined;
@@ -66,57 +68,29 @@ describe('typings', () => {
 
   describe('#03 => Machine related', () => {
     describe('#01 => interpret', () => {
-      const actual = typings.interpret(machine1);
-      expect(actual).toStrictEqual(expected);
+      test('#01 => Typings - with value', () => {
+        const actual = typingsExtended.interpret(machine1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test('#02 => Typings - without value', () => {
+        const actual = typingsExtended.interpret();
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test('#03 => default', () => {
+        const actual = typingsExtended.interpret.default;
+        expect(actual).toStrictEqual(DEFAULT_SERVICE);
+      });
     });
 
-    test('#02 => machine', () => {
-      const actual = typings.machine(machine2);
-      expect(actual).toStrictEqual(expected);
-    });
-
-    describe('#03 => createMachine', () => {
-      const { acceptation, success } = createTests(
-        typings.machine as unknown as Fn,
-      );
-
-      describe('#00 => Acceptation', acceptation);
-
-      describe(
-        '#01 => Success',
-        success({
-          invite: 'Machine 2',
-          parameters: [
-            config2,
-            {
-              eventsMap: {
-                NEXT: {},
-                FETCH: {},
-                WRITE: { value: typings.string.type },
-                FINISH: {},
-              },
-              context: typings<{
-                iterator: number;
-                input: string;
-                data: string[];
-              }>(),
-              pContext: typings<{ iterator: number }>(),
-              promiseesMap: {
-                fetch: {
-                  then: typings.array(typings.string.type),
-                  catch: typings.emptyO,
-                },
-              },
-            },
-            {
-              '/': 'idle',
-              '/working/fetch': 'idle',
-              '/working/ui': 'idle',
-            },
-          ],
-          expected,
-        }),
-      );
+    describe('#02 => Machines', () => {
+      describe('#01 => constants', () => {
+        test('#01 => default', () => {
+          const actual = typingsMachine.default;
+          expect(actual).toStrictEqual(DEFAULT_MACHINE);
+        });
+      });
     });
 
     describe('#03 => config', () => {

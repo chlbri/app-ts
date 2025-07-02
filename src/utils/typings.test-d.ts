@@ -8,14 +8,8 @@ import {
 } from '@bemedev/types';
 import { expectTypeOf } from 'vitest';
 import type { EventsMap, PromiseeMap } from '~events';
-import { config2, machine2 } from '~fixturesData';
-import type { InterpreterFrom } from '~interpreter';
-import type {
-  AnyMachine,
-  Config,
-  ConfigFrom,
-  createMachine,
-} from '~machines';
+import { config2 } from '~fixturesData';
+import type { Config } from '~machines';
 import type { PrimitiveObject } from '~types';
 import { typings } from './typings';
 
@@ -73,22 +67,6 @@ const functionValue2 = typings.function.const('hello', 42, true);
 expectTypeOf(functionValue2).toEqualTypeOf<Fn<['hello', 42], true>>();
 
 // #region Test des types liés aux machines
-const dummyMachine = {} as AnyMachine;
-const machineValue = typings.machine(dummyMachine);
-expectTypeOf(machineValue).toEqualTypeOf<AnyMachine>();
-
-const interpreterValue1 = typings.interpret(dummyMachine);
-expectTypeOf(interpreterValue1).toEqualTypeOf<
-  InterpreterFrom<AnyMachine>
->();
-type Machine2 = typeof machine2;
-const interpreterValue2 = typings.interpret(machine2);
-expectTypeOf(interpreterValue2).toEqualTypeOf<InterpreterFrom<Machine2>>();
-
-const createMachineValue = typings.createMachine<ConfigFrom<Machine2>>;
-expectTypeOf(createMachineValue).branded.toEqualTypeOf<
-  typeof createMachine<ConfigFrom<Machine2>>
->();
 
 const configValue1 = typings.config();
 expectTypeOf(configValue1).toEqualTypeOf<Config>();

@@ -1156,12 +1156,39 @@ export const createMachine: CreateMachine_F = (
   return out;
 };
 
-/**
- * Default machine instance with an empty configuration.
- *
- * @see {@linkcode AnyMachine}
- * @see {@linkcode Machine}
- */
-export const DEFAULT_MACHINE: AnyMachine = new Machine({
-  states: {},
-});
+export const DEFAULT_MACHINE = createMachine(
+  {
+    states: {
+      on: {
+        on: {
+          SWITCH: {
+            actions: 'inc',
+            target: '/off',
+          },
+        },
+      },
+      off: {
+        on: {
+          SWITCH: {
+            actions: 'dec',
+            target: '/on',
+          },
+        },
+      },
+    },
+  },
+  {
+    eventsMap: { SWITCH: typings.emptyO.type },
+    context: typings.context(
+      typings.recordAll(typings.number.type, 'iterator'),
+    ),
+    pContext: typings.emptyO.type,
+    promiseesMap: typings.emptyO.type,
+  },
+  { '/': 'off' },
+).provideOptions(({ assign }) => ({
+  actions: {
+    inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
+    dec: assign('context.iterator', (_, { iterator }) => iterator - 1),
+  },
+}));
