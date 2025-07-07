@@ -1,7 +1,10 @@
 import { t } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
-import { MAX_SELF_TRANSITIONS, MIN_ACTIVITY_TIME } from '~constants';
+import {
+  DEFAULT_MAX_SELF_TRANSITIONS,
+  DEFAULT_MIN_ACTIVITY_TIME,
+} from '~constants';
 import { DELAY, fakeDB, machine1 } from '~fixturesData';
 import { createMachine } from '~machine';
 import { EVENTS_FULL } from '~machines';
@@ -16,6 +19,10 @@ import type { AnyInterpreter } from './interpreter.types';
 beforeAll(() => {
   vi.useFakeTimers();
 });
+
+// test.runIf(IS_TEST)('## => debug', () => {
+//   console.log('debug', DEFAULT_CONFIG);
+// });
 
 describe('Interpreter', () => {
   const resultC = {
@@ -274,7 +281,7 @@ describe('Interpreter', () => {
         },
       },
       delays: {
-        DELAY: MIN_ACTIVITY_TIME,
+        DELAY: DEFAULT_MIN_ACTIVITY_TIME,
       },
     }));
 
@@ -284,7 +291,7 @@ describe('Interpreter', () => {
       mode: 'normal',
     });
 
-    const error = `Too much self transitions, exceeded ${MAX_SELF_TRANSITIONS} transitions`;
+    const error = `Too much self transitions, exceeded ${DEFAULT_MAX_SELF_TRANSITIONS} transitions`;
 
     test('#01 => Start the service', async () => {
       vi.advanceTimersByTimeAsync(TIME_TO_RINIT_SELF_COUNTER);
@@ -340,7 +347,7 @@ describe('Interpreter', () => {
     test('#00 => Start the service', service.start.bind(service));
 
     test('#01 => Check the snapshot', () => {
-      const actual = service.snapshot;
+      const actual = service.state;
       const expected = {
         status: 'working',
         value: 'idle',
@@ -357,7 +364,7 @@ describe('Interpreter', () => {
     });
 
     test('#03 => Check the snapshot', () => {
-      const actual = service.snapshot;
+      const actual = service.state;
       const expected = {
         status: 'working',
         value: 'idle',
@@ -374,7 +381,8 @@ describe('Interpreter', () => {
     });
 
     test('#05 => Send NEXT again', () => {
-      service.send('NEXT');
+      const sendText = service.sender('NEXT');
+      sendText();
     });
 
     test('#06 => inc is called again', () => {
@@ -441,15 +449,10 @@ describe('Interpreter', () => {
             },
             promises: {
               src: 'src',
-              then: { actions: 'inc' /* , target: '/next' */ },
+              then: { actions: 'inc' },
               catch: { actions: 'inc' },
             },
           },
-          // next: {
-          //   after: {
-          //     DELAY: '/idle',
-          //   },
-          // },
         },
       },
       { ...defaultT, context: { iterator: t.number } },
@@ -535,12 +538,6 @@ describe('Interpreter', () => {
         });
       });
     });
-
-    // test('#07 => Reset all mocks', () => {
-    //   inc.mockReset();
-    //   inc2.mockReset();
-    //   src.mockReset();
-    // });
   });
 
   describe('#07 => sender', () => {
@@ -601,9 +598,10 @@ describe('Interpreter', () => {
       const useWrite = (value: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
 
-        return t.tuple(invite, () =>
-          service.send({ type: 'WRITE', payload: { value } }),
-        );
+        return t.tuple(invite, () => {
+          const sendWrite = service.sender('WRITE');
+          return sendWrite({ value });
+        });
       };
 
       const useWaiter = (times: number, index: number) => {
@@ -1027,7 +1025,7 @@ describe('Interpreter', () => {
       });
 
       test('#39 => Resend machine1', () => {
-        service.subscribeM('machine1', {
+        service.subscribeMachine('machine1', {
           machine: machine1,
           initials: toFunction({ context: { iterator: 0 }, pContext: {} }),
           subscribers: {
@@ -1041,7 +1039,7 @@ describe('Interpreter', () => {
         test('#01 => Pause the service', service.pause.bind(service));
 
         test('#02 => All intervals are paused', () => {
-          expect(service.intervalsArePaused).toBe(true);
+          expect(service._intervalsArePaused).toBe(true);
         });
 
         describe('#02 => Calls of log', () => {

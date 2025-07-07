@@ -24,12 +24,12 @@ import type {
   ContextFrom,
   Decompose2,
   PrivateContextFrom,
-  PromiseFunction2,
 } from '~machines';
 import type {
-  PromiseConfig,
+  PromiseeConfig,
   PromiseeResult,
   PromiseFunction,
+  PromiseFunction2,
 } from '~promises';
 import type {
   ActivityConfig,
@@ -59,14 +59,16 @@ export type WorkingStatus =
 
 export type Mode = 'normal' | 'strict' | 'strictest';
 
+export type InterpreterOptions<M extends AnyMachine> = {
+  pContext: PrivateContextFrom<M>;
+  context: ContextFrom<M>;
+  mode?: Mode;
+  exact?: boolean;
+};
+
 export type Interpreter_F = <M extends AnyMachine>(
   machine: M,
-  config: {
-    pContext: PrivateContextFrom<M>;
-    context: ContextFrom<M>;
-    mode?: Mode;
-    exact?: boolean;
-  },
+  config: InterpreterOptions<M>,
 ) => InterpreterFrom<M>;
 
 export type ToAction_F<
@@ -187,7 +189,7 @@ export type PerformPromisee_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   from: string,
-  ...promisees: PromiseConfig[]
+  ...promisees: PromiseeConfig[]
 ) => TimeoutPromise<PromiseeResult<E, P, Pc, Tc> | undefined> | undefined;
 
 export type Contexts<
@@ -323,13 +325,15 @@ export interface AnyInterpreter<
 
   subscribeMap: AddSubscriber_F<E, P, Tc>;
 
-  send: (event: EventArg<E, P>) => void;
-  toAction: (action: ActionConfig) => Action<E, P, Pc, Tc> | undefined;
-  toPredicate: (
+  send: (event: EventArg<E>) => void;
+  toActionFn: (action: ActionConfig) => Action<E, P, Pc, Tc> | undefined;
+  toPredicateFn: (
     guard: GuardConfig,
   ) => PredicateS<E, P, Pc, Tc> | undefined;
-  toPromiseSrc: (src: string) => PromiseFunction<E, P, Pc, Tc> | undefined;
-  toDelay: (delay: string) => Delay<E, P, Pc, Tc> | undefined;
+  toPromiseSrcFn: (
+    src: string,
+  ) => PromiseFunction<E, P, Pc, Tc> | undefined;
+  toDelayFn: (delay: string) => Delay<E, P, Pc, Tc> | undefined;
   toMachine: (machine: ActionConfig) => ChildS<E, P, Pc> | undefined;
   id?: string;
 }
@@ -349,4 +353,15 @@ export type Observer<T> = {
   next: (value: T) => void;
   error: (err: any) => void;
   complete: () => void;
+};
+
+export type TimeOutAction = {
+  id: string;
+  timer: NodeJS.Timeout;
+};
+
+export type DiffNext = {
+  sv: StateValue;
+  diffEntries: ActionConfig[];
+  diffExits: ActionConfig[];
 };

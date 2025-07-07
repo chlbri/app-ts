@@ -1,34 +1,30 @@
 import type { Fn, NOmit } from '@bemedev/types';
-import type { ActionConfig, ActionResult } from '~actions';
+import type { ActionConfig, ActionResult, ActionResultFn } from '~actions';
 import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
-import type { Machine } from '~machine';
 import type { NodeConfigWithInitials, StateValue } from '~states';
-import type { FnMap, KeyU, PrimitiveObject } from '~types';
+import type { FnMap, FnR, KeyU, PrimitiveObject } from '~types';
 import type { Decompose3 } from './functions';
 import type {
   ChildS,
   Config,
-  ConfigWithInitials,
   ContextFrom,
   EventsMapFrom,
-  MachineOptions,
   PrivateContextFrom,
-  PromiseesMapFrom,
   SimpleMachineOptions2,
   SubscriberType,
 } from './types';
 
-export type _ProvideInitials_F<C extends Config> = (
-  initials: MachineOptions<C>['initials'],
-) => ConfigWithInitials;
-
-export type ProvideInitials_F<C extends Config> = (
-  initials: MachineOptions<C>['initials'],
-) => Machine<C>;
-
-export type _ProvideActions_F<T> = (actions: T) => void;
-
+/**
+ * Types for all meaningful elements of the machine.
+ *
+ * @template :  {@linkcode Config} [C] - type of the machine configuration
+ * @template :  {@linkcode EventsMap} [E] - type of the events map
+ * @template :  {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template :  any [Pc] - type of the private context
+ * @template :  {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template :  {@linkcode SimpleMachineOptions2} [Mo] - type of the machine options
+ */
 export type Elements<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
@@ -55,6 +51,20 @@ export type GetIO_F = (
   node?: NodeConfigWithInitials,
 ) => ActionConfig[];
 
+/**
+ * Simple representation of a machine with meaningful properties.
+ *
+ * @template :  {@linkcode EventsMap} [E] - type of the events map
+ * @template :  {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template :  any [Pc] - type of the private context
+ * @template :  {@linkcode PrimitiveObject} [Tc] - type of the context
+ *
+ * @see {@linkcode ToEvents} for converting events and promisees maps to a unified event type.
+ * @see {@linkcode NodeConfigWithInitials}  for the structure of node configurations with initials.
+ * @see {@linkcode StateValue} for the type of state values.
+ * @see {@linkcode Fn} for creating functions
+ *
+ */
 export interface AnyMachine<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -88,7 +98,7 @@ export interface AnyMachine<
   toNode: Fn<[StateValue], NodeConfigWithInitials>;
 }
 
-export type Assign_F<
+export type AssignAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -103,13 +113,23 @@ export type Assign_F<
 >(
   key: K,
   fn: FnMap<E, P, Pc, Tc, R>,
-) => (
-  pContext: Pc,
-  context: Tc,
-  eventsMap: ToEvents<E, P>,
-) => ActionResult<Pc, Tc>;
+) => ActionResultFn<E, P, Pc, Tc>;
 
-export type Void_F<
+export type ResendAction_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (event: EventArg<E>) => ActionResultFn<E, P, Pc, Tc>;
+
+export type TimeAction_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (id: string) => ActionResultFn<E, P, Pc, Tc>;
+
+export type VoidAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -120,13 +140,9 @@ export type Void_F<
     context: Tc,
     eventsMap: ToEvents<E, P>,
   ) => void | undefined,
-) => (
-  pContext: Pc,
-  context: Tc,
-  eventsMap: ToEvents<E, P>,
-) => ActionResult<Pc, Tc>;
+) => ActionResultFn<E, P, Pc, Tc>;
 
-export type Sender_F<
+export type SendAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -139,15 +155,65 @@ export type Sender_F<
     P,
     Pc,
     Tc,
-    { to: string; event: EventArg<EventsMapFrom<T>, PromiseesMapFrom<T>> }
+    { to: string; event: EventArg<EventsMapFrom<T>> }
   >,
-) => (
-  pContext: Pc,
-  context: Tc,
-  eventsMap: ToEvents<E, P>,
-) => ActionResult<Pc, Tc>;
+) => ActionResultFn<E, P, Pc, Tc>;
 
-export type AddOption_F<
+export type ValueCheckerGuard_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (
+  path: DefinedValue<Pc, Tc>,
+  ...values: any[]
+) => FnR<E, P, Pc, Tc, boolean>;
+
+export type DefineGuard_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (path: DefinedValue<Pc, Tc>) => FnR<E, P, Pc, Tc, boolean>;
+
+export type ChildProvider_F<
+  E extends EventsMap,
+  P extends PromiseeMap,
+  Pc,
+> = <
+  const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
+    'pContext' | 'context' | 'preConfig'
+  >,
+>(
+  machine: T,
+  initials: {
+    pContext: PrivateContextFrom<T>;
+    context: ContextFrom<T>;
+  },
+  ...subscribers: SubscriberType<E, P, Pc, T>[]
+) => ChildS<E, P, Pc, T>;
+
+export type AllActions_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = AssignAction_F<E, P, Pc, Tc> | VoidAction_F<E, P, Pc, Tc>;
+
+export type DebounceAction_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = <T extends ActionResultFn<E, P, Pc, Tc>>(
+  fn: T,
+  options: {
+    ms?: number;
+    id: string;
+  },
+) => ActionResultFn<E, P, Pc, Tc>;
+
+export type AddOptionsParam_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -157,35 +223,23 @@ export type AddOption_F<
     'initials'
   >,
 > = (option: {
-  isDefined: (
-    path: DefinedValue<Pc, Tc>,
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
-  isNotDefined: (
-    path: DefinedValue<Pc, Tc>,
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
-  isValue: (
-    path: DefinedValue<Pc, Tc>,
-    ...values: any[]
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
-  isNotValue: (
-    path: DefinedValue<Pc, Tc>,
-    ...values: any[]
-  ) => (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => boolean;
-  createChild: <
-    const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
-      'pContext' | 'context' | 'preConfig'
-    >,
-  >(
-    machine: T,
-    initials: {
-      pContext: PrivateContextFrom<T>;
-      context: ContextFrom<T>;
-    },
-    ...subscribers: SubscriberType<E, P, Pc, T>[]
-  ) => ChildS<E, P, Pc, T>;
-  assign: Assign_F<E, P, Pc, Tc>;
-  voidAction: Void_F<E, P, Pc, Tc>;
-  sender: Sender_F<E, P, Pc, Tc>;
+  isDefined: DefineGuard_F<E, P, Pc, Tc>;
+  isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
+  isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
+  isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
+  createChild: ChildProvider_F<E, P, Pc>;
+  assign: AssignAction_F<E, P, Pc, Tc>;
+  voidAction: VoidAction_F<E, P, Pc, Tc>;
+  sender: SendAction_F<E, P, Pc, Tc>;
+  debounce: DebounceAction_F<E, P, Pc, Tc>;
+  resend: ResendAction_F<E, P, Pc, Tc>;
+  forceSend: ResendAction_F<E, P, Pc, Tc>;
+  pauseActivity: TimeAction_F<E, P, Pc, Tc>;
+  resumeActivity: TimeAction_F<E, P, Pc, Tc>;
+  stopActivity: TimeAction_F<E, P, Pc, Tc>;
+  pauseTimer: TimeAction_F<E, P, Pc, Tc>;
+  resumeTimer: TimeAction_F<E, P, Pc, Tc>;
+  stopTimer: TimeAction_F<E, P, Pc, Tc>;
 }) => Mo | undefined;
 
 export type AddOptions_F<
@@ -197,4 +251,33 @@ export type AddOptions_F<
     SimpleMachineOptions2,
     'initials'
   >,
-> = (option: AddOption_F<E, P, Pc, Tc, Mo>) => void;
+> = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => void;
+
+/**
+ * Represents a scheduled action with its data and execution time.
+ *
+ * @template :  any [Pc] - type of the private context
+ * @template :  {@linkcode PrimitiveObject} [Tc] - type of the context
+ *
+ * @see {@linkcode ActionResult} for the result of the action.
+ */
+export type ScheduledData<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = { data: ActionResult<Pc, Tc>; ms: number; id: string };
+
+export type ExtendedActionsParams<
+  E extends EventsMap = EventsMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = Partial<{
+  scheduled: ScheduledData<Pc, Tc>;
+  resend: EventArg<E>;
+  forceSend: EventArg<E>;
+  pauseActivity: string;
+  resumeActivity: string;
+  stopActivity: string;
+  pauseTimer: string;
+  resumeTimer: string;
+  stopTimer: string;
+}>;

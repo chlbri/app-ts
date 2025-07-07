@@ -8,14 +8,8 @@ import {
 } from '@bemedev/types';
 import { expectTypeOf } from 'vitest';
 import type { EventsMap, PromiseeMap } from '~events';
-import { config2, machine2 } from '~fixturesData';
-import type { InterpreterFrom } from '~interpreter';
-import type {
-  AnyMachine,
-  Config,
-  ConfigFrom,
-  createMachine,
-} from '~machines';
+import { config2 } from '~fixturesData';
+import type { Config } from '~machines';
 import type { PrimitiveObject } from '~types';
 import { typings } from './typings';
 
@@ -24,13 +18,13 @@ const genericValue = typings<string>();
 expectTypeOf(genericValue).toEqualTypeOf<string>();
 
 // Test des types primitifs
-const numberValue = typings.number();
+const numberValue = typings.number.type;
 expectTypeOf(numberValue).toEqualTypeOf<number>();
 
-const stringValue = typings.string();
+const stringValue = typings.string.type;
 expectTypeOf(stringValue).toEqualTypeOf<string>();
 
-const booleanValue = typings.boolean();
+const booleanValue = typings.boolean.type;
 expectTypeOf(booleanValue).toEqualTypeOf<boolean>();
 
 const symbolValue = typings.symbol;
@@ -45,7 +39,7 @@ interface TestObject {
   age: number;
 }
 
-const objectValue = typings.object;
+const objectValue = typings.emptyO.type;
 expectTypeOf(objectValue).toEqualTypeOf<{}>();
 
 const partialValue = typings.partial<TestObject>();
@@ -57,10 +51,10 @@ const deepPartialValue = typings.deepPartial({
 });
 expectTypeOf(deepPartialValue).toEqualTypeOf<DeepPartial<TestObject>>();
 
-const arrayValue1 = typings.array<number[]>(1, 2, 3);
+const arrayValue1 = typings.array(1, 2, 3);
 expectTypeOf(arrayValue1).toEqualTypeOf<number[]>();
 
-const arrayValue2 = typings.array(1, 2, 3);
+const arrayValue2 = typings.array.const(1, 2, 3);
 expectTypeOf(arrayValue2).toEqualTypeOf<(1 | 2 | 3)[]>();
 
 const tupleValue = typings.tuple(1, 'hello', true);
@@ -69,23 +63,10 @@ expectTypeOf(tupleValue).toEqualTypeOf<[1, 'hello', true]>();
 const functionValue = typings.function('hello', 42, true);
 expectTypeOf(functionValue).toEqualTypeOf<Fn<[string, number], boolean>>();
 
+const functionValue2 = typings.function.const('hello', 42, true);
+expectTypeOf(functionValue2).toEqualTypeOf<Fn<['hello', 42], true>>();
+
 // #region Test des types liés aux machines
-const dummyMachine = {} as AnyMachine;
-const machineValue = typings.machine(dummyMachine);
-expectTypeOf(machineValue).toEqualTypeOf<AnyMachine>();
-
-const interpreterValue1 = typings.interpret(dummyMachine);
-expectTypeOf(interpreterValue1).toEqualTypeOf<
-  InterpreterFrom<AnyMachine>
->();
-type Machine2 = typeof machine2;
-const interpreterValue2 = typings.interpret(machine2);
-expectTypeOf(interpreterValue2).toEqualTypeOf<InterpreterFrom<Machine2>>();
-
-const createMachineValue = typings.createMachine<ConfigFrom<Machine2>>;
-expectTypeOf(createMachineValue).branded.toEqualTypeOf<
-  typeof createMachine<ConfigFrom<Machine2>>
->();
 
 const configValue1 = typings.config();
 expectTypeOf(configValue1).toEqualTypeOf<Config>();
@@ -133,10 +114,10 @@ interface User {
 const userType = typings<User>();
 expectTypeOf(userType).toEqualTypeOf<User>();
 
-const numberSpecificType = typings.number<42>();
+const numberSpecificType = typings.number.typings(42);
 expectTypeOf(numberSpecificType).toEqualTypeOf<42>();
 
-const stringLiteralType = typings.string<'hello'>();
+const stringLiteralType = typings.string.typings('hello');
 expectTypeOf(stringLiteralType).toEqualTypeOf<'hello'>();
 // #endregion
 
@@ -158,8 +139,11 @@ const originalValue = { name: 'test' };
 const forceCastValue = typings.forceCast<string>(originalValue);
 expectTypeOf(forceCastValue).toEqualTypeOf<string>();
 
-const castValue = typings.cast('hello');
+const castValue = typings.cast.const('hello');
 expectTypeOf(castValue).toEqualTypeOf<'hello'>();
+
+const castValue2 = typings.cast('hello');
+expectTypeOf(castValue2).toEqualTypeOf<string>();
 // #endregion
 
 // #region context

@@ -100,21 +100,21 @@ export const machine21 = createMachine(
   },
   {
     eventsMap: {
-      NEXT: typings.object,
-      FETCH: typings.object,
-      WRITE: { value: typings.string() },
-      SEND: typings.object,
+      NEXT: typings.emptyO.type,
+      FETCH: typings.emptyO.type,
+      WRITE: { value: typings.string.type },
+      SEND: typings.emptyO.type,
     },
     context: {
-      iterator: typings.number(),
-      input: typings.string(),
-      data: typings.array(typings.string()),
+      iterator: typings.number.type,
+      input: typings.string.type,
+      data: typings.array(typings.string.type),
     },
-    pContext: typings.recordAll(typings.number(), 'iterator'),
+    pContext: typings.recordAll(typings.number.type, 'iterator'),
     promiseesMap: {
       fetch: typings.promiseDef(
-        typings.array(typings.string()),
-        typings.object,
+        typings.array(typings.string.type),
+        typings.emptyO.type,
       ),
     },
   },

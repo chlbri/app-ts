@@ -91,6 +91,8 @@ export const config2 = createConfig({
   },
 });
 
+const _config2 = createConfig({ ...config2, entry: 'debounce' });
+
 export const machine2 = createMachine(
   {
     machines: 'machine1',
@@ -98,21 +100,21 @@ export const machine2 = createMachine(
   },
   {
     eventsMap: {
-      NEXT: typings.object,
-      FETCH: typings.object,
-      WRITE: { value: typings.string() },
-      FINISH: typings.object,
+      NEXT: typings.emptyO.type,
+      FETCH: typings.emptyO.type,
+      WRITE: { value: typings.string.type },
+      FINISH: typings.emptyO.type,
     },
     context: {
-      iterator: typings.number(),
-      input: typings.string(),
-      data: typings.array(typings.string()),
+      iterator: typings.number.type,
+      input: typings.string.type,
+      data: typings.array(typings.string.type),
     },
-    pContext: typings.recordAll(typings.number(), 'iterator'),
+    pContext: typings.recordAll(typings.number.type, 'iterator'),
     promiseesMap: {
       fetch: typings.promiseDef(
-        typings.array(typings.string()),
-        typings.object,
+        typings.array(typings.string.type),
+        typings.emptyO.type,
       ),
     },
   },
@@ -159,6 +161,71 @@ export const machine2 = createMachine(
           contexts: { iterator: 'iterator' },
         },
       ),
+    },
+  }),
+);
+
+export const _machine2 = createMachine(
+  {
+    ..._config2,
+  },
+  {
+    eventsMap: {
+      NEXT: typings.emptyO.type,
+      FETCH: typings.emptyO.type,
+      WRITE: { value: typings.string.type },
+      FINISH: typings.emptyO.type,
+    },
+    context: typings.context({
+      iterator: typings.number.type,
+      input: typings.string.type,
+      data: typings.array(typings.string.type),
+    }),
+    pContext: typings.recordAll(typings.number.type, 'iterator'),
+    promiseesMap: {
+      fetch: typings.promiseDef(
+        typings.array(typings.string.type),
+        typings.emptyO.type,
+      ),
+    },
+  },
+  { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
+).provideOptions(
+  ({ isNotValue, isValue, assign, voidAction, debounce: _debounce }) => ({
+    actions: {
+      inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
+      inc2: assign('context.iterator', (_, { iterator }) => iterator + 4),
+      sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
+      askUsertoInput: voidAction(() => console.log('Input, please !!')),
+      write: assign('context.input', {
+        WRITE: (_, __, { value }) => value,
+      }),
+      insertData: assign('context.data', {
+        'fetch::then': (_, { data }, payload) => {
+          data.push(...payload);
+          return data;
+        },
+      }),
+      debounce: _debounce(
+        assign('context.iterator', () => {
+          console.log('Debounced action executed');
+          return 1000;
+        }),
+        { ms: 10_000, id: 'debounce-action' },
+      ),
+    },
+    predicates: {
+      isInputEmpty: isValue('context.input', ''),
+      isInputNotEmpty: isNotValue('context.input', ''),
+    },
+    promises: {
+      fetch: async (_, { input }) => {
+        return fakeDB.filter(item => item.name.includes(input));
+      },
+    },
+    delays: {
+      DELAY,
+      DELAY2: 2 * DELAY,
     },
   }),
 );

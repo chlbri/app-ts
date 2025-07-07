@@ -7,6 +7,17 @@ export type InitialConfig_F = Fn<
   NodeConfigWithInitials
 >;
 
+/**
+ * Returns the initial configuration of a state machine.
+ *
+ * @param body - The state machine configuration to process.
+ * @returns The initial configuration of the state machine.
+ *
+ * @see {@linkcode isAtomic} for checking atomic states
+ * @see {@linkcode isParallel} for checking parallel states
+ * @see {@linkcode InitialConfig_F} for more details
+ * @see {@linkcode t} for type utilities
+ */
 export const initialConfig: InitialConfig_F = body => {
   const check1 = isAtomic(body);
   if (check1) return body;

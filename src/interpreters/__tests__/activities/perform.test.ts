@@ -475,7 +475,7 @@ describe(TEXT, () => {
     test('#01 => Pause the service', service.pause.bind(service));
 
     test('#02 => All intervals are paused', () => {
-      expect(service.intervalsArePaused).toBe(true);
+      expect(service._intervalsArePaused).toBe(true);
     });
 
     describe('#02 => Calls of log', () => {
@@ -488,8 +488,8 @@ describe(TEXT, () => {
       });
     });
 
-    test('#03 => Length of calls of warn is "215"', () => {
-      expect(dumbFn).toBeCalledTimes(215);
+    test('#03 => Length of calls of dumbFn is "218"', () => {
+      expect(dumbFn).toBeCalledTimes(218);
       unsubscribe.unsubscribe();
     });
 

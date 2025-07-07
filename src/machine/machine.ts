@@ -1,10 +1,10 @@
 import { isDefined, partialCall, toArray } from '@bemedev/basifun';
-import { t, type NOmit } from '@bemedev/types';
+import { t, type AllowedNames, type NOmit } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { Delay } from '~delays';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
+import { type EventsMap, type PromiseeMap, type ToEvents } from '~events';
 import {
   isDefinedS,
   isNotDefinedS,
@@ -32,14 +32,15 @@ import { merge, reduceFnMap, typings } from '~utils';
 import { expandFnMap } from './functions';
 import { createChildS, type CreateChild_F } from './functions/create';
 import type {
-  AddOption_F,
   AddOptions_F,
   AnyMachine,
-  Assign_F,
+  AssignAction_F,
   Elements,
   GetIO_F,
-  Sender_F,
-  Void_F,
+  ScheduledData,
+  SendAction_F,
+  TimeAction_F,
+  VoidAction_F,
 } from './machine.types';
 import type {
   Config,
@@ -50,6 +51,19 @@ import type {
   SimpleMachineOptions2,
 } from './types';
 
+/**
+ * A class representing a state machine.
+ * It provides methods to manage states, actions, predicates, delays, promises, and machines.
+ *
+ * @template : {@linkcode Config} [C] - The configuration type of the machine.
+ * @template Pc : The private context type of the machine.
+ * @template : {@linkcode PrimitiveObject} [Pc] - The context type of the machine.
+ * @template : {@linkcode GetEventsFromConfig}<{@linkcode C}> [E] - The events map type derived from the configuration.
+ * @template : {@linkcode PromiseeMap} [P] - The promisees map type derived from the configuration. Defaults to {@linkcode GetPromiseeSrcFromConfig}<{@linkcode C}>.
+ * @template : {@linkcode SimpleMachineOptions2} [Mo] - The options type for the machine, which includes actions, predicates, delays, promises, and machines. Defaults to {@linkcode MachineOptions}<[{@linkcode C} , {@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} ]>.
+ *
+ * @implements {@linkcode AnyMachine}<{@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} >
+ */
 class Machine<
   const C extends Config = Config,
   Pc = any,
@@ -59,22 +73,68 @@ class Machine<
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 > implements AnyMachine<E, P, Pc, Tc>
 {
+  /**
+   * The configuration of the machine for this {@linkcode Machine}.
+   *
+   * @see {@linkcode Config}
+   * @see {@linkcode C}
+   */
   #config: C;
+
+  /**
+   * The flat map of the configuration for this {@linkcode Machine}.
+   *
+   * @see {@linkcode FlatMapN}
+   * @see {@linkcode Config}
+   * @see {@linkcode C}
+   */
   #flat: FlatMapN<C, true>;
+
+  /**
+   * The map of events for this {@linkcode Machine}.
+   *
+   * @see {@linkcode EventsMap}
+   * @see {@linkcode E}
+   */
   #eventsMap!: E;
+
+  /**
+   * The map of promisees for this {@linkcode Machine}.
+   *
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   */
   #promiseesMap!: P;
 
+  /**
+   * Public accessor for the events map for this {@linkcode Machine}.
+   *
+   * @see {@linkcode EventsMap}
+   * @see {@linkcode E}   */
   get eventsMap() {
     return this.#eventsMap;
   }
 
+  /**
+   * Public accessor for the promisees map for this {@linkcode Machine}.
+   *
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   */
   get promiseesMap() {
     return this.#promiseesMap;
   }
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the events map for this {@linkcode Machine} as a type.
+   *
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode P}
+   *
+   * @remarks Used for typing purposes only.
    */
   get __events() {
     return typings<ToEvents<E, P>>();
@@ -82,7 +142,17 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   * This property provides the action function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __actionFn() {
     return typings<Action<E, P, Pc, Tc>>();
@@ -90,31 +160,70 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any action key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
   get __actionKey() {
-    return typings<keyof (typeof this)['options']['actions']>();
+    return typings.notUndefined<
+      keyof (typeof this)['options']['actions']
+    >();
   }
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the action parameters of action function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __actionParams() {
     return typings<{ pContext: Pc; context: Tc; map: E }>();
   }
 
+  #typingsByKey = <
+    K extends AllowedNames<AnyMachine<E, P, Pc, Tc>, object | undefined>,
+  >(
+    key: K,
+  ) => {
+    const out1 = typings.byKey(typings.cast(this), key);
+    const out2 = typings.extract(out1, typings.object.type);
+    return typings.keysof(out2);
+  };
+
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any guard key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
-  get __guard() {
-    return typings<keyof (typeof this)['options']['predicates']>();
+  get __guardKey() {
+    return this.#typingsByKey('predicates');
   }
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the predicate function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode PredicateS}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __predictate() {
     return typings<PredicateS<E, P, Pc, Tc>>();
@@ -122,15 +231,30 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any delay key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
   get __delayKey() {
-    return typings<keyof (typeof this)['options']['delays']>();
+    return this.#typingsByKey('delays');
   }
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the delay function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode Delay}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __delay() {
     return typings<Delay<E, P, Pc, Tc>>();
@@ -138,7 +262,15 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any {@linkcode DefinedValue} for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode DefinedValue}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __definedValue() {
     return typings<DefinedValue<Pc, Tc>>();
@@ -146,15 +278,30 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any promise key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
   get __src() {
-    return typings<keyof (typeof this)['options']['promises']>();
+    return this.#typingsByKey('promises');
   }
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides the promise function for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode PromiseFunction}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PromiseeMap}
+   * @see {@linkcode P}
+   * @see {@linkcode Pc}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
    */
   get __promise() {
     return typings<PromiseFunction<E, P, Pc, Tc>>();
@@ -162,15 +309,21 @@ class Machine<
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * This property provides any machine key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
-  get __child() {
-    return typings<keyof (typeof this)['options']['machines']>();
+  get __childKey() {
+    return this.#typingsByKey('machines');
   }
 
   /**
    * @deprecated
-   * Just use for typing
+   *
+   * Return this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
    */
   get __machine() {
     return typings<this>();
@@ -188,49 +341,115 @@ class Machine<
 
   #machines?: Mo['machines'];
 
+  /**
+   * Initials {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
+   */
   #initials!: Mo['initials'];
 
+  /**
+   * Context for this {@linkcode Machine}.
+   *
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
+   */
   #context!: Tc;
 
+  /**
+   * Private context for this {@linkcode Machine}.
+   *
+   * @see {@linkcode Pc}
+   */
   #pContext!: Pc;
 
+  /**
+   * Config of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
+   *
+   * @see {@linkcode NodeConfigWithInitials}
+   */
   #postConfig!: NodeConfigWithInitials;
+
+  /**
+   * Flat representation of the {@linkcode NodeConfigWithInitials} of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
+   *
+   * @see {@linkcode RecordS}
+   */
   #postflat!: RecordS<NodeConfigWithInitials>;
 
   #initialKeys: string[] = [];
 
+  /**
+   * The initial node config of this {@linkcode Machine}.
+   */
   #initialConfig!: NodeConfigWithInitials;
   // #endregion
 
+  /**
+   * Creates an instance of Machine.
+   *
+   * @param config : of type {@linkcode Config} [C] - The configuration for the machine.
+   *
+   * @remarks
+   * This constructor initializes the machine with the provided configuration.
+   * It flattens the configuration and prepares it for further operations ({@linkcode preflat}).
+   */
   constructor(config: C) {
     this.#config = config;
     this.#flat = flatMap<C, true>(config);
   }
 
+  /**
+   * The accessor configuration of the machine for this {@linkcode Machine}.
+   *
+   * @see {@linkcode Config}
+   * @see {@linkcode C}
+   */
   get preConfig() {
     return this.#config;
   }
 
+  /**
+   * The public accessor of the flat map of the configuration for this {@linkcode Machine}.
+   *
+   * @see {@linkcode FlatMapN}
+   * @see {@linkcode Config}
+   * @see {@linkcode C}
+   */
   get preflat() {
     return this.#flat;
   }
 
   /**
-   * Use after providing initials
+   * The public accessor of Config of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
+   *
+   * @see {@linkcode NodeConfigWithInitials}
    */
   get postConfig() {
     return this.#postConfig!;
   }
 
+  /**
+   * Public accessor of initial {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
+   */
   get initials() {
     return this.#initials;
   }
 
+  /**
+   * The accessor of context for this {@linkcode Machine}.
+   *
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Tc}
+   */
   get context() {
     const out = this.#elements.context;
     return out;
   }
 
+  /**
+   * The accessor of private context for this {@linkcode Machine}.
+   *
+   * @see {@linkcode Pc}
+   */
   get pContext() {
     const out = this.#elements.pContext;
     return out;
@@ -261,6 +480,20 @@ class Machine<
   }
 
   // #region Providers
+
+  /**
+   * This method is used to add initials to the machine.
+   *
+   * It takes an object of initials where each key is a state value and the value is the initial state value for that state.
+   *
+   * @param initials of type {@linkcode Mo}['initials'] An object where keys are state values and values are the initial state values.
+   * @return The updated post configuration of the machine
+   * with initial {@linkcode StateValue}s added.
+   *
+   * @see {@linkcode structuredClone} to create a deep copy of the flat map.
+   * @see {@linkcode recomposeConfig} to recompose the configuration with initials.
+   * @see {@linkcode initialConfig} to get the initial configuration from the post configuration.
+   */
   addInitials = (initials: Mo['initials']) => {
     this.#initials = initials;
     const entries = Object.entries(this.#initials);
@@ -312,7 +545,7 @@ class Machine<
 
   /**
    * @deprecated
-   * used internally
+   * @remarks used internally
    */
   _provideInitials = (initials: Mo['initials']) =>
     this.#renew('initials', initials);
@@ -332,8 +565,15 @@ class Machine<
   #addMachines = (machines?: Mo['machines']) =>
     (this.#machines = merge(this.#machines, machines));
 
+  /**
+   * Provides options for the machine.
+   *
+   * @param option a function that provides options for the machine.
+   * Options can include actions, predicates, delays, promises, and child machines.
+   * @returns a new instance of the machine with the provided options applied.
+   */
   provideOptions = (
-    option: AddOption_F<E, P, Pc, Tc, NOmit<Mo, 'initials'>>,
+    option: Parameters<(typeof this)['addOptions']>[0],
   ) => {
     const out = this.renew;
     out.addOptions(option);
@@ -342,6 +582,15 @@ class Machine<
   };
   // #endregion
 
+  /**
+   * Get all meaningful elements of the machine.
+   *
+   * @see {@linkcode Elements}
+   *
+   * @see type inferences :
+   *
+   * @see {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   */
   get #elements(): Elements<C, E, P, Pc, Tc, Mo> {
     const config = structuredClone(this.#config);
     const initials = structuredClone(this.#initials);
@@ -370,6 +619,21 @@ class Machine<
     };
   }
 
+  /**
+   * Provides elements of the machine.
+   * @param key the key of the element to provide.
+   * @param value the value of the element to provide.
+   * If not provided, the current elements will be returned.
+   * @returns the elements of the machine with the provided key and value.
+   *
+   * @see {@linkcode Elements}
+   * @see {@linkcode isDefined}
+   *
+   * @see type inferences :
+   *
+   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   */
+
   #provideElements = <T extends keyof Elements>(
     key?: T,
     value?: Elements<C, E, P, Pc, Tc, Mo>[T],
@@ -385,6 +649,19 @@ class Machine<
       : out;
   };
 
+  /**
+   * Renews the machine with the provided key and value.
+   * @param key the key of the element to provide.
+   * @param value the value of the element to provide.
+   * If not provided, the current elements will be returned.
+   * @returns a new instance of this {@linkcode Machine} with the provided key and value.
+   *
+   * @see {@linkcode Elements}
+   *
+   * @see type inferences :
+   *
+   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   */
   #renew = <T extends keyof Elements>(
     key?: T,
     value?: Elements<C, E, P, Pc, Tc, Mo>[T],
@@ -421,13 +698,16 @@ class Machine<
     return out;
   };
 
+  /**
+   * Returns a new instance from this {@linkcode Machine} with all its {@linkcode Elements}.
+   */
   get renew() {
     return this.#renew();
   }
 
   /**
    * @deprecated
-   * used internally
+   * @remarks used internally
    */
   _providePrivateContext = <T>(pContext: T) => {
     const { context, initials, config, events, promisees } =
@@ -450,7 +730,7 @@ class Machine<
 
   /**
    * @deprecated
-   * used internally
+   * @remarks used internally
    */
   _provideContext = <T extends PrimitiveObject>(context: T) => {
     const { pContext, initials, config, events, promisees } =
@@ -472,7 +752,7 @@ class Machine<
   };
   /**
    * @deprecated
-   * used internally
+   * @remarks used internally
    */
   _provideEvents = <T extends EventsMap>(map: T) => {
     const { pContext, initials, config, context, promisees } =
@@ -491,7 +771,7 @@ class Machine<
 
   /**
    * @deprecated
-   * used internally
+   * @remarks used internally
    */
   _providePromisees = <T extends PromiseeMap>(map: T) => {
     const { pContext, initials, config, context, events } = this.#elements;
@@ -507,18 +787,37 @@ class Machine<
     return out;
   };
 
+  /**
+   * Converts a {@linkcode StateValue} to a {@linkcode NodeConfigWithInitials} with the {@linkcode NodeConfigWithInitials} postConfig of this {@linkcode Machine}.
+   *
+   * @param from the {@linkcode StateValue} to convert.
+   * @returns the converted {@linkcode NodeConfigWithInitials}.
+   *
+   * @see {@linkcode valueToNode}
+   */
   valueToConfig = (from: StateValue) => {
     return valueToNode(this.#postConfig, from);
   };
 
+  /**
+   * The accessor of the initial node config of this {@linkcode Machine}.
+   */
   get initialConfig() {
     return this.#initialConfig;
   }
 
+  /**
+   * The accessor of the initial {@linkcode StateValue} of this {@linkcode Machine}.
+   *
+   * @see {@linkcode nodeToValue}
+   */
   get initialValue() {
     return nodeToValue(this.#initialConfig);
   }
 
+  /**
+   * Alias of {@linkcode valueToConfig} method.
+   */
   toNode = this.valueToConfig;
 
   get options() {
@@ -541,39 +840,102 @@ class Machine<
     return out;
   }
 
+  // #region Options helper functions
+
+  /**
+   * Function helper to check if a value matches the provided values
+   *
+   * @see type inferences :
+   *
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   *
+   * @see {@linkcode isValue}
+   */
   get #isValue() {
     return isValue<E, P, Pc, Tc>;
   }
 
+  /**
+   * Function helper to check if a value is not one of the provided values.
+   *
+   * @see type inferences :
+   *
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   *
+   * @see {@linkcode isNotValue}
+   */
   get #isNotValue() {
     return isNotValue<E, P, Pc, Tc>;
   }
 
+  /**
+   * Function helper to check if a value is defined
+   *
+   * @see type inferences :
+   *
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   *
+   * @see {@linkcode isDefinedS}
+   */
   get #isDefined() {
     return isDefinedS<E, P, Pc, Tc>;
   }
 
+  /**
+   * Function helper to check if a value is undefined or null
+   * @see type inferences :
+   *
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   *
+   * @see {@linkcode isDefinedS}
+   */
   get #isNotDefined() {
     return isNotDefinedS<E, P, Pc, Tc>;
   }
 
+  /**
+   * Function helper to create a child service for this {@linkcode Machine}.
+   *
+   * @see type inferences :
+   *
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc}
+   *
+   * @see {@linkcode createChildS}
+   */
   #createChild: CreateChild_F<E, P, Pc> = (...args) => {
     return createChildS(...args);
   };
+  // #endregion
 
   /**
    * @deprecated
-   * Used internally
+   *
+   * This property is used to store sent events.
+   *
+   * @remarks Used internally
    */
   __sentEvents: { to: string; event: any }[] = [];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  #createSend: Sender_F<E, P, Pc, Tc> = <T extends AnyMachine>(_?: T) => {
+  /**
+   * Function helper to send an event to a child service.
+   *
+   * @param _ an optional parameter of type {@linkcode AnyMachine} [{@linkcode T}] to specify the machine context. Only used for type inference.
+   *
+   * @see type inferences :
+   *
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   *
+   * @see {@linkcode reduceFnMap}
+   * @see {@linkcode __sentEvents}
+   */
+  #sender: SendAction_F<E, P, Pc, Tc> = <T extends AnyMachine>(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _?: T,
+  ) => {
     return fn => {
       const fn2 = reduceFnMap(this.eventsMap, this.promiseesMap, fn);
       return (pContext, context, eventsMap) => {
         const { event, to } = fn2(pContext, context, eventsMap);
-        // this.__sendTo?.(to, event);
         this.__sentEvents.push({ to, event });
 
         return t.any({ pContext, context });
@@ -581,7 +943,21 @@ class Machine<
     };
   };
 
-  #assign: Assign_F<E, P, Pc, Tc> = (key, fn) => {
+  /**
+   * Function helper to assign an action to a key in the machine.
+   *
+   * @param key the key of the context or private context to assign to.
+   * @param fn the action function.
+   * @returns a function that takes a key and an action function and returns a new instance of this {@linkcode Machine} with the assigned action.
+   *
+   * @see type inferences :
+   *
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   *
+   * @see {@linkcode expandFnMap}
+   * @see {@linkcode AssignAction_F}
+   */
+  #assignAction: AssignAction_F<E, P, Pc, Tc> = (key, fn) => {
     const out = expandFnMap(
       this.#eventsMap,
       this.#promiseesMap,
@@ -593,25 +969,44 @@ class Machine<
   };
 
   /**
-   * @deprecated
-   * used internally
+   * Function helper to perform a void action.
+   *
+   * @param fn the action function to perform.
+   *
+   * @see type inferences :
+   *
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   *
+   * @see {@linkcode VoidAction_F}
    */
-  __voidAction: Void_F<E, P, Pc, Tc> = fn => {
+  #voidAction: VoidAction_F<E, P, Pc, Tc> = fn => {
     return (pContext, context, map) => {
       fn(pContext, context, map);
       return t.any({ pContext, context });
     };
   };
 
+  #timeAction = (name: string): TimeAction_F<E, P, Pc, Tc> => {
+    return id => (pContext, context) => {
+      return t.any({ pContext, context, [name]: id });
+    };
+  };
+
+  /**
+   * Provides options for the machine.
+   *
+   * @param option a function that provides options for the machine.
+   * Options can include actions, predicates, delays, promises, and child machines.
+   */
   addOptions: AddOptions_F<E, P, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
     const isNotDefined = this.#isNotDefined;
     const createChild = this.#createChild;
-    const assign = this.#assign;
-    const voidAction = this.__voidAction;
-    const sender = this.#createSend.bind(this);
+    const assign = this.#assignAction;
+    const voidAction = this.#voidAction;
+    const sender = this.#sender;
 
     const out = func({
       isValue,
@@ -622,6 +1017,50 @@ class Machine<
       assign,
       voidAction,
       sender,
+      debounce: (fn, { id, ms = 100 }) => {
+        return (pContext, context, map) => {
+          const data = fn(
+            cloneDeep(pContext),
+            structuredClone(context),
+            map,
+          );
+
+          const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
+
+          return t.any({
+            pContext,
+            context,
+            scheduled,
+          });
+        };
+      },
+
+      resend: resend => {
+        return (pContext, context) => {
+          return t.any({
+            pContext,
+            context,
+            resend,
+          });
+        };
+      },
+
+      forceSend: forceSend => {
+        return (pContext, context) => {
+          return t.any({
+            pContext,
+            context,
+            forceSend,
+          });
+        };
+      },
+
+      pauseActivity: this.#timeAction('pauseActivity'),
+      resumeActivity: this.#timeAction('resumeActivity'),
+      stopActivity: this.#timeAction('stopActivity'),
+      pauseTimer: this.#timeAction('startActivity'),
+      resumeTimer: this.#timeAction('resumeTimer'),
+      stopTimer: this.#timeAction('stopTimer'),
     });
 
     this.#addActions(out?.actions);
@@ -632,6 +1071,14 @@ class Machine<
   };
 }
 
+/**
+ * Helper to retrieve entry or exit actions from a node.
+ *
+ * @see {@linkcode GetIO_F}
+ * @see {@linkcode toArray.typed}
+ * @see {@linkcode isAtomic}
+ * @see {@linkcode isCompound}
+ */
 const getIO: GetIO_F = (key, node) => {
   if (!node) return [];
   const out = toArray.typed(node?.[key]);
@@ -655,7 +1102,14 @@ const getIO: GetIO_F = (key, node) => {
   return out;
 };
 
+/**
+ * Retrieves all entry actions from a node.
+ */
 export const getEntries = partialCall(getIO, 'entry');
+
+/**
+ * Retrieves all exit actions from a node.
+ */
 export const getExits = partialCall(getIO, 'exit');
 
 export type { Machine };
@@ -672,6 +1126,21 @@ export type CreateMachine_F = <
   initials: InitialsFromConfig<C>,
 ) => Machine<C, Pc, Tc, EventM, P>;
 
+/**
+ * Creates a new instance of {@linkcode Machine} with the provided configuration and types.
+ *
+ * @param config The configuration for the machine.
+ * @param types An object containing the types for the machine:
+ * - `pContext`: The private context type.
+ * - `context`: The context type.
+ * - `eventsMap`: The events map type derived from the configuration.
+ * - `promiseesMap`: The promisees map type derived from the configuration.
+ *
+ * @param initials The initials {@linkcode StateValue} for all compound node configs for the {@linkcode Machine}, derived from the configuration.
+ * @returns A new instance of {@linkcode Machine} with the provided configuration and types.
+ *
+ * @see {@linkcode CreateMachine_F}
+ */
 export const createMachine: CreateMachine_F = (
   config,
   { eventsMap, pContext, context, promiseesMap },
@@ -687,6 +1156,39 @@ export const createMachine: CreateMachine_F = (
   return out;
 };
 
-export const DEFAULT_MACHINE: AnyMachine = new Machine({
-  states: {},
-});
+export const DEFAULT_MACHINE = createMachine(
+  {
+    states: {
+      on: {
+        on: {
+          SWITCH: {
+            actions: 'inc',
+            target: '/off',
+          },
+        },
+      },
+      off: {
+        on: {
+          SWITCH: {
+            actions: 'dec',
+            target: '/on',
+          },
+        },
+      },
+    },
+  },
+  {
+    eventsMap: { SWITCH: typings.emptyO.type },
+    context: typings.context(
+      typings.recordAll(typings.number.type, 'iterator'),
+    ),
+    pContext: typings.emptyO.type,
+    promiseesMap: typings.emptyO.type,
+  },
+  { '/': 'off' },
+).provideOptions(({ assign }) => ({
+  actions: {
+    inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
+    dec: assign('context.iterator', (_, { iterator }) => iterator - 1),
+  },
+}));

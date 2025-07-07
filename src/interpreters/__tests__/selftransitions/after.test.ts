@@ -1,5 +1,5 @@
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { MAX_TIME_PROMISE } from '~constants';
+import { DEFAULT_MAX_TIME_PROMISE } from '~constants';
 import { returnFalse } from '~guards';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
@@ -145,7 +145,7 @@ describe('after', () => {
 
     machine.addOptions(() => ({
       delays: {
-        DELAY: MAX_TIME_PROMISE + DELAY,
+        DELAY: DEFAULT_MAX_TIME_PROMISE + DELAY,
       },
     }));
 
@@ -157,7 +157,7 @@ describe('after', () => {
     });
 
     test(...useValue('idle', 2));
-    test(...createFakeWaiter.all(vi)(3, MAX_TIME_PROMISE + DELAY));
+    test(...createFakeWaiter.all(vi)(3, DEFAULT_MAX_TIME_PROMISE + DELAY));
     test(...useValue('idle', 4));
   });
 

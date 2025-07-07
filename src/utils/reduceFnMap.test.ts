@@ -5,12 +5,16 @@ import {
   type EventsMap,
   type PromiseeMap,
 } from '~events';
-import type { FnMap, FnMapReduced } from '~types';
-import { reduceFnMap, reduceFnMap2, toEventsMap } from './reduceFnMap';
+import type { FnMap, FnMapR } from '~types';
+import {
+  reduceFnMap,
+  reduceFnMapReduced,
+  toEventsMap,
+} from './reduceFnMap';
 
 describe('toEventsMap', () => {
   test('combine correctement les événements et les promisees', () => {
-    // Arrange
+    // #region Arrange
     const events: EventsMap = {
       EVENT1: t.string,
       EVENT2: { data: t.number },
@@ -26,11 +30,13 @@ describe('toEventsMap', () => {
         catch: { error: t.string },
       },
     };
+    // #endregion
 
-    // Act
+    // #region Act
     const result = toEventsMap(events, promisees);
+    // #endregion
 
-    // Assert
+    // #region Assert
     expect(result).toEqual({
       EVENT1: t.string,
       EVENT2: { data: t.number },
@@ -39,6 +45,7 @@ describe('toEventsMap', () => {
       'promise2::then': { success: t.boolean },
       'promise2::catch': { error: t.string },
     });
+    // #endregion
   });
 
   test('fonctionne avec un objet promisees vide', () => {
@@ -203,7 +210,7 @@ describe('reduceFnMap2', () => {
     const directFn = () => 'result';
 
     // Act
-    const result = reduceFnMap2(events, promisees, directFn);
+    const result = reduceFnMapReduced(events, promisees, directFn);
 
     // Assert
     expect(result).toBe(directFn);
@@ -218,18 +225,13 @@ describe('reduceFnMap2', () => {
     const promisees: PromiseeMap = {};
     const elseSpy = vi.fn().mockReturnValue('else result');
 
-    const fnMap: FnMapReduced<
-      typeof events,
-      typeof promisees,
-      any,
-      string
-    > = {
+    const fnMap: FnMapR<typeof events, typeof promisees, any, string> = {
       EVENT1: () => 'event1 result',
       else: elseSpy,
     };
 
     // Act
-    const reducedFn = reduceFnMap2(events, promisees, fnMap);
+    const reducedFn = reduceFnMapReduced(events, promisees, fnMap);
     const result = reducedFn({}, INIT_EVENT);
 
     // Assert
@@ -249,19 +251,14 @@ describe('reduceFnMap2', () => {
     const event2Fn = vi.fn().mockReturnValue('event2 result');
     const elseFn = vi.fn().mockReturnValue('else result');
 
-    const fnMap: FnMapReduced<
-      typeof events,
-      typeof promisees,
-      any,
-      string
-    > = {
+    const fnMap: FnMapR<typeof events, typeof promisees, any, string> = {
       EVENT1: event1Fn,
       EVENT2: event2Fn,
       else: elseFn,
     };
 
     // Act
-    const reducedFn = reduceFnMap2(events, promisees, fnMap);
+    const reducedFn = reduceFnMapReduced(events, promisees, fnMap);
     const result1 = reducedFn({}, { type: 'EVENT1', payload: 'test' });
     const result2 = reducedFn(
       {},
@@ -288,13 +285,12 @@ describe('reduceFnMap2', () => {
     };
     const promisees: PromiseeMap = {};
 
-    const fnMap: FnMapReduced<typeof events, typeof promisees, any, any> =
-      {
-        EVENT1: () => 'event1 result',
-      };
+    const fnMap: FnMapR<typeof events, typeof promisees, any, any> = {
+      EVENT1: () => 'event1 result',
+    };
 
     // Act
-    const reducedFn = reduceFnMap2(events, promisees, fnMap);
+    const reducedFn = reduceFnMapReduced(events, promisees, fnMap);
     const result = reducedFn({}, { type: 'UNKNOWN', payload: null });
 
     // Assert
@@ -314,18 +310,13 @@ describe('reduceFnMap2', () => {
     const thenFn = vi.fn().mockReturnValue('then result');
     const catchFn = vi.fn().mockReturnValue('catch result');
 
-    const fnMap: FnMapReduced<
-      typeof events,
-      typeof promisees,
-      any,
-      string
-    > = {
+    const fnMap: FnMapR<typeof events, typeof promisees, any, string> = {
       'promise1::then': thenFn,
       'promise1::catch': catchFn,
     };
 
     // Act
-    const reducedFn = reduceFnMap2(events, promisees, fnMap);
+    const reducedFn = reduceFnMapReduced(events, promisees, fnMap);
     const result1 = reducedFn(
       {},
       { type: 'promise1::then', payload: 'success' },

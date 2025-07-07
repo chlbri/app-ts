@@ -1,8 +1,8 @@
 import type { machine1, machine2 } from 'src/interpreters/__tests__/data';
 import type { PrimitiveObject, SingleOrArrayL } from '~types';
+import type { EVENTS_FULL } from './constants';
 import type {
   ContextFrom,
-  EVENTS_FULL,
   EventsMapFrom,
   FnMapFrom,
   GetEventsFromMachine,

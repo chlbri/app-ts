@@ -69,7 +69,7 @@ type ConstructSend_F = <
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 >(
   service: Interpreter<C, Pc, Tc, E, P, Mo>,
-) => (_event: EventArg<E, P>, index: number) => [string, () => void];
+) => (_event: EventArg<E>, index: number) => [string, () => void];
 
 export const constructSend: ConstructSend_F = service => {
   return (_event, index) => {
