@@ -295,15 +295,23 @@ export type FnMap2<
   else?: FnReduced<E, P, Tc, R>;
 };
 
+export type EventToType<T extends string | { type: string }> = T extends {
+  type: infer U extends string;
+}
+  ? U
+  : T extends string
+    ? T
+    : never;
+
 type _FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-  TT extends ToEventsR<E, P> = ToEventsR<E, P>,
+  TT extends ToEvents<E, P> = ToEvents<E, P>,
 > = {
-  [key in TT['type']]?: (
+  [key in EventToType<TT>]?: (
     pContext: Pc,
     context: Tc,
     payload: Extract<TT, { type: key }>['payload'],
@@ -317,9 +325,9 @@ type _FnMapR<
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-  TT extends ToEventsR<E, P> = ToEventsR<E, P>,
+  TT extends ToEvents<E, P> = ToEvents<E, P>,
 > = {
-  [key in TT['type']]?: (
+  [key in EventToType<TT>]?: (
     context: Tc,
     payload: Extract<TT, { type: key }>['payload'],
   ) => R;
@@ -333,7 +341,7 @@ export type FnMap<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = FnR<E, P, Pc, Tc, R> | _FnMap<E, P, Pc, Tc, R, ToEventsR<E, P>>;
+> = FnR<E, P, Pc, Tc, R> | _FnMap<E, P, Pc, Tc, R, ToEvents<E, P>>;
 
 export type FnMapR<
   E extends EventsMap = EventsMap,
@@ -341,8 +349,8 @@ export type FnMapR<
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > =
-  | ((state: Tc, eventsMap: ToEventsR<E, P>) => R)
-  | _FnMapR<E, P, Tc, R, ToEventsR<E, P>>;
+  | ((state: Tc, eventsMap: ToEvents<E, P>) => R)
+  | _FnMapR<E, P, Tc, R, ToEvents<E, P>>;
 
 /**
  * A type that represents a record with string keys and values of type {@linkcode T}.

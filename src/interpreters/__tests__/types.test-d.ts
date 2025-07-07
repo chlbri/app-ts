@@ -1,9 +1,4 @@
-import type {
-  AfterEvent,
-  AlwaysEvent,
-  InitEvent,
-  MaxExceededEvent,
-} from '~events';
+import type { InitEvent, MaxExceededEvent } from '~events';
 import type {
   ActionKeysFrom,
   ChildrenKeysFrom,
@@ -66,8 +61,6 @@ expectTypeOf<TTE>().toEqualTypeOf<
       payload: boolean;
     }
   | InitEvent
-  | AlwaysEvent
-  | AfterEvent
   | MaxExceededEvent
 >();
 

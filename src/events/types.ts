@@ -1,12 +1,7 @@
 import type { Unionize } from '@bemedev/types';
 
 import type { PrimitiveObject } from '~types';
-import type {
-  AFTER_EVENT,
-  ALWAYS_EVENT,
-  INIT_EVENT,
-  MAX_EXCEEDED_EVENT_TYPE,
-} from './constants';
+import type { INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE } from './constants';
 
 /**
  * Represents an event object with a type and payload.
@@ -33,18 +28,12 @@ export type PromiseeDef = {
 export type PromiseeMap = Record<string, PromiseeDef>;
 
 export type InitEvent = typeof INIT_EVENT;
-export type AlwaysEvent = `${string}::${typeof ALWAYS_EVENT}`;
-export type AfterEvent = `${string}::${typeof AFTER_EVENT}`;
 export type MaxExceededEvent = typeof MAX_EXCEEDED_EVENT_TYPE;
 
 /**
  * Represents a union of all event strings.
  */
-export type EventStrings =
-  | InitEvent
-  | AlwaysEvent
-  | AfterEvent
-  | MaxExceededEvent;
+export type EventStrings = InitEvent;
 
 export type AllEvent = EventObject | EventStrings;
 
@@ -100,8 +89,6 @@ export type ToEventsR<E extends EventsMap, P extends PromiseeMap> =
 export type ToEvents<E extends EventsMap, P extends PromiseeMap> =
   | ToEventsR<E, P>
   | InitEvent
-  | AlwaysEvent
-  | AfterEvent
   | MaxExceededEvent;
 
 /**

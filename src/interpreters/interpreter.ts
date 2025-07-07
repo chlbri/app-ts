@@ -34,8 +34,6 @@ import {
 } from '~constants';
 import { toDelay } from '~delays';
 import {
-  AFTER_EVENT,
-  ALWAYS_EVENT,
   eventToType,
   INIT_EVENT,
   possibleEvents,
@@ -44,6 +42,7 @@ import {
   type EventArgT,
   type EventObject,
   type EventsMap,
+  type InitEvent,
   type PromiseeMap,
   type ToEvents,
   type ToEventsR,
@@ -217,7 +216,7 @@ export class Interpreter<
   /**
    * The current {@linkcode ToEvents} event of this {@linkcode Interpreter} service.
    */
-  #event: ToEvents<E, P> = INIT_EVENT;
+  #event: ToEvents<E, P> | InitEvent = INIT_EVENT;
 
   /**
    * The initial {@linkcode NodeConfigWithInitials} of the inner {@linkcode Machine}.
@@ -1318,7 +1317,6 @@ export class Interpreter<
     const check5 = promises.length < 1;
     if (check5) return;
 
-    this.#changeEvent(`${from}::${AFTER_EVENT}`);
     const promise = anyPromises(from, ...promises);
     return promise;
   };
@@ -1419,7 +1417,7 @@ export class Interpreter<
   /**
    * Get all brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
    */
-  get #collecteds0() {
+  get #collectedSelfTransitions0() {
     const entries = new Map<string, Collected0<E, P, Pc, Tc>>();
 
     this.#collectedAlways.forEach(([from, always]) => {
@@ -1456,7 +1454,7 @@ export class Interpreter<
    */
   get _collecteds0() {
     if (IS_TEST) {
-      return this.#collecteds0;
+      return this.#collectedSelfTransitions0;
       /* v8 ignore next 4 */
     }
     console.error('collecteds0 is not available in production');
@@ -1468,17 +1466,16 @@ export class Interpreter<
    *
    * @param event - the {@linkcode ToEvents} event to change the current {@linkcode Interpreter} service state.
    */
-  #changeEvent = (event: ToEvents<E, P>) => {
+  #changeEvent = (event: ToEventsR<E, P>) => {
     this.#performStates({ event });
     this.#event = event;
   };
 
-  get #collecteds() {
-    const entries = Array.from(this.#collecteds0);
+  get #collectedSelfTransitions() {
+    const entries = Array.from(this.#collectedSelfTransitions0);
     const out = entries.map(([from, { after, always, promisee }]) => {
       const promise = async () => {
         if (always) {
-          this.#changeEvent(`${from}::${ALWAYS_EVENT}`);
           const cb = () => {
             const { diffEntries, diffExits } = this.#diffNext(
               always.target,
@@ -1506,7 +1503,6 @@ export class Interpreter<
 
         const promises: TimeoutPromise<void>[] = [];
         if (after) {
-          this.#changeEvent(`${from}::${AFTER_EVENT}`);
           const _after = async () => {
             return after().then(transition => {
               if (transition) {
@@ -1584,10 +1580,10 @@ export class Interpreter<
   #performSelfTransitions = async () => {
     this.#makeBusy();
 
-    const pEvent = this.#event;
-    await Promise.all(this.#collecteds.map(f => f()));
-    const cEvent = this.#event;
-    const check = !equal(pEvent, cEvent);
+    const state1 = structuredClone(this.#state);
+    await Promise.all(this.#collectedSelfTransitions.map(f => f()));
+    const state2 = structuredClone(this.#state);
+    const check = !equal(state1, state2);
     if (check) {
       this.#flush();
     }
@@ -2121,14 +2117,15 @@ export class Interpreter<
     id: string,
     { initials: _initials, ...rest }: ChildS2<E, P, Pc, Tc, T>,
   ) => {
-    const context = this.#context;
-    const pContext = this.#pContext;
-    const event = this.#event;
     const reduced = reduceFnMap(
       this.#machine.eventsMap,
       this.#machine.promiseesMap,
       _initials,
     );
+
+    const context = structuredClone(this.#context);
+    const pContext = cloneDeep(this.#pContext);
+    const event = structuredClone(this.#event);
 
     const initials = reduced(pContext, context, event);
 

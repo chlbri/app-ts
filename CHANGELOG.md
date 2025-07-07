@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.2.8] - 2024-07-07 _16:40_
+
+- Better typings
+- <u>Test coverage **_98.89%_**</u>
+
+<br/>
+
 ## [0.2.6] - 2024-03-29 _23:20_
 
 - Fix: no use of node:os
