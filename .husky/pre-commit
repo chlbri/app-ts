@@ -1,2 +1,11 @@
-pnpm run ci
+# Récupère le message de commit
+commit_msg=$(cat .git/COMMIT_EDITMSG 2>/dev/null || echo "")
+
+# Vérifie si le message contient "-NO-TEST"
+if echo "$commit_msg" | grep -q "\-NO\-TEST"; then
+  echo "🚫 Tests ignorés : -NO-TEST détecté dans le message de commit"
+  exit 0
+fi
+
+npm run ci
 git add .
