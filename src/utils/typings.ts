@@ -1,11 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { castings, typings } from '@bemedev/types';
 import type {
+  Checker2,
   PrimitiveObject,
   SoRa,
 } from '@bemedev/types/lib/types/commons.types';
 import type { ActionConfig } from '~actions';
-import type { EventsMap, PromiseeDef, PromiseeMap } from '~events';
+import { DelayMap } from '~delays';
+import {
+  INIT_EVENT,
+  MAX_EXCEEDED_EVENT_TYPE,
+  type EventArg,
+  type EventArgT,
+  type EventsMap,
+  type PromiseeDef,
+  type PromiseeMap,
+  type ToEvents,
+} from '~events';
 import type {
   AnyMachine,
   Config,
@@ -450,6 +461,130 @@ const _anyMachine = {
   ),
 };
 
+const delays = {
+  cast: {
+    fn: castings.castFnBasic(
+      <
+        E extends EventsMap = EventsMap,
+        P extends PromiseeMap = PromiseeMap,
+        Pc extends PrimitiveObject = PrimitiveObject,
+        Tc extends PrimitiveObject = PrimitiveObject,
+      >(
+        events?: E,
+        promisees?: P,
+        pContex?: Pc,
+        context?: Tc,
+      ) =>
+        fnMap.cast(
+          castings.commons.const(events),
+          castings.commons.const(promisees),
+          castings.commons.const(pContex),
+          castings.commons.const(context),
+          typings.numbers(),
+        ),
+      {
+        machine: <M extends AnyMachine = AnyMachine>(machine?: M) => {
+          const _machine = castings.commons.required(machine);
+          return fnMap.cast(
+            _machine.eventsMap,
+            _machine.promiseesMap,
+            _machine.pContext,
+            _machine.context,
+            typings.numbers(),
+          );
+        },
+      },
+    ),
+
+    map: castings.castFnBasic(
+      <
+        E extends EventsMap = EventsMap,
+        P extends PromiseeMap = PromiseeMap,
+        Pc extends PrimitiveObject = PrimitiveObject,
+        Tc extends PrimitiveObject = PrimitiveObject,
+      >(
+        _?: E,
+        __?: P,
+        ___?: Pc,
+        ____?: Tc,
+      ) => castings.objects.dynamic<DelayMap<E, P, Pc, Tc>>,
+      {
+        machine: <M extends AnyMachine = AnyMachine>(__?: M) => {
+          return castings.objects.dynamic<
+            DelayMap<
+              EventsMapFrom<M>,
+              PromiseesMapFrom<M>,
+              M['pContext'],
+              M['context']
+            >
+          >;
+        },
+      },
+    ),
+  },
+
+  type: {
+    fn: typings.typeFnBasic(
+      <
+        E extends EventsMap = EventsMap,
+        P extends PromiseeMap = PromiseeMap,
+        Pc extends PrimitiveObject = PrimitiveObject,
+        Tc extends PrimitiveObject = PrimitiveObject,
+      >(
+        events?: E,
+        promisees?: P,
+        pContex?: Pc,
+        context?: Tc,
+      ) =>
+        fnMap.type(
+          typings.commons.const(events),
+          typings.commons.const(promisees),
+          typings.commons.primitiveObject(pContex),
+          typings.commons.primitiveObject(context),
+          typings.numbers(),
+        ),
+      {
+        machine: <M extends AnyMachine = AnyMachine>(machine?: M) => {
+          const _machine = typings.commons.required(machine);
+          return fnMap.type(
+            _machine.eventsMap,
+            _machine.promiseesMap,
+            _machine.pContext,
+            _machine.context,
+            typings.numbers(),
+          );
+        },
+      },
+    ),
+
+    map: typings.typeFnBasic(
+      <
+        E extends EventsMap = EventsMap,
+        P extends PromiseeMap = PromiseeMap,
+        Pc extends PrimitiveObject = PrimitiveObject,
+        Tc extends PrimitiveObject = PrimitiveObject,
+      >(
+        _?: E,
+        __?: P,
+        ___?: Pc,
+        ____?: Tc,
+      ) => typings.objects.dynamic<DelayMap<E, P, Pc, Tc>>,
+      {
+        machine: <M extends AnyMachine = AnyMachine>(__?: M) => {
+          return typings.objects.dynamic<
+            DelayMap<
+              EventsMapFrom<M>,
+              PromiseesMapFrom<M>,
+              M['pContext'],
+              M['context']
+            >
+          >;
+        },
+      },
+    ),
+  },
+};
+
 const typeMachine = {
   castings: {
     strings: castings.strings,
@@ -529,6 +664,8 @@ const typeMachine = {
       }),
     }),
 
+    delays: delays.cast,
+
     any: _anyMachine.cast,
   },
   typings: {
@@ -539,7 +676,23 @@ const typeMachine = {
     config: typings.typeFn<Config>()(),
 
     events: {
-      map: typings.typeFn<EventsMap>()(),
+      map: typings.typeFn<EventsMap>()({
+        is: castings._unknown<Checker2<EventsMap>>(),
+      }),
+
+      type: typings.typeFnBasic(<T extends EventsMap>() =>
+        typings.commons<EventArgT<T>>(),
+      ),
+
+      arg: <E extends EventsMap>(_?: E) => typings.commons<EventArg<E>>(),
+
+      to: <E extends EventsMap, P extends PromiseeMap>(_?: E, __?: P) => {
+        return typings.commons<ToEvents<E, P>>();
+      },
+
+      init: typings.strings.dynamic(INIT_EVENT),
+
+      maxExceeded: typings.strings.dynamic(MAX_EXCEEDED_EVENT_TYPE),
     },
 
     promisees: {
@@ -559,6 +712,8 @@ const typeMachine = {
     actions: typings.typeFn<ActionConfig>()({
       describer: typings.typeFn<Describer>()(),
     }),
+
+    delays: delays.type,
 
     any: _anyMachine.type,
   },
