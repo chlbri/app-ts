@@ -668,6 +668,7 @@ const typeMachine = {
 
     any: _anyMachine.cast,
   },
+
   typings: {
     strings: typings.strings,
     numbers: typings.numbers,
