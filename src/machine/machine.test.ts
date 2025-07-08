@@ -1305,3 +1305,11 @@ describe('machine coverage', () => {
     });
   });
 });
+
+test('#my', () => {
+  const array = [1, 2, 3, 4, 5];
+  const readOnlyArray = ['ert', 'ert2', 'ert3'] as const;
+
+  expect(Array.isArray(array)).toBe(true);
+  expect(Array.isArray(readOnlyArray)).toBe(true);
+});

@@ -2179,7 +2179,8 @@ export class Interpreter<
     }
 
     const subscriber = service.subscribeMap(
-      ({ event: { type } }) => {
+      ({ event }) => {
+        const type = eventToType(event);
         const _subscribers = toArray.typed(subscribers);
 
         _subscribers.forEach(({ contexts, events }) => {
@@ -2213,7 +2214,6 @@ export class Interpreter<
                 } else {
                   const entries = Object.entries(path).map(
                     ([key, value]) => {
-                      //TODO: add from @bemedev/types
                       const paths = toArray.typed(value);
                       return castings.arrays.tupleOf(key, paths);
                     },

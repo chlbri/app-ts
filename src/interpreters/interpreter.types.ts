@@ -269,10 +269,7 @@ export type FnSubReduced<
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-  TT extends ToEventsR<E, P> = ToEventsR<E, P>,
-> =
-  | ((state: StateR<Tc, Extract<TT, { type: string }>['payload']>) => R)
-  | _FnMapR<E, P, Tc, R, ToEventsR<E, P>>;
+> = ((state: State<Tc>) => R) | _FnMapR<E, P, Tc, R, ToEventsR<E, P>>;
 
 export type AddSubscriber_F<
   E extends EventsMap = EventsMap,

@@ -1,5 +1,6 @@
 import type {
   PrimitiveObject,
+  SoRa,
   Unionize,
 } from '@bemedev/types/lib/types/types';
 
@@ -23,8 +24,8 @@ export type EventObject<T = any> = {
 export type EventsMap = Record<string, PrimitiveObject>;
 
 export type PromiseeDef = {
-  then: any;
-  catch: any;
+  then: SoRa<PrimitiveObject>;
+  catch: SoRa<PrimitiveObject>;
 };
 
 export type PromiseeMap = Record<string, PromiseeDef>;
