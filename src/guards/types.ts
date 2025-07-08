@@ -1,9 +1,9 @@
 import type { KeysMatching } from '@bemedev/decompose';
-import type { Fn } from '@bemedev/types';
+import type { Fn, PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { ActionConfig, FromActionConfig } from '~actions';
 import type { GUARD_TYPE } from '~constants';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
-import type { FnMap, PrimitiveObject, RecordS, ReduceArray } from '~types';
+import type { FnMap, RecordS, ReduceArray } from '~types';
 
 type gType = typeof GUARD_TYPE;
 type and = gType['and'];

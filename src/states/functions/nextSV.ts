@@ -1,6 +1,6 @@
 import { isDefined } from '@bemedev/basifun';
 import { decompose, decomposeKeys, recompose } from '@bemedev/decompose';
-import { t } from '@bemedev/types';
+import { castings } from '@bemedev/types';
 import { DEFAULT_DELIMITER } from '~constants';
 import { isString } from '~types';
 import {
@@ -67,7 +67,9 @@ export const nextSV: NextStateValue_F = (from, target) => {
     return from;
   }
 
-  const decomposed = t.any(decompose(from));
+  const decomposed = castings.commons.any(
+    decompose(castings.objects.trueObject.forceCast(from)),
+  );
 
   const last = target.lastIndexOf(DEFAULT_DELIMITER);
 

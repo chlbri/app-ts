@@ -1,8 +1,8 @@
-import { t, type Fn } from '@bemedev/types';
+import { castings, type types } from '@bemedev/types';
 import type { NodeConfigWithInitials } from '../types';
 import { isAtomic, isParallel } from './checks';
 
-export type InitialConfig_F = Fn<
+export type InitialConfig_F = types.Fn<
   [body: NodeConfigWithInitials],
   NodeConfigWithInitials
 >;
@@ -28,7 +28,7 @@ export const initialConfig: InitialConfig_F = body => {
     const { states: _states, ...config } = body;
     const entries1 = Object.entries(_states).map(([key, state]) => {
       const reduced = initialConfig(state);
-      return t.tuple(key, reduced);
+      return castings.arrays.tupleOf(key, reduced);
     });
 
     const states = entries1.reduce((acc, [key, value]) => {
@@ -47,7 +47,7 @@ export const initialConfig: InitialConfig_F = body => {
     const { states: _states, ...config } = body;
     const entries1 = Object.entries(_states).map(([key, state]) => {
       const reduced = initialConfig(state);
-      return t.tuple(key, reduced);
+      return castings.arrays.tupleOf(key, reduced);
     });
 
     const states = entries1.reduce((acc, [key, value]) => {

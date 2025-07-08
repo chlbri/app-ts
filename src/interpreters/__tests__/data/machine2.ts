@@ -1,6 +1,6 @@
+import { typings } from '@bemedev/types';
 import { createMachine } from '~machine';
 import { createConfig, EVENTS_FULL } from '~machines';
-import { typings } from '~utils';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
@@ -100,22 +100,28 @@ export const machine2 = createMachine(
   },
   {
     eventsMap: {
-      NEXT: typings.emptyO.type,
-      FETCH: typings.emptyO.type,
-      WRITE: { value: typings.string.type },
-      FINISH: typings.emptyO.type,
+      NEXT: typings.objects.dynamic({}),
+      FETCH: typings.objects.dynamic({}),
+      WRITE: { value: typings.strings.type },
+      FINISH: typings.objects.dynamic({}),
     },
     context: {
-      iterator: typings.number.type,
-      input: typings.string.type,
-      data: typings.array(typings.string.type),
+      iterator: typings.numbers.type,
+      input: typings.strings.type,
+      data: typings.arrays(typings.strings.type),
     },
-    pContext: typings.recordAll(typings.number.type, 'iterator'),
+    pContext: {
+      iterator: typings.numbers.type,
+    },
     promiseesMap: {
-      fetch: typings.promiseDef(
-        typings.array(typings.string.type),
-        typings.emptyO.type,
-      ),
+      // fetch: typings.promiseDef(
+      //   typings.array(typings.string.type),
+      //   typings.objects.dynamic({}),
+      // ),
+      fetch: {
+        then: typings.arrays(typings.strings.type),
+        catch: typings.objects.dynamic({}),
+      },
     },
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
@@ -171,22 +177,24 @@ export const _machine2 = createMachine(
   },
   {
     eventsMap: {
-      NEXT: typings.emptyO.type,
-      FETCH: typings.emptyO.type,
-      WRITE: { value: typings.string.type },
-      FINISH: typings.emptyO.type,
+      NEXT: typings.objects.dynamic({}),
+      FETCH: typings.objects.dynamic({}),
+      WRITE: { value: typings.strings.type },
+      FINISH: typings.objects.dynamic({}),
     },
-    context: typings.context({
-      iterator: typings.number.type,
-      input: typings.string.type,
-      data: typings.array(typings.string.type),
-    }),
-    pContext: typings.recordAll(typings.number.type, 'iterator'),
+    context: {
+      iterator: typings.numbers.type,
+      input: typings.strings.type,
+      data: typings.arrays(typings.strings.type),
+    },
+    pContext: {
+      iterator: typings.numbers.type,
+    },
     promiseesMap: {
-      fetch: typings.promiseDef(
-        typings.array(typings.string.type),
-        typings.emptyO.type,
-      ),
+      fetch: {
+        then: typings.arrays(typings.strings.type),
+        catch: typings.objects.dynamic({}),
+      },
     },
   },
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },

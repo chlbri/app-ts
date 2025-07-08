@@ -1,6 +1,7 @@
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import { deepmerge } from 'deepmerge-ts';
 import type { Contexts } from '~interpreters';
-import type { Describer, Describer2, PrimitiveObject } from '~types';
+import type { Describer, Describer2 } from '~types';
 
 export const reduceRemainings = <
   Pc = any,

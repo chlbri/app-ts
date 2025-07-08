@@ -1,9 +1,9 @@
 import type { TimerState } from '@bemedev/interval2';
-import { t } from '@bemedev/types';
+import { castings } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import equal from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
 import type { EventsMap, PromiseeMap } from '~events';
-import { PrimitiveObject } from '~types';
 import { nothing, toEventsMap } from '~utils';
 import { isFunction } from '../types/primitives';
 import type { FnSubReduced, State } from './interpreter.types';
@@ -79,7 +79,7 @@ class SubscriberMapClass<
   get #reduceFn() {
     const sub = this.#subscriber;
     const check1 = isFunction(sub);
-    if (check1) return t.any(sub);
+    if (check1) return castings.commons.any(sub);
 
     const map = toEventsMap(this.#eventsMap, this.#promiseesMap);
     const keys = Object.keys(map);
@@ -88,20 +88,20 @@ class SubscriberMapClass<
       const event = state.event;
       const check5 = typeof event === 'string';
       const _else = sub.else ?? nothing;
-      if (check5) return t.any(_else(state));
+      if (check5) return castings.commons.any(_else(state));
 
       const { type } = event;
 
       for (const key of keys) {
         const check2 = type === key;
-        const func = t.any(sub)[key];
+        const func = castings.commons.any(sub)[key];
         const check3 = !!func;
 
         const check4 = check2 && check3;
         if (check4) return func(state);
       }
 
-      return t.any(_else(state));
+      return castings.commons.any(_else(state));
     };
   }
 

@@ -1,11 +1,12 @@
 import type { Decompose } from '@bemedev/decompose';
 import type {
-  DeepNotUndefined,
+  DeepRequired,
   NotUndefined,
   Primitive,
+  PrimitiveObject,
   Ru,
   SubType,
-} from '@bemedev/types';
+} from '@bemedev/types/lib/types/types';
 import type { Action, FromActionConfig } from '~actions';
 import type { Delay } from '~delays';
 import type { EventsMap, PromiseeDef, PromiseeMap } from '~events';
@@ -35,7 +36,6 @@ import type {
   FnMap,
   FnMap2,
   KeyU,
-  PrimitiveObject,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
@@ -388,7 +388,7 @@ export type GetMachineKeysFromConfig<C extends Config> = FromActionConfig<
  * Second version decomposition of a type.
  */
 export type Decompose2<T> = T extends Ru
-  ? Decompose<DeepNotUndefined<T>>
+  ? Decompose<DeepRequired<T>>
   : never;
 
 // #region typ SubscriberType
@@ -737,8 +737,8 @@ export type ActionParamsFrom<T extends KeyU<'__actionParams'>> =
  *
  * @see {@linkcode ActionsMapFrom} for extracting actions from the machine.
  */
-export type ActionKeysFrom<T extends KeyU<'actions'>> =
-  keyof ActionsMapFrom<T>;
+export type ActionKeysFrom<T extends KeyU<'__actionKey'>> =
+  T['__actionKey'];
 
 /**
  * Get all predicates map from a machine.

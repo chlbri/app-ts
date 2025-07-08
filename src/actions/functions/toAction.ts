@@ -1,7 +1,7 @@
-import type { Fn } from '@bemedev/types';
+import type { Fn, PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { ActionConfig, ActionMap, ActionResult } from '~actions';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
-import { isDescriber, type PrimitiveObject } from '~types';
+import { isDescriber } from '~types';
 import { reduceFnMap } from '~utils';
 
 export type ToAction_F = <

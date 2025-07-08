@@ -1,5 +1,5 @@
 import sleep from '@bemedev/sleep';
-import { t } from '@bemedev/types';
+import { castings } from '@bemedev/types';
 import { DEFAULT_NOTHING } from '~constants';
 import type { EventArg, EventsMap, PromiseeMap } from '~events';
 import type { Interpreter } from '~interpreter';
@@ -27,13 +27,16 @@ export const fakeWaiter = async (ms = 0, times = 1) => {
 
 type ConstructWaiter_F = (
   DELAY?: number,
-) => (times: number, index: number) => [string, () => Promise<void>];
+) => (
+  times: number,
+  index: number,
+) => readonly [string, () => Promise<void>];
 
 export const constructWaiter: ConstructWaiter_F = (DELAY = 0) => {
   return (times, index) => {
     const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
 
-    return t.tuple(invite, () => fakeWaiter(DELAY, times));
+    return castings.arrays.tupleOf(invite, () => fakeWaiter(DELAY, times));
   };
 };
 
@@ -46,7 +49,7 @@ type ConstructValue_F = <
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 >(
   service: Interpreter<C, Pc, Tc, E, P, Mo>,
-) => (value: StateValue, index: number) => [string, () => void];
+) => (value: StateValue, index: number) => readonly [string, () => void];
 
 export const constructValue: ConstructValue_F = service => {
   return (value, index) => {
@@ -54,7 +57,7 @@ export const constructValue: ConstructValue_F = service => {
     const _index = index < 10 ? '0' + index : index;
     const invite = `#${_index} => current value is :${_value}`;
 
-    return t.tuple(invite, () => {
+    return castings.arrays.tupleOf(invite, () => {
       expect(service.value).toEqual(value);
     });
   };
@@ -69,7 +72,7 @@ type ConstructSend_F = <
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 >(
   service: Interpreter<C, Pc, Tc, E, P, Mo>,
-) => (_event: EventArg<E>, index: number) => [string, () => void];
+) => (_event: EventArg<E>, index: number) => readonly [string, () => void];
 
 export const constructSend: ConstructSend_F = service => {
   return (_event, index) => {
@@ -77,7 +80,7 @@ export const constructSend: ConstructSend_F = service => {
     const _index = index < 10 ? '0' + index : index;
     const invite = `#${_index}=> send ${event}`;
 
-    return t.tuple(invite, () => {
+    return castings.arrays.tupleOf(invite, () => {
       return service.send(_event);
     });
   };

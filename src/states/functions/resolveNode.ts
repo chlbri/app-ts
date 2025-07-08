@@ -1,12 +1,12 @@
 import { toArray } from '@bemedev/basifun';
 import { identify } from '@bemedev/basifun/objects/identify';
-import { t, type NOmit } from '@bemedev/types';
+import { castings, type types } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
 import { toAction } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { SimpleMachineOptions } from '~machines';
 import { toPromise } from '~promises';
 import { toTransition } from '~transitions';
-import type { PrimitiveObject } from '~types';
 import type { Node, NodeConfigWithInitials } from '../types';
 import { stateType } from './stateType';
 
@@ -19,7 +19,7 @@ export type ResolveNode_F = <
   events: E,
   promisees: P,
   config: NodeConfigWithInitials,
-  options?: NOmit<SimpleMachineOptions<E, P, Pc, Tc>, 'initials'>,
+  options?: types.NOmit<SimpleMachineOptions<E, P, Pc, Tc>, 'initials'>,
 ) => Node<E, P, Pc, Tc>;
 
 /**
@@ -74,7 +74,7 @@ export const resolveNode: ResolveNode_F = (
     .typed(config.promises)
     .map(promise => toPromise(events, promisees, promise, options));
 
-  const out = t.any({
+  const out = castings.commons.any({
     type,
     entry,
     exit,

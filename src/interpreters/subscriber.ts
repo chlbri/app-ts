@@ -1,7 +1,7 @@
 import type { TimerState } from '@bemedev/interval2';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import equal from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
-import { PrimitiveObject } from '~types';
 import type { State } from './interpreter.types';
 
 /**

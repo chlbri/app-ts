@@ -1,9 +1,10 @@
 import type {
   NOmit,
   NotUndefined,
+  PrimitiveObject,
   ReduceArray,
   Require,
-} from '@bemedev/types';
+} from '@bemedev/types/lib/types/types';
 import type {
   ActionConfig,
   ActionResult,
@@ -17,7 +18,7 @@ import type {
   Transition,
   TransitionConfigMapA,
 } from '~transitions';
-import type { FnMap, FnR, PrimitiveObject, SingleOrArrayL } from '~types';
+import type { FnMap, FnR, SingleOrArrayL } from '~types';
 
 /**
  * A function type that represents a promise function with map.

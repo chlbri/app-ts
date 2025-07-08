@@ -1,5 +1,5 @@
+import { castings, typings } from '@bemedev/types';
 import { createMachine } from '~machine';
-import { typings } from '~utils';
 import { DELAY } from './constants';
 
 // #region machine1
@@ -18,12 +18,12 @@ export const machine1 = createMachine(
     },
   },
   {
-    eventsMap: { NEXT: typings.emptyO.type },
-    context: typings.context(
-      typings.recordAll(typings.number.type, 'iterator'),
-    ),
-    pContext: typings.emptyO.type,
-    promiseesMap: typings.emptyO.type,
+    eventsMap: { NEXT: typings.objects.dynamic({}) },
+    context: castings.commons.primitiveObject.dynamic({
+      iterator: typings.numbers.type,
+    }),
+    pContext: typings.objects.dynamic({}),
+    promiseesMap: typings.objects.dynamic({}),
   },
   { '/': 'idle' },
 );

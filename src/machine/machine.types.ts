@@ -1,9 +1,15 @@
-import type { Fn, NOmit } from '@bemedev/types';
+import type {
+  Cast,
+  Fn,
+  NOmit,
+  PrimitiveObject,
+  Ru,
+} from '@bemedev/types/lib/types/types';
 import type { ActionConfig, ActionResult, ActionResultFn } from '~actions';
 import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
 import type { NodeConfigWithInitials, StateValue } from '~states';
-import type { FnMap, FnR, KeyU, PrimitiveObject } from '~types';
+import type { FnMap, FnR, KeyU } from '~types';
 import type { Decompose3 } from './functions';
 import type {
   ChildS,
@@ -102,7 +108,7 @@ export type AssignAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Tc = PrimitiveObject,
 > = <
   D = Decompose3<{
     pContext: Pc;
@@ -112,8 +118,8 @@ export type AssignAction_F<
   R = D[K],
 >(
   key: K,
-  fn: FnMap<E, P, Pc, Tc, R>,
-) => ActionResultFn<E, P, Pc, Tc>;
+  fn: FnMap<E, P, Pc, Cast<Tc, PrimitiveObject>, R>,
+) => ActionResultFn<E, P, Pc, Cast<Tc, PrimitiveObject>>;
 
 export type ResendAction_F<
   E extends EventsMap = EventsMap,
@@ -198,7 +204,7 @@ export type AllActions_F<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = AssignAction_F<E, P, Pc, Tc> | VoidAction_F<E, P, Pc, Tc>;
+> = AssignAction_F<E, P, Pc, Cast<Tc, Ru>> | VoidAction_F<E, P, Pc, Tc>;
 
 export type DebounceAction_F<
   E extends EventsMap = EventsMap,
@@ -228,7 +234,7 @@ export type AddOptionsParam_F<
   isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
   isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
   createChild: ChildProvider_F<E, P, Pc>;
-  assign: AssignAction_F<E, P, Pc, Tc>;
+  assign: AssignAction_F<E, P, Pc, Cast<Tc, Ru>>;
   voidAction: VoidAction_F<E, P, Pc, Tc>;
   sender: SendAction_F<E, P, Pc, Tc>;
   debounce: DebounceAction_F<E, P, Pc, Tc>;

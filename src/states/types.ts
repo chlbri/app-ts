@@ -1,15 +1,15 @@
 import type {
   AllowedNames,
   NotUndefined,
+  PrimitiveObject,
   UnionToIntersection2,
-} from '@bemedev/types';
+} from '@bemedev/types/lib/types/types';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { FromGuard, GuardConfig } from '~guards';
 import type { Transitions, TransitionsConfig } from '~transitions';
 import type {
   Identitfy,
-  PrimitiveObject,
   ReduceArray,
   SingleOrArrayL,
   SingleOrArrayR,

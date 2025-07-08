@@ -1,4 +1,5 @@
-import { DeepPartial, t } from '@bemedev/types';
+import { commons } from '@bemedev/types/lib/functions/commons';
+import { DeepPartial } from '@bemedev/types/lib/types/types';
 import { deepmergeCustom } from 'deepmerge-ts';
 import equal from 'fast-deep-equal';
 
@@ -44,5 +45,5 @@ export const merge = <T = any>(
   if (check1) return value;
   // #endregion
 
-  return t.any(_merge(value, ...mergers));
+  return commons.any(_merge(value, ...mergers));
 };

@@ -1,12 +1,9 @@
-import type { DeepPartial } from '@bemedev/types';
-import type { EventsMap, PromiseeMap } from '~events';
 import type {
-  Describer,
-  FnMap,
-  FnR,
-  FromDescriber,
+  DeepPartial,
   PrimitiveObject,
-} from '~types';
+} from '@bemedev/types/lib/types/types';
+import type { EventsMap, PromiseeMap } from '~events';
+import type { Describer, FnMap, FnR, FromDescriber } from '~types';
 
 /**
  * JSON configuration for an action.

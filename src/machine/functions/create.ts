@@ -1,3 +1,4 @@
+import { castings } from '@bemedev/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import type {
   ChildS,
@@ -7,7 +8,6 @@ import type {
   SubscriberType,
 } from '~machines';
 import type { KeyU } from '~types';
-import { typings } from '~utils';
 
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
 
@@ -20,9 +20,8 @@ export type CreateConfig_F = <const T extends Config>(config: T) => T;
  *
  * @returns The same configuration object of type {@linkcode Config}.
  *
- * @see {@linkcode typings.cast}
  */
-export const createConfig: CreateConfig_F = typings.cast;
+export const createConfig: CreateConfig_F = castings.commons.any;
 
 export type CreateChildS_F = <
   T extends KeyU<'preConfig' | 'context' | 'pContext'>,
