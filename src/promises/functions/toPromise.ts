@@ -13,7 +13,7 @@ import { toPromiseSrc } from './src';
 type ToPromise_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   TC extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,

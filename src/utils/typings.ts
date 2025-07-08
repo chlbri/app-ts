@@ -185,7 +185,7 @@ const fnR = {
     <
       E extends EventsMap = EventsMap,
       P extends PromiseeMap = PromiseeMap,
-      Pc = any,
+      Pc extends PrimitiveObject = PrimitiveObject,
       Tc extends PrimitiveObject = PrimitiveObject,
       R = any,
     >(
@@ -222,7 +222,7 @@ const fnR = {
     <
       E extends EventsMap = EventsMap,
       P extends PromiseeMap = PromiseeMap,
-      Pc = any,
+      Pc extends PrimitiveObject = PrimitiveObject,
       Tc extends PrimitiveObject = PrimitiveObject,
       R = any,
     >(
@@ -308,7 +308,7 @@ const fnMap = {
     <
       E extends EventsMap = EventsMap,
       P extends PromiseeMap = PromiseeMap,
-      Pc = any,
+      Pc extends PrimitiveObject = PrimitiveObject,
       Tc extends PrimitiveObject = PrimitiveObject,
       R = any,
     >(
@@ -340,7 +340,7 @@ const fnMap = {
     <
       E extends EventsMap = EventsMap,
       P extends PromiseeMap = PromiseeMap,
-      Pc = any,
+      Pc extends PrimitiveObject = PrimitiveObject,
       Tc extends PrimitiveObject = PrimitiveObject,
       R = any,
     >(
@@ -425,7 +425,7 @@ const _anyMachine = {
     <
       E extends EventsMap = EventsMap,
       P extends PromiseeMap = PromiseeMap,
-      Pc = any,
+      Pc extends PrimitiveObject = PrimitiveObject,
       Tc extends PrimitiveObject = PrimitiveObject,
     >(
       _?: E,
@@ -439,7 +439,7 @@ const _anyMachine = {
     <
       E extends EventsMap = EventsMap,
       P extends PromiseeMap = PromiseeMap,
-      Pc = any,
+      Pc extends PrimitiveObject = PrimitiveObject,
       Tc extends PrimitiveObject = PrimitiveObject,
     >(
       _?: E,

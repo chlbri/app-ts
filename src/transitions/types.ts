@@ -303,7 +303,7 @@ export type ExtractSrcFromTransitions<T extends TransitionsConfig> =
 export type Transition<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   readonly target: string[];
@@ -328,7 +328,7 @@ export type Transition<
 export type Transitions<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   on: Identitfy<Transition<E, P, Pc, Tc>>[];

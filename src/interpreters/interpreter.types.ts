@@ -77,49 +77,49 @@ export type Interpreter_F = <M extends AnyMachine>(
 export type ToAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (action?: ActionConfig) => Action2<E, P, Pc, Tc>;
 
 export type PerformAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (action: Action2<E, P, Pc, Tc>) => ActionResult<Pc, Tc>;
 
 export type ToPredicate_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (predicate?: GuardConfig) => PredicateS2<E, P, Pc, Tc>;
 
 export type PerformPredicate_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (predicate: PredicateS2<E, P, Pc, Tc>) => boolean;
 
 export type ToDelay_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (delay?: string) => Fn<[Pc, Tc, ToEvents<E, P>], number> | undefined;
 
 export type PerformDelay_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (delay: Fn<[Pc, Tc, ToEvents<E, P>], number>) => number;
 
 export type PerformPromise_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (promise: PromiseFunction2<E, P, Pc, Tc>) => Promise<any>;
 
@@ -129,7 +129,7 @@ export type ExecuteActivities_F = (
 ) => string[];
 
 export type PerformAfter_F<
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   from: string,
@@ -145,7 +145,7 @@ export type PerformAfter_F<
   | undefined;
 
 export type TransitionAfterResult<
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > =
   | {
@@ -155,14 +155,14 @@ export type TransitionAfterResult<
   | undefined;
 
 export type PerformAlway_F<
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (always: AlwaysConfig) => TransitionAfterResult<Pc, Tc>;
 
 export type Collected0<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   after?:
@@ -181,14 +181,14 @@ export type Collected0<
 export type ToPromiseSrc_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (promise: string) => PromiseFunction2<E, P, Pc, Tc>;
 
 export type PerformPromisee_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   from: string,
@@ -196,7 +196,7 @@ export type PerformPromisee_F<
 ) => TimeoutPromise<PromiseeResult<E, P, Pc, Tc> | undefined> | undefined;
 
 export type Contexts<
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   pContext?: Pc;
@@ -204,7 +204,7 @@ export type Contexts<
 };
 
 export type PerformTransition_F<
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (transition: TransitionConfig) =>
   | {
@@ -215,7 +215,7 @@ export type PerformTransition_F<
   | false;
 
 export type PerformTransitions_F<
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (...transitions: TransitionConfig[]) => {
   target?: string;
@@ -223,7 +223,7 @@ export type PerformTransitions_F<
 };
 
 export type SleepContexts_F = <
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   ms?: number,
@@ -232,7 +232,7 @@ export type SleepContexts_F = <
 export type _Send_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (event: ToEventsR<E, P>) => {
   result: ActionResult<Pc, Tc>;
@@ -297,7 +297,7 @@ export type Selector_F<T = any> = <
 export interface AnyInterpreter<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > {
   mode: Mode;

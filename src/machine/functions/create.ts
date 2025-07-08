@@ -1,4 +1,5 @@
 import { castings } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import type {
   ChildS,
@@ -27,7 +28,7 @@ export type CreateChildS_F = <
   T extends KeyU<'preConfig' | 'context' | 'pContext'>,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
 >(
   machine: T,
   initials: {
@@ -40,7 +41,7 @@ export type CreateChildS_F = <
 export type CreateChild_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
 > = <const T extends KeyU<'preConfig' | 'context' | 'pContext'>>(
   machine: T,
   initials: {

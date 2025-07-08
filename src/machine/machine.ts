@@ -67,7 +67,7 @@ import type {
 
 class Machine<
   const C extends Config = Config,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
@@ -714,7 +714,9 @@ class Machine<
    * @deprecated
    * @remarks used internally
    */
-  _providePrivateContext = <T>(pContext: T) => {
+  _providePrivateContext = <T extends PrimitiveObject = PrimitiveObject>(
+    pContext: T,
+  ) => {
     const { context, initials, config, events, promisees } =
       this.#elements;
 
@@ -1105,7 +1107,7 @@ export type { Machine };
 
 export type CreateMachine_F = <
   const C extends Config = Config,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,

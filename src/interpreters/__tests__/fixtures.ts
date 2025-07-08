@@ -42,7 +42,7 @@ export const constructWaiter: ConstructWaiter_F = (DELAY = 0) => {
 
 type ConstructValue_F = <
   const C extends Config = Config,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
@@ -65,7 +65,7 @@ export const constructValue: ConstructValue_F = service => {
 
 type ConstructSend_F = <
   const C extends Config = Config,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,

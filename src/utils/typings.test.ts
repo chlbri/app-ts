@@ -751,7 +751,7 @@ describe('detailed object tests', () => {
         typeMachine.castings.functions.fnR<
           { EVENT: { data: string } },
           Record<string, never>,
-          unknown,
+          any,
           { value: number },
           string
         >();
