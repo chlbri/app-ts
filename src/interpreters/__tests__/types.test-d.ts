@@ -65,19 +65,27 @@ expectTypeOf<TTE>().toEqualTypeOf<
 >();
 
 type ActionKeys = ActionKeysFrom<Machine3>;
-expectTypeOf<ActionKeys>().toEqualTypeOf<
-  | 'action1'
-  | 'dodo3'
-  | 'doré1'
-  | 'dodo5'
+expectTypeOf<ActionKeys>().branded.toEqualTypeOf<
+  | 'deal'
+  | 'deal17'
   | 'dodo1'
   | 'doré'
   | 'dodo2'
+  | 'dodo3'
+  | 'doré1'
+  | 'dodo5'
   | 'dodo6'
   | 'dodo7'
   | 'doré3'
-  | 'deal'
-  | 'deal17'
+  | 'action1'
+  | 'action14'
+  | 'action13'
+  | 'action22'
+  | 'action4'
+  | 'action3'
+  | 'action15'
+  | 'action12'
+  | 'action20'
 >();
 
 type GuardKeys = GuardKeysFrom<Machine3>;

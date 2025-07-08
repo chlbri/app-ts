@@ -1,5 +1,6 @@
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { EventsMap, PromiseeMap } from '~events';
-import type { FnMap, PrimitiveObject } from '~types';
+import type { FnMap } from '~types';
 
 /**
  * Delay type definition.

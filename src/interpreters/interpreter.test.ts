@@ -1,4 +1,4 @@
-import { t } from '@bemedev/types';
+import { castings, typings } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
 import {
@@ -31,10 +31,10 @@ describe('Interpreter', () => {
   };
 
   describe('#01 => Status', () => {
-    let service = t.unknown<AnyInterpreter>();
+    let service = typings.commons.unknown<AnyInterpreter>();
 
     test('#0 => Create the machine', () => {
-      service = t.any(interpret(machine3, resultC));
+      service = castings.commons.any(interpret(machine3, resultC));
     });
 
     test('#1 => The machine is at "status: idle"', () => {
@@ -109,9 +109,12 @@ describe('Interpreter', () => {
 
     test('#02 => Events Map', () => {
       expect(service.eventsMap).toStrictEqual({
-        EVENT: { password: t.string, username: t.string },
-        EVENT2: t.boolean,
-        EVENT3: { login: t.string, pwd: t.string },
+        EVENT: {
+          password: typings.strings.type,
+          username: typings.strings.type,
+        },
+        EVENT2: typings.booleans.type,
+        EVENT3: { login: typings.strings.type, pwd: typings.strings.type },
       });
     });
 
@@ -250,7 +253,10 @@ describe('Interpreter', () => {
         },
       },
       {
-        context: { condition: t.boolean, iterator: t.number },
+        context: {
+          condition: typings.booleans.type,
+          iterator: typings.numbers.type,
+        },
         pContext: {},
         promiseesMap: {},
         eventsMap: {
@@ -455,7 +461,7 @@ describe('Interpreter', () => {
           },
         },
       },
-      { ...defaultT, context: { iterator: t.number } },
+      { ...defaultT, context: { iterator: typings.numbers.type } },
       { '/': 'idle' },
     ).provideOptions(() => ({
       actions: {
@@ -592,13 +598,13 @@ describe('Interpreter', () => {
       const useSend = (event: SE, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-        return t.tuple(invite, () => service.send(event));
+        return castings.arrays.tupleOf(invite, () => service.send(event));
       };
 
       const useWrite = (value: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
 
-        return t.tuple(invite, () => {
+        return castings.arrays.tupleOf(invite, () => {
           const sendWrite = service.sender('WRITE');
           return sendWrite({ value });
         });
@@ -607,33 +613,35 @@ describe('Interpreter', () => {
       const useWaiter = (times: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
 
-        return t.tuple(invite, () => fakeWaiter(DELAY, times));
+        return castings.arrays.tupleOf(invite, () =>
+          fakeWaiter(DELAY, times),
+        );
       };
 
       const useState = (state: StateValue, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Current state is "${state}"`;
-        return t.tuple(invite, () => {
+        return castings.arrays.tupleOf(invite, () => {
           expect(service.value).toStrictEqual(state);
         });
       };
 
       const useIterator = (num: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-        return t.tuple(invite, async () => {
+        return castings.arrays.tupleOf(invite, async () => {
           expect(service.select('iterator')).toBe(num);
         });
       };
 
       const useIteratorC = (num: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => private iterator is "${num}"`;
-        return t.tuple(invite, async () => {
+        return castings.arrays.tupleOf(invite, async () => {
           expect(service._pSelect('iterator')).toBe(num);
         });
       };
 
       const useInput = (input: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
-        return t.tuple(invite, async () => {
+        return castings.arrays.tupleOf(invite, async () => {
           expect(service.context.input).toBe(input);
         });
       };
@@ -657,7 +665,7 @@ describe('Interpreter', () => {
           test(inviteStrict, strict);
         };
 
-        return t.tuple(invite, func);
+        return castings.arrays.tupleOf(invite, func);
       };
 
       const useConsole = (
@@ -684,7 +692,7 @@ describe('Interpreter', () => {
           test(inviteStrict, strict);
         };
 
-        return t.tuple(invite, func);
+        return castings.arrays.tupleOf(invite, func);
       };
       // #endregion
 

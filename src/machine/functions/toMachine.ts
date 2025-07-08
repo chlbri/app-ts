@@ -1,6 +1,7 @@
+import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
 import type { ActionConfig } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
-import { isDescriber, type PrimitiveObject } from '~types';
+import { isDescriber } from '~types';
 import type { ChildS, MachineMap } from '../types';
 
 export type ToMachine_F = <

@@ -1,4 +1,4 @@
-import type { Fn } from '@bemedev/types';
+import type { Fn } from '@bemedev/types/lib/types/types';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { StateValue } from '~states';
 

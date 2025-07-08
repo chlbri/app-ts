@@ -1,9 +1,10 @@
 import { isDefined } from '@bemedev/basifun';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import { GUARD_TYPE } from '~constants';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { GuardConfig } from '~guards';
-import { isDescriber, isString, type PrimitiveObject } from '~types';
+import { isDescriber, isString } from '~types';
 import { reduceFnMap } from '~utils';
 import type { PredicateMap, PredicateS2 } from '../types';
 

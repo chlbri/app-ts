@@ -1,7 +1,11 @@
-import { type Ru } from '@bemedev/types';
+import type {
+  Cast,
+  PrimitiveObject,
+} from '@bemedev/types/lib/types/commons.types';
+import { type Ru } from '@bemedev/types/lib/types/objects.types';
 import type { ActionResultFn } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
-import { type FnMap, type PrimitiveObject } from '~types';
+import { type FnMap } from '~types';
 import { reduceFnMap } from '~utils';
 import { assignByKey } from './subcriber';
 
@@ -54,7 +58,7 @@ type FromPaths<
  * From "Acid Coder"
  */
 type _Decompose3<
-  T extends Ru,
+  T,
   D extends string = '.',
   Parent extends boolean = false,
 > = Omit<FromPaths<ToPaths<T, D, '', Parent>>, ''>;
@@ -109,7 +113,7 @@ type DecomposeOpions = {
  * ```
  */
 export type Decompose3<
-  T extends Ru,
+  T,
   O extends DecomposeOpions = { sep: '.'; parent: false },
 > =
   _Decompose3<
@@ -127,7 +131,7 @@ export type Decompose3<
 
 export type ExpandFnMap = <
   Pc,
-  Tc extends PrimitiveObject,
+  Tc = PrimitiveObject,
   D = Decompose3<{
     pContext: Pc;
     context: Tc;
@@ -140,8 +144,8 @@ export type ExpandFnMap = <
   events: E,
   promisees: P,
   key: K,
-  fn: FnMap<E, P, Pc, Tc, R>,
-) => ActionResultFn<E, P, Pc, Tc>;
+  fn: FnMap<E, P, Pc, Cast<Tc, PrimitiveObject>, R>,
+) => ActionResultFn<E, P, Pc, Cast<Tc, PrimitiveObject>>;
 /**
  *
  * @param events : type {@linkcode EventsMap} [E] - The events map.

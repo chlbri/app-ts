@@ -1,4 +1,4 @@
-import { t } from '@bemedev/types';
+import { typings } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
@@ -18,7 +18,7 @@ describe('Integration testing for interpret, Children', () => {
         },
       },
     },
-    { ...defaultT, context: t.number },
+    { ...defaultT, context: typings.numbers.type },
     { '/': 'idle' },
   ).provideOptions(() => ({
     actions: {
@@ -37,7 +37,7 @@ describe('Integration testing for interpret, Children', () => {
           idle: {},
         },
       },
-      { ...defaultT, pContext: t.number },
+      { ...defaultT, pContext: typings.numbers.type },
       { '/': 'idle' },
     ).provideOptions(({ createChild }) => ({
       machines: {
@@ -97,7 +97,7 @@ describe('Integration testing for interpret, Children', () => {
       },
       {
         ...defaultT,
-        pContext: { iterator: t.number },
+        pContext: { iterator: typings.numbers.type },
         eventsMap: { NEXT: {} },
       },
       { '/': 'idle' },

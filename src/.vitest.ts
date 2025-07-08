@@ -1,4 +1,4 @@
-import type { NotUndefined } from '@bemedev/types';
+import type { NotUndefined } from '@bemedev/types/lib/types/types';
 import { aliasTs } from '@bemedev/vitest-alias';
 import { exclude } from '@bemedev/vitest-exclude';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';

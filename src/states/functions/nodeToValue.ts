@@ -1,4 +1,4 @@
-import { t } from '@bemedev/types';
+import { castings } from '@bemedev/types';
 import type { NodeConfigWithInitials, StateValue } from '../types';
 import { isAtomic, isCompound } from './checks';
 
@@ -45,7 +45,7 @@ export const nodeToValue: NodeToValue_F = body => {
   }
 
   const entries2 = entries.map(([key, value]) =>
-    t.tuple(key, nodeToValue(value)),
+    castings.arrays.tupleOf(key, nodeToValue(value)),
   );
 
   const out = entries2.reduce((acc, [key, value]) => {

@@ -1,5 +1,6 @@
+import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
 import type { machine1, machine2 } from 'src/interpreters/__tests__/data';
-import type { PrimitiveObject, SingleOrArrayL } from '~types';
+import type { SingleOrArrayL } from '~types';
 import type { EVENTS_FULL } from './constants';
 import type {
   ContextFrom,

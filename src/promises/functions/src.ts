@@ -1,6 +1,6 @@
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { SimpleMachineOptions } from '~machines';
-import { type PrimitiveObject } from '~types';
 import { reduceFnMap } from '~utils';
 import type { PromiseFunction2 } from '../types';
 

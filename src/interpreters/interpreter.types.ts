@@ -1,6 +1,10 @@
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
-import type { Fn, NOmit } from '@bemedev/types';
+import type {
+  Fn,
+  NOmit,
+  PrimitiveObject,
+} from '@bemedev/types/lib/types/types';
 import type {
   Action,
   Action2,
@@ -42,7 +46,6 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '~transitions';
-import type { PrimitiveObject } from '~types';
 import type { InterpreterFrom } from './interpreter';
 import type { SubscriberOptions } from './subscriber';
 import type { SubscriberMapClass } from './subscriberMap';

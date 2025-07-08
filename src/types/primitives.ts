@@ -1,13 +1,6 @@
-import type { SingleOrArray } from '@bemedev/boolean-recursive';
-import type {
-  DeepPartial,
-  Fn,
-  NOmit,
-  NotUndefined,
-  Primitive,
-  Ru,
-  UnionToIntersection,
-} from '@bemedev/types';
+import type { types } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
+
 import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
 import { checkKeys } from '~utils';
 
@@ -44,10 +37,10 @@ export type FromDescriber<T extends Describer> = T['name'];
 /**
  * A {@linkcode Describer} type where the description property is optional.
  */
-export type Describer2 = NOmit<Describer, 'description'> &
+export type Describer2 = types.NOmit<Describer, 'description'> &
   Partial<Pick<Describer, 'description'>>;
 
-export const isFunction = (value: unknown): value is Fn => {
+export const isFunction = (value: unknown): value is types.Fn => {
   return typeof value === 'function';
 };
 
@@ -73,18 +66,8 @@ export type NotReadonly<T> = {
 export type Define<T, U> = T extends undefined
   ? U
   : undefined extends T
-    ? NotUndefined<T>
+    ? types.NotUndefined<T>
     : T;
-
-interface PrimitiveObjectMap {
-  readonly [key: string]: SingleOrArray<PrimitiveObject>;
-}
-
-/**
- * A type that represents a primitive value, which can be a string, number, boolean,
- * null, undefined, or an object.
- */
-export type PrimitiveObject = Primitive | Primitive[] | PrimitiveObjectMap;
 
 /**
  * Option for changing a property access in an object.
@@ -112,7 +95,7 @@ export type ChangeProperty<
   name extends keyof T,
   replace extends string,
   option extends ChangePropertyOption = 'normal',
-> = NOmit<T, name> &
+> = types.NOmit<T, name> &
   (name extends any
     ? option extends 'readonly'
       ? { +readonly [key in replace]: T[name] }
@@ -128,10 +111,10 @@ type _KeyStrings<
   AddObjectKey extends boolean = true,
   Key extends keyof T = keyof T,
 > = Key extends string
-  ? NotUndefined<T[Key]> extends object
+  ? types.NotUndefined<T[Key]> extends object
     ? {
         [key in keyof T]: (T[key] extends infer T2 extends object
-          ? UnionToIntersection<_KeyStrings<T2, AddObjectKey>>
+          ? types.UnionToIntersection<_KeyStrings<T2, AddObjectKey>>
           : never) &
           (AddObjectKey extends true
             ? { [key in HighMy]: string }
@@ -144,13 +127,15 @@ export type KeyStrings<
   T extends object,
   AddObjectKey extends boolean = true,
   Key extends keyof T = keyof T,
-> = UnionToIntersection<_KeyStrings<T, AddObjectKey, Key>>;
+> = types.UnionToIntersection<_KeyStrings<T, AddObjectKey, Key>>;
 
 export type HighMy = '@my';
 
 type __ChangeProperties<
   T extends object,
-  U extends DeepPartial<KeyStrings<T>> = DeepPartial<KeyStrings<T>>,
+  U extends types.DeepPartial<KeyStrings<T>> = types.DeepPartial<
+    KeyStrings<T>
+  >,
 > = {
   [key in keyof T as key extends keyof U
     ? U[key] extends infer U1
@@ -162,7 +147,7 @@ type __ChangeProperties<
       : never
     : key]: key extends keyof U
     ? T[key] extends infer T1 extends object
-      ? Omit<U[key], HighMy> extends infer U1 extends DeepPartial<
+      ? Omit<U[key], HighMy> extends infer U1 extends types.DeepPartial<
           KeyStrings<T1, true>
         >
         ? __ChangeProperties<T1, U1>
@@ -173,7 +158,9 @@ type __ChangeProperties<
 
 type _ChangeProperties<
   T extends object,
-  U extends DeepPartial<KeyStrings<T>> = DeepPartial<KeyStrings<T>>,
+  U extends types.DeepPartial<KeyStrings<T>> = types.DeepPartial<
+    KeyStrings<T>
+  >,
   option extends Extract<
     ChangePropertyOption,
     'normal' | 'undefined'
@@ -181,7 +168,7 @@ type _ChangeProperties<
 > =
   __ChangeProperties<T, U> extends infer Tn
     ? option extends 'undefined'
-      ? DeepPartial<Tn>
+      ? types.DeepPartial<Tn>
       : Tn
     : never;
 
@@ -200,13 +187,15 @@ type _ChangeProperties<
  */
 export type ChangeProperties<
   T extends object,
-  U extends DeepPartial<KeyStrings<T>> = DeepPartial<KeyStrings<T>>,
+  U extends types.DeepPartial<KeyStrings<T>> = types.DeepPartial<
+    KeyStrings<T>
+  >,
   option extends Extract<
     ChangePropertyOption,
     'normal' | 'undefined'
   > = 'normal',
 > =
-  DeepPartial<KeyStrings<T>> extends U
+  types.DeepPartial<KeyStrings<T>> extends U
     ? T
     : _ChangeProperties<T, U, option>;
 
@@ -364,8 +353,8 @@ export type RecordS<T> = Record<string, T>;
  *
  * @see {@linkcode NotUndefined}
  */
-export type ValuesOf<T> = NotUndefined<
-  NotUndefined<T>[keyof NotUndefined<T>]
+export type ValuesOf<T> = types.NotUndefined<
+  types.NotUndefined<T>[keyof types.NotUndefined<T>]
 >;
 
 /**
@@ -408,7 +397,7 @@ export type ExtractS<T> = Extract<T, string>;
  * @see {@linkcode Ru} for a utility type that represents a true object.
  * @see {@linkcode SymbolConstructor} for the symbol constructor type.
  */
-export type TrueObject = Ru & {
+export type TrueObject = types.Ru & {
   [Symbol.iterator]?: never;
   //@ts-expect-error - 'SymbolConstructor' does not exist on type 'object'
   [SymbolConstructor]?: never;

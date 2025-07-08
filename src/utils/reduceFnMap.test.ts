@@ -1,4 +1,4 @@
-import { t } from '@bemedev/types';
+import { typings } from '@bemedev/types';
 import {
   INIT_EVENT,
   MAX_EXCEEDED_EVENT_TYPE,
@@ -16,18 +16,18 @@ describe('toEventsMap', () => {
   test('combine correctement les événements et les promisees', () => {
     // #region Arrange
     const events: EventsMap = {
-      EVENT1: t.string,
-      EVENT2: { data: t.number },
+      EVENT1: typings.strings.type,
+      EVENT2: { data: typings.numbers.type },
     };
 
     const promisees: PromiseeMap = {
       promise1: {
-        then: t.string,
-        catch: t.boolean,
+        then: typings.strings.type,
+        catch: typings.strings.type,
       },
       promise2: {
-        then: { success: t.boolean },
-        catch: { error: t.string },
+        then: { success: typings.booleans.type },
+        catch: { error: typings.strings.type },
       },
     };
     // #endregion
@@ -38,12 +38,12 @@ describe('toEventsMap', () => {
 
     // #region Assert
     expect(result).toEqual({
-      EVENT1: t.string,
-      EVENT2: { data: t.number },
-      'promise1::then': t.string,
-      'promise1::catch': t.boolean,
-      'promise2::then': { success: t.boolean },
-      'promise2::catch': { error: t.string },
+      EVENT1: typings.strings.type,
+      EVENT2: { data: typings.numbers.type },
+      'promise1::then': typings.strings.type,
+      'promise1::catch': typings.booleans.type,
+      'promise2::then': { success: typings.booleans.type },
+      'promise2::catch': { error: typings.strings.type },
     });
     // #endregion
   });
@@ -51,7 +51,7 @@ describe('toEventsMap', () => {
   test('fonctionne avec un objet promisees vide', () => {
     // Arrange
     const events: EventsMap = {
-      EVENT1: t.string,
+      EVENT1: typings.strings.type,
     };
     const promisees: PromiseeMap = {};
 
@@ -81,7 +81,7 @@ describe('reduceFnMap', () => {
   test('gère correctement un événement de type chaîne', () => {
     // Arrange
     const events: EventsMap = {
-      EVENT1: t.string,
+      EVENT1: typings.strings.type,
     };
     const promisees: PromiseeMap = {};
     const elseSpy = vi.fn().mockReturnValue('else result');
@@ -104,8 +104,8 @@ describe('reduceFnMap', () => {
   test("utilise la fonction appropriée en fonction du type d'événement", () => {
     // Arrange
     const events: EventsMap = {
-      EVENT1: t.string,
-      EVENT2: { data: t.number },
+      EVENT1: typings.strings.type,
+      EVENT2: { data: typings.numbers.type },
     };
     const promisees: PromiseeMap = {};
 
@@ -146,7 +146,7 @@ describe('reduceFnMap', () => {
   test('utilise nothing comme fonction else par défaut', () => {
     // Arrange
     const events: EventsMap = {
-      EVENT1: t.string,
+      EVENT1: typings.strings.type,
     };
     const promisees: PromiseeMap = {};
 
@@ -167,8 +167,8 @@ describe('reduceFnMap', () => {
     const events: EventsMap = {};
     const promisees: PromiseeMap = {
       promise1: {
-        then: t.string,
-        catch: t.boolean,
+        then: typings.strings.type,
+        catch: typings.booleans.type,
       },
     };
 
@@ -220,7 +220,7 @@ describe('reduceFnMap2', () => {
   test('gère correctement un événement de type chaîne', () => {
     // Arrange
     const events: EventsMap = {
-      EVENT1: t.string,
+      EVENT1: typings.strings.type,
     };
     const promisees: PromiseeMap = {};
     const elseSpy = vi.fn().mockReturnValue('else result');
@@ -242,8 +242,8 @@ describe('reduceFnMap2', () => {
   test("utilise la fonction appropriée en fonction du type d'événement", () => {
     // Arrange
     const events: EventsMap = {
-      EVENT1: t.string,
-      EVENT2: { data: t.number },
+      EVENT1: typings.strings.type,
+      EVENT2: { data: typings.numbers.type },
     };
     const promisees: PromiseeMap = {};
 
@@ -281,7 +281,7 @@ describe('reduceFnMap2', () => {
   test('utilise nothing comme fonction else par défaut', () => {
     // Arrange
     const events: EventsMap = {
-      EVENT1: t.string,
+      EVENT1: typings.strings.type,
     };
     const promisees: PromiseeMap = {};
 
@@ -302,8 +302,8 @@ describe('reduceFnMap2', () => {
     const events: EventsMap = {};
     const promisees: PromiseeMap = {
       promise1: {
-        then: t.string,
-        catch: t.boolean,
+        then: typings.strings.type,
+        catch: typings.booleans.type,
       },
     };
 

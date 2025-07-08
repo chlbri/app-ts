@@ -1,12 +1,7 @@
-import { t } from '@bemedev/types';
+import { castings } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
 import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
-import {
-  isFunction,
-  type FnMap,
-  type FnMapR,
-  type FnR,
-  type PrimitiveObject,
-} from '~types';
+import { isFunction, type FnMap, type FnMapR, type FnR } from '~types';
 import { nothing } from './nothing';
 
 type ToEventMap_F = <
@@ -64,20 +59,21 @@ export const reduceFnMap: ReduceFnMap_F = (events, promisees, fn) => {
   return (pContext, context, event) => {
     const check5 = typeof event === 'string';
     const _else = fn.else ?? nothing;
-    if (check5) return t.any(_else(pContext, context, event));
+    if (check5)
+      return castings.commons.any(_else(pContext, context, event));
 
     const { payload, type } = event;
 
     for (const key of keys) {
       const check2 = type === key;
-      const func = t.any(fn)[key];
+      const func = castings.commons.any(fn)[key];
       const check3 = !!func;
 
       const check4 = check2 && check3;
       if (check4) return func(pContext, context, payload);
     }
 
-    return t.any(_else(pContext, context, event));
+    return castings.commons.any(_else(pContext, context, event));
   };
 };
 
@@ -115,7 +111,7 @@ export const reduceFnMapReduced: ReduceFnMap2_F = (
   fn,
 ) => {
   const check1 = isFunction(fn);
-  if (check1) return t.any(fn);
+  if (check1) return castings.commons.any(fn);
 
   const map = toEventsMap(events, promisees);
   const keys = Object.keys(map);
@@ -123,19 +119,19 @@ export const reduceFnMapReduced: ReduceFnMap2_F = (
   return (context, event) => {
     const check5 = typeof event === 'string';
     const _else = fn.else ?? nothing;
-    if (check5) return t.any(_else(context, event));
+    if (check5) return castings.commons.any(_else(context, event));
 
     const { payload, type } = event;
 
     for (const key of keys) {
       const check2 = type === key;
-      const func = t.any(fn)[key];
+      const func = castings.commons.any(fn)[key];
       const check3 = !!func;
 
       const check4 = check2 && check3;
       if (check4) return func(context, payload);
     }
 
-    return t.any(_else(context, event));
+    return castings.commons.any(_else(context, event));
   };
 };

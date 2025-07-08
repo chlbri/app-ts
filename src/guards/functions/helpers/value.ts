@@ -1,8 +1,9 @@
-import { t } from '@bemedev/types';
+import { castings } from '@bemedev/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import { getByKey } from '~machines';
-import type { FnR, PrimitiveObject } from '~types';
+import type { FnR } from '~types';
 import type { DefinedValue } from '../../types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 
 export type IsValueS_F = <
   E extends EventsMap,
@@ -106,7 +107,7 @@ export const isNotValue: IsValueS_F = (path, ...values) => {
   const func = isValue(path, ...values);
 
   return (pContext, context, event) => {
-    const result = func(pContext, context, t.any(event));
+    const result = func(pContext, context, castings.commons.any(event));
     return !result;
   };
 };

@@ -1,6 +1,8 @@
-import type { Unionize } from '@bemedev/types';
+import type {
+  PrimitiveObject,
+  Unionize,
+} from '@bemedev/types/lib/types/types';
 
-import type { PrimitiveObject } from '~types';
 import type { INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE } from './constants';
 
 /**

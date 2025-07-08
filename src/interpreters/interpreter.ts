@@ -17,7 +17,8 @@ import {
   type Timeout2,
 } from '@bemedev/interval2';
 import sleep from '@bemedev/sleep';
-import { t, type AllowedNames, type Fn } from '@bemedev/types';
+import { castings, type types } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
 import {
@@ -96,8 +97,8 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '~transitions';
-import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
-import { IS_TEST, reduceFnMap, replaceAll, typings } from '~utils';
+import { isDescriber, type RecordS } from '~types';
+import { IS_TEST, reduceFnMap, replaceAll } from '~utils';
 import { ChildS, type ChildS2 } from './../machine/types';
 import { Node } from './../states/types';
 import { merge } from './../utils/merge';
@@ -472,8 +473,10 @@ export class Interpreter<
     this.#performStates({ value });
     this.#node = this.#resolveNode(this.#config);
 
-    const configForFlat = t.unknown<NodeConfig>(this.#config);
-    this.#flat = t.any(flatMap(configForFlat));
+    const configForFlat = castings.commons.unknown<NodeConfig>(
+      this.#config,
+    );
+    this.#flat = castings.commons.any(flatMap(configForFlat));
   };
 
   /**
@@ -874,7 +877,7 @@ export class Interpreter<
 
   #executeAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this.#makeBusy();
-    const { pContext, context, ...extendeds } = t.any(
+    const { pContext, context, ...extendeds } = castings.commons.any(
       this.#performAction(action),
     );
 
@@ -898,7 +901,7 @@ export class Interpreter<
   }
 
   get #contexts() {
-    return t.unknown<ActionResult<Pc, Tc>>({
+    return castings.commons<ActionResult<Pc, Tc>>({
       pContext: cloneDeep(this.#pContext),
       context: structuredClone(this.#context),
     });
@@ -1204,7 +1207,7 @@ export class Interpreter<
               type: `${src}::${type}`,
               payload,
             };
-            this.#changeEvent(t.any(event));
+            this.#changeEvent(castings.commons.any(event));
 
             const transitions = toArray.typed(
               type === 'then' ? then : _catch,
@@ -1406,7 +1409,7 @@ export class Interpreter<
 
   #performChildMachines = () => {
     this.#childrenMachines.forEach(({ id, ...child }) => {
-      this.#reduceChild(t.any(child), id);
+      this.#reduceChild(castings.commons.any(child), id);
     });
 
     this.#childrenServices.forEach(child => {
@@ -1610,7 +1613,7 @@ export class Interpreter<
    * @see {@linkcode AllowedNames} for more information about allowed names.
    * @see {@linkcode Fn} for more information about function types.
    */
-  #mapperFn = <T>(key: AllowedNames<T, Fn>) => {
+  #mapperFn = <T>(key: types.AllowedNames<T, types.Fn>) => {
     return (value: T) => {
       const fn = (value as any)[key];
       this.#schedule(fn);
@@ -1967,7 +1970,9 @@ export class Interpreter<
       return { sv: this.#value, diffEntries: [], diffExits: [] };
     }
 
-    const next = t.unknown<NodeConfig>(this.proposedNextConfig(target));
+    const next = castings.commons.unknown<NodeConfig>(
+      this.proposedNextConfig(target),
+    );
     const flatNext = flatMap(next, false);
 
     const entriesCurrent = Object.entries(this.#flat);
@@ -2129,7 +2134,7 @@ export class Interpreter<
 
     const initials = reduced(pContext, context, event);
 
-    const child = typings.cast<ChildS<E, P, Pc, T>>({
+    const child = castings.commons<ChildS<E, P, Pc, T>>({
       initials,
       ...rest,
     });
@@ -2149,7 +2154,7 @@ export class Interpreter<
   #sendTo = <T extends EventObject>(to: string, event: T) => {
     const service = this.#childrenServices.find(({ id }) => id === to);
 
-    if (service) service.send(typings.anify(event));
+    if (service) service.send(castings.commons(event));
   };
 
   /**
@@ -2163,14 +2168,14 @@ export class Interpreter<
     { subscribers, machine, initials }: ChildS<E, P, Pc, T>,
     id: string,
   ) => {
-    let service = typings.forceCast<InterpreterFrom<T>>(
+    let service = castings.commons<InterpreterFrom<T>>(
       this.#childrenServices.find(f => f.id === id),
     );
 
     if (!service) {
       service = this.interpretChild(machine, initials);
       service.id = id;
-      this.#childrenServices.push(typings.anify(service));
+      this.#childrenServices.push(castings.commons(service));
     }
 
     const subscriber = service.subscribeMap(
@@ -2180,19 +2185,24 @@ export class Interpreter<
         _subscribers.forEach(({ contexts, events }) => {
           const type2 = eventToType(service.#event);
 
-          const checkEvents = reduceEvents(t.any(events), type, type2);
+          const checkEvents = reduceEvents(
+            castings.commons.any(events),
+            type,
+            type2,
+          );
 
           const checkContexts = !isDefined(contexts);
           if (checkEvents) {
             if (checkContexts) {
-              const pContext = t.any(service.#context);
+              const pContext = castings.commons.any(service.#context);
               const callback = () => this.#mergeContexts({ pContext });
               this.#scheduler.schedule(callback);
             } else {
               type _Contexts = SingleOrArray<
                 string | Record<string, string | string[]>
               >;
-              const _contexts = t.unknown<_Contexts>(contexts);
+              const _contexts =
+                castings.commons.unknown<_Contexts>(contexts);
               const paths = toArray.typed(_contexts);
 
               paths.forEach(path => {
@@ -2203,8 +2213,9 @@ export class Interpreter<
                 } else {
                   const entries = Object.entries(path).map(
                     ([key, value]) => {
+                      //TODO: add from @bemedev/types
                       const paths = toArray.typed(value);
-                      return t.tuple(key, paths);
+                      return castings.arrays.tupleOf(key, paths);
                     },
                   );
 

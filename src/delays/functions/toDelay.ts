@@ -1,6 +1,5 @@
-import type { Fn } from '@bemedev/types';
+import type { Fn, PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
-import type { PrimitiveObject } from '~types';
 import { reduceFnMap } from '~utils';
 import type { DelayMap } from '../types';
 

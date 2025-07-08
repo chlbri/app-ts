@@ -1,6 +1,7 @@
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { DefinedValue } from 'src/guards/types';
 import type { EventsMap, PromiseeMap } from '~events';
-import type { FnR, PrimitiveObject } from '~types';
+import type { FnR } from '~types';
 import { isNotValue, isValue } from './value';
 
 export type IsDefinedS_F = <

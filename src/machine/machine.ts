@@ -1,5 +1,6 @@
 import { isDefined, partialCall, toArray } from '@bemedev/basifun';
-import { t, type AllowedNames, type NOmit } from '@bemedev/types';
+import { castings, typings, type types } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import cloneDeep from 'clone-deep';
 import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
@@ -27,14 +28,13 @@ import {
   type NodeConfigWithInitials,
   type StateValue,
 } from '~states';
-import type { PrimitiveObject, RecordS } from '~types';
-import { merge, reduceFnMap, typings } from '~utils';
+import type { RecordS } from '~types';
+import { merge, reduceFnMap } from '~utils';
 import { expandFnMap } from './functions';
 import { createChildS, type CreateChild_F } from './functions/create';
 import type {
   AddOptions_F,
   AnyMachine,
-  AssignAction_F,
   Elements,
   GetIO_F,
   ScheduledData,
@@ -64,6 +64,7 @@ import type {
  *
  * @implements {@linkcode AnyMachine}<{@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} >
  */
+
 class Machine<
   const C extends Config = Config,
   Pc = any,
@@ -137,7 +138,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __events() {
-    return typings<ToEvents<E, P>>();
+    return typings.commons<ToEvents<E, P>>();
   }
 
   /**
@@ -155,7 +156,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __actionFn() {
-    return typings<Action<E, P, Pc, Tc>>();
+    return typings.commons<Action<E, P, Pc, Tc>>();
   }
 
   /**
@@ -166,9 +167,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __actionKey() {
-    return typings.notUndefined<
-      keyof (typeof this)['options']['actions']
-    >();
+    return this.#typingsByKey('actions');
   }
 
   /**
@@ -185,17 +184,23 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __actionParams() {
-    return typings<{ pContext: Pc; context: Tc; map: E }>();
+    return typings.commons<{ pContext: Pc; context: Tc; map: E }>();
   }
 
   #typingsByKey = <
-    K extends AllowedNames<AnyMachine<E, P, Pc, Tc>, object | undefined>,
+    K extends types.AllowedNames<
+      AnyMachine<E, P, Pc, Tc>,
+      object | undefined
+    >,
   >(
     key: K,
   ) => {
-    const out1 = typings.byKey(typings.cast(this), key);
-    const out2 = typings.extract(out1, typings.object.type);
-    return typings.keysof(out2);
+    const _this = typings.objects.dynamic(this);
+    const out1 = typings.objects.byKey(_this, key);
+    const out2 = typings.commons.extract(out1, typings.objects.type);
+    const out3 = typings.objects.keysOf.union(out2);
+
+    return out3;
   };
 
   /**
@@ -226,7 +231,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __predictate() {
-    return typings<PredicateS<E, P, Pc, Tc>>();
+    return typings.commons<PredicateS<E, P, Pc, Tc>>();
   }
 
   /**
@@ -257,7 +262,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __delay() {
-    return typings<Delay<E, P, Pc, Tc>>();
+    return typings.commons<Delay<E, P, Pc, Tc>>();
   }
 
   /**
@@ -273,7 +278,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __definedValue() {
-    return typings<DefinedValue<Pc, Tc>>();
+    return typings.commons<DefinedValue<Pc, Tc>>();
   }
 
   /**
@@ -304,7 +309,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __promise() {
-    return typings<PromiseFunction<E, P, Pc, Tc>>();
+    return typings.commons<PromiseFunction<E, P, Pc, Tc>>();
   }
 
   /**
@@ -326,7 +331,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __machine() {
-    return typings<this>();
+    return typings.commons<this>();
   }
   // #endregion
 
@@ -828,7 +833,7 @@ class Machine<
     const machines = this.#machines;
     const initials = this.#initials;
 
-    const out = typings.forceCast<Mo>({
+    const out = castings.commons<Mo>({
       predicates,
       actions,
       delays,
@@ -938,34 +943,9 @@ class Machine<
         const { event, to } = fn2(pContext, context, eventsMap);
         this.__sentEvents.push({ to, event });
 
-        return t.any({ pContext, context });
+        return castings.commons.any({ pContext, context });
       };
     };
-  };
-
-  /**
-   * Function helper to assign an action to a key in the machine.
-   *
-   * @param key the key of the context or private context to assign to.
-   * @param fn the action function.
-   * @returns a function that takes a key and an action function and returns a new instance of this {@linkcode Machine} with the assigned action.
-   *
-   * @see type inferences :
-   *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
-   *
-   * @see {@linkcode expandFnMap}
-   * @see {@linkcode AssignAction_F}
-   */
-  #assignAction: AssignAction_F<E, P, Pc, Tc> = (key, fn) => {
-    const out = expandFnMap(
-      this.#eventsMap,
-      this.#promiseesMap,
-      t.any(key),
-      fn,
-    );
-
-    return out;
   };
 
   /**
@@ -982,13 +962,13 @@ class Machine<
   #voidAction: VoidAction_F<E, P, Pc, Tc> = fn => {
     return (pContext, context, map) => {
       fn(pContext, context, map);
-      return t.any({ pContext, context });
+      return castings.commons.any({ pContext, context });
     };
   };
 
   #timeAction = (name: string): TimeAction_F<E, P, Pc, Tc> => {
     return id => (pContext, context) => {
-      return t.any({ pContext, context, [name]: id });
+      return castings.commons.any({ pContext, context, [name]: id });
     };
   };
 
@@ -998,77 +978,86 @@ class Machine<
    * @param option a function that provides options for the machine.
    * Options can include actions, predicates, delays, promises, and child machines.
    */
-  addOptions: AddOptions_F<E, P, Pc, Tc, NOmit<Mo, 'initials'>> = func => {
-    const isValue = this.#isValue;
-    const isNotValue = this.#isNotValue;
-    const isDefined = this.#isDefined;
-    const isNotDefined = this.#isNotDefined;
-    const createChild = this.#createChild;
-    const assign = this.#assignAction;
-    const voidAction = this.#voidAction;
-    const sender = this.#sender;
+  addOptions: AddOptions_F<E, P, Pc, Tc, types.NOmit<Mo, 'initials'>> =
+    func => {
+      const isValue = this.#isValue;
+      const isNotValue = this.#isNotValue;
+      const isDefined = this.#isDefined;
+      const isNotDefined = this.#isNotDefined;
+      const createChild = this.#createChild;
+      const voidAction = this.#voidAction;
+      const sender = this.#sender;
 
-    const out = func({
-      isValue,
-      isNotValue,
-      isDefined,
-      isNotDefined,
-      createChild,
-      assign,
-      voidAction,
-      sender,
-      debounce: (fn, { id, ms = 100 }) => {
-        return (pContext, context, map) => {
-          const data = fn(
-            cloneDeep(pContext),
-            structuredClone(context),
-            map,
+      const out = func({
+        isValue,
+        isNotValue,
+        isDefined,
+        isNotDefined,
+        createChild,
+        assign: (key, fn) => {
+          const out = castings.commons.any(expandFnMap)(
+            this.#eventsMap,
+            this.#promiseesMap,
+            castings.commons.any(key),
+            fn,
           );
 
-          const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
+          return out;
+        },
+        voidAction,
+        sender,
+        debounce: (fn, { id, ms = 100 }) => {
+          return (pContext, context, map) => {
+            const data = fn(
+              cloneDeep(pContext),
+              structuredClone(context),
+              map,
+            );
 
-          return t.any({
-            pContext,
-            context,
-            scheduled,
-          });
-        };
-      },
+            const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
 
-      resend: resend => {
-        return (pContext, context) => {
-          return t.any({
-            pContext,
-            context,
-            resend,
-          });
-        };
-      },
+            return castings.commons.any({
+              pContext,
+              context,
+              scheduled,
+            });
+          };
+        },
 
-      forceSend: forceSend => {
-        return (pContext, context) => {
-          return t.any({
-            pContext,
-            context,
-            forceSend,
-          });
-        };
-      },
+        resend: resend => {
+          return (pContext, context) => {
+            return castings.commons.any({
+              pContext,
+              context,
+              resend,
+            });
+          };
+        },
 
-      pauseActivity: this.#timeAction('pauseActivity'),
-      resumeActivity: this.#timeAction('resumeActivity'),
-      stopActivity: this.#timeAction('stopActivity'),
-      pauseTimer: this.#timeAction('startActivity'),
-      resumeTimer: this.#timeAction('resumeTimer'),
-      stopTimer: this.#timeAction('stopTimer'),
-    });
+        forceSend: forceSend => {
+          return (pContext, context) => {
+            return castings.commons.any({
+              pContext,
+              context,
+              forceSend,
+            });
+          };
+        },
 
-    this.#addActions(out?.actions);
-    this.#addPredicates(out?.predicates);
-    this.#addDelays(out?.delays);
-    this.#addPromises(out?.promises);
-    this.#addMachines(out?.machines);
-  };
+        pauseActivity: this.#timeAction('pauseActivity'),
+        resumeActivity: this.#timeAction('resumeActivity'),
+        stopActivity: this.#timeAction('stopActivity'),
+        pauseTimer: this.#timeAction('startActivity'),
+        resumeTimer: this.#timeAction('resumeTimer'),
+        stopTimer: this.#timeAction('stopTimer'),
+      });
+
+      this.#addActions(out?.actions);
+      this.#addPredicates(out?.predicates);
+      this.#addDelays(out?.delays);
+      this.#addPromises(out?.promises);
+      this.#addMachines(out?.machines);
+    };
 }
 
 /**
@@ -1178,12 +1167,12 @@ export const DEFAULT_MACHINE = createMachine(
     },
   },
   {
-    eventsMap: { SWITCH: typings.emptyO.type },
-    context: typings.context(
-      typings.recordAll(typings.number.type, 'iterator'),
-    ),
-    pContext: typings.emptyO.type,
-    promiseesMap: typings.emptyO.type,
+    eventsMap: { SWITCH: typings.objects.dynamic({}) },
+    context: castings.commons.primitiveObject.dynamic({
+      iterator: 0 as number,
+    }),
+    pContext: typings.objects.dynamic({}),
+    promiseesMap: typings.objects.dynamic({}),
   },
   { '/': 'off' },
 ).provideOptions(({ assign }) => ({

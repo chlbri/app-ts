@@ -1,10 +1,9 @@
-import type { Fn, TuplifyUnion } from '@bemedev/types';
 import type {
-  ChangeProperties,
-  KeyStrings,
+  Fn,
   PrimitiveObject,
-  ValuesOf,
-} from '~types';
+  UnionToTuple,
+} from '@bemedev/types/lib/types/types';
+import type { ChangeProperties, KeyStrings, ValuesOf } from '~types';
 
 export type ExtractLargeKeys<T> = string extends T
   ? never
@@ -34,7 +33,7 @@ export type _SimplifyArray<T extends any[]> = {
   [K in IdxOf<T>]: Simplify<T[K]>;
 };
 
-export type SimplifyArray<T extends any[]> = TuplifyUnion<
+export type SimplifyArray<T extends any[]> = UnionToTuple<
   ValuesOf<_SimplifyArray<T>>
 >;
 
@@ -70,7 +69,7 @@ expectTypeOf(ttString).toExtend<PrimitiveObject>();
 expectTypeOf(ttNumber).toExtend<PrimitiveObject>();
 expectTypeOf(ttBoolean).toExtend<PrimitiveObject>();
 expectTypeOf(ttArra1).not.toExtend<PrimitiveObject>();
-expectTypeOf(ttArray2).toExtend<PrimitiveObject>();
+expectTypeOf(ttArray2).not.toExtend<PrimitiveObject>();
 expectTypeOf(ttObject).toExtend<PrimitiveObject>();
 expectTypeOf(ttFunction).not.toExtend<PrimitiveObject>();
 expectTypeOf(ttArrowFunction).not.toExtend<PrimitiveObject>();

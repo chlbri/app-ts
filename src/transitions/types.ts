@@ -1,4 +1,8 @@
-import type { NotUndefined, Require } from '@bemedev/types';
+import type {
+  NotUndefined,
+  PrimitiveObject,
+  Require,
+} from '@bemedev/types/lib/types/types';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { FromGuard, GuardConfig, Predicate } from '~guards';
@@ -12,7 +16,6 @@ import type {
 } from '~promises';
 import type {
   Identitfy,
-  PrimitiveObject,
   RecordS,
   ReduceArray,
   SingleOrArrayL,

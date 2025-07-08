@@ -1,4 +1,4 @@
-import type { Fn } from '@bemedev/types';
+import type { Fn } from '@bemedev/types/lib/types/types';
 
 import type {
   NodeConfig,

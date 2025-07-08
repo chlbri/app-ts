@@ -1,4 +1,4 @@
-import { t } from '@bemedev/types';
+import { typings } from '@bemedev/types';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
 import {
@@ -232,10 +232,10 @@ describe('Interpret for guards', () => {
       {
         ...defaultT,
         context: {
-          data: t.number,
+          data: typings.numbers.type,
         },
         pContext: {
-          data: t.string,
+          data: typings.strings.type,
         },
       },
       { '/': 'state1' },
