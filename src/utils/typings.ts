@@ -360,7 +360,7 @@ const fnMap = {
       ___?: Pc,
       ____?: Tc,
       ______?: R,
-    ) => typings.objects.dynamic<FnMap<E, P, Pc, Tc, R>>,
+    ) => typings.objects.dynamic<FnMap<E, P, Pc, Tc, R>>(),
 
     {
       machine: <R = any, M extends AnyMachine = AnyMachine>(
@@ -375,7 +375,7 @@ const fnMap = {
             M['context'],
             R
           >
-        >;
+        >();
       },
     },
   ),
@@ -417,7 +417,7 @@ const fnMapR = {
       __?: P,
       ____?: Tc,
       ______?: R,
-    ) => typings.objects.dynamic<FnMapR<E, P, Tc, R>>,
+    ) => typings.objects.dynamic<FnMapR<E, P, Tc, R>>(),
     {
       machine: <R = any, M extends AnyMachine = AnyMachine>(
         _?: R,
@@ -425,7 +425,7 @@ const fnMapR = {
       ) => {
         return typings.objects.dynamic<
           FnMapR<EventsMapFrom<M>, PromiseesMapFrom<M>, M['context'], R>
-        >;
+        >();
       },
     },
   ),
@@ -457,7 +457,7 @@ const _anyMachine = {
       __?: P,
       ___?: Pc,
       ____?: Tc,
-    ) => typings.objects.dynamic<AnyMachine<E, P, Pc, Tc>>,
+    ) => typings.objects.dynamic<AnyMachine<E, P, Pc, Tc>>(),
   ),
 };
 
@@ -568,7 +568,7 @@ const delays = {
         __?: P,
         ___?: Pc,
         ____?: Tc,
-      ) => typings.objects.dynamic<DelayMap<E, P, Pc, Tc>>,
+      ) => typings.objects.dynamic<DelayMap<E, P, Pc, Tc>>(),
       {
         machine: <M extends AnyMachine = AnyMachine>(__?: M) => {
           return typings.objects.dynamic<
@@ -578,7 +578,7 @@ const delays = {
               M['pContext'],
               M['context']
             >
-          >;
+          >();
         },
       },
     ),

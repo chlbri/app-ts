@@ -715,7 +715,7 @@ describe('detailed object tests', () => {
         expect(typeof typeMachine.typings.any).toBe('function');
 
         const result = typeMachine.typings.any();
-        expect(typeof result).toBe('function');
+        expect(result).toBeUndefined();
       });
       test('should handle complex type parameters', () => {
         type ComplexEventsMap = {
@@ -788,7 +788,7 @@ describe('detailed object tests', () => {
       expect(typeof typeMachine.typings.functions.fnReduced()).toBe(
         'function',
       );
-      expect(typeMachine.typings.any()()).toBeUndefined();
+      expect(typeMachine.typings.any()).toBeUndefined();
     });
 
     test('all casting functions should be consistent', () => {
