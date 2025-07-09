@@ -1,6 +1,6 @@
-import { typings } from '@bemedev/types';
 import { createMachine } from '~machine';
 import { createConfig, EVENTS_FULL } from '~machines';
+import { typings } from '~utils';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
@@ -98,28 +98,28 @@ export const machine21 = createMachine(
     machines: 'machine1',
     ...config21,
   },
-  {
+  typings({
     eventsMap: {
-      NEXT: typings.objects.dynamic({}),
-      FETCH: typings.objects.dynamic({}),
-      WRITE: { value: typings.strings.type },
-      SEND: typings.objects.dynamic({}),
+      NEXT: 'primitive',
+      FETCH: 'primitive',
+      WRITE: { value: 'string' },
+      SEND: 'primitive',
     },
     context: {
-      iterator: typings.numbers.type,
-      input: typings.strings.type,
-      data: typings.arrays(typings.strings.type),
+      iterator: 'number',
+      input: 'string',
+      data: ['string'],
     },
     pContext: {
-      iterator: typings.numbers.type,
+      iterator: 'number',
     },
     promiseesMap: {
       fetch: {
-        then: typings.arrays(typings.strings.type),
-        catch: typings.objects.dynamic({}),
+        then: ['string'],
+        catch: 'primitive',
       },
     },
-  },
+  }),
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
 ).provideOptions(
   ({ isNotValue, isValue, createChild, assign, voidAction, sender }) => ({

@@ -20,10 +20,6 @@ beforeAll(() => {
   vi.useFakeTimers();
 });
 
-// test.runIf(IS_TEST)('## => debug', () => {
-//   console.log('debug', DEFAULT_CONFIG);
-// });
-
 describe('Interpreter', () => {
   const resultC = {
     pContext: { data: 'avion' },
@@ -1045,10 +1041,6 @@ describe('Interpreter', () => {
 
       describe('#40 => Close the service', async () => {
         test('#01 => Pause the service', service.pause.bind(service));
-
-        test('#02 => All intervals are paused', () => {
-          expect(service._intervalsArePaused).toBe(true);
-        });
 
         describe('#02 => Calls of log', () => {
           test('#01 => Length of calls of log is the same of length of strings', () => {

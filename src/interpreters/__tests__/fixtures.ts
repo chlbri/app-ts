@@ -1,5 +1,6 @@
 import sleep from '@bemedev/sleep';
 import { castings } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import { DEFAULT_NOTHING } from '~constants';
 import type { EventArg, EventsMap, PromiseeMap } from '~events';
 import type { Interpreter } from '~interpreter';
@@ -10,7 +11,6 @@ import type {
   SimpleMachineOptions2,
 } from '~machines';
 import type { StateValue } from '~states';
-import type { PrimitiveObject } from '~types';
 import { IS_TEST } from '~utils';
 
 export const defaultC = { pContext: {}, context: {} };

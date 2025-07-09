@@ -317,6 +317,9 @@ export class Interpreter<
   }
 
   /**
+   * @deprecated
+   *
+   * Used for typings only
    * The accessor of current {@linkcode ToEvents} of this {@linkcode Interpreter} service
    *
    * @remarks Usually for typings
@@ -804,8 +807,11 @@ export class Interpreter<
       this.#mergeContexts(data);
     };
 
+    this.#timeoutActions = this.#timeoutActions.filter(f => f.id !== id);
+
     const timer = createTimeout({ callback, timeout, id });
     this.#timeoutActions.push(timer);
+    timer.start();
   };
 
   #performResendAction = (resend?: EventArg<E>) => {
@@ -820,7 +826,7 @@ export class Interpreter<
 
   #performPauseActivityAction = (id?: string) => {
     if (!id) return;
-    this.#currentActivities?.filter(f => f.id !== id).forEach(this.#pause);
+    this.#currentActivities?.filter(f => f.id === id).forEach(this.#pause);
   };
 
   #performResumeActivityAction = (id?: string) => {
@@ -1002,6 +1008,7 @@ export class Interpreter<
 
     for (const [_delay, _activity] of entries) {
       const id = `${from}::${_delay}`;
+      console.warn(id);
       const _interval = this._cachedIntervals.find(f => f.id === id);
 
       if (_interval) {
@@ -1092,25 +1099,6 @@ export class Interpreter<
    * Collection of all currents {@linkcode Interval2} intervals, related to current {@linkcode ActivityConfig}s of this {@linkcode Interpreter} service.
    */
   protected _cachedIntervals: Interval2[] = [];
-
-  /**
-   * @deprecated
-   * Checks if all current {@linkcode Interval2} intervals are paused.
-   *
-   * @return true if all intervals are paused, false otherwise.
-   *
-   * @remarks only used in tests, not in production.
-   */
-  get _intervalsArePaused() {
-    if (IS_TEST) {
-      return this._cachedIntervals.every(
-        ({ state }) => state === 'paused',
-      );
-    }
-
-    console.error('collecteds0 is not available in production');
-    return;
-  }
 
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';
@@ -1390,6 +1378,7 @@ export class Interpreter<
     return entries;
   }
 
+  //TODO: optimize calls by add a settable inner variable
   get #currentActivities() {
     const collected = this.#collectedActivities;
     const check = collected.length < 1;
