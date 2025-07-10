@@ -122,7 +122,14 @@ export const machine21 = createMachine(
   }),
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
 ).provideOptions(
-  ({ isNotValue, isValue, createChild, assign, voidAction, sender }) => ({
+  ({
+    isNotValue,
+    isValue,
+    createChild,
+    assign,
+    voidAction,
+    sendTo: sender,
+  }) => ({
     actions: {
       inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
       inc2: assign('context.iterator', (_, { iterator }) => iterator + 4),

@@ -241,7 +241,7 @@ export type AddOptionsParam_F<
   createChild: ChildProvider_F<E, P, Pc>;
   assign: AssignAction_F<E, P, Pc, Cast<Tc, Ru>>;
   voidAction: VoidAction_F<E, P, Pc, Tc>;
-  sender: SendAction_F<E, P, Pc, Tc>;
+  sendTo: SendAction_F<E, P, Pc, Tc>;
   debounce: DebounceAction_F<E, P, Pc, Tc>;
   resend: ResendAction_F<E, P, Pc, Tc>;
   forceSend: ResendAction_F<E, P, Pc, Tc>;
@@ -277,6 +277,11 @@ export type ScheduledData<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = { data: ActionResult<Pc, Tc>; ms: number; id: string };
 
+export type SendToEvent<T = any> = {
+  to: string;
+  event: T;
+};
+
 export type ExtendedActionsParams<
   E extends EventsMap = EventsMap,
   Pc extends PrimitiveObject = PrimitiveObject,
@@ -291,4 +296,5 @@ export type ExtendedActionsParams<
   pauseTimer: string;
   resumeTimer: string;
   stopTimer: string;
+  sentEvent: SendToEvent;
 }>;

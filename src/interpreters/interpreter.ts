@@ -362,10 +362,9 @@ export class Interpreter<
   ) {
     this.#machine = machine.renew;
 
-    this.#initialConfig = this.#machine.initialConfig;
+    this.#config = this.#initialConfig = this.#machine.initialConfig;
     this.#initialNode = this.#resolveNode(this.#initialConfig);
     this.#mode = mode;
-    this.#config = this.#initialConfig;
     this.#exact = exact;
     this.#performConfig(true);
     this.#scheduler = new Scheduler();
@@ -804,7 +803,8 @@ export class Interpreter<
     const { data, ms: timeout, id } = scheduled;
 
     const callback = () => {
-      this.#mergeContexts(data);
+      const cb = () => this.#mergeContexts(data);
+      this.#schedule(cb);
     };
 
     this.#timeoutActions = this.#timeoutActions.filter(f => f.id !== id);
@@ -812,6 +812,11 @@ export class Interpreter<
     const timer = createTimeout({ callback, timeout, id });
     this.#timeoutActions.push(timer);
     timer.start();
+  };
+
+  #performSendToAction = (sentEvent?: { to: string; event: any }) => {
+    if (!sentEvent) return;
+    this.#sendTo(sentEvent.to, sentEvent.event);
   };
 
   #performResendAction = (resend?: EventArg<E>) => {
@@ -868,11 +873,13 @@ export class Interpreter<
     pauseTimer,
     resumeTimer,
     stopTimer,
+    sentEvent,
   }: ExtendedActionsParams<E, Pc, Tc>) => {
-    this.#performScheduledAction(scheduled);
     this.#performResendAction(resend);
     this.#performForceSendAction(forceSend);
+    this.#performSendToAction(sentEvent);
 
+    this.#performScheduledAction(scheduled);
     this.#performPauseActivityAction(pauseActivity);
     this.#performResumeActivityAction(resumeActivity);
     this.#performStopActivityAction(stopActivity);
@@ -977,13 +984,6 @@ export class Interpreter<
     });
   };
 
-  #sendInnerEvents = () => {
-    const sentEvent = this.#machine.__sentEvents.pop();
-    if (sentEvent) {
-      this.#sendTo(sentEvent.to, sentEvent.event);
-    }
-  };
-
   #mergeContexts = ({
     pContext,
     context: __context,
@@ -998,8 +998,6 @@ export class Interpreter<
     const check = !equal(previousContext, this.#context);
     this.#flush();
     if (check) this.#flushMapSubscribers();
-
-    this.#sendInnerEvents();
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
@@ -1061,8 +1059,7 @@ export class Interpreter<
             }
           }
         };
-
-        this.#scheduler.schedule(cb);
+        this.#schedule(cb);
       };
       const promise = this.createInterval({
         callback,
@@ -1887,7 +1884,8 @@ export class Interpreter<
   #send = (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
     const { result, next } = this._send(event);
-    this.#mergeContexts(result);
+    const callback = () => this.#mergeContexts(result);
+    this.#schedule(callback);
 
     if (isDefined(next)) {
       this.#config = next;
@@ -2138,7 +2136,7 @@ export class Interpreter<
    * @param : the {@linkcode EventObject} event to send to the child service.
    *
    * @see {@linkcode send} for sending events to the current service.
-   * @see {@linkcode typings} for type casting.
+   * @see {@linkcode castings} for type casting.
    */
   #sendTo = <T extends EventObject>(to: string, event: T) => {
     const service = this.#childrenServices.find(({ id }) => id === to);
@@ -2186,7 +2184,7 @@ export class Interpreter<
             if (checkContexts) {
               const pContext = castings.commons.any(service.#context);
               const callback = () => this.#mergeContexts({ pContext });
-              this.#scheduler.schedule(callback);
+              this.#schedule(callback);
             } else {
               type _Contexts = SingleOrArray<
                 string | Record<string, string | string[]>
@@ -2199,7 +2197,7 @@ export class Interpreter<
                 if (typeof path === 'string') {
                   const callback = () =>
                     assignByKey(this.#pContext, path, service.#context);
-                  this.#scheduler.schedule(callback);
+                  this.#schedule(callback);
                 } else {
                   const entries = Object.entries(path).map(
                     ([key, value]) => {
@@ -2217,7 +2215,7 @@ export class Interpreter<
 
                       const callback = () =>
                         this.#mergeContexts({ pContext });
-                      this.#scheduler.schedule(callback);
+                      this.#schedule(callback);
                     });
                   });
                 }

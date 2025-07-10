@@ -93,7 +93,7 @@ type SimpleArgs = {
   promiseesMap: any;
 };
 
-const typess = <
+const pypings = <
   const E extends RecordP = RecordP,
   const P extends RecordP = RecordP,
   T extends Args<E, P> = Args<E, P>,
@@ -126,4 +126,4 @@ const typess = <
   return out;
 };
 
-export default typess;
+export default pypings;
