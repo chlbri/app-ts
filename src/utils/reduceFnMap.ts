@@ -28,7 +28,7 @@ export const toEventsMap: ToEventMap_F = (events, _promisees) => {
 export type ReduceFnMap_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 >(

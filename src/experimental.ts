@@ -4,7 +4,7 @@ import type { Contexts } from '~interpreters';
 import type { Describer, Describer2 } from '~types';
 
 export const reduceRemainings = <
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   ...remains: (() => {

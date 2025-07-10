@@ -308,10 +308,6 @@ describe('machine coverage', () => {
       describe('#35 => Close the service', async () => {
         test('#01 => Pause the service', service.pause.bind(service));
 
-        test('#02 => All intervals are paused', () => {
-          expect(service._intervalsArePaused).toBe(true);
-        });
-
         describe('#02 => Calls of log', () => {
           test('#01 => Length of calls of log is the same of length of strings', () => {
             expect(log).toBeCalledTimes(strings.length);

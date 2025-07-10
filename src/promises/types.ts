@@ -35,7 +35,7 @@ import type { FnMap, FnR, SingleOrArrayL } from '~types';
 export type PromiseFunction<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = FnMap<E, P, Pc, Tc, Promise<any>>;
 
@@ -53,7 +53,7 @@ export type PromiseFunction<
 export type PromiseFunction2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = FnR<E, P, Pc, Tc, Promise<any>>;
 
@@ -191,7 +191,7 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
 export type Promisee<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   src: PromiseFunction2<E, P, Pc, Tc>;
@@ -215,7 +215,7 @@ export type Promisee<
 export type PromiseeResult<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   event: ToEvents<E, P>;

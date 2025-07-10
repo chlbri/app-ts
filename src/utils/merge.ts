@@ -33,7 +33,6 @@ const _merge = deepmergeCustom<
  *
  * @see {@linkcode equal} for deep equality check
  * @see {@linkcode DeepPartial} for partial type definition
- * @see {@linkcode t.any} for type assertion
  * @see {@linkcode NoInfer} for type inference utility
  */
 export const merge = <T = any>(

@@ -144,8 +144,13 @@ export type ExpandFnMap = <
   events: E,
   promisees: P,
   key: K,
-  fn: FnMap<E, P, Pc, Cast<Tc, PrimitiveObject>, R>,
-) => ActionResultFn<E, P, Pc, Cast<Tc, PrimitiveObject>>;
+  fn: FnMap<E, P, Cast<Pc, PrimitiveObject>, Cast<Tc, PrimitiveObject>, R>,
+) => ActionResultFn<
+  E,
+  P,
+  Cast<Pc, PrimitiveObject>,
+  Cast<Tc, PrimitiveObject>
+>;
 /**
  *
  * @param events : type {@linkcode EventsMap} [E] - The events map.

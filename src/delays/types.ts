@@ -14,7 +14,7 @@ import type { FnMap } from '~types';
 export type Delay<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = number | FnMap<E, P, Pc, Tc, number>;
 
@@ -30,6 +30,6 @@ export type Delay<
 export type DelayMap<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Partial<Record<string, Delay<E, P, Pc, Tc>>>;

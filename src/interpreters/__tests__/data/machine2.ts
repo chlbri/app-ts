@@ -1,6 +1,6 @@
-import { typings } from '@bemedev/types';
 import { createMachine } from '~machine';
 import { createConfig, EVENTS_FULL } from '~machines';
+import { typings } from '~utils';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
@@ -98,32 +98,28 @@ export const machine2 = createMachine(
     machines: 'machine1',
     ...config2,
   },
-  {
+  typings({
     eventsMap: {
-      NEXT: typings.objects.dynamic({}),
-      FETCH: typings.objects.dynamic({}),
-      WRITE: { value: typings.strings.type },
-      FINISH: typings.objects.dynamic({}),
-    },
-    context: {
-      iterator: typings.numbers.type,
-      input: typings.strings.type,
-      data: typings.arrays(typings.strings.type),
+      NEXT: 'primitive',
+      FETCH: 'primitive',
+      WRITE: { value: 'string' },
+      FINISH: 'primitive',
     },
     pContext: {
-      iterator: typings.numbers.type,
+      iterator: 'number',
+    },
+    context: {
+      iterator: 'number',
+      input: 'string',
+      data: ['string'],
     },
     promiseesMap: {
-      // fetch: typings.promiseDef(
-      //   typings.array(typings.string.type),
-      //   typings.objects.dynamic({}),
-      // ),
       fetch: {
-        then: typings.arrays(typings.strings.type),
-        catch: typings.objects.dynamic({}),
+        then: ['string'],
+        catch: 'primitive',
       },
     },
-  },
+  }),
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
 ).provideOptions(
   ({ isNotValue, isValue, createChild, assign, voidAction }) => ({
@@ -175,33 +171,34 @@ export const _machine2 = createMachine(
   {
     ..._config2,
   },
-  {
+  typings({
     eventsMap: {
-      NEXT: typings.objects.dynamic({}),
-      FETCH: typings.objects.dynamic({}),
-      WRITE: { value: typings.strings.type },
-      FINISH: typings.objects.dynamic({}),
-    },
-    context: {
-      iterator: typings.numbers.type,
-      input: typings.strings.type,
-      data: typings.arrays(typings.strings.type),
+      NEXT: 'primitive',
+      FETCH: 'primitive',
+      WRITE: { value: 'string' },
+      FINISH: 'primitive',
     },
     pContext: {
-      iterator: typings.numbers.type,
+      iterator: 'number',
+    },
+    context: {
+      iterator: 'number',
+      input: 'string',
+      data: ['string'],
     },
     promiseesMap: {
       fetch: {
-        then: typings.arrays(typings.strings.type),
-        catch: typings.objects.dynamic({}),
+        then: ['string'],
+        catch: 'primitive',
       },
     },
-  },
+  }),
   { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
 ).provideOptions(
   ({ isNotValue, isValue, assign, voidAction, debounce: _debounce }) => ({
     actions: {
       inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
+
       inc2: assign('context.iterator', (_, { iterator }) => iterator + 4),
       sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
       askUsertoInput: voidAction(() => console.log('Input, please !!')),

@@ -98,7 +98,7 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import { isDescriber, type RecordS } from '~types';
-import { IS_TEST, reduceFnMap, replaceAll } from '~utils';
+import { IS_TEST, recomposeSV, reduceFnMap, replaceAll } from '~utils';
 import { ChildS, type ChildS2 } from './../machine/types';
 import { Node } from './../states/types';
 import { merge } from './../utils/merge';
@@ -162,7 +162,7 @@ import {
  */
 export class Interpreter<
   const C extends Config = Config,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
@@ -317,6 +317,9 @@ export class Interpreter<
   }
 
   /**
+   * @deprecated
+   *
+   * Used for typings only
    * The accessor of current {@linkcode ToEvents} of this {@linkcode Interpreter} service
    *
    * @remarks Usually for typings
@@ -359,10 +362,9 @@ export class Interpreter<
   ) {
     this.#machine = machine.renew;
 
-    this.#initialConfig = this.#machine.initialConfig;
+    this.#config = this.#initialConfig = this.#machine.initialConfig;
     this.#initialNode = this.#resolveNode(this.#initialConfig);
     this.#mode = mode;
-    this.#config = this.#initialConfig;
     this.#exact = exact;
     this.#performConfig(true);
     this.#scheduler = new Scheduler();
@@ -801,26 +803,81 @@ export class Interpreter<
     const { data, ms: timeout, id } = scheduled;
 
     const callback = () => {
-      this.#mergeContexts(data);
+      const cb = () => this.#mergeContexts(data);
+      this.#schedule(cb);
     };
+
+    this.#timeoutActions = this.#timeoutActions.filter(f => f.id !== id);
 
     const timer = createTimeout({ callback, timeout, id });
     this.#timeoutActions.push(timer);
+    timer.start();
+  };
+
+  #performSendToAction = (sentEvent?: { to: string; event: any }) => {
+    if (!sentEvent) return;
+    this.#sendTo(sentEvent.to, sentEvent.event);
   };
 
   #performResendAction = (resend?: EventArg<E>) => {
     if (!resend) return;
-    this.send(resend);
+    const cannot = this.#cannotPerformEvents(resend);
+    if (cannot) return;
+
+    return this.#sendAction(resend, true);
   };
 
+  #sendAction = (event: EventArg<E>, circular = false) => {
+    const type = eventToType(event);
+
+    const flat: RecordS<NodeConfigWithInitials> =
+      castings.commons.function.forceCast(flatMap)(this.#initialConfig);
+
+    const entries = Object.entries(flat);
+    let out = this.#contexts;
+    for (const [from, { on }] of entries) {
+      // #region Avoid circular transitions
+      // If the current value is the same as the from value, skip the transition
+      const _from = recomposeSV(from);
+
+      const checkCircular = circular
+        ? this.#value !== _from
+        : this.#value === _from;
+
+      if (checkCircular) continue;
+      // #endregion
+
+      const transitions = on?.[type];
+      if (!transitions) continue;
+
+      const { result } = this.#performTransitions(
+        ...toArray.typed(transitions),
+      );
+
+      // Merge the result with the current output
+      out = merge(out, result);
+    }
+
+    return out;
+  };
+
+  /**
+   * Force transition to performs inner actions despite the current state.
+   * This is useful for sending events that are not part of the current state transitions.
+   * @param transitions, the transitions to perform.
+   * @returns the result of the transitions.
+   *
+   * @see {@linkcode TransitionConfig} for more information about transitions.
+   */
   #performForceSendAction = (forceSend?: EventArg<E>) => {
     if (!forceSend) return;
-    this.#send(forceSend);
+
+    return this.#sendAction(forceSend);
   };
 
   #performPauseActivityAction = (id?: string) => {
     if (!id) return;
-    this.#currentActivities?.filter(f => f.id !== id).forEach(this.#pause);
+    this.#currentActivities?.filter(f => f.id === id).forEach(this.#pause);
   };
 
   #performResumeActivityAction = (id?: string) => {
@@ -862,29 +919,39 @@ export class Interpreter<
     pauseTimer,
     resumeTimer,
     stopTimer,
+    sentEvent,
   }: ExtendedActionsParams<E, Pc, Tc>) => {
-    this.#performScheduledAction(scheduled);
-    this.#performResendAction(resend);
-    this.#performForceSendAction(forceSend);
+    this.#performSendToAction(sentEvent);
 
+    this.#performScheduledAction(scheduled);
     this.#performPauseActivityAction(pauseActivity);
     this.#performResumeActivityAction(resumeActivity);
     this.#performStopActivityAction(stopActivity);
     this.#performPauseTimerAction(pauseTimer);
     this.#performResumeTimerAction(resumeTimer);
     this.#performStopTimerAction(stopTimer);
+
+    // ForceSendAction returns the result to make further actions
+    const result =
+      this.#performForceSendAction(forceSend) ??
+      this.#performResendAction(resend);
+
+    return result;
   };
 
   #executeAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this.#makeBusy();
+
     const { pContext, context, ...extendeds } = castings.commons.any(
       this.#performAction(action),
     );
 
-    this.#performsExtendedActions(extendeds);
+    const result = this.#performsExtendedActions(extendeds);
 
     this.#makeWork();
-    return { pContext, context };
+
+    // Force send action will be merged if exists
+    return merge({ pContext, context }, result);
   };
 
   /**
@@ -971,29 +1038,16 @@ export class Interpreter<
     });
   };
 
-  #sendInnerEvents = () => {
-    const sentEvent = this.#machine.__sentEvents.pop();
-    if (sentEvent) {
-      this.#sendTo(sentEvent.to, sentEvent.event);
-    }
-  };
-
   #mergeContexts = ({
     pContext,
     context: __context,
   }: ActionResult<Pc, Tc>) => {
-    const previousContext = structuredClone(this.#context);
-
     this.#pContext = merge(this.#pContext, pContext);
     const context = merge(this.#context, __context);
     this.#context = context;
     this.#performStates({ context });
 
-    const check = !equal(previousContext, this.#context);
     this.#flush();
-    if (check) this.#flushMapSubscribers();
-
-    this.#sendInnerEvents();
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
@@ -1054,8 +1108,7 @@ export class Interpreter<
             }
           }
         };
-
-        this.#scheduler.schedule(cb);
+        this.#schedule(cb);
       };
       const promise = this.createInterval({
         callback,
@@ -1093,25 +1146,6 @@ export class Interpreter<
    */
   protected _cachedIntervals: Interval2[] = [];
 
-  /**
-   * @deprecated
-   * Checks if all current {@linkcode Interval2} intervals are paused.
-   *
-   * @return true if all intervals are paused, false otherwise.
-   *
-   * @remarks only used in tests, not in production.
-   */
-  get _intervalsArePaused() {
-    if (IS_TEST) {
-      return this._cachedIntervals.every(
-        ({ state }) => state === 'paused',
-      );
-    }
-
-    console.error('collecteds0 is not available in production');
-    return;
-  }
-
   #performTransition: PerformTransition_F<Pc, Tc> = transition => {
     const check = typeof transition == 'string';
     if (check) return transition;
@@ -1138,9 +1172,7 @@ export class Interpreter<
       if (check1) return { target: transition };
 
       const check2 = transition !== false;
-      if (check2) {
-        return transition;
-      }
+      if (check2) return transition;
     }
     return {};
   };
@@ -1347,13 +1379,13 @@ export class Interpreter<
     return entries;
   }
 
+  //TODO: Add a #_fromActivites to reduce calls
   get #collectedActivities() {
     const entriesFlat = Object.entries(this.#flat);
 
     const entries: [from: string, activities: ActivityConfig][] = [];
 
-    entriesFlat.forEach(([from, node]) => {
-      const activities = node.activities;
+    entriesFlat.forEach(([from, { activities }]) => {
       if (activities) {
         entries.push([from, activities]);
       }
@@ -1390,6 +1422,7 @@ export class Interpreter<
     return entries;
   }
 
+  //TODO: optimize calls by add a settable inner variable
   get #currentActivities() {
     const collected = this.#collectedActivities;
     const check = collected.length < 1;
@@ -1812,11 +1845,10 @@ export class Interpreter<
     let sv = this.#value;
     const entriesFlat = Object.entries(this.#flat);
     const flat: [from: string, transitions: TransitionConfig[]][] = [];
-    const targets: string[] = [];
 
+    const type = event.type;
     entriesFlat.forEach(([from, node]) => {
       const on = node.on;
-      const type = event.type;
       const trs = on?.[type];
       if (trs) {
         const transitions = toArray.typed(trs);
@@ -1829,26 +1861,29 @@ export class Interpreter<
         ...toArray.typed(transitions),
       );
 
-      const check2 = target !== undefined;
-
-      if (check2) {
-        targets.push(target);
-      }
-
-      result = merge(result, _result);
-    });
-
-    // #region Use targets to perform entry and exit actions
-    targets.forEach(target => {
       const { diffEntries, diffExits } = this.#diffNext(target);
 
-      sv = nextSV(sv, target);
+      result = merge(result, _result);
       result = merge(
         result,
         this.#performActions(result, ...diffExits),
         this.#performActions(result, ...diffEntries),
       );
+
+      sv = nextSV(sv, target);
     });
+
+    // #region Use targets to perform entry and exit actions
+    // targets.forEach(target => {
+    //   const { diffEntries, diffExits } = this.#diffNext(target);
+
+    //   sv = nextSV(sv, target);
+    //   result = merge(
+    //     result,
+    //     this.#performActions(result, ...diffExits),
+    //     this.#performActions(result, ...diffEntries),
+    //   );
+    // });
     // #endregion
 
     //If no changes in state value, no cahnges in current config
@@ -1898,7 +1933,8 @@ export class Interpreter<
   #send = (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
     const { result, next } = this._send(event);
-    this.#mergeContexts(result);
+    const callback = () => this.#mergeContexts(result);
+    this.#schedule(callback);
 
     if (isDefined(next)) {
       this.#config = next;
@@ -2149,7 +2185,7 @@ export class Interpreter<
    * @param : the {@linkcode EventObject} event to send to the child service.
    *
    * @see {@linkcode send} for sending events to the current service.
-   * @see {@linkcode typings} for type casting.
+   * @see {@linkcode castings} for type casting.
    */
   #sendTo = <T extends EventObject>(to: string, event: T) => {
     const service = this.#childrenServices.find(({ id }) => id === to);
@@ -2179,7 +2215,8 @@ export class Interpreter<
     }
 
     const subscriber = service.subscribeMap(
-      ({ event: { type } }) => {
+      ({ event }) => {
+        const type = eventToType(event);
         const _subscribers = toArray.typed(subscribers);
 
         _subscribers.forEach(({ contexts, events }) => {
@@ -2196,7 +2233,7 @@ export class Interpreter<
             if (checkContexts) {
               const pContext = castings.commons.any(service.#context);
               const callback = () => this.#mergeContexts({ pContext });
-              this.#scheduler.schedule(callback);
+              this.#schedule(callback);
             } else {
               type _Contexts = SingleOrArray<
                 string | Record<string, string | string[]>
@@ -2209,11 +2246,10 @@ export class Interpreter<
                 if (typeof path === 'string') {
                   const callback = () =>
                     assignByKey(this.#pContext, path, service.#context);
-                  this.#scheduler.schedule(callback);
+                  this.#schedule(callback);
                 } else {
                   const entries = Object.entries(path).map(
                     ([key, value]) => {
-                      //TODO: add from @bemedev/types
                       const paths = toArray.typed(value);
                       return castings.arrays.tupleOf(key, paths);
                     },
@@ -2228,7 +2264,7 @@ export class Interpreter<
 
                       const callback = () =>
                         this.#mergeContexts({ pContext });
-                      this.#scheduler.schedule(callback);
+                      this.#schedule(callback);
                     });
                   });
                 }

@@ -1,14 +1,14 @@
 import { castings } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import { getByKey } from '~machines';
 import type { FnR } from '~types';
 import type { DefinedValue } from '../../types';
-import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 
 export type IsValueS_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   path: DefinedValue<Pc, Tc>,

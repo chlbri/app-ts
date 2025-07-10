@@ -1,3 +1,4 @@
+import type { DeepReadonly } from '@bemedev/types/lib/types/objects.types';
 import type { InitEvent, MaxExceededEvent } from '~events';
 import type {
   ActionKeysFrom,
@@ -19,41 +20,43 @@ expectTypeOf<TTConfig>().toEqualTypeOf<Config3>();
 
 type TTPrivate = PrivateContextFrom<Machine3>;
 expectTypeOf<TTPrivate>().toEqualTypeOf<{
-  data: string;
+  readonly data: string;
 }>();
 
 type TTC = ContextFrom<Machine3>;
 expectTypeOf<TTC>().toEqualTypeOf<{
-  age: number;
+  readonly age: number;
 }>();
 
 type TTEm = EventsMapFrom<Machine3>;
-expectTypeOf<TTEm>().toEqualTypeOf<{
-  EVENT: {
-    password: string;
-    username: string;
-  };
-  EVENT2: boolean;
-  EVENT3: {
-    login: string;
-    pwd: string;
-  };
-}>();
+expectTypeOf<TTEm>().toEqualTypeOf<
+  DeepReadonly<{
+    EVENT: {
+      password: string;
+      username: string;
+    };
+    EVENT2: boolean;
+    EVENT3: {
+      login: string;
+      pwd: string;
+    };
+  }>
+>();
 
 type TTE = EventsFrom<Machine3>;
 expectTypeOf<TTE>().toEqualTypeOf<
   | {
       type: 'EVENT';
       payload: {
-        password: string;
-        username: string;
+        readonly password: string;
+        readonly username: string;
       };
     }
   | {
       type: 'EVENT3';
       payload: {
-        login: string;
-        pwd: string;
+        readonly login: string;
+        readonly pwd: string;
       };
     }
   | {

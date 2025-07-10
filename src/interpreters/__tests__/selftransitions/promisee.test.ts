@@ -260,7 +260,6 @@ describe('promisee', () => {
     const rejectPromise = async () => {
       await sleep(DELAY * 2);
       return Promise.reject();
-      // throw undefined;
     };
 
     describe('#01 => Simple finally', () => {

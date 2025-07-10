@@ -7,7 +7,7 @@ import { reduceFnMap } from '~utils';
 export type ToAction_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,

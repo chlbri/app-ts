@@ -26,7 +26,7 @@ export type FromActionConfig<T extends ActionConfig> = T extends Describer
 export type Action<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = FnMap<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
 
@@ -42,14 +42,14 @@ export type Action<
 export type ActionMap<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Partial<Record<string, Action<E, P, Pc, Tc>>>;
 
 export type ActionResultFn<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
 
@@ -61,7 +61,7 @@ export type ActionResultFn<
  * @returns a {@linkcode DeepPartial} object containing the private context and the {@linkcode PrimitiveObject} context.
  */
 export type ActionResult<
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = DeepPartial<{
   pContext: Pc;
@@ -71,6 +71,6 @@ export type ActionResult<
 export type Action2<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = ActionResultFn<E, P, Pc, Tc>;

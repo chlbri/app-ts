@@ -11,7 +11,7 @@ import type { PredicateMap, PredicateS2 } from '../types';
 export type _ToPredicateF = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
@@ -26,7 +26,7 @@ export type _ToPredicateF = <
 export type ToPredicate_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,

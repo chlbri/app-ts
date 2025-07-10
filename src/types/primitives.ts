@@ -233,7 +233,7 @@ export type ReduceArray<T> = T extends readonly (infer U1)[]
 export type FnR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > = (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R;
@@ -295,7 +295,7 @@ export type EventToType<T extends string | { type: string }> = T extends {
 type _FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
   TT extends ToEvents<E, P> = ToEvents<E, P>,
@@ -327,7 +327,7 @@ type _FnMapR<
 export type FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > = FnR<E, P, Pc, Tc, R> | _FnMap<E, P, Pc, Tc, R, ToEvents<E, P>>;
@@ -338,7 +338,7 @@ export type FnMapR<
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > =
-  | ((state: Tc, eventsMap: ToEvents<E, P>) => R)
+  | ((context: Tc, eventsMap: ToEvents<E, P>) => R)
   | _FnMapR<E, P, Tc, R, ToEvents<E, P>>;
 
 /**

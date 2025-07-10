@@ -67,7 +67,7 @@ import type {
 
 class Machine<
   const C extends Config = Config,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
@@ -692,7 +692,6 @@ class Machine<
     out.#context = context;
     out.#eventsMap = events;
     out.#promiseesMap = promisees;
-    out.__sentEvents = this.__sentEvents;
 
     out.#addPredicates(predicates);
     out.#addActions(actions);
@@ -714,7 +713,9 @@ class Machine<
    * @deprecated
    * @remarks used internally
    */
-  _providePrivateContext = <T>(pContext: T) => {
+  _providePrivateContext = <T extends PrimitiveObject = PrimitiveObject>(
+    pContext: T,
+  ) => {
     const { context, initials, config, events, promisees } =
       this.#elements;
 
@@ -913,15 +914,6 @@ class Machine<
   // #endregion
 
   /**
-   * @deprecated
-   *
-   * This property is used to store sent events.
-   *
-   * @remarks Used internally
-   */
-  __sentEvents: { to: string; event: any }[] = [];
-
-  /**
    * Function helper to send an event to a child service.
    *
    * @param _ an optional parameter of type {@linkcode AnyMachine} [{@linkcode T}] to specify the machine context. Only used for type inference.
@@ -931,9 +923,8 @@ class Machine<
    * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode reduceFnMap}
-   * @see {@linkcode __sentEvents}
    */
-  #sender: SendAction_F<E, P, Pc, Tc> = <T extends AnyMachine>(
+  #sendTo: SendAction_F<E, P, Pc, Tc> = <T extends AnyMachine>(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _?: T,
   ) => {
@@ -941,9 +932,10 @@ class Machine<
       const fn2 = reduceFnMap(this.eventsMap, this.promiseesMap, fn);
       return (pContext, context, eventsMap) => {
         const { event, to } = fn2(pContext, context, eventsMap);
-        this.__sentEvents.push({ to, event });
 
-        return castings.commons.any({ pContext, context });
+        const sentEvent = { to, event };
+
+        return castings.commons.any({ pContext, context, sentEvent });
       };
     };
   };
@@ -986,7 +978,7 @@ class Machine<
       const isNotDefined = this.#isNotDefined;
       const createChild = this.#createChild;
       const voidAction = this.#voidAction;
-      const sender = this.#sender;
+      const sendTo = this.#sendTo;
 
       const out = func({
         isValue,
@@ -1005,7 +997,7 @@ class Machine<
           return out;
         },
         voidAction,
-        sender,
+        sendTo,
         debounce: (fn, { id, ms = 100 }) => {
           return (pContext, context, map) => {
             const data = fn(
@@ -1047,7 +1039,7 @@ class Machine<
         pauseActivity: this.#timeAction('pauseActivity'),
         resumeActivity: this.#timeAction('resumeActivity'),
         stopActivity: this.#timeAction('stopActivity'),
-        pauseTimer: this.#timeAction('startActivity'),
+        pauseTimer: this.#timeAction('pauseTimer'),
         resumeTimer: this.#timeAction('resumeTimer'),
         stopTimer: this.#timeAction('stopTimer'),
       });
@@ -1105,7 +1097,7 @@ export type { Machine };
 
 export type CreateMachine_F = <
   const C extends Config = Config,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,

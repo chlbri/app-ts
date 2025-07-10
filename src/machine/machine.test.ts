@@ -1,17 +1,17 @@
 import { castings } from '@bemedev/types';
 import equal from 'fast-deep-equal';
+import { DELAY, fakeDB, machine2 } from '~fixturesData';
+import { interpret } from '~interpreters';
+import { createMachine, getEntries } from '~machine';
+import type { StateValue } from '~states';
+import { nothing } from '~utils';
 import {
   constructSend,
   constructValue,
   defaultC,
   defaultT,
   fakeWaiter,
-} from 'src/interpreters/__tests__/fixtures';
-import { DELAY, fakeDB, machine2 } from '~fixturesData';
-import { interpret } from '~interpreters';
-import { createMachine, getEntries } from '~machine';
-import type { StateValue } from '~states';
-import { nothing } from '~utils';
+} from '../interpreters/__tests__/fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => {
@@ -491,10 +491,6 @@ describe('machine coverage', () => {
 
       describe('#33 => Close the service', async () => {
         test('#01 => Pause the service', service.pause.bind(service));
-
-        test('#02 => All intervals are paused', () => {
-          expect(service._intervalsArePaused).toBe(true);
-        });
 
         describe('#02 => Calls of log', () => {
           test('#01 => Length of calls of log is the same of length of strings', () => {
@@ -1304,4 +1300,12 @@ describe('machine coverage', () => {
       });
     });
   });
+});
+
+test('#my', () => {
+  const array = [1, 2, 3, 4, 5];
+  const readOnlyArray = ['ert', 'ert2', 'ert3'] as const;
+
+  expect(Array.isArray(array)).toBe(true);
+  expect(Array.isArray(readOnlyArray)).toBe(true);
 });

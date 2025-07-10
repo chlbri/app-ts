@@ -1,5 +1,6 @@
 import sleep from '@bemedev/sleep';
 import { castings } from '@bemedev/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import { DEFAULT_NOTHING } from '~constants';
 import type { EventArg, EventsMap, PromiseeMap } from '~events';
 import type { Interpreter } from '~interpreter';
@@ -10,11 +11,14 @@ import type {
   SimpleMachineOptions2,
 } from '~machines';
 import type { StateValue } from '~states';
-import type { PrimitiveObject } from '~types';
 import { IS_TEST } from '~utils';
 
-export const defaultC = { pContext: {}, context: {} };
-export const defaultT = { ...defaultC, eventsMap: {}, promiseesMap: {} };
+export const defaultC = { pContext: {}, context: {} } as const;
+export const defaultT = {
+  ...defaultC,
+  eventsMap: {},
+  promiseesMap: {},
+} as const;
 export const defaultI = { '/': 'idle' } as const;
 
 export const fakeWaiter = async (ms = 0, times = 1) => {
@@ -42,7 +46,7 @@ export const constructWaiter: ConstructWaiter_F = (DELAY = 0) => {
 
 type ConstructValue_F = <
   const C extends Config = Config,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
@@ -65,7 +69,7 @@ export const constructValue: ConstructValue_F = service => {
 
 type ConstructSend_F = <
   const C extends Config = Config,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
@@ -92,4 +96,23 @@ export const asyncNothing = async () => {
     return DEFAULT_NOTHING;
   }
   return;
+};
+
+export const mockConsole = () => {
+  const fnLog = vi.spyOn(console, 'log');
+  const fnError = vi.spyOn(console, 'error');
+  const fnWarn = vi.spyOn(console, 'warn');
+
+  beforeAll(() => {
+    const fn = () => void 0;
+    fnLog.mockImplementation(fn);
+    fnError.mockImplementation(fn);
+    fnWarn.mockImplementation(fn);
+  });
+
+  afterAll(() => {
+    fnLog.mockRestore();
+    fnError.mockRestore();
+    fnWarn.mockRestore();
+  });
 };

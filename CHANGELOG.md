@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.3.0] - 2024-07-10 _20:45_
+
+- Add typings to help types events ands promisees
+- Add custom actions
+- <u>Test coverage **_100%_**</u>
+
+<br/>
+
 ## [0.2.9] - 2024-07-08 _01:20_
 
 - Better typings, upgrade deps

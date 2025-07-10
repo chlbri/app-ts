@@ -49,21 +49,21 @@ export type FromGuard<T extends GuardConfig> = T extends ActionConfig
 export type PredicateS<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = FnMap<E, P, Pc, Tc, boolean>;
 
 export type PredicateS2<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Fn<[Pc, Tc, ToEvents<E, P>], boolean>;
 
 export type PredicateUnion<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > =
   | PredicateS<E, P, Pc, Tc>
@@ -73,7 +73,7 @@ export type PredicateUnion<
 export type PredicateAnd<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   and: PredicateUnion<E, P, Pc, Tc>[];
@@ -82,7 +82,7 @@ export type PredicateAnd<
 export type PredicateOr<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   or: PredicateUnion<E, P, Pc, Tc>[];
@@ -104,7 +104,7 @@ export type PredicateOr<
 export type Predicate<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > =
   | PredicateS2<E, P, Pc, Tc>
@@ -126,12 +126,12 @@ export type Predicate<
 export type PredicateMap<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
 
 type _DefinedValue<
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = KeysMatching<{
   pContext: Pc;
@@ -145,6 +145,6 @@ type _DefinedValue<
  * @template : type {@linkcode PrimitiveObject} [Tc] The type of the context.
  */
 export type DefinedValue<
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = _DefinedValue<Pc, Tc> | 'events' | 'events.type' | 'events.payload';

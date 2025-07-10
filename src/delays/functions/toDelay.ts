@@ -6,7 +6,7 @@ import type { DelayMap } from '../types';
 export type ToDelay_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc = any,
+  Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
