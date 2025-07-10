@@ -27,7 +27,7 @@ export const recomposeSV: RecomposeSV_F = (
   const splits = arg1.split(delimiter);
 
   const check2 = splits.length === 1;
-  if (check2) return arg;
+  if (check2) return arg1;
 
   const first = splits.shift()!;
 

@@ -244,6 +244,9 @@ export type AddOptionsParam_F<
   sendTo: SendAction_F<E, P, Pc, Tc>;
   debounce: DebounceAction_F<E, P, Pc, Tc>;
   resend: ResendAction_F<E, P, Pc, Tc>;
+  /**
+   * Force send action, performs the action regardless of the current state.
+   */
   forceSend: ResendAction_F<E, P, Pc, Tc>;
   pauseActivity: TimeAction_F<E, P, Pc, Tc>;
   resumeActivity: TimeAction_F<E, P, Pc, Tc>;
@@ -298,3 +301,29 @@ export type ExtendedActionsParams<
   stopTimer: string;
   sentEvent: SendToEvent;
 }>;
+
+export type TimeActionsTypes =
+  | 'pauseActivity'
+  | 'resumeActivity'
+  | 'stopActivity'
+  | 'pauseTimer'
+  | 'resumeTimer'
+  | 'stopTimer';
+
+export type _ActionTypes =
+  | 'assign'
+  | 'void'
+  | 'sendTo'
+  | 'resend'
+  | 'forceSend'
+  | 'debounce'
+  | TimeActionsTypes;
+
+export type ActionTypes = `actions.${_ActionTypes}`;
+
+export type AppTypes =
+  | ActionTypes
+  | 'guards'
+  | 'pContext'
+  | 'context'
+  | 'promisees';

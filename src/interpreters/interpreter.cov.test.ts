@@ -33,9 +33,6 @@ describe('Covers all inner actions', () => {
           STOP: 'primitive',
         },
 
-        promiseesMap: 'primitive',
-        pContext: 'primitive',
-
         context: {
           iterator: 'number',
         },
@@ -308,9 +305,15 @@ describe('Covers all inner actions', () => {
 
     test(...useIterator(3000, 38));
 
-    //TODO: NEXT again will iterate on the iterator despite it is stopped
+    test(...useSend('NEXT', 39));
 
-    test('#39 => Dispose', service.dispose);
+    test(...useIterator(3000, 40));
+
+    test(...useWaiter(10, 41));
+
+    test(...useIterator(4000, 42));
+
+    test('#43 => Dispose', service.dispose);
   });
 
   describe('#03 => Performs send to itself actions', () => {
@@ -318,28 +321,28 @@ describe('Covers all inner actions', () => {
       {
         states: {
           idle: {
-            activities: {
-              DELAY: 'inc',
-            },
             on: {
-              PAUSE: { actions: 'pause' },
-              RESUME: { actions: 'resume' },
-              STOP: { actions: 'stop' },
+              DECREMENT: { actions: 'dec' },
+              INCREMENT: { actions: 'inc' },
+              REDECREMENT: { actions: 'sendDec' },
               NEXT: '/next',
             },
           },
           next: {
             on: {
               NEXT: '/idle',
+              'INCREMENT.FORCE': { actions: 'forceSendInc' },
+              DECREMENT: { actions: 'sendDec' },
             },
           },
         },
       },
       typings({
         eventsMap: {
-          PAUSE: 'primitive',
-          RESUME: 'primitive',
-          STOP: 'primitive',
+          DECREMENT: 'primitive',
+          REDECREMENT: 'primitive',
+          INCREMENT: 'primitive',
+          'INCREMENT.FORCE': 'primitive',
           NEXT: 'primitive',
         },
 
@@ -351,22 +354,14 @@ describe('Covers all inner actions', () => {
         },
       }),
       { '/': 'idle' },
-    ).provideOptions(
-      ({ assign, pauseActivity, resumeActivity, stopActivity }) => ({
-        actions: {
-          inc: assign(
-            'context.iterator',
-            (_, { iterator }) => iterator + 1,
-          ),
-          pause: pauseActivity('/idle::DELAY'),
-          resume: resumeActivity('/idle::DELAY'),
-          stop: stopActivity('/idle::DELAY'),
-        },
-        delays: {
-          DELAY,
-        },
-      }),
-    );
+    ).provideOptions(({ assign, forceSend, resend }) => ({
+      actions: {
+        inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
+        dec: assign('context.iterator', (_, { iterator }) => iterator - 1),
+        forceSendInc: forceSend('INCREMENT'),
+        sendDec: resend('DECREMENT'),
+      },
+    }));
 
     const service = interpret(machine101, {
       pContext: {},
@@ -383,68 +378,105 @@ describe('Covers all inner actions', () => {
       return castings.arrays.tupleOf(invite, () => service.send(event));
     };
 
-    const useWaiter = (times: number, index: number) => {
-      const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
-
-      return castings.arrays.tupleOf(invite, () =>
-        fakeWaiter(DELAY, times),
-      );
-    };
-
     const useIterator = (iterator: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => iterator is "${iterator}"`;
       return castings.arrays.tupleOf(invite, async () => {
         expect(service.select('iterator')).toBe(iterator);
       });
     };
+
+    const useValue = (value: string, index: number) => {
+      const invite = `#${index < 10 ? '0' + index : index} => value is "${value}"`;
+      return castings.arrays.tupleOf(invite, async () => {
+        expect(service.value).toBe(value);
+      });
+    };
     // #endregion
 
-    test('#00 => Start the machine', () => {
-      service.start();
+    describe('TESTS', () => {
+      test('#00 => Start the machine', () => {
+        service.start();
+      });
+
+      // #region "idle" state
+      test(...useIterator(0, 1));
+
+      test(...useSend('INCREMENT', 2));
+
+      test(...useIterator(1, 3));
+
+      test(...useSend('INCREMENT', 4));
+
+      test(...useIterator(2, 5));
+
+      test(...useSend('DECREMENT', 6));
+
+      test(...useIterator(1, 7));
+      // #endregion
+
+      test(...useValue('idle', 8));
+
+      test(...useSend('NEXT', 9));
+
+      test(...useValue('next', 10));
+
+      // #region "next" state
+      test(...useIterator(1, 11));
+
+      test(...useSend('INCREMENT', 12));
+
+      test(...useIterator(1, 13));
+
+      test(...useSend('INCREMENT.FORCE', 14));
+
+      test(...useIterator(2, 15));
+
+      test(...useSend('INCREMENT', 16));
+
+      test(...useIterator(2, 17));
+
+      test(...useSend('REDECREMENT', 18));
+
+      test(...useIterator(2, 19));
+      // #endregion
+
+      test(...useValue('next', 20));
+
+      test(...useSend('NEXT', 21));
+
+      test(...useValue('idle', 22));
+
+      // #region "idle" state again
+
+      test(...useIterator(2, 23));
+
+      test(...useSend('REDECREMENT', 24));
+
+      test(...useIterator(1, 25));
+
+      test(...useSend('DECREMENT', 26));
+
+      test(...useIterator(0, 27));
+
+      test(...useSend('INCREMENT', 28));
+
+      test(...useIterator(1, 29));
+
+      test(...useSend('INCREMENT.FORCE', 30));
+
+      test(...useIterator(1, 31));
+
+      test(...useSend('INCREMENT', 32));
+
+      test(...useIterator(2, 33));
+
+      test(...useSend('REDECREMENT', 34));
+
+      test(...useIterator(1, 35));
+
+      // #endregion
+
+      test('#36 => Dispose', service.dispose);
     });
-
-    test(...useIterator(0, 1));
-
-    test(...useWaiter(6, 2));
-
-    test(...useIterator(6, 3));
-
-    test(...useSend('PAUSE', 4));
-
-    test(...useIterator(6, 5));
-
-    test(...useWaiter(6, 6));
-
-    test(...useIterator(6, 7));
-
-    test(...useSend('RESUME', 8));
-
-    test(...useIterator(6, 9));
-
-    test(...useWaiter(6, 10));
-
-    test(...useIterator(12, 11));
-
-    test(...useWaiter(6, 12));
-
-    test(...useIterator(18, 13));
-
-    test(...useSend('STOP', 14));
-
-    test(...useIterator(18, 15));
-
-    test(...useWaiter(6, 16));
-
-    test(...useIterator(18, 17));
-
-    test(...useSend('RESUME', 18));
-
-    test(...useIterator(18, 19));
-
-    test(...useWaiter(6, 20));
-
-    test(...useIterator(18, 21));
-
-    test('#22 => Dispose', service.dispose);
   });
 });

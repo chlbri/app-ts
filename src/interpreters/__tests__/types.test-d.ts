@@ -20,12 +20,12 @@ expectTypeOf<TTConfig>().toEqualTypeOf<Config3>();
 
 type TTPrivate = PrivateContextFrom<Machine3>;
 expectTypeOf<TTPrivate>().toEqualTypeOf<{
-  data: string;
+  readonly data: string;
 }>();
 
 type TTC = ContextFrom<Machine3>;
 expectTypeOf<TTC>().toEqualTypeOf<{
-  age: number;
+  readonly age: number;
 }>();
 
 type TTEm = EventsMapFrom<Machine3>;

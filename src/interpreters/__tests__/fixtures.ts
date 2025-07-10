@@ -13,8 +13,12 @@ import type {
 import type { StateValue } from '~states';
 import { IS_TEST } from '~utils';
 
-export const defaultC = { pContext: {}, context: {} };
-export const defaultT = { ...defaultC, eventsMap: {}, promiseesMap: {} };
+export const defaultC = { pContext: {}, context: {} } as const;
+export const defaultT = {
+  ...defaultC,
+  eventsMap: {},
+  promiseesMap: {},
+} as const;
 export const defaultI = { '/': 'idle' } as const;
 
 export const fakeWaiter = async (ms = 0, times = 1) => {

@@ -37,9 +37,10 @@ type _PrimitiveObject = Types | PrimitiveObjectMap;
  */
 type PrimitiveObject = _PrimitiveObject;
 
-type RecordP = Record<Uppercase<string>, PrimitiveObject> | 'primitive';
-
-type Args<E extends RecordP = RecordP, P extends RecordP = RecordP> = {
+type Args<
+  E extends PrimitiveObject = PrimitiveObject,
+  P extends PrimitiveObject = PrimitiveObject,
+> = {
   eventsMap: E;
   pContext: PrimitiveObject;
   context: PrimitiveObject;
@@ -79,51 +80,24 @@ const transformPrimitiveObject = (obj: any): any => {
   return transformTypes(_obj);
 };
 
-export type TransformArgs<T extends Args> = {
+export type TransformArgs<T extends Partial<Args>> = {
   eventsMap: TransformPrimitiveObject<T['eventsMap']>;
   pContext: TransformPrimitiveObject<T['pContext']>;
   context: TransformPrimitiveObject<T['context']>;
   promiseesMap: TransformPrimitiveObject<T['promiseesMap']>;
 };
 
-type SimpleArgs = {
-  eventsMap: any;
-  pContext: any;
-  context: any;
-  promiseesMap: any;
+const DEFAULT_ARGS = {
+  eventsMap: 'primitive',
+  pContext: 'primitive',
+  context: 'primitive',
+  promiseesMap: 'primitive',
+} satisfies Args;
+
+const typings = <const T extends Partial<Args>>(
+  args = DEFAULT_ARGS as T,
+): TransformArgs<T> => {
+  return transformPrimitiveObject(args);
 };
 
-const pypings = <
-  const E extends RecordP = RecordP,
-  const P extends RecordP = RecordP,
-  T extends Args<E, P> = Args<E, P>,
->({
-  eventsMap,
-  promiseesMap,
-  pContext,
-  context,
-}: T): TransformArgs<T> => {
-  const out: SimpleArgs = {
-    eventsMap: {},
-    pContext: {},
-    context: {},
-    promiseesMap: {},
-  };
-
-  const entriesEvents = Object.entries(eventsMap);
-  entriesEvents.forEach(([key, value]) => {
-    out.eventsMap[key] = transformPrimitiveObject(value);
-  });
-
-  const entriesPromisees = Object.entries(promiseesMap);
-  entriesPromisees.forEach(([key, value]) => {
-    out.promiseesMap[key] = transformPrimitiveObject(value);
-  });
-
-  out.pContext = transformPrimitiveObject(pContext);
-  out.context = transformPrimitiveObject(context);
-
-  return out;
-};
-
-export default pypings;
+export default typings;
