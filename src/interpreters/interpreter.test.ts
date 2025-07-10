@@ -216,7 +216,7 @@ describe('Interpreter', () => {
     });
   });
 
-  describe.skip('#03 => Exceed selfTransitionsCounter', () => {
+  describe('#03 => Exceed selfTransitionsCounter', () => {
     const fn = vi.spyOn(console, 'error');
 
     const machine = createMachine(

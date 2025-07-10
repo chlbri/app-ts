@@ -398,6 +398,119 @@ describe('Covers all inner actions', () => {
         service.start();
       });
 
+      test(...useValue('idle', 8));
+
+      test(...useSend('NEXT', 9));
+
+      test(...useValue('next', 10));
+
+      // #region "next" state
+      test(...useIterator(0, 11));
+
+      test(...useSend('INCREMENT', 12));
+
+      test(...useIterator(0, 13));
+
+      test(...useSend('INCREMENT.FORCE', 14));
+
+      test(...useIterator(1, 15));
+
+      test(...useSend('INCREMENT', 16));
+
+      test(...useIterator(1, 17));
+
+      test(...useSend('REDECREMENT', 18));
+
+      test(...useIterator(1, 19));
+
+      // #endregion
+
+      test('#36 => Dispose', service.dispose);
+    });
+  });
+
+  describe('#03.bis - cov => Performs send to itself actions', () => {
+    const machine101 = createMachine(
+      {
+        states: {
+          idle: {
+            on: {
+              DECREMENT: { actions: 'dec' },
+              INCREMENT: { actions: 'inc' },
+              REDECREMENT: { actions: 'sendDec' },
+              NEXT: '/next',
+            },
+          },
+          next: {
+            on: {
+              NEXT: '/idle',
+              'INCREMENT.FORCE': { actions: 'forceSendInc' },
+              REDECREMENT: { actions: 'sendDec' },
+            },
+          },
+        },
+      },
+      typings({
+        eventsMap: {
+          DECREMENT: 'primitive',
+          REDECREMENT: 'primitive',
+          INCREMENT: 'primitive',
+          'INCREMENT.FORCE': 'primitive',
+          NEXT: 'primitive',
+        },
+
+        promiseesMap: 'primitive',
+        pContext: 'primitive',
+
+        context: {
+          iterator: 'number',
+        },
+      }),
+      { '/': 'idle' },
+    ).provideOptions(({ assign, forceSend, resend }) => ({
+      actions: {
+        inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
+        dec: assign('context.iterator', (_, { iterator }) => iterator - 1),
+        forceSendInc: forceSend('INCREMENT'),
+        sendDec: resend('DECREMENT'),
+      },
+    }));
+
+    const service = interpret(machine101, {
+      pContext: {},
+      context: { iterator: 0 },
+      exact: true,
+    });
+
+    type SE = Parameters<typeof service.send>[0];
+
+    // #region Hooks
+    const useSend = (event: SE, index: number) => {
+      const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
+
+      return castings.arrays.tupleOf(invite, () => service.send(event));
+    };
+
+    const useIterator = (iterator: number, index: number) => {
+      const invite = `#${index < 10 ? '0' + index : index} => iterator is "${iterator}"`;
+      return castings.arrays.tupleOf(invite, async () => {
+        expect(service.select('iterator')).toBe(iterator);
+      });
+    };
+
+    const useValue = (value: string, index: number) => {
+      const invite = `#${index < 10 ? '0' + index : index} => value is "${value}"`;
+      return castings.arrays.tupleOf(invite, async () => {
+        expect(service.value).toBe(value);
+      });
+    };
+    // #endregion
+
+    describe('TESTS', () => {
+      test('#00 => Start the machine', () => {
+        service.start();
+      });
+
       // #region "idle" state
       test(...useIterator(0, 1));
 
