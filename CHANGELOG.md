@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.3.1] - 2024-07-10 _21:45_
+
+- Exports `typings` from utils at root
+- Better typings, upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+<br/>
+
 ## [0.3.0] - 2024-07-10 _20:45_
 
 - Add typings to help types events ands promisees
