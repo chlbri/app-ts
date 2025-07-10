@@ -298,7 +298,7 @@ describe('Interpreter', () => {
 
     test('#01 => Start the service', async () => {
       vi.advanceTimersByTimeAsync(TIME_TO_RINIT_SELF_COUNTER);
-      return await service.start();
+      await service.start();
     });
 
     describe('#02 => Error is throwing', () => {

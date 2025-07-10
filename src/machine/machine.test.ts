@@ -1,17 +1,17 @@
 import { castings } from '@bemedev/types';
 import equal from 'fast-deep-equal';
+import { DELAY, fakeDB, machine2 } from '~fixturesData';
+import { interpret } from '~interpreters';
+import { createMachine, getEntries } from '~machine';
+import type { StateValue } from '~states';
+import { nothing } from '~utils';
 import {
   constructSend,
   constructValue,
   defaultC,
   defaultT,
   fakeWaiter,
-} from 'src/interpreters/__tests__/fixtures';
-import { DELAY, fakeDB, machine2 } from '~fixturesData';
-import { interpret } from '~interpreters';
-import { createMachine, getEntries } from '~machine';
-import type { StateValue } from '~states';
-import { nothing } from '~utils';
+} from '../interpreters/__tests__/fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => {

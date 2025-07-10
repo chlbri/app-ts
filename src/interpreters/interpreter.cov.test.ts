@@ -7,6 +7,7 @@ import { fakeWaiter } from './__tests__/fixtures';
 
 beforeAll(() => {
   vi.useFakeTimers();
+  // Mock console.log to prevent output in CI environment
 });
 
 describe('Covers all inner actions', () => {

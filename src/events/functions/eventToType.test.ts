@@ -17,7 +17,6 @@ describe('eventToType', () => {
       },
       {
         invite: 'undefined payload',
-        // @ts-expect-error for test
         parameters: { type: 'NEXT' },
         expected: 'NEXT',
       },

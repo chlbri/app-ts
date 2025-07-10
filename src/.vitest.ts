@@ -69,6 +69,7 @@ export const addConfig = (type: ConfigType) => {
     test: {
       ...commonTest,
       typecheck,
+      setupFiles: ['./vitest.setup.ts'],
     },
   });
 };

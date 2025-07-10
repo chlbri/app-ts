@@ -97,3 +97,22 @@ export const asyncNothing = async () => {
   }
   return;
 };
+
+export const mockConsole = () => {
+  const fnLog = vi.spyOn(console, 'log');
+  const fnError = vi.spyOn(console, 'error');
+  const fnWarn = vi.spyOn(console, 'warn');
+
+  beforeAll(() => {
+    const fn = () => void 0;
+    fnLog.mockImplementation(fn);
+    fnError.mockImplementation(fn);
+    fnWarn.mockImplementation(fn);
+  });
+
+  afterAll(() => {
+    fnLog.mockRestore();
+    fnError.mockRestore();
+    fnWarn.mockRestore();
+  });
+};

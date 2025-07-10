@@ -840,8 +840,6 @@ export class Interpreter<
       // If the current value is the same as the from value, skip the transition
       const _from = recomposeSV(from);
 
-      console.warn('values', this.#value, ' - ', from);
-
       const checkCircular = circular
         ? this.#value !== _from
         : this.#value === _from;

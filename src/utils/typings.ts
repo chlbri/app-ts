@@ -59,7 +59,6 @@ type TransformPrimitiveObject<T> = T extends Types
 
 const transformPrimitiveObject = (obj: any): any => {
   const _obj = obj as any;
-  console.warn('_obj', _obj);
 
   const checkArray = Array.isArray(_obj);
   if (checkArray) {
