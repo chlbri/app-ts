@@ -123,18 +123,12 @@ import {
   type PerformTransitions_F,
   type Selector_F,
   type State,
+  type StateExtended,
   type WorkingStatus,
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
-import {
-  createSubscriber,
-  type SubscriberClass,
-  type SubscriberOptions,
-} from './subscriber';
-import {
-  createSubscriberMap,
-  type SubscriberMapClass,
-} from './subscriberMap';
+
+import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
  * The `Interpreter` class is responsible for interpreting and managing the state of a machine.
@@ -250,12 +244,6 @@ export class Interpreter<
   #scheduler: Scheduler;
 
   /**
-   * All {@linkcode SubscriberMapClass} of this {@linkcode Interpreter} service.
-   * They subscribe to the state changes with the {@linkcode subscribe} function
-   * */
-  #subscribers = new Set<SubscriberClass<Tc>>();
-
-  /**
    * The previous {@linkcode State} of this {@linkcode Interpreter} service.
    */
   #previousState!: State<Tc>;
@@ -263,7 +251,7 @@ export class Interpreter<
   /**
    * The current {@linkcode State} of this {@linkcode Interpreter} service.
    */
-  #state!: State<Tc>;
+  #state!: State<Tc, ToEvents<E, P>>;
 
   /**
    * All {@linkcode AnyInterpreter2} service subscribers of this {@linkcode Interpreter} service.
@@ -458,9 +446,9 @@ export class Interpreter<
    * @param parts, Partial {@linkcode State}
    *
    * @see {@linkcode SubscriberClass}
-   * @see {@linkcode SubscriberMapClass}
+   * @see {@linkcode SubscriberClass}
    */
-  #performStates = (parts?: Partial<State<Tc>>) => {
+  #performStates = (parts?: Partial<State<Tc, ToEvents<E, P>>>) => {
     this.#previousState = cloneDeep(this.#state);
     this.#state = { ...this.#state, ...parts };
     this.#flush();
@@ -681,10 +669,9 @@ export class Interpreter<
    * Flushes all subscribers and map subscribers of this {@linkcode Interpreter} service.
    *
    * @see {@linkcode SubscriberClass} for more information about subscribers.
-   * @see {@linkcode SubscriberMapClass} for more information about map subscribers.
+   * @see {@linkcode SubscriberClass} for more information about map subscribers.
    */
   #flush = () => {
-    this.#flushSubscribers();
     this.#flushMapSubscribers();
   };
 
@@ -729,18 +716,6 @@ export class Interpreter<
   get #schedule() {
     return this.#scheduler.schedule;
   }
-
-  /**
-   * Flushes all subscribers of this {@linkcode Interpreter} service.
-   *
-   * @see {@linkcode SubscriberClass} for more information about subscribers.
-   */
-  #flushSubscribers = () => {
-    this.#subscribers.forEach(({ fn }) => {
-      const callback = () => fn(this.#previousState, this.#state);
-      this.#schedule(callback);
-    });
-  };
 
   /**
    * Used to track number of self transitions
@@ -789,13 +764,15 @@ export class Interpreter<
     this.#selfTransitionsCounter = 0;
   };
 
+  get #cloneState(): StateExtended<Pc, Tc, ToEvents<E, P>> {
+    const pContext = structuredClone(this.#pContext);
+
+    return structuredClone({ pContext, ...this.#state });
+  }
+
   #performAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this._iterate();
-    const pContext = cloneDeep(this.#pContext);
-    const context = structuredClone(this.#context);
-    const event = structuredClone(this.#event);
-
-    return action(pContext, context, event);
+    return action(this.#cloneState);
   };
 
   #performScheduledAction = (scheduled?: ScheduledData<Pc, Tc>) => {
@@ -806,6 +783,8 @@ export class Interpreter<
       const cb = () => this.#mergeContexts(data);
       this.#schedule(cb);
     };
+
+    this.#timeoutActions.filter(f => f.id === id).forEach(this.#dispose);
 
     this.#timeoutActions = this.#timeoutActions.filter(f => f.id !== id);
 
@@ -942,16 +921,15 @@ export class Interpreter<
   #executeAction: PerformAction_F<E, P, Pc, Tc> = action => {
     this.#makeBusy();
 
-    const { pContext, context, ...extendeds } = castings.commons.any(
-      this.#performAction(action),
-    );
+    const { pContext, context, ...extendeds } =
+      this.#performAction(action);
 
     const result = this.#performsExtendedActions(extendeds);
 
     this.#makeWork();
 
     // Force send action will be merged if exists
-    return merge({ pContext, context }, result);
+    return merge({ pContext, context }, result as any);
   };
 
   /**
@@ -990,11 +968,7 @@ export class Interpreter<
 
   #performPredicate: PerformPredicate_F<E, P, Pc, Tc> = predicate => {
     this._iterate();
-    return predicate(
-      cloneDeep(this.#pContext),
-      structuredClone(this.#context),
-      structuredClone(this.#event),
-    );
+    return predicate(this.#cloneState);
   };
 
   #executePredicate: PerformPredicate_F<E, P, Pc, Tc> = predicate => {
@@ -1017,11 +991,7 @@ export class Interpreter<
 
   #performDelay: PerformDelay_F<E, P, Pc, Tc> = delay => {
     this._iterate();
-    return delay(
-      cloneDeep(this.#pContext),
-      structuredClone(this.#context),
-      structuredClone(this.#event),
-    );
+    return delay(this.#cloneState);
   };
 
   #executeDelay: PerformDelay_F<E, P, Pc, Tc> = delay => {
@@ -1032,7 +1002,7 @@ export class Interpreter<
   };
 
   #flushMapSubscribers = () => {
-    this.#mapSubscribers.forEach(f => {
+    this.#subscribers.forEach(f => {
       const callback = () => f.fn(this.#previousState, this.#state);
       this.#schedule(callback);
     });
@@ -1179,11 +1149,7 @@ export class Interpreter<
 
   #performPromiseSrc: PerformPromise_F<E, P, Pc, Tc> = promise => {
     this._iterate();
-    return promise(
-      cloneDeep(this.#pContext),
-      structuredClone(this.#context),
-      structuredClone(this.#event),
-    );
+    return promise(this.#cloneState);
   };
 
   #performFinally = (_finally?: PromiseeConfig['finally']) => {
@@ -1379,7 +1345,6 @@ export class Interpreter<
     return entries;
   }
 
-  //TODO: Add a #_fromActivites to reduce calls
   get #collectedActivities() {
     const entriesFlat = Object.entries(this.#flat);
 
@@ -1422,7 +1387,6 @@ export class Interpreter<
     return entries;
   }
 
-  //TODO: optimize calls by add a settable inner variable
   get #currentActivities() {
     const collected = this.#collectedActivities;
     const check = collected.length < 1;
@@ -1629,9 +1593,9 @@ export class Interpreter<
 
   #startInitialEntries = () => {
     const actions = getEntries(this.#initialConfig);
+    if (actions.length < 1) return;
     const cb = () => {
       const result = this.#performActions(this.#contexts, ...actions);
-
       this.#mergeContexts(result);
     };
     this.#schedule(cb);
@@ -1670,7 +1634,6 @@ export class Interpreter<
   pause = () => {
     this.#pauseCurrentActivities();
     this.#makeBusy();
-    this.#mapSubscribers.forEach(this.#close);
     this.#subscribers.forEach(this.#close);
     this.#childrenServices.forEach(this.#pause);
     this.#timeoutActions.forEach(this.#pause);
@@ -1681,7 +1644,6 @@ export class Interpreter<
     if (this.#status === 'paused') {
       this.#performActivities();
       this.#makeBusy();
-      this.#mapSubscribers.forEach(this.#open);
       this.#subscribers.forEach(this.#open);
       this.#timeoutActions.forEach(this.#resume);
       this.#childrenServices.forEach(this.#resume);
@@ -1692,7 +1654,6 @@ export class Interpreter<
   stop = () => {
     this.pause();
     this.#makeBusy();
-    this.#mapSubscribers.forEach(this.#unsubscribe);
     this.#subscribers.forEach(this.#unsubscribe);
     this.#childrenServices.forEach(this.#stop);
     this._cachedIntervals.forEach(this.#dispose);
@@ -1719,8 +1680,7 @@ export class Interpreter<
    * Used internally
    */
   _providePrivateContext = (pContext: Pc) => {
-    this.#initialPpc = pContext;
-    this.#pContext = pContext;
+    this.#initialPpc = this.#pContext = pContext;
     this.#makeBusy();
 
     this.#machine.addPrivateContext(this.#initialPpc);
@@ -1742,8 +1702,7 @@ export class Interpreter<
    * Used internally
    */
   _provideContext = (context: Tc) => {
-    this.#initialContext = context;
-    this.#context = context;
+    this.#initialContext = this.#context = context;
     this.#performStates({ context });
     this.#makeBusy();
 
@@ -1760,40 +1719,27 @@ export class Interpreter<
     return this.#machine.addOptions;
   }
 
-  #mapSubscribers = new Set<SubscriberMapClass<E, P, Tc>>();
-
-  subscribe = (
-    sub: (state: State<Tc>) => void,
-    options?: SubscriberOptions<Tc>,
-  ) => {
-    const find = Array.from(this.#subscribers).find(
-      f => f.id === options?.id,
-    );
-    if (find) return find;
-    const _sub = createSubscriber(sub, options);
-    this.#subscribers.add(_sub);
-    return _sub;
-  };
+  #subscribers = new Set<SubscriberClass<E, P, Tc>>();
 
   get state() {
     return Object.freeze(cloneDeep(this.#state));
   }
 
-  subscribeMap: AddSubscriber_F<E, P, Tc> = (_subscriber, options) => {
+  subscribe: AddSubscriber_F<E, P, Tc> = (_subscriber, options) => {
     const eventsMap = this.#machine.eventsMap;
     const promiseesMap = this.#machine.promiseesMap;
-    const find = Array.from(this.#mapSubscribers).find(
+    const find = Array.from(this.#subscribers).find(
       f => f.id === options?.id,
     );
     if (find) return find;
 
-    const subcriber = createSubscriberMap(
+    const subcriber = createSubscriber(
       eventsMap,
       promiseesMap,
       _subscriber,
       options,
     );
-    this.#mapSubscribers.add(subcriber);
+    this.#subscribers.add(subcriber);
     return subcriber;
   };
 
@@ -2151,7 +2097,7 @@ export class Interpreter<
    *
    * @param id - The unique identifier for the child machine.
    * @param {@linkcode ChildS2} - The child machine configuration to subscribe.
-   * @returns a {@linkcode SubscriberMapClass} result of the child machine subscription.
+   * @returns a {@linkcode SubscriberClass} result of the child machine subscription.
    *
    */
   subscribeMachine = <T extends AnyMachine = AnyMachine>(
@@ -2164,11 +2110,7 @@ export class Interpreter<
       _initials,
     );
 
-    const context = structuredClone(this.#context);
-    const pContext = cloneDeep(this.#pContext);
-    const event = structuredClone(this.#event);
-
-    const initials = reduced(pContext, context, event);
+    const initials = reduced(this.#cloneState);
 
     const child = castings.commons<ChildS<E, P, Pc, T>>({
       initials,
@@ -2198,7 +2140,7 @@ export class Interpreter<
    *
    * @param : {@linkcode ChildS} - The child machine configuration to reduce.
    * @param id - The unique identifier for the child service.
-   * @returns a {@linkcode SubscriberMapClass} result of the child service subscription.
+   * @returns a {@linkcode SubscriberClass} result of the child service subscription.
    */
   #reduceChild = <T extends AnyMachine = AnyMachine>(
     { subscribers, machine, initials }: ChildS<E, P, Pc, T>,
@@ -2214,7 +2156,7 @@ export class Interpreter<
       this.#childrenServices.push(castings.commons(service));
     }
 
-    const subscriber = service.subscribeMap(
+    const subscriber = service.subscribe(
       ({ event }) => {
         const type = eventToType(event);
         const _subscribers = toArray.typed(subscribers);

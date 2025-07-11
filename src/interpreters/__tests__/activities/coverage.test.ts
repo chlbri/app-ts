@@ -96,14 +96,14 @@ describe('Interpreter integration ofr activities coverage', () => {
       });
 
       test('#02 => activity1 is called with correct params', () => {
-        expect(activity1).toHaveBeenCalledWith(
-          expect.toSatisfy(val => Object.keys(val).length === 0),
-          expect.toSatisfy(val => Object.keys(val).length === 0),
-          {
-            type: 'NEXT',
-            payload: {},
-          },
-        );
+        expect(activity1).toHaveBeenCalledWith({
+          pContext: {},
+          context: {},
+          event: { type: 'NEXT', payload: {} },
+          status: 'busy',
+          tags: undefined,
+          value: 'state1',
+        });
       });
     });
   });
@@ -279,14 +279,14 @@ describe('Interpreter integration ofr activities coverage', () => {
       });
 
       test('#02 => activity2 is called with correct params', () => {
-        expect(activity2).toHaveBeenCalledWith(
-          expect.toSatisfy(val => Object.keys(val).length === 0),
-          expect.toSatisfy(val => Object.keys(val).length === 0),
-          {
-            type: 'NEXT',
-            payload: {},
-          },
-        );
+        expect(activity2).toHaveBeenCalledWith({
+          pContext: {},
+          context: {},
+          event: { type: 'NEXT', payload: {} },
+          status: 'busy',
+          tags: undefined,
+          value: 'state1',
+        });
       });
     });
   });

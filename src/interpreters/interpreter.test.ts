@@ -262,24 +262,20 @@ describe('Interpreter', () => {
         },
       }),
       { '/': 'idle' },
-    ).provideOptions(({ isValue }) => ({
+    ).provideOptions(({ isValue, assign }) => ({
       actions: {
-        addCondition: (pContext, context) => ({
+        addCondition: ({ pContext, context }) => ({
           pContext,
           context: { ...context, condition: true },
         }),
-        removeCondition: (pContext, context) => ({
-          pContext,
-          context: { ...context, condition: false },
-        }),
-        inc: (pContext, context) => ({
-          pContext,
-          context: { ...context, iterator: context.iterator + 1 },
+        removeCondition: assign('context.condition', () => false),
+        inc: assign('context.iterator', ({ context }) => {
+          return context.iterator + 1;
         }),
       },
       predicates: {
         condition: isValue('context.condition', false),
-        limit: (_, { iterator }) => {
+        limit: ({ context: { iterator } }) => {
           return iterator < 99;
         },
       },
@@ -556,13 +552,10 @@ describe('Interpreter', () => {
         exact: true,
       });
 
-      const subscriber = service.subscribeMap(
+      const subscriber = service.subscribe(
         {
-          WRITE: ({
-            event: {
-              payload: { value },
-            },
-          }) => console.log('WRITE with', ':', `"${value}"`),
+          WRITE: ({ payload: { value } }) =>
+            console.log('WRITE with', ':', `"${value}"`),
           NEXT: () => console.log('NEXT time, you will see!!'),
           else: nothing,
         },
@@ -1026,7 +1019,7 @@ describe('Interpreter', () => {
       });
 
       test('#38 => Resend idSub', () => {
-        service.subscribeMap(nothing, { id: 'idSub' });
+        service.subscribe(nothing, { id: 'idSub' });
       });
 
       test('#39 => Resend machine1', () => {

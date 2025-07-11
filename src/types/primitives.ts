@@ -2,6 +2,12 @@ import type { types } from '@bemedev/types';
 import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
 
 import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
+import type {
+  State,
+  StateExtended,
+  StateP,
+  StatePextended,
+} from '~interpreters';
 import { checkKeys } from '~utils';
 
 export type IsString_F = (value: unknown) => value is string;
@@ -236,7 +242,7 @@ export type FnR<
   Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = (pContext: Pc, context: Tc, eventsMap: ToEvents<E, P>) => R;
+> = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => R;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -253,9 +259,9 @@ export type FnR<
 export type FnReduced<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = (context: Tc, eventsMap: ToEvents<E, P>) => R;
+> = (state: State<Tc, ToEvents<E, P>>) => R;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -277,8 +283,7 @@ export type FnMap2<
   TT extends ToEventsR<E, P> = ToEventsR<E, P>,
 > = {
   [key in TT['type']]?: (
-    context: Tc,
-    payload: Extract<TT, { type: key }>['payload'],
+    state: StateP<Tc, Extract<TT, { type: key }>['payload']>,
   ) => R;
 } & {
   else?: FnReduced<E, P, Tc, R>;
@@ -301,9 +306,7 @@ type _FnMap<
   TT extends ToEvents<E, P> = ToEvents<E, P>,
 > = {
   [key in EventToType<TT>]?: (
-    pContext: Pc,
-    context: Tc,
-    payload: Extract<TT, { type: key }>['payload'],
+    state: StatePextended<Pc, Tc, Extract<TT, { type: key }>['payload']>,
   ) => R;
 } & {
   else?: FnR<E, P, Pc, Tc, R>;
@@ -317,8 +320,7 @@ type _FnMapR<
   TT extends ToEvents<E, P> = ToEvents<E, P>,
 > = {
   [key in EventToType<TT>]?: (
-    context: Tc,
-    payload: Extract<TT, { type: key }>['payload'],
+    state: StateP<Tc, Extract<TT, { type: key }>['payload']>,
   ) => R;
 } & {
   else?: FnReduced<E, P, Tc, R>;
@@ -337,9 +339,7 @@ export type FnMapR<
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> =
-  | ((context: Tc, eventsMap: ToEvents<E, P>) => R)
-  | _FnMapR<E, P, Tc, R, ToEvents<E, P>>;
+> = FnReduced<E, P, Tc, R> | _FnMapR<E, P, Tc, R, ToEvents<E, P>>;
 
 /**
  * A type that represents a record with string keys and values of type {@linkcode T}.

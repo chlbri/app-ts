@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
-import { machine1 } from './__tests__/data/machine1';
+import type { StatePFrom } from '~machines';
+import { machine1, type Machine1 } from './__tests__/data/machine1';
 import { interpret } from './interpreter';
 import type { State } from './interpreter.types';
 
@@ -19,7 +20,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn(() => 'function-result');
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       service.start();
       service.send({ type: 'NEXT', payload: {} });
@@ -36,7 +37,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         (state: State<TestContext>) => `result-${state.context.iterator}`,
       );
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       service.start();
       expect(mockFn).toHaveBeenCalledTimes(5);
@@ -52,7 +53,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn();
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       service.start();
       expect(mockFn).toHaveBeenCalledTimes(5);
@@ -70,7 +71,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn();
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       service.start();
       subscriber.unsubscribe();
@@ -85,7 +86,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn(() => 'reopened-result');
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       service.start();
 
@@ -110,7 +111,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         const service = interpret(machine1, baseConfig);
         const nextFn = vi.fn(() => 'next-result');
 
-        const subscriber = service.subscribeMap({ NEXT: nextFn });
+        const subscriber = service.subscribe({ NEXT: nextFn });
 
         service.start();
         service.send({ type: 'NEXT', payload: {} });
@@ -124,15 +125,15 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
 
       test('#01.02.01.02 => should handle matching event type with handler and payload access', () => {
         const service = interpret(machine1, baseConfig);
-        const nextFn = vi.fn((state: State<TestContext>) => {
-          const event = state.event;
-          if (typeof event === 'object' && event && 'payload' in event) {
-            return `next-${JSON.stringify(event.payload)}`;
+        const nextFn = vi.fn((state: StatePFrom<Machine1>) => {
+          const payload = state.payload;
+          if (typeof payload === 'object') {
+            return `next-${JSON.stringify(payload)}`;
           }
           return 'next-no-payload';
         });
 
-        const subscriber = service.subscribeMap({ NEXT: nextFn });
+        const subscriber = service.subscribe({ NEXT: nextFn });
 
         service.start();
         service.send({ type: 'NEXT', payload: { data: 'test' } });
@@ -148,7 +149,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         const nextFn = vi.fn();
         const elseFn = vi.fn(() => 'else-for-unknown');
 
-        const subscriber = service.subscribeMap({
+        const subscriber = service.subscribe({
           NEXT: nextFn,
           else: elseFn,
         });
@@ -169,7 +170,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         const service = interpret(machine1, baseConfig);
         const elseFn = vi.fn(() => 'else-null-handler');
 
-        const subscriber = service.subscribeMap({
+        const subscriber = service.subscribe({
           NEXT: undefined,
           else: elseFn,
         });
@@ -186,7 +187,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         const service = interpret(machine1, baseConfig);
         const elseFn = vi.fn(() => 'else-undefined-handler');
 
-        const subscriber = service.subscribeMap({
+        const subscriber = service.subscribe({
           NEXT: undefined,
           else: elseFn,
         });
@@ -205,7 +206,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         const service = interpret(machine1, baseConfig);
         const nextFn = vi.fn(() => 'next-handler');
 
-        const subscriber = service.subscribeMap({
+        const subscriber = service.subscribe({
           NEXT: nextFn,
         });
 
@@ -222,7 +223,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         const service = interpret(machine1, baseConfig);
         const firstFn = vi.fn(() => 'first-handler');
 
-        const subscriber = service.subscribeMap({
+        const subscriber = service.subscribe({
           NEXT: firstFn,
         });
 
@@ -241,7 +242,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         const service = interpret(machine1, baseConfig);
         const elseFn = vi.fn(() => 'else-result');
 
-        const subscriber = service.subscribeMap({
+        const subscriber = service.subscribe({
           else: elseFn,
         });
 
@@ -258,7 +259,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         const nextFn = vi.fn(() => 'next-result');
         const elseFn = vi.fn(() => 'else-result');
 
-        const subscriber = service.subscribeMap({
+        const subscriber = service.subscribe({
           NEXT: nextFn,
           else: elseFn,
         });
@@ -283,7 +284,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
           a.context.iterator === b.context.iterator,
       );
 
-      const subscriber = service.subscribeMap(mockFn, {
+      const subscriber = service.subscribe(mockFn, {
         equals: customEquals,
       });
 
@@ -300,7 +301,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const mockFn = vi.fn();
       const customEquals = vi.fn(() => true); // Always equal
 
-      const subscriber = service.subscribeMap(mockFn, {
+      const subscriber = service.subscribe(mockFn, {
         equals: customEquals,
       });
 
@@ -315,7 +316,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
     test('#01.03.03 => should handle empty object subscriber', () => {
       const service = interpret(machine1, baseConfig);
 
-      const subscriber = service.subscribeMap({});
+      const subscriber = service.subscribe({});
 
       service.start();
       service.send({ type: 'NEXT', payload: {} });
@@ -329,7 +330,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn(() => 'custom-id-result');
 
-      const subscriber = service.subscribeMap(mockFn, {
+      const subscriber = service.subscribe(mockFn, {
         id: 'custom-subscriber-id',
       });
 
@@ -349,7 +350,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn(() => 'lifecycle-result');
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       expect(subscriber.state).toBe('active');
 
@@ -372,7 +373,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
 
     test('#01.04.02 => should not reopen after disposal', () => {
       const service = interpret(machine1, baseConfig);
-      const subscriber = service.subscribeMap(vi.fn());
+      const subscriber = service.subscribe(vi.fn());
 
       service.start();
 
@@ -389,7 +390,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn(() => 'cycle-result');
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       service.start();
 
@@ -410,10 +411,10 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const mockFn1 = vi.fn(() => 'first-subscriber');
       const mockFn2 = vi.fn(() => 'second-subscriber');
 
-      const subscriber1 = service.subscribeMap(mockFn1, {
+      const subscriber1 = service.subscribe(mockFn1, {
         id: 'unique-id',
       });
-      const subscriber2 = service.subscribeMap(mockFn2, {
+      const subscriber2 = service.subscribe(mockFn2, {
         id: 'unique-id',
       });
 
@@ -433,7 +434,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         return `state-${state.value}`;
       });
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       service.start();
       expect(service.value).toBe('idle');
@@ -453,7 +454,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
         return `iterator-${state.context.iterator}`;
       });
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       service.start();
 
@@ -472,7 +473,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn(() => 'restart-result');
 
-      const subscriber = service.subscribeMap(mockFn);
+      const subscriber = service.subscribe(mockFn);
 
       service.start();
       service.send({ type: 'NEXT', payload: {} });

@@ -104,6 +104,8 @@ export interface AnyMachine<
   toNode: Fn<[StateValue], NodeConfigWithInitials>;
 }
 
+type AssignKeys<D = any> = keyof D | 'context' | 'pContext';
+
 export type AssignAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -114,7 +116,9 @@ export type AssignAction_F<
     pContext: Pc;
     context: Tc;
   }>,
-  K extends keyof D = keyof D,
+  const K extends keyof D = AssignKeys<D> extends keyof D
+    ? AssignKeys<D>
+    : keyof D,
   R = D[K],
 >(
   key: K,
@@ -145,13 +149,7 @@ export type VoidAction_F<
   P extends PromiseeMap = PromiseeMap,
   Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (
-  fn: (
-    pContext: Pc,
-    context: Tc,
-    eventsMap: ToEvents<E, P>,
-  ) => void | undefined,
-) => ActionResultFn<E, P, Pc, Tc>;
+> = (fn?: FnR<E, P, Pc, Tc, void>) => ActionResultFn<E, P, Pc, Tc>;
 
 export type SendAction_F<
   E extends EventsMap = EventsMap,
@@ -239,7 +237,7 @@ export type AddOptionsParam_F<
   isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
   isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
   createChild: ChildProvider_F<E, P, Pc>;
-  assign: AssignAction_F<E, P, Pc, Cast<Tc, Ru>>;
+  assign: AssignAction_F<E, P, Pc, Tc>;
   voidAction: VoidAction_F<E, P, Pc, Tc>;
   sendTo: SendAction_F<E, P, Pc, Tc>;
   debounce: DebounceAction_F<E, P, Pc, Tc>;

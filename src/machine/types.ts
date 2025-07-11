@@ -675,6 +675,41 @@ export type EventsMapFrom<T extends KeyU<'eventsMap'>> = Extract<
 >;
 
 /**
+ * Getting state from a machine.
+ *
+ * @template : {@linkcode KeyU}<'__state'> [T] - type of the machine state
+ *
+ * @see {@linkcode StateFrom} for extracting the state from the machine.
+ */
+export type StateFrom<T extends KeyU<'__state'>> = T['__state'];
+
+/**
+ * Getting extended state from a machine.
+ *
+ * @template : {@linkcode KeyU}<'__stateExtended'> [T] - type of the machine extended state
+ *
+ * @see {@linkcode StateExtendedFrom} for extracting the extended state from the machine.
+ */
+export type StateExtendedFrom<T extends KeyU<'__stateExtended'>> =
+  T['__stateExtended'];
+
+/** * Getting stateP from a machine.
+ * @template : {@linkcode KeyU}<'__stateP'> [T] - type of the machine stateP
+ * @see {@linkcode StatePFrom} for extracting the stateP from the machine.
+ */
+export type StatePFrom<T extends KeyU<'__stateP'>> = T['__stateP'];
+
+/**
+ * Getting statePextended from a machine.
+ *
+ * @template : {@linkcode KeyU}<'__statePextended'> [T] - type of the machine statePextended
+ *
+ * @see {@linkcode StatePextendedFrom} for extracting the statePextended from the machine.
+ */
+export type StatePextendedFrom<T extends KeyU<'__statePextended'>> =
+  T['__statePextended'];
+
+/**
  * Getting promisees map from a machine.
  *
  * @template : {@linkcode KeyU}<'promiseesMap'> [T] - type of the machine promisees map

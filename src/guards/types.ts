@@ -1,9 +1,9 @@
 import type { KeysMatching } from '@bemedev/decompose';
-import type { Fn, PrimitiveObject } from '@bemedev/types/lib/types/types';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { ActionConfig, FromActionConfig } from '~actions';
 import type { GUARD_TYPE } from '~constants';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
-import type { FnMap, RecordS, ReduceArray } from '~types';
+import type { EventsMap, PromiseeMap } from '~events';
+import type { FnMap, FnR, RecordS, ReduceArray } from '~types';
 
 type gType = typeof GUARD_TYPE;
 type and = gType['and'];
@@ -58,7 +58,7 @@ export type PredicateS2<
   P extends PromiseeMap = PromiseeMap,
   Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Fn<[Pc, Tc, ToEvents<E, P>], boolean>;
+> = FnR<E, P, Pc, Tc, boolean>;
 
 export type PredicateUnion<
   E extends EventsMap,

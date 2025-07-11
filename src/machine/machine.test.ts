@@ -32,13 +32,10 @@ describe('machine coverage', () => {
         exact: true,
       });
 
-      const subscriber = service.subscribeMap(
+      const subscriber = service.subscribe(
         {
-          WRITE: ({
-            event: {
-              payload: { value },
-            },
-          }) => console.log('WRITE with', ':', `"${value}"`),
+          WRITE: ({ payload: { value } }) =>
+            console.log('WRITE with', ':', `"${value}"`),
           NEXT: () => console.log('NEXT time, you will see!!'),
           else: nothing,
         },
@@ -517,6 +514,10 @@ describe('machine coverage', () => {
       '__actionFn',
       '__actionKey',
       '__actionParams',
+      '__stateExtended',
+      '__state',
+      '__stateP',
+      '__statePextended',
       '__guardKey',
       '__predictate',
       '__delayKey',
