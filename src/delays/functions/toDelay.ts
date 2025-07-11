@@ -1,5 +1,6 @@
-import type { Fn, PrimitiveObject } from '@bemedev/types/lib/types/types';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
+import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
+import type { EventsMap, PromiseeMap } from '~events';
+import type { FnR } from '~types';
 import { reduceFnMap } from '~utils';
 import type { DelayMap } from '../types';
 
@@ -13,7 +14,7 @@ export type ToDelay_F = <
   promisees: P,
   delay: string,
   delays?: DelayMap<E, P, Pc, Tc>,
-) => Fn<[Pc, Tc, ToEvents<E, P>], number> | undefined;
+) => FnR<E, P, Pc, Tc, number> | undefined;
 
 /**
  * Converts a delay configuration to a function that returns the delay in milliseconds.
@@ -26,8 +27,6 @@ export type ToDelay_F = <
  * @param delays of type {@linkcode DelayMap}, the map of delays containing functions to execute.
  * @returns a function that returns the delay in milliseconds or undefined if not found.
  *
- * @see {@linkcode Fn}
- * @see {@linkcode ToEvents}
  * @see {@linkcode PrimitiveObject}
  * @see {@linkcode reduceFnMap}
  */

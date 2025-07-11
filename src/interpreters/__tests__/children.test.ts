@@ -20,11 +20,9 @@ describe('Integration testing for interpret, Children', () => {
     },
     { ...defaultT, context: typings.numbers.type },
     { '/': 'idle' },
-  ).provideOptions(() => ({
+  ).provideOptions(({ assign }) => ({
     actions: {
-      inc: (pContext, context) => {
-        return { pContext, context: context + 1 };
-      },
+      inc: assign('context', ({ context }) => context + 1),
     },
     delays: { DELAY: 100 },
   }));

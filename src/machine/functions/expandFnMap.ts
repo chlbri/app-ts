@@ -132,10 +132,13 @@ export type Decompose3<
 export type ExpandFnMap = <
   Pc,
   Tc = PrimitiveObject,
-  D = Decompose3<{
-    pContext: Pc;
-    context: Tc;
-  }>,
+  D = Decompose3<
+    {
+      pContext: Pc;
+      context: Tc;
+    },
+    { sep: '.'; parent: true }
+  >,
   K extends Extract<keyof D, string> = Extract<keyof D, string>,
   R = D[K],
   E extends EventsMap = EventsMap,
@@ -167,12 +170,12 @@ export type ExpandFnMap = <
 export const expandFnMap: ExpandFnMap = (events, promisees, key, fn) => {
   const _fn = reduceFnMap(events, promisees, fn);
 
-  return (pContext, context, event) => {
+  return ({ pContext, context, ...rest }) => {
     const all = {
       pContext,
       context,
     };
-    const result = _fn(pContext, context, event);
+    const result = _fn({ pContext, context, ...rest });
     return assignByKey(all, key, result);
   };
 };

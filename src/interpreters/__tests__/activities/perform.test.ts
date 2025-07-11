@@ -24,13 +24,10 @@ describe(TEXT, () => {
     exact: true,
   });
 
-  const subscriber = service.subscribeMap(
+  const subscriber = service.subscribe(
     {
-      WRITE: ({
-        event: {
-          payload: { value },
-        },
-      }) => console.log('WRITE with', ':', `"${value}"`),
+      WRITE: ({ payload: { value } }) =>
+        console.log('WRITE with', ':', `"${value}"`),
       NEXT: () => console.log('NEXT time, you will see!!'),
       else: nothing,
     },

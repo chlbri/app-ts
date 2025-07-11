@@ -1,4 +1,3 @@
-import { castings } from '@bemedev/types';
 import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import { getByKey } from '~machines';
@@ -47,7 +46,7 @@ export type IsValueS_F = <
 export const isValue: IsValueS_F = (path, ...values) => {
   const start = path.startsWith.bind(path);
 
-  return (pContext, context, event) => {
+  return ({ pContext, context, event }) => {
     if (path === 'pContext') {
       return values.some(value => pContext === value);
     }
@@ -106,8 +105,8 @@ export const isValue: IsValueS_F = (path, ...values) => {
 export const isNotValue: IsValueS_F = (path, ...values) => {
   const func = isValue(path, ...values);
 
-  return (pContext, context, event) => {
-    const result = func(pContext, context, castings.commons.any(event));
+  return state => {
+    const result = func(state);
     return !result;
   };
 };

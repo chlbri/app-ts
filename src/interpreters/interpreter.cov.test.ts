@@ -44,7 +44,7 @@ describe('Covers all inner actions', () => {
         actions: {
           inc: assign(
             'context.iterator',
-            (_, { iterator }) => iterator + 1,
+            ({ context: { iterator } }) => iterator + 1,
           ),
           pause: pauseActivity('/idle::DELAY'),
           resume: resumeActivity('/idle::DELAY'),
@@ -176,7 +176,7 @@ describe('Covers all inner actions', () => {
           inc: debounce(
             assign(
               'context.iterator',
-              (_, { iterator }) => iterator + 1000,
+              ({ context: { iterator } }) => iterator + 1000,
             ),
             {
               ms: DELAY * 10,
@@ -357,8 +357,14 @@ describe('Covers all inner actions', () => {
       { '/': 'idle' },
     ).provideOptions(({ assign, forceSend, resend }) => ({
       actions: {
-        inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
-        dec: assign('context.iterator', (_, { iterator }) => iterator - 1),
+        inc: assign(
+          'context.iterator',
+          ({ context: { iterator } }) => iterator + 1,
+        ),
+        dec: assign(
+          'context.iterator',
+          ({ context: { iterator } }) => iterator - 1,
+        ),
         forceSendInc: forceSend('INCREMENT'),
         sendDec: resend('DECREMENT'),
       },
@@ -470,8 +476,14 @@ describe('Covers all inner actions', () => {
       { '/': 'idle' },
     ).provideOptions(({ assign, forceSend, resend }) => ({
       actions: {
-        inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
-        dec: assign('context.iterator', (_, { iterator }) => iterator - 1),
+        inc: assign(
+          'context.iterator',
+          ({ context: { iterator } }) => iterator + 1,
+        ),
+        dec: assign(
+          'context.iterator',
+          ({ context: { iterator } }) => iterator - 1,
+        ),
         forceSendInc: forceSend('INCREMENT'),
         sendDec: resend('DECREMENT'),
       },

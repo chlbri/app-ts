@@ -70,14 +70,14 @@ describe('Interpret for actions', () => {
       });
 
       test('#02 => Called with the correct arguments', () => {
-        expect(action1).toHaveBeenCalledWith(
-          expect.toSatisfy(val => Object.keys(val).length === 0),
-          expect.toSatisfy(val => Object.keys(val).length === 0),
-          {
-            type: 'NEXT',
-            payload: {},
-          },
-        );
+        expect(action1).toHaveBeenCalledWith({
+          pContext: {},
+          context: {},
+          event: { type: 'NEXT', payload: {} },
+          status: 'busy',
+          tags: undefined,
+          value: 'state1',
+        });
       });
     });
 
@@ -155,14 +155,14 @@ describe('Interpret for actions', () => {
       });
 
       test('#02 => Called with the correct arguments', () => {
-        expect(action1).toHaveBeenCalledWith(
-          expect.toSatisfy(val => Object.keys(val).length === 0),
-          expect.toSatisfy(val => Object.keys(val).length === 0),
-          {
-            type: 'NEXT',
-            payload: {},
-          },
-        );
+        expect(action1).toHaveBeenCalledWith({
+          pContext: {},
+          context: {},
+          event: { type: 'NEXT', payload: {} },
+          status: 'busy',
+          tags: undefined,
+          value: 'state1',
+        });
       });
     });
   });

@@ -36,7 +36,7 @@ export type MaxExceededEvent = typeof MAX_EXCEEDED_EVENT_TYPE;
 /**
  * Represents a union of all event strings.
  */
-export type EventStrings = InitEvent;
+export type EventStrings = InitEvent | MaxExceededEvent;
 
 export type AllEvent = EventObject | EventStrings;
 

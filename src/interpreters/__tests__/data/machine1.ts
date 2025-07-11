@@ -28,15 +28,14 @@ export const machine1 = createMachine(
   { '/': 'idle' },
 );
 
-machine1.addOptions(() => ({
+machine1.addOptions(({ assign }) => ({
   actions: {
-    inc: (pContext, context) => {
-      context.iterator++;
-      return { context, pContext };
-    },
+    inc: assign('context.iterator', ({ context }) => context.iterator + 1),
   },
   delays: {
     DELAY,
   },
 }));
+
+export type Machine1 = typeof machine1;
 // #endregion

@@ -131,15 +131,21 @@ export const machine21 = createMachine(
     sendTo: sender,
   }) => ({
     actions: {
-      inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
-      inc2: assign('context.iterator', (_, { iterator }) => iterator + 4),
+      inc: assign(
+        'context.iterator',
+        ({ context: { iterator } }) => iterator + 1,
+      ),
+      inc2: assign(
+        'context.iterator',
+        ({ context: { iterator } }) => iterator + 4,
+      ),
       sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
       askUsertoInput: voidAction(() => console.log('Input, please !!')),
       write: assign('context.input', {
-        WRITE: (_, __, { value }) => value,
+        WRITE: ({ payload: { value } }) => value,
       }),
       insertData: assign('context.data', {
-        'fetch::then': (_, { data }, payload) => {
+        'fetch::then': ({ payload, context: { data } }) => {
           data.push(...payload);
           return data;
         },
@@ -151,7 +157,7 @@ export const machine21 = createMachine(
       isInputNotEmpty: isNotValue('context.input', ''),
     },
     promises: {
-      fetch: async (_, { input }) => {
+      fetch: async ({ context: { input } }) => {
         return fakeDB.filter(item => item.name.includes(input));
       },
     },

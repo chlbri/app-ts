@@ -5,7 +5,12 @@ import cloneDeep from 'clone-deep';
 import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { Delay } from '~delays';
-import { type EventsMap, type PromiseeMap, type ToEvents } from '~events';
+import {
+  type EventsMap,
+  type PromiseeMap,
+  type ToEvents,
+  type ToEventsR,
+} from '~events';
 import {
   isDefinedS,
   isNotDefinedS,
@@ -14,6 +19,12 @@ import {
   type DefinedValue,
   type PredicateS,
 } from '~guards';
+import type {
+  State,
+  StateExtended,
+  StateP,
+  StatePextended,
+} from '~interpreters';
 import type { PromiseFunction } from '~promises';
 import {
   flatMap,
@@ -67,8 +78,8 @@ import type {
 
 class Machine<
   const C extends Config = Config,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  const Pc extends PrimitiveObject = PrimitiveObject,
+  const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
@@ -185,6 +196,80 @@ class Machine<
    */
   get __actionParams() {
     return typings.commons<{ pContext: Pc; context: Tc; map: E }>();
+  }
+
+  /**
+   * @deprecated
+   *
+   * This property provides the state extended for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode StateExtended}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Pc}
+   * @see {@linkcode Tc}
+   */
+  get __stateExtended() {
+    return typings.commons<StateExtended<Pc, Tc, ToEvents<E, P>>>();
+  }
+
+  /**
+   * @deprecated
+   *
+   * This property provides the state for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode State}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Pc}
+   * @see {@linkcode Tc}
+   */
+  get __state() {
+    return typings.commons<State<Tc, ToEventsR<E, P>>>();
+  }
+
+  /**
+   * @deprecated
+   *
+   * This property provides the state payload for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode StateP}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Pc}
+   * @see {@linkcode Tc}
+   */
+  get __stateP() {
+    return typings.commons<StateP<Tc, ToEventsR<E, P>['payload']>>();
+  }
+
+  /**
+   * @deprecated
+   *
+   * This property provides the extended state payload for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode StatePextended}
+   * @see {@linkcode ToEvents}
+   * @see {@linkcode E}
+   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Pc}
+   * @see {@linkcode Tc}
+   */
+  get __statePextended() {
+    return typings.commons<
+      StatePextended<Pc, Tc, ToEventsR<E, P>['payload']>
+    >();
   }
 
   #typingsByKey = <
@@ -930,12 +1015,13 @@ class Machine<
   ) => {
     return fn => {
       const fn2 = reduceFnMap(this.eventsMap, this.promiseesMap, fn);
-      return (pContext, context, eventsMap) => {
-        const { event, to } = fn2(pContext, context, eventsMap);
+      return ({ context, pContext, ...rest }) => {
+        const state = this.#cloneState({ context, pContext, ...rest });
+        const { event, to } = fn2(state);
 
         const sentEvent = { to, event };
 
-        return castings.commons.any({ pContext, context, sentEvent });
+        return castings.commons.any({ context, pContext, sentEvent });
       };
     };
   };
@@ -952,16 +1038,24 @@ class Machine<
    * @see {@linkcode VoidAction_F}
    */
   #voidAction: VoidAction_F<E, P, Pc, Tc> = fn => {
-    return (pContext, context, map) => {
-      fn(pContext, context, map);
-      return castings.commons.any({ pContext, context });
+    return ({ context, pContext, ...rest }) => {
+      if (fn) {
+        const state = this.#cloneState({ context, pContext, ...rest });
+        fn(state);
+      }
+      return castings.commons.any({ context, pContext });
     };
   };
 
   #timeAction = (name: string): TimeAction_F<E, P, Pc, Tc> => {
-    return id => (pContext, context) => {
-      return castings.commons.any({ pContext, context, [name]: id });
-    };
+    return id =>
+      ({ context, pContext }) => {
+        return castings.commons.any({ context, pContext, [name]: id });
+      };
+  };
+
+  #cloneState = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {
+    return structuredClone(state);
   };
 
   /**
@@ -999,38 +1093,36 @@ class Machine<
         voidAction,
         sendTo,
         debounce: (fn, { id, ms = 100 }) => {
-          return (pContext, context, map) => {
-            const data = fn(
-              cloneDeep(pContext),
-              structuredClone(context),
-              map,
-            );
+          return ({ context, pContext, ...rest }) => {
+            const state = this.#cloneState({ context, pContext, ...rest });
+            const data = fn(state);
 
             const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
 
+            console.warn('context22', context);
             return castings.commons.any({
-              pContext,
               context,
+              pContext,
               scheduled,
             });
           };
         },
 
         resend: resend => {
-          return (pContext, context) => {
+          return ({ context, pContext }) => {
             return castings.commons.any({
-              pContext,
               context,
+              pContext,
               resend,
             });
           };
         },
 
         forceSend: forceSend => {
-          return (pContext, context) => {
+          return ({ context, pContext }) => {
             return castings.commons.any({
-              pContext,
               context,
+              pContext,
               forceSend,
             });
           };
@@ -1169,7 +1261,13 @@ export const DEFAULT_MACHINE = createMachine(
   { '/': 'off' },
 ).provideOptions(({ assign }) => ({
   actions: {
-    inc: assign('context.iterator', (_, { iterator }) => iterator + 1),
-    dec: assign('context.iterator', (_, { iterator }) => iterator - 1),
+    inc: assign(
+      'context.iterator',
+      ({ context: { iterator } }) => iterator + 1,
+    ),
+    dec: assign(
+      'context.iterator',
+      ({ context: { iterator } }) => iterator - 1,
+    ),
   },
 }));

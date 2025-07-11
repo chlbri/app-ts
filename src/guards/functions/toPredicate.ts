@@ -4,6 +4,7 @@ import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import { GUARD_TYPE } from '~constants';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { GuardConfig } from '~guards';
+import type { StateExtended } from '~interpreters';
 import { isDescriber, isString } from '~types';
 import { reduceFnMap } from '~utils';
 import type { PredicateMap, PredicateS2 } from '../types';
@@ -19,7 +20,9 @@ export type _ToPredicateF = <
   guard: GuardConfig,
   predicates?: PredicateMap<E, P, Pc, Tc>,
 ) => {
-  func?: GuardDefUnion<[Pc, Tc, ToEvents<E, P>]>;
+  func?:
+    | GuardDefUnion<[StateExtended<Pc, Tc, ToEvents<E, P>>]>
+    | undefined;
   errors: string[];
 };
 

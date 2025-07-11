@@ -1,7 +1,13 @@
 import { castings } from '@bemedev/types';
 import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
-import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
-import { isFunction, type FnMap, type FnMapR, type FnR } from '~types';
+import type { EventsMap, PromiseeMap, ToEventsR } from '~events';
+import {
+  isFunction,
+  type FnMap,
+  type FnMapR,
+  type FnR,
+  type FnReduced,
+} from '~types';
 import { nothing } from './nothing';
 
 type ToEventMap_F = <
@@ -56,11 +62,13 @@ export const reduceFnMap: ReduceFnMap_F = (events, promisees, fn) => {
   const map = toEventsMap(events, promisees);
   const keys = Object.keys(map);
 
-  return (pContext, context, event) => {
+  return ({ event, context, pContext, status, value, tags }) => {
     const check5 = typeof event === 'string';
     const _else = fn.else ?? nothing;
     if (check5)
-      return castings.commons.any(_else(pContext, context, event));
+      return castings.commons.any(
+        _else({ event, context, pContext, status, value, tags }),
+      );
 
     const { payload, type } = event;
 
@@ -70,10 +78,13 @@ export const reduceFnMap: ReduceFnMap_F = (events, promisees, fn) => {
       const check3 = !!func;
 
       const check4 = check2 && check3;
-      if (check4) return func(pContext, context, payload);
+      if (check4)
+        return func({ payload, context, pContext, status, value, tags });
     }
 
-    return castings.commons.any(_else(pContext, context, event));
+    return castings.commons.any(
+      _else({ event, context, pContext, status, value, tags }),
+    );
   };
 };
 
@@ -86,7 +97,7 @@ export type ReduceFnMap2_F = <
   events: E,
   promisees: P,
   fn: FnMapR<E, P, Tc, R>,
-) => (context: Tc, eventsMap: ToEvents<E, P>) => R;
+) => FnReduced<E, P, Tc, R>;
 
 /**
  * Reduces a function map to a single function that processes events with a context.
@@ -116,10 +127,13 @@ export const reduceFnMapReduced: ReduceFnMap2_F = (
   const map = toEventsMap(events, promisees);
   const keys = Object.keys(map);
 
-  return (context, event) => {
+  return ({ context, event, status, value, tags }) => {
     const check5 = typeof event === 'string';
     const _else = fn.else ?? nothing;
-    if (check5) return castings.commons.any(_else(context, event));
+    if (check5)
+      return castings.commons.any(
+        _else({ context, event, status, value, tags }),
+      );
 
     const { payload, type } = event;
 
@@ -129,9 +143,11 @@ export const reduceFnMapReduced: ReduceFnMap2_F = (
       const check3 = !!func;
 
       const check4 = check2 && check3;
-      if (check4) return func(context, payload);
+      if (check4) return func({ context, payload, status, value, tags });
     }
 
-    return castings.commons.any(_else(context, event));
+    return castings.commons.any(
+      _else({ context, event, status, value, tags }),
+    );
   };
 };

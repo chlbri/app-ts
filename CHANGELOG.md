@@ -8,6 +8,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.4.0] - 2024-07-11 _15:45_
+
+- Improve interpreter.subscribe
+- Reduce codebase
+- Better typings, upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+<br/>
+
+## [0.3.1] - 2024-07-10 _21:45_
+
+- Exports `typings` from utils at root
+- Better typings, upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+<br/>
+
 ## [0.3.1] - 2024-07-10 _21:45_
 
 - Exports `typings` from utils at root
