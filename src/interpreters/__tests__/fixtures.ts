@@ -23,10 +23,9 @@ export const defaultI = { '/': 'idle' } as const;
 
 export const fakeWaiter = async (ms = 0, times = 1) => {
   const check = vi.isFakeTimers();
-  for (let i = 0; i < times; i++) {
-    if (check) await vi.advanceTimersByTimeAsync(ms);
-    else await sleep(ms);
-  }
+  const duration = ms * times;
+  if (check) await vi.advanceTimersByTimeAsync(duration);
+  else await sleep(duration);
 };
 
 type ConstructWaiter_F = (
@@ -101,18 +100,15 @@ export const asyncNothing = async () => {
 export const mockConsole = () => {
   const fnLog = vi.spyOn(console, 'log');
   const fnError = vi.spyOn(console, 'error');
-  const fnWarn = vi.spyOn(console, 'warn');
 
   beforeAll(() => {
     const fn = () => void 0;
     fnLog.mockImplementation(fn);
     fnError.mockImplementation(fn);
-    fnWarn.mockImplementation(fn);
   });
 
   afterAll(() => {
     fnLog.mockRestore();
     fnError.mockRestore();
-    fnWarn.mockRestore();
   });
 };

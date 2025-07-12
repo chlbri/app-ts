@@ -79,12 +79,19 @@ export type ToAction_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (action?: ActionConfig) => Action2<E, P, Pc, Tc>;
 
-export type PerformAction_F<
+export type PerformActionLater_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc extends PrimitiveObject = PrimitiveObject,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (action: Action2<E, P, Pc, Tc>) => ActionResult<Pc, Tc>;
+
+export type PerformAction_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = (action: Action2<E, P, Pc, Tc>) => void;
 
 export type ToPredicate_F<
   E extends EventsMap = EventsMap,
@@ -126,21 +133,10 @@ export type ExecuteActivities_F = (
   activity: ActivityConfig,
 ) => string[];
 
-export type PerformAfter_F<
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = (
+export type PerformAfter_F = (
   from: string,
   after: DelayedTransitions,
-) =>
-  | TimeoutPromise<
-      | {
-          target?: string;
-          result: ActionResult<Pc, Tc>;
-        }
-      | undefined
-    >
-  | undefined;
+) => TimeoutPromise<string | false> | undefined;
 
 export type TransitionAfterResult<
   Pc extends PrimitiveObject = PrimitiveObject,
@@ -152,28 +148,16 @@ export type TransitionAfterResult<
     }
   | undefined;
 
-export type PerformAlway_F<
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = (always: AlwaysConfig) => TransitionAfterResult<Pc, Tc>;
+export type PerformAlway_F = (always: AlwaysConfig) => string | false;
 
 export type Collected0<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  after?:
-    | TimeoutPromise<
-        | {
-            target?: string;
-            result: ActionResult<Pc, Tc>;
-          }
-        | undefined
-      >
-    | undefined;
-  promisee?: TimeoutPromise<PromiseeResult<E, P, Pc, Tc> | undefined>;
-  always?: TransitionAfterResult<Pc, Tc>;
+  after?: TimeoutPromise<string | false>;
+
+  promisee?: TimeoutPromise<PromiseeResult<E, P> | undefined>;
+  always?: () => string | false;
 };
 
 export type ToPromiseSrc_F<
@@ -186,12 +170,10 @@ export type ToPromiseSrc_F<
 export type PerformPromisee_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   from: string,
   ...promisees: PromiseeConfig[]
-) => TimeoutPromise<PromiseeResult<E, P, Pc, Tc> | undefined> | undefined;
+) => TimeoutPromise<PromiseeResult<E, P> | undefined> | undefined;
 
 export type Contexts<
   Pc extends PrimitiveObject = PrimitiveObject,
@@ -201,24 +183,13 @@ export type Contexts<
   context?: Tc;
 };
 
-export type PerformTransition_F<
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = (transition: TransitionConfig) =>
-  | {
-      target?: string;
-      result: ActionResult<Pc, Tc>;
-    }
-  | string
-  | false;
+export type PerformTransition_F = (
+  transition: TransitionConfig,
+) => string | false;
 
-export type PerformTransitions_F<
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = (...transitions: TransitionConfig[]) => {
-  target?: string;
-  result?: ActionResult<Pc, Tc>;
-};
+export type PerformTransitions_F = (
+  ...transitions: TransitionConfig[]
+) => string | false;
 
 export type SleepContexts_F = <
   Pc extends PrimitiveObject = PrimitiveObject,
@@ -230,12 +201,7 @@ export type SleepContexts_F = <
 export type _Send_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = (event: ToEventsR<E, P>) => {
-  result: ActionResult<Pc, Tc>;
-  next?: NodeConfigWithInitials;
-};
+> = (event: ToEventsR<E, P>) => NodeConfigWithInitials | undefined;
 
 export type State<
   Tc extends PrimitiveObject = PrimitiveObject,

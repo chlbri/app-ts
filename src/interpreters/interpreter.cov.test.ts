@@ -226,95 +226,97 @@ describe('Covers all inner actions', () => {
     service.subscribe(state => console.log(state.value));
     // #endregion
 
-    test('#00 => Start the machine', () => {
-      service.start();
+    describe('TESTS', () => {
+      test('#00 => Start the machine', () => {
+        service.start();
+      });
+
+      test(...useIterator(0, 1));
+
+      test(...useWaiter(5, 2));
+
+      test(...useIterator(0, 3));
+
+      test(...useWaiter(5, 4));
+
+      test(...useIterator(1000, 5));
+
+      test(...useSend('NEXT', 6));
+
+      test(...useIterator(1000, 7));
+
+      test(...useWaiter(10, 8));
+
+      test(...useIterator(2000, 9));
+
+      test(...useWaiter(20, 10));
+
+      test(...useIterator(2000, 11));
+
+      test(...useSend('NEXT', 12));
+
+      test(...useIterator(2000, 13));
+
+      test(...useWaiter(5, 14));
+
+      test(...useSend('PAUSE', 15));
+
+      test(...useIterator(2000, 16));
+
+      test(...useWaiter(15, 17));
+
+      test(...useIterator(2000, 18));
+
+      test(...useSend('RESUME', 19));
+
+      test(...useIterator(2000, 20));
+
+      test(...useWaiter(2, 21));
+
+      test(...useIterator(2000, 22));
+
+      test(...useWaiter(3, 23));
+
+      test(...useIterator(3000, 24));
+
+      test(...useWaiter(10, 25));
+
+      test(...useIterator(3000, 26));
+
+      test(...useSend('NEXT', 27));
+
+      test(...useIterator(3000, 28));
+
+      test(...useWaiter(5, 29));
+
+      test(...useIterator(3000, 30));
+
+      test(...useSend('STOP', 31));
+
+      test(...useIterator(3000, 32));
+
+      test(...useWaiter(25, 33));
+
+      test(...useIterator(3000, 34));
+
+      test(...useSend('RESUME', 35));
+
+      test(...useIterator(3000, 36));
+
+      test(...useWaiter(25, 37));
+
+      test(...useIterator(3000, 38));
+
+      test(...useSend('NEXT', 39));
+
+      test(...useIterator(3000, 40));
+
+      test(...useWaiter(10, 41));
+
+      test(...useIterator(4000, 42));
+
+      test('#43 => Dispose', service.dispose);
     });
-
-    test(...useIterator(0, 1));
-
-    test(...useWaiter(5, 2));
-
-    test(...useIterator(0, 3));
-
-    test(...useWaiter(5, 4));
-
-    test(...useIterator(1000, 5));
-
-    test(...useSend('NEXT', 6));
-
-    test(...useIterator(1000, 7));
-
-    test(...useWaiter(10, 8));
-
-    test(...useIterator(2000, 9));
-
-    test(...useWaiter(20, 10));
-
-    test(...useIterator(2000, 11));
-
-    test(...useSend('NEXT', 12));
-
-    test(...useIterator(2000, 13));
-
-    test(...useWaiter(5, 14));
-
-    test(...useSend('PAUSE', 15));
-
-    test(...useIterator(2000, 16));
-
-    test(...useWaiter(15, 17));
-
-    test(...useIterator(2000, 18));
-
-    test(...useSend('RESUME', 19));
-
-    test(...useIterator(2000, 20));
-
-    test(...useWaiter(2, 21));
-
-    test(...useIterator(2000, 22));
-
-    test(...useWaiter(3, 23));
-
-    test(...useIterator(3000, 24));
-
-    test(...useWaiter(10, 25));
-
-    test(...useIterator(3000, 26));
-
-    test(...useSend('NEXT', 27));
-
-    test(...useIterator(3000, 28));
-
-    test(...useWaiter(5, 29));
-
-    test(...useIterator(3000, 30));
-
-    test(...useSend('STOP', 31));
-
-    test(...useIterator(3000, 32));
-
-    test(...useWaiter(25, 33));
-
-    test(...useIterator(3000, 34));
-
-    test(...useSend('RESUME', 35));
-
-    test(...useIterator(3000, 36));
-
-    test(...useWaiter(25, 37));
-
-    test(...useIterator(3000, 38));
-
-    test(...useSend('NEXT', 39));
-
-    test(...useIterator(3000, 40));
-
-    test(...useWaiter(10, 41));
-
-    test(...useIterator(4000, 42));
-
-    test('#43 => Dispose', service.dispose);
   });
 
   describe('#03 => Performs send to itself actions', () => {
@@ -334,6 +336,7 @@ describe('Covers all inner actions', () => {
               NEXT: '/idle',
               'INCREMENT.FORCE': { actions: 'forceSendInc' },
               DECREMENT: { actions: 'sendDec' },
+              INCREMENT: { actions: ['inc', 'inc'] },
             },
           },
         },
@@ -416,19 +419,19 @@ describe('Covers all inner actions', () => {
 
       test(...useSend('INCREMENT', 12));
 
-      test(...useIterator(0, 13));
+      test(...useIterator(2, 13));
 
       test(...useSend('INCREMENT.FORCE', 14));
 
-      test(...useIterator(1, 15));
+      test(...useIterator(5, 15));
 
       test(...useSend('INCREMENT', 16));
 
-      test(...useIterator(1, 17));
+      test(...useIterator(7, 17));
 
       test(...useSend('REDECREMENT', 18));
 
-      test(...useIterator(1, 19));
+      test(...useIterator(7, 19));
 
       // #endregion
 
