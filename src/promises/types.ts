@@ -5,11 +5,7 @@ import type {
   ReduceArray,
   Require,
 } from '@bemedev/types/lib/types/types';
-import type {
-  ActionConfig,
-  ActionResult,
-  FromActionConfig,
-} from '~actions';
+import type { ActionConfig, FromActionConfig } from '~actions';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type {
   ExtractActionsFromTransition,
@@ -215,10 +211,7 @@ export type Promisee<
 export type PromiseeResult<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   event: ToEvents<E, P>;
-  result: ActionResult<Pc, Tc>;
-  target?: string;
+  target: string | false;
 };

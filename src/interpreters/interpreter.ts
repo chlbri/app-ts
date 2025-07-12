@@ -98,7 +98,7 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import { isDescriber, type RecordS } from '~types';
-import { IS_TEST, recomposeSV, reduceFnMap, replaceAll } from '~utils';
+import { IS_TEST, reduceFnMap, replaceAll } from '~utils';
 import { ChildS, type ChildS2 } from './../machine/types';
 import { Node } from './../states/types';
 import { merge } from './../utils/merge';
@@ -113,6 +113,7 @@ import {
   type Interpreter_F,
   type Mode,
   type PerformAction_F,
+  type PerformActionLater_F,
   type PerformAfter_F,
   type PerformAlway_F,
   type PerformDelay_F,
@@ -461,11 +462,13 @@ export class Interpreter<
     const value = nodeToValue(this.#config);
     this.#value = value;
     this.#performStates({ value });
+
     this.#node = this.#resolveNode(this.#config);
 
     const configForFlat = castings.commons.unknown<NodeConfig>(
       this.#config,
     );
+
     this.#flat = castings.commons.any(flatMap(configForFlat));
   };
 
@@ -704,10 +707,6 @@ export class Interpreter<
     this._cachedIntervals.forEach(this.#pause);
   };
 
-  #pauseCurrentActivities = () => {
-    this.#currentActivities?.forEach(this.#pause);
-  };
-
   /**
    * Schedule all activities of the current {@linkcode Node} of this {@linkcode Interpreter} service.
    *
@@ -770,7 +769,7 @@ export class Interpreter<
     return structuredClone({ pContext, ...this.#state });
   }
 
-  #performAction: PerformAction_F<E, P, Pc, Tc> = action => {
+  #performAction: PerformActionLater_F<E, P, Pc, Tc> = action => {
     this._iterate();
     return action(this.#cloneState);
   };
@@ -803,41 +802,7 @@ export class Interpreter<
     const cannot = this.#cannotPerformEvents(resend);
     if (cannot) return;
 
-    return this.#sendAction(resend, true);
-  };
-
-  #sendAction = (event: EventArg<E>, circular = false) => {
-    const type = eventToType(event);
-
-    const flat: RecordS<NodeConfigWithInitials> =
-      castings.commons.function.forceCast(flatMap)(this.#initialConfig);
-
-    const entries = Object.entries(flat);
-    let out = this.#contexts;
-    for (const [from, { on }] of entries) {
-      // #region Avoid circular transitions
-      // If the current value is the same as the from value, skip the transition
-      const _from = recomposeSV(from);
-
-      const checkCircular = circular
-        ? this.#value !== _from
-        : this.#value === _from;
-
-      if (checkCircular) continue;
-      // #endregion
-
-      const transitions = on?.[type];
-      if (!transitions) continue;
-
-      const { result } = this.#performTransitions(
-        ...toArray.typed(transitions),
-      );
-
-      // Merge the result with the current output
-      out = merge(out, result);
-    }
-
-    return out;
+    return this.send(resend);
   };
 
   /**
@@ -851,7 +816,12 @@ export class Interpreter<
   #performForceSendAction = (forceSend?: EventArg<E>) => {
     if (!forceSend) return;
 
-    return this.#sendAction(forceSend);
+    const values = Object.values(this.#machine.preflat);
+    values.forEach(({ on }) => {
+      const type = eventToType(forceSend);
+      const transitions = toArray.typed(on?.[type]);
+      this.#performTransitions(...transitions);
+    });
   };
 
   #performPauseActivityAction = (id?: string) => {
@@ -924,12 +894,9 @@ export class Interpreter<
     const { pContext, context, ...extendeds } =
       this.#performAction(action);
 
-    const result = this.#performsExtendedActions(extendeds);
+    this.#mergeContexts({ pContext, context });
 
-    this.#makeWork();
-
-    // Force send action will be merged if exists
-    return merge({ pContext, context }, result as any);
+    this.#performsExtendedActions(extendeds);
   };
 
   /**
@@ -945,25 +912,18 @@ export class Interpreter<
     } else throw error;
   }
 
-  get #contexts() {
-    return castings.commons<ActionResult<Pc, Tc>>({
-      pContext: cloneDeep(this.#pContext),
-      context: structuredClone(this.#context),
-    });
-  }
+  // get #contexts() {
+  //   return castings.commons<ActionResult<Pc, Tc>>({
+  //     pContext: cloneDeep(this.#pContext),
+  //     context: structuredClone(this.#context),
+  //   });
+  // }
 
-  #performActions = (
-    contexts: ActionResult<Pc, Tc>,
-    ...actions: ActionConfig[]
-  ) => {
-    return actions
+  #performActions = (...actions: ActionConfig[]) => {
+    actions
       .map(this.toActionFn)
       .filter(f => f !== undefined)
-      .map(this.#executeAction)
-      .reduce((acc, value) => {
-        const out = merge(acc, value);
-        return out;
-      }, contexts);
+      .forEach(this.#executeAction);
   };
 
   #performPredicate: PerformPredicate_F<E, P, Pc, Tc> = predicate => {
@@ -1008,12 +968,9 @@ export class Interpreter<
     });
   };
 
-  #mergeContexts = ({
-    pContext,
-    context: __context,
-  }: ActionResult<Pc, Tc>) => {
-    this.#pContext = merge(this.#pContext, pContext);
-    const context = merge(this.#context, __context);
+  #mergeContexts = (result?: ActionResult<Pc, Tc>) => {
+    this.#pContext = merge(this.#pContext, result?.pContext);
+    const context = merge(this.#context, result?.context);
     this.#context = context;
     this.#performStates({ context });
 
@@ -1060,11 +1017,8 @@ export class Interpreter<
             const check4 = check2 || check3;
 
             if (check4) {
-              const result = this.#performActions(
-                this.#contexts,
-                activity,
-              );
-              return this.#mergeContexts(result);
+              this.#performActions(activity);
+              continue;
             }
 
             const check5 = this.#performPredicates(
@@ -1072,9 +1026,7 @@ export class Interpreter<
             );
             if (check5) {
               const actions = toArray.typed(activity.actions);
-              return this.#mergeContexts(
-                this.#performActions(this.#contexts, ...actions),
-              );
+              this.#performActions(...actions);
             }
           }
         };
@@ -1116,35 +1068,40 @@ export class Interpreter<
    */
   protected _cachedIntervals: Interval2[] = [];
 
-  #performTransition: PerformTransition_F<Pc, Tc> = transition => {
+  #performTransition: PerformTransition_F = transition => {
     const check = typeof transition == 'string';
-    if (check) return transition;
+    if (check) {
+      const { diffEntries, diffExits } = this.#diffNext(transition);
+      this.#performActions(...toArray<ActionConfig>(diffExits));
+      this.#performActions(...toArray<ActionConfig>(diffEntries));
+
+      return transition;
+    }
 
     const { guards, actions, target } = transition;
+    const { diffEntries, diffExits } = this.#diffNext(target);
+
     const response = this.#performPredicates(
       ...toArray<GuardConfig>(guards),
     );
-    if (response) {
-      const result = this.#performActions(
-        this.#contexts,
-        ...toArray<ActionConfig>(actions),
-      );
 
-      return { target, result };
+    if (response) {
+      this.#performActions(...toArray<ActionConfig>(diffExits));
+      this.#performActions(...toArray<ActionConfig>(actions));
+      this.#performActions(...toArray<ActionConfig>(diffEntries));
+      return target ?? false;
     }
     return false;
   };
 
-  #performTransitions: PerformTransitions_F<Pc, Tc> = (...transitions) => {
+  #performTransitions: PerformTransitions_F = (...transitions) => {
+    // let transition: ReturnType<PerformTransition_F<Pc, Tc>> = false;
     for (const _transition of transitions) {
       const transition = this.#performTransition(_transition);
       const check1 = typeof transition === 'string';
-      if (check1) return { target: transition };
-
-      const check2 = transition !== false;
-      if (check2) return transition;
+      if (check1) return transition;
     }
-    return {};
+    return false;
   };
 
   #performPromiseSrc: PerformPromise_F<E, P, Pc, Tc> = promise => {
@@ -1164,19 +1121,15 @@ export class Interpreter<
 
       const check4 = check2 || check3;
       if (check4) {
-        const result = this.#performActions(this.#contexts, final);
-        return result;
+        this.#performActions(final);
+        continue;
       }
 
       const response = this.#performPredicates(
         ...toArray.typed(final.guards),
       );
       if (response) {
-        const result = this.#performActions(
-          this.#contexts,
-          ...toArray.typed(final.actions),
-        );
-        return result;
+        this.#performActions(...toArray.typed(final.actions));
       }
     }
     return;
@@ -1186,11 +1139,8 @@ export class Interpreter<
     return this.#status === 'sending';
   }
 
-  #performPromisee: PerformPromisee_F<E, P, Pc, Tc> = (
-    from,
-    ...promisees
-  ) => {
-    type PR = PromiseeResult<E, P, Pc, Tc>;
+  #performPromisee: PerformPromisee_F<E, P> = (from, ...promisees) => {
+    type PR = PromiseeResult<E, P>;
 
     const promises: TimeoutPromise<PR | undefined>[] = [];
 
@@ -1211,15 +1161,11 @@ export class Interpreter<
               type === 'then' ? then : _catch,
             );
 
-            const transition = this.#performTransitions(...transitions);
-            const target = transition.target;
-            const result = merge(
-              this.#contexts,
-              transition.result,
-              this.#performFinally(_finally),
-            );
+            const target = this.#performTransitions(...transitions);
 
-            return { event: this.#event, result, target };
+            this.#performFinally(_finally);
+
+            return { event: this.#event, target };
           };
 
           if (this.#cannotPerform(from)) return;
@@ -1264,15 +1210,9 @@ export class Interpreter<
     return check;
   };
 
-  #performAfter: PerformAfter_F<Pc, Tc> = (from, after) => {
+  #performAfter: PerformAfter_F = (from, after) => {
     const entries = Object.entries(after);
-    const promises: TimeoutPromise<
-      | {
-          target: string | undefined;
-          result: ActionResult<Pc, Tc>;
-        }
-      | undefined
-    >[] = [];
+    const promises: TimeoutPromise<string | false>[] = [];
 
     entries.forEach(([_delay, transition]) => {
       const delayF = this.toDelayFn(_delay);
@@ -1293,24 +1233,22 @@ export class Interpreter<
       const _promise = async () => {
         await sleep(delay);
 
-        const func = () => {
-          const out = this.#performTransitions(...transitions);
-          const target = out.target;
-          const result = out.result ?? {};
+        const func = () => this.#performTransitions(...transitions);
 
-          return { target, result };
-        };
-
-        if (this.#cannotPerform(from)) return;
+        if (this.#cannotPerform(from)) return false;
 
         const out = func();
-        const check3 =
-          out.target === undefined && Object.keys(out.result).length < 1;
-        if (check3) return Promise.reject('No transitions reached !');
+
+        if (out === false)
+          throw `No transitions reached from "${from}" by delay "${_delay}" !`;
         return out;
       };
 
-      const promise = withTimeout(_promise, from);
+      const promise = withTimeout(
+        _promise,
+        from,
+        DEFAULT_MAX_TIME_PROMISE,
+      );
 
       promises.push(promise);
     });
@@ -1322,13 +1260,9 @@ export class Interpreter<
     return promise;
   };
 
-  #performAlways: PerformAlway_F<Pc, Tc> = alway => {
+  #performAlways: PerformAlway_F = alway => {
     const always = toArray<TransitionConfig>(alway);
-    const out = this.#performTransitions(...always);
-    const target = out.target;
-    if (!target) return;
-    const result = merge(this.#contexts, out.result);
-    return { target, result };
+    return this.#performTransitions(...always);
   };
 
   get #collectedPromisees() {
@@ -1418,10 +1352,10 @@ export class Interpreter<
    * Get all brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
    */
   get #collectedSelfTransitions0() {
-    const entries = new Map<string, Collected0<E, P, Pc, Tc>>();
+    const entries = new Map<string, Collected0<E, P>>();
 
     this.#collectedAlways.forEach(([from, always]) => {
-      entries.set(from, { always: this.#performAlways(always) });
+      entries.set(from, { always: () => this.#performAlways(always) });
     });
 
     this.#collectedAfters.forEach(([from, after]) => {
@@ -1446,22 +1380,6 @@ export class Interpreter<
   }
 
   /**
-   * @deprecated
-   *
-   * @returns the brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
-   *
-   * @remarks returns nothing in prod
-   */
-  get _collecteds0() {
-    if (IS_TEST) {
-      return this.#collectedSelfTransitions0;
-      /* v8 ignore next 4 */
-    }
-    console.error('collecteds0 is not available in production');
-    return;
-  }
-
-  /**
    * Changes the current {@linkcode ToEvents} event of this {@linkcode Interpreter} service.
    *
    * @param event - the {@linkcode ToEvents} event to change the current {@linkcode Interpreter} service state.
@@ -1476,60 +1394,28 @@ export class Interpreter<
     const out = entries.map(([from, { after, always, promisee }]) => {
       const promise = async () => {
         if (always) {
-          const cb = () => {
-            const { diffEntries, diffExits } = this.#diffNext(
-              always.target,
-            );
-
-            const _exits = this.#performActions(
-              this.#contexts,
-              ...diffExits,
-            );
-            this.#mergeContexts(_exits);
-
-            this.#mergeContexts(always.result);
-
-            const _entries = this.#performActions(
-              this.#contexts,
-              ...diffEntries,
-            );
-            this.#mergeContexts(_entries);
-
-            this.#performConfig(always.target);
-          };
-          this.#schedule(cb);
-          return;
+          const target = always();
+          if (target !== false) {
+            const cb = () => {
+              this.#performConfig(target);
+            };
+            return this.#schedule(cb);
+          }
         }
 
         const promises: TimeoutPromise<void>[] = [];
         if (after) {
           const _after = async () => {
-            return after().then(transition => {
-              if (transition) {
-                const cb = () => {
-                  const { diffEntries, diffExits } = this.#diffNext(
-                    transition.target,
-                  );
-
-                  const _exits = this.#performActions(
-                    this.#contexts,
-                    ...diffExits,
-                  );
-                  this.#mergeContexts(_exits);
-
-                  this.#mergeContexts(transition.result);
-
-                  const _entries = this.#performActions(
-                    this.#contexts,
-                    ...diffEntries,
-                  );
-                  this.#mergeContexts(_entries);
-
-                  this.#performConfig(transition.target);
-                };
-                this.#schedule(cb);
-              }
-            });
+            await after()
+              .then(transition => {
+                if (transition !== false) {
+                  const cb = () => {
+                    this.#performConfig(transition);
+                  };
+                  this.#schedule(cb);
+                }
+              })
+              .catch(this._addWarning);
           };
           promises.push(withTimeout(_after, 'after'));
         }
@@ -1537,28 +1423,9 @@ export class Interpreter<
         if (promisee) {
           const _promisee = async () => {
             return promisee().then(transition => {
-              if (transition) {
-                const cb = () => {
-                  const { diffEntries, diffExits } = this.#diffNext(
-                    transition.target,
-                  );
-
-                  const _exits = this.#performActions(
-                    this.#contexts,
-                    ...diffExits,
-                  );
-                  this.#mergeContexts(_exits);
-
-                  this.#mergeContexts(transition.result);
-
-                  const _entries = this.#performActions(
-                    this.#contexts,
-                    ...diffEntries,
-                  );
-                  this.#mergeContexts(_entries);
-
-                  this.#performConfig(transition.target);
-                };
+              const target = transition?.target;
+              if (target !== false) {
+                const cb = () => this.#performConfig(target);
                 this.#schedule(cb);
               }
             });
@@ -1568,7 +1435,8 @@ export class Interpreter<
 
         const check1 = promises.length < 1;
         if (check1) return;
-        await anyPromises(from, ...promises)() /* .catch() */;
+
+        await anyPromises(from, ...promises)();
       };
 
       return promise;
@@ -1594,10 +1462,7 @@ export class Interpreter<
   #startInitialEntries = () => {
     const actions = getEntries(this.#initialConfig);
     if (actions.length < 1) return;
-    const cb = () => {
-      const result = this.#performActions(this.#contexts, ...actions);
-      this.#mergeContexts(result);
-    };
+    const cb = () => this.#performActions(...actions);
     this.#schedule(cb);
   };
 
@@ -1632,7 +1497,7 @@ export class Interpreter<
   #dispose = this.#mapperFn('dispose');
 
   pause = () => {
-    this.#pauseCurrentActivities();
+    this.#pauseAllActivities();
     this.#makeBusy();
     this.#subscribers.forEach(this.#close);
     this.#childrenServices.forEach(this.#pause);
@@ -1784,10 +1649,9 @@ export class Interpreter<
 
   // #region Next
 
-  protected _send: _Send_F<E, P, Pc, Tc> = event => {
+  protected _send: _Send_F<E, P> = event => {
     this.#changeEvent(event);
     this.#setStatus('sending');
-    let result = this.#contexts;
     let sv = this.#value;
     const entriesFlat = Object.entries(this.#flat);
     const flat: [from: string, transitions: TransitionConfig[]][] = [];
@@ -1803,43 +1667,22 @@ export class Interpreter<
     });
 
     flat.forEach(([, transitions]) => {
-      const { target, result: _result } = this.#performTransitions(
+      const target = this.#performTransitions(
         ...toArray.typed(transitions),
       );
 
-      const { diffEntries, diffExits } = this.#diffNext(target);
+      const diffTarget = target === false ? undefined : target;
 
-      result = merge(result, _result);
-      result = merge(
-        result,
-        this.#performActions(result, ...diffExits),
-        this.#performActions(result, ...diffEntries),
-      );
-
-      sv = nextSV(sv, target);
+      sv = nextSV(sv, diffTarget);
     });
 
-    // #region Use targets to perform entry and exit actions
-    // targets.forEach(target => {
-    //   const { diffEntries, diffExits } = this.#diffNext(target);
-
-    //   sv = nextSV(sv, target);
-    //   result = merge(
-    //     result,
-    //     this.#performActions(result, ...diffExits),
-    //     this.#performActions(result, ...diffEntries),
-    //   );
-    // });
-    // #endregion
-
-    //If no changes in state value, no cahnges in current config
     const next = switchV({
       condition: equal(this.#value, sv),
       truthy: undefined,
       falsy: initialConfig(this.#machine.valueToConfig(sv)),
     });
 
-    return { next, result };
+    return next;
   };
 
   get #possibleEvents() {
@@ -1878,9 +1721,7 @@ export class Interpreter<
    */
   #send = (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
-    const { result, next } = this._send(event);
-    const callback = () => this.#mergeContexts(result);
-    this.#schedule(callback);
+    const next = this._send(event);
 
     if (isDefined(next)) {
       this.#config = next;
@@ -1902,6 +1743,7 @@ export class Interpreter<
   send = (_event: EventArg<E>) => {
     const check = this.#cannotPerformEvents(_event);
     if (check) return;
+
     this.#send(_event);
   };
 

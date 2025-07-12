@@ -276,7 +276,7 @@ describe('Interpreter', () => {
       predicates: {
         condition: isValue('context.condition', false),
         limit: ({ context: { iterator } }) => {
-          return iterator < 99;
+          return iterator <= DEFAULT_MAX_SELF_TRANSITIONS;
         },
       },
       delays: {
@@ -421,7 +421,7 @@ describe('Interpreter', () => {
       service.start();
     });
 
-    test(...useWaiter(2));
+    test(...useWaiter(1));
 
     test('#03 => inc is called', () => {
       expect(inc).toBeCalledTimes(1);
@@ -500,43 +500,7 @@ describe('Interpreter', () => {
       expect(inc2).toBeCalledTimes(1);
     });
 
-    describe('#06 => check collecteds0', () => {
-      test('#01 => collecteds0 has one element', () => {
-        expect(service._collecteds0).toHaveLength(1);
-      });
-
-      describe('#02 => promisee is defined', () => {
-        const promisee = service._collecteds0?.get('/idle')?.promisee;
-
-        test('#01 => promisee is defined', () => {
-          expect(promisee).toBeDefined();
-        });
-
-        test('#02 => promisee is a function', () => {
-          expect(promisee).toBeTypeOf('function');
-        });
-
-        test('#03 => promisee has id : "/idle"', () => {
-          expect(promisee?.id).toBe('/idle');
-        });
-      });
-
-      describe('#02 => after is defined', () => {
-        const after = service._collecteds0?.get('/idle')?.after;
-
-        test('#01 => after is defined', () => {
-          expect(after).toBeDefined();
-        });
-
-        test('#02 => after is a function', () => {
-          expect(after).toBeTypeOf('function');
-        });
-
-        test('#03 => after has id : "/idle"', () => {
-          expect(after?.id).toBe('/idle');
-        });
-      });
-    });
+    test('#06 => dispose', service.dispose);
   });
 
   describe('#07 => sender', () => {
@@ -730,7 +694,7 @@ describe('Interpreter', () => {
         describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
       });
 
-      test('#07 => pause', service.pause.bind(service));
+      test('#07 => pause', service.pause);
 
       describe('#08 => Check the service', () => {
         test(
@@ -772,7 +736,7 @@ describe('Interpreter', () => {
         describe(...useConsole(4));
       });
 
-      test('#11 => resume', service.resume.bind(service));
+      test('#11 => resume', service.resume);
 
       test(...useWaiter(12, 12));
 
