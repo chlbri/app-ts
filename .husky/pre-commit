@@ -1,5 +1,5 @@
 # Récupère le message de commit
-commit_msg=$(cat .git/COMMIT_EDITMSG 2>/dev/null || echo "")
+commit_msg=$(cat .git/COMMIT_EDITMSG 2>/dev/null | tr '\n' ' ' || echo "")
 
 echo "Vérification du message de commit : $commit_msg"
 
