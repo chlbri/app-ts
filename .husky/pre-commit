@@ -17,4 +17,4 @@ fi
 
 npm run ci
 git add .
-echo "✅ Tests réussis, modifications ajoutées à l'index"
+echo "✅ Tests réussis 😎"
