@@ -1,9 +1,14 @@
 # Récupère le message de commit
-commit_msg=$(cat "$HUSKY_GIT_PARAMS" 2>/dev/null || echo "")
+commit_msg=""
+if [ -n "$1" ]; then
+  commit_msg="$1"
+elif [ -f ".git/COMMIT_EDITMSG" ]; then
+  commit_msg=$(cat .git/COMMIT_EDITMSG 2>/dev/null || echo "")
+fi
 
 echo "Vérification du message de commit : $commit_msg"
 
-# Vérifie si le message contient "-NO-TEST" (même sur plusieurs lignes)
+# Vérifie si le message contient "-NO-TEST"
 if echo "$commit_msg" | grep -q "\-NO\-TEST"; then
   echo "🚫 Tests ignorés : -NO-TEST détecté dans le message de commit"
   git add .
@@ -12,5 +17,4 @@ fi
 
 npm run ci
 git add .
-echo "✅ Tests réussis, commit autorisé"
-exit 0
+echo "✅ Tests réussis, modifications ajoutées à l'index"
