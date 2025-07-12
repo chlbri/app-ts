@@ -13,4 +13,4 @@ fi
 
 npm run ci
 git add .
-echo "✅ Tests réussis 😎 au calme"
+echo "✅ Tests réussis 😎"
