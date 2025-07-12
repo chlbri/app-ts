@@ -1239,8 +1239,11 @@ export class Interpreter<
 
         const out = func();
 
-        if (out === false)
-          throw `No transitions reached from "${from}" by delay "${_delay}" !`;
+        if (out === false) {
+          const message = `No transitions reached from "${from}" by delay "${_delay}" !`;
+
+          throw message;
+        }
         return out;
       };
 
