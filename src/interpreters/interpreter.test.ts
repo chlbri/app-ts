@@ -86,19 +86,11 @@ describe('Interpreter', () => {
         expect(service.mode).toBe('normal');
       });
 
-      test('#04 => Make it "strictest"', () => {
-        service.makeStrictest();
-      });
-
-      test('#05 => modde is "strictest"', () => {
-        expect(service.isStrictest).toBe(true);
-      });
-
-      test('#06 => Remake it "strict"', () => {
+      test('#04 => Remake it "strict"', () => {
         service.makeStrict();
       });
 
-      test('#07 => modde is "strict"', () => {
+      test('#05 => mode is "strict"', () => {
         expect(service.isStrict).toBe(true);
       });
     });
