@@ -1,6 +1,6 @@
 import { createMachine } from '~machine';
 import { createConfig, EVENTS_FULL } from '~machines';
-import { typings } from '~utils';
+import { custom, typings } from '~utils';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
@@ -102,13 +102,13 @@ export const machine21 = createMachine(
     eventsMap: {
       NEXT: 'primitive',
       FETCH: 'primitive',
-      WRITE: { value: 'string' },
+      WRITE: { value: custom('') },
       SEND: 'primitive',
     },
     context: {
       iterator: 'number',
       input: 'string',
-      data: ['string'],
+      data: [custom<string>()],
     },
     pContext: {
       iterator: 'number',

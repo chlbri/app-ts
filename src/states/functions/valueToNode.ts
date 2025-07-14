@@ -1,6 +1,6 @@
 import { decomposeSV, type StateValue } from '@bemedev/decompose';
-import { isString } from 'src/types/primitives';
 import { DEFAULT_DELIMITER } from '~constants';
+import { isString } from '~types';
 import { replaceAll } from '~utils';
 
 import type { NodeConfig, NodeConfigWithInitials } from '../types';

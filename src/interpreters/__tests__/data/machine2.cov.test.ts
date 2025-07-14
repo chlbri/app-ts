@@ -1,6 +1,6 @@
 import { castings } from '@bemedev/types';
 import equal from 'fast-deep-equal';
-import { fakeWaiter } from 'src/interpreters/__tests__/fixtures';
+import { fakeWaiter } from '../fixtures';
 import { _machine2, DELAY, fakeDB } from '~fixturesData';
 import { interpret } from '~interpreters';
 import { nothing } from '~utils';
