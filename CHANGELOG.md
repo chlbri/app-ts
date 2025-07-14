@@ -9,6 +9,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <br/>
 
 <details>
+<summary><h2> [0.5.4] - 2025/07/14 => 22:00 </h2></summary>
+
+- export custom typings
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
 <summary><h2> [0.5.3] - 2025/07/14 => 21:15 </h2></summary>
 
 - update typings to use custom type

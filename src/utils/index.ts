@@ -7,5 +7,4 @@ export * from './objects';
 export * from './reduceFnMap';
 export * from './strings';
 export * from './toFunction';
-export * from './typings';
 export { default as typings } from './typings';
