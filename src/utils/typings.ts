@@ -32,7 +32,7 @@ type Custom<T = any> = {
   [CUSTOM]: T;
 };
 
-export type PrimitiveObjectMap = {
+type PrimitiveObjectMap = {
   [key: types.Keys]: types.SoRa<_PrimitiveObject>;
 };
 type _PrimitiveObject = Types | PrimitiveObjectMap | Custom;
@@ -65,9 +65,6 @@ type TransformPrimitiveObject<T> = T extends Types
       : {
           [K in keyof T]: TransformPrimitiveObject<T[K]>;
         };
-
-export const custom = <T = any>(value?: T) =>
-  ({ [CUSTOM]: value }) as Custom<T>;
 
 const transformPrimitiveObject = (obj: any): any => {
   const _obj = obj as any;
@@ -114,5 +111,8 @@ const typings = <T extends Partial<Args>>(
   const out = transformPrimitiveObject(args);
   return out;
 };
+
+typings.custom = <T = any>(value?: T) =>
+  ({ [CUSTOM]: value }) as Custom<T>;
 
 export default typings;
