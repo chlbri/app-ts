@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+## [0.5.2] - 2024-07-14 _12:35_
+
+- Upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+<br/>
+
 ## [0.5.1] - 2024-07-14 _00:15_
 
 - Delete mode "strictest"
