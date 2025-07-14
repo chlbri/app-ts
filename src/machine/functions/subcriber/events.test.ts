@@ -1,4 +1,4 @@
-import { EVENTS_FULL } from 'src/machine/constants';
+import { EVENTS_FULL } from '../../constants';
 import { reduceEvents } from './events';
 
 describe('reduceEvents', () => {

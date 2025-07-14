@@ -8,6 +8,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <br/>
 
+<details>
+<summary><h2> [0.5.3] - 2025/07/14 => 21:15 </h2></summary>
+
+- update typings to use custom type
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
 ## [0.5.2] - 2024-07-14 _12:35_
 
 - Upgrade deps

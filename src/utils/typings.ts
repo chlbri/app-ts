@@ -1,4 +1,4 @@
-import type { AnyArray, Keys, SoRa } from '@bemedev/types/lib/types/types';
+import { type types } from '@bemedev/types';
 
 type PrimitiveS = 'string' | 'number' | 'boolean' | 'null' | 'undefined';
 
@@ -26,10 +26,17 @@ const transformTypes = <T extends Types>(type: T): TransformTypes<T> => {
   return out;
 };
 
-export type PrimitiveObjectMap = {
-  [key: Keys]: SoRa<_PrimitiveObject>;
+const CUSTOM = '$$app-ts => custom$$' as const;
+
+type Custom<T = any> = {
+  [CUSTOM]: T;
 };
-type _PrimitiveObject = Types | PrimitiveObjectMap;
+
+export type PrimitiveObjectMap = {
+  [key: types.Keys]: types.SoRa<_PrimitiveObject>;
+};
+type _PrimitiveObject = Types | PrimitiveObjectMap | Custom;
+
 /**
  * A type that represents a primitive object, which can be a primitive value or an object
  *
@@ -49,13 +56,18 @@ type Args<
 
 type TransformPrimitiveObject<T> = T extends Types
   ? TransformTypes<T>
-  : T extends AnyArray<any>
-    ? T[number] extends infer TKN extends PrimitiveObject
-      ? TransformPrimitiveObject<TKN>[]
-      : never
-    : {
-        [K in keyof T]: TransformPrimitiveObject<T[K]>;
-      };
+  : T extends Custom<infer TCustom>
+    ? TCustom
+    : T extends types.AnyArray<any>
+      ? T[number] extends infer TKN extends PrimitiveObject
+        ? TransformPrimitiveObject<TKN>[]
+        : never
+      : {
+          [K in keyof T]: TransformPrimitiveObject<T[K]>;
+        };
+
+export const custom = <T = any>(value?: T) =>
+  ({ [CUSTOM]: value }) as Custom<T>;
 
 const transformPrimitiveObject = (obj: any): any => {
   const _obj = obj as any;
@@ -67,7 +79,9 @@ const transformPrimitiveObject = (obj: any): any => {
 
   const checkObject = typeof _obj === 'object';
   if (checkObject) {
+    const isCustom = Object.keys(_obj).every(key => key === CUSTOM);
     const out: any = {};
+    if (isCustom) return out;
 
     const entries = Object.entries(_obj);
     entries.forEach(([key, value]) => {
@@ -80,7 +94,7 @@ const transformPrimitiveObject = (obj: any): any => {
   return transformTypes(_obj);
 };
 
-export type TransformArgs<T extends Partial<Args>> = {
+type TransformArgs<T extends Partial<Args>> = {
   eventsMap: TransformPrimitiveObject<T['eventsMap']>;
   pContext: TransformPrimitiveObject<T['pContext']>;
   context: TransformPrimitiveObject<T['context']>;
@@ -94,10 +108,11 @@ const DEFAULT_ARGS = {
   promiseesMap: 'primitive',
 } satisfies Args;
 
-const typings = <const T extends Partial<Args>>(
+const typings = <T extends Partial<Args>>(
   args = DEFAULT_ARGS as T,
 ): TransformArgs<T> => {
-  return transformPrimitiveObject(args);
+  const out = transformPrimitiveObject(args);
+  return out;
 };
 
 export default typings;
