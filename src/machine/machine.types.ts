@@ -112,10 +112,13 @@ export type AssignAction_F<
   Pc = PrimitiveObject,
   Tc = PrimitiveObject,
 > = <
-  D = Decompose3<{
-    pContext: Pc;
-    context: Tc;
-  }>,
+  D = Decompose3<
+    {
+      pContext: Pc;
+      context: Tc;
+    },
+    { parent: true }
+  >,
   const K extends keyof D = AssignKeys<D> extends keyof D
     ? AssignKeys<D>
     : keyof D,

@@ -9,6 +9,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <br/>
 
 <details>
+<summary><h2> [0.6.0] - 2025/07/14 => 23:00 </h2></summary>
+
+- **Enhancement of functions** :
+  - _assign_
+  - _select_
+  - _\_pSelect_
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
 <summary><h2> [0.5.4] - 2025/07/14 => 22:00 </h2></summary>
 
 - export custom typings
