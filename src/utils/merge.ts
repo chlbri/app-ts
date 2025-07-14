@@ -1,5 +1,4 @@
-import { commons } from '@bemedev/types/lib/functions/commons';
-import { DeepPartial } from '@bemedev/types/lib/types/types';
+import { castings, type types } from '@bemedev/types';
 import { deepmergeCustom } from 'deepmerge-ts';
 import equal from 'fast-deep-equal';
 
@@ -32,17 +31,18 @@ const _merge = deepmergeCustom<
  * @returns The merged value, which is a new object containing the properties of the original value and the mergers.
  *
  * @see {@linkcode equal} for deep equality check
- * @see {@linkcode DeepPartial} for partial type definition
+ * @see {@linkcode types} for partial type definition
  * @see {@linkcode NoInfer} for type inference utility
+ * @see {@linkcode castings} for casting utilities
  */
 export const merge = <T = any>(
   value: T,
-  ...mergers: (DeepPartial<NoInfer<T>> | NoInfer<T> | undefined)[]
+  ...mergers: (types.DeepPartial<NoInfer<T>> | NoInfer<T> | undefined)[]
 ): T => {
   // #region Check performance
   const check1 = mergers.every(merger => equal(merger, value));
   if (check1) return value;
   // #endregion
 
-  return commons.any(_merge(value, ...mergers));
+  return castings.commons.any(_merge(value, ...mergers));
 };
