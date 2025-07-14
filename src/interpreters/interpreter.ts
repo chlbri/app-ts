@@ -598,7 +598,13 @@ export class Interpreter<
    *
    * @see {@linkcode getByKey} for retrieving values by key.
    */
-  select: Selector_F<Tc> = path => getByKey(this.#context, path);
+
+  get select(): Selector_F<Tc> {
+    const check = castings.commons.primitive.is(this.#context);
+    if (check) return undefined as any;
+    const out: any = (path: string) => getByKey(this.#context, path);
+    return out as any;
+  }
 
   /**
    * @deprecated
@@ -612,15 +618,20 @@ export class Interpreter<
    *
    * @see {@linkcode getByKey} for retrieving values by key.
    */
-  _pSelect: Selector_F<Pc> = selector => {
+  get _pSelect(): Selector_F<Pc> {
     if (IS_TEST) {
-      const pContext = this._pContext;
-      if (pContext) return getByKey(pContext, selector);
+      const pContext = this.#pContext;
+      const check = castings.commons.primitive.is(pContext);
+      if (check) return undefined as any;
+      if (pContext) {
+        const out: any = (path: string) => getByKey(pContext, path);
+        return out as any;
+      }
       /* v8 ignore next 4 */
     }
     console.error('pContext is not available in production');
-    return;
-  };
+    return undefined as any;
+  }
 
   /**
    * Set the current {@linkcode WorkingStatus} private context of this {@linkcode Interpreter} service.
