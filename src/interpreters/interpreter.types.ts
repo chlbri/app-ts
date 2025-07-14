@@ -58,7 +58,7 @@ export type WorkingStatus =
   | 'stopped'
   | 'busy';
 
-export type Mode = 'normal' | 'strict' | 'strictest';
+export type Mode = 'normal' | 'strict';
 
 export type InterpreterOptions<M extends AnyMachine> = {
   pContext: PrivateContextFrom<M>;
@@ -300,7 +300,6 @@ export interface AnyInterpreter<
   node: Node<E, P, Pc, Tc>;
 
   makeStrict: () => void;
-  makeStrictest: () => void;
   status: WorkingStatus;
   initialConfig: NodeConfigWithInitials;
   initialValue: StateValue;

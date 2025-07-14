@@ -383,13 +383,6 @@ export class Interpreter<
   }
 
   /**
-   * Checks if the current {@linkcode Mode} mode is 'strictest'.
-   */
-  get isStrictest() {
-    return this.#mode === 'strictest';
-  }
-
-  /**
    * Use to manage internal errors and warnings.
    */
   #throwing = () => {
@@ -425,20 +418,6 @@ export class Interpreter<
       }
 
       return;
-    }
-
-    /* v8 ignore next 12 */
-    if (this.isStrictest) {
-      const _errors = [
-        ...this.#errorsCollector,
-        ...this.#warningsCollector,
-      ];
-
-      const check5 = _errors.length > 0;
-      if (check5) {
-        const errors = this.#displayConsole(_errors);
-        throw new Error(errors);
-      }
     }
   };
 
@@ -530,14 +509,6 @@ export class Interpreter<
    */
   makeStrict = () => {
     this.#mode = 'strict';
-  };
-
-  /**
-   * Set the current {@linkcode Mode} of this {@linkcode Interpreter} service to 'strictest'.
-   * In this mode, all errors and warnings are thrown.
-   */
-  makeStrictest = () => {
-    this.#mode = 'strictest';
   };
 
   /**
