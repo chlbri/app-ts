@@ -1,12 +1,5 @@
 import type { Decompose } from '@bemedev/decompose';
-import type {
-  DeepRequired,
-  NotUndefined,
-  Primitive,
-  PrimitiveObject,
-  Ru,
-  SubType,
-} from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import type { Action, FromActionConfig } from '~actions';
 import type { Delay } from '~delays';
 import type { EventsMap, PromiseeDef, PromiseeMap } from '~events';
@@ -88,10 +81,10 @@ export type Config = ConfigNode & {
  *
  * @see {@linkcode FlatMapN} for more details on the flat map structure.
  * @see {@linkcode NodesConfig} for the structure of nodes configuration.
- * @see {@linkcode SubType} for extracting subtypes from a type.
+ * @see {@linkcode types.SubType} for extracting subtypes from a type.
  */
 export type GetInititalsFromFlat<Flat extends FlatMapN = FlatMapN> =
-  SubType<
+  types.SubType<
     Flat,
     { type?: 'compound'; states: NodesConfig }
   > extends infer Sub
@@ -224,7 +217,7 @@ type _GetDelayKeysFromFlat<Flat extends FlatMapN> = {
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  *
  * @see {@linkcode _GetKeyActionsFromFlat} for extracting action keys from the flat map.
  */
@@ -232,8 +225,8 @@ export type GetActionsFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Record<_GetKeyActionsFromFlat<Flat>, Action<E, P, Pc, Tc>>;
 
 /**
@@ -243,7 +236,7 @@ export type GetActionsFromFlat<
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  *
  * @see {@linkcode _GetKeyGuardsFromFlat} for extracting guard keys from the flat map.
  */
@@ -251,8 +244,8 @@ export type GetGuardsFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, P, Pc, Tc>>;
 
 /**
@@ -262,7 +255,7 @@ export type GetGuardsFromFlat<
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  *
  * @see {@linkcode _GetKeySrcFromFlat} for extracting promise src keys from the flat map.
  */
@@ -270,8 +263,8 @@ export type GetSrcFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Record<_GetKeySrcFromFlat<Flat>, PromiseFunction<E, P, Pc, Tc>>;
 
 /**
@@ -281,7 +274,7 @@ export type GetSrcFromFlat<
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  *
  * @see {@linkcode _GetDelayKeysFromFlat} for extracting delay keys from the flat map.
  */
@@ -289,12 +282,12 @@ export type GetDelaysFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Record<_GetDelayKeysFromFlat<Flat>, Delay<E, P, Pc, Tc>>;
 
 /**
- * Provide a record of all events by key and {@linkcode PrimitiveObject} payload.
+ * Provide a record of all events by key and {@linkcode types.PrimitiveObject} payload.
  *
  * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes
  *
@@ -302,7 +295,7 @@ export type GetDelaysFromFlat<
  */
 export type GetEventsFromFlat<Flat extends FlatMapN> = Record<
   _GetEventKeysFromFlat<Flat>,
-  PrimitiveObject
+  types.PrimitiveObject
 >;
 
 /**
@@ -378,25 +371,25 @@ export type GetPromiseeSrcFromMachine<T extends KeyU<'preConfig'>> =
  *
  * @see {@linkcode ReduceArray} for reducing arrays to a single type.
  * @see {@linkcode FromActionConfig}.
- * @see {@linkcode NotUndefined}
+ * @see {@linkcode types.NotUndefined}
  */
 export type GetMachineKeysFromConfig<C extends Config> = FromActionConfig<
-  ReduceArray<NotUndefined<C['machines']>>
+  ReduceArray<types.NotUndefined<C['machines']>>
 >;
 
 /**
  * Second version decomposition of a type.
  */
-export type Decompose2<T> = T extends Ru
-  ? Decompose<DeepRequired<T>>
+export type Decompose2<T> = T extends types.Ru
+  ? Decompose<types.DeepRequired<T>>
   : never;
 
 // #region typ SubscriberType
-type HeritageMap<U extends Ru, Tc extends Ru> =
+type HeritageMap<U extends types.Ru, Tc extends types.Ru> =
   Decompose<U> extends infer KU extends object
     ? {
         [key in keyof KU]?: Decompose<Tc> extends infer KT extends object
-          ? SingleOrArrayL<keyof SubType<KT, KU[key]>>
+          ? SingleOrArrayL<keyof types.SubType<KT, KU[key]>>
           : never;
       }
     : never;
@@ -441,7 +434,7 @@ type SubEventsKeys<E extends EventsMap, P extends PromiseeMap> =
 export type SubscriberType<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
   U extends KeyU<'preConfig' | 'context'> = KeyU<'preConfig' | 'context'>,
 > = {
   events:
@@ -459,11 +452,15 @@ export type SubscriberType<
     ? Pc extends TrueObject
       ? { contexts: SingleOrArrayL<HeritageMap<CU, Pc>> }
       : SubNev
-    : CU extends Primitive
+    : CU extends types.Primitive
       ? Pc extends CU
         ? SubNev
         : Pc extends infer Tc1 extends TrueObject
-          ? { contexts: SingleOrArrayL<keyof SubType<Decompose<Tc1>, CU>> }
+          ? {
+              contexts: SingleOrArrayL<
+                keyof types.SubType<Decompose<Tc1>, CU>
+              >;
+            }
           : SubNev
       : SubNev
   : SubNev);
@@ -486,7 +483,7 @@ export type SubscriberType<
 export type ChildS<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
   T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
     'preConfig' | 'context' | 'pContext'
   >,
@@ -505,7 +502,7 @@ export type ChildS<
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  * @template : {@linkcode KeyU}<'preConfig' | 'context' | 'pContext'> [T] - type of the pre-config, context, and private context keys
  *
  * @see {@linkcode SubscriberType} for the type of subscribers to the child service.
@@ -518,8 +515,8 @@ export type ChildS<
 export type ChildS2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
     'preConfig' | 'context' | 'pContext'
   >,
@@ -547,7 +544,7 @@ export type FnMapFrom<
 > = FnMap2<
   Extract<EventsMapFrom<T>, EventsMap>,
   Extract<PromiseesMapFrom<T>, PromiseeDef>,
-  Extract<ContextFrom<T>, PrimitiveObject>,
+  Extract<ContextFrom<T>, types.PrimitiveObject>,
   R
 >;
 
@@ -566,7 +563,7 @@ export type GetMachinesFromConfig<
   C extends Config,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Record<GetMachineKeysFromConfig<C>, ChildS<E, P, Pc>>;
 
 /**
@@ -578,7 +575,7 @@ export type GetMachinesFromConfig<
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes inside {@linkcode C}
  *
  * @returns A type representing the options for the machine configuration.
@@ -602,8 +599,8 @@ export type MachineOptions<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   Flat extends FlatMapN<C> = FlatMapN<C>,
 > = {
   initials: GetInititalsFromFlat<Flat>;
@@ -655,11 +652,11 @@ export type PrivateContextFrom<T extends KeyU<'pContext'>> = T['pContext'];
  *
  * @template : {@linkcode KeyU}<'context'> [T] - type of the machine context
  *
- * @see {@linkcode PrimitiveObject} for the structure of the context.
+ * @see {@linkcode types.PrimitiveObject} for the structure of the context.
  */
 export type ContextFrom<T extends KeyU<'context'>> = Extract<
   T['context'],
-  PrimitiveObject
+  types.PrimitiveObject
 >;
 
 /**
@@ -735,12 +732,12 @@ export type EventsFrom<T extends KeyU<'__events'>> = T['__events'];
  * @template : {@linkcode KeyU}<'actions'> [T] - type of the machine actions
  *
  * @see {@linkcode ActionsMapFrom} for extracting actions from the machine.
- * @see {@linkcode NotUndefined}
+ * @see {@linkcode types.NotUndefined}
  * @see {@linkcode ActionFnFrom} for extracting action functions from the machine.
  * @see {@linkcode ActionParamsFrom} for extracting action parameters from the machine.
  * @see {@linkcode ActionKeysFrom} for extracting action keys from the machine.
  */
-export type ActionsMapFrom<T extends KeyU<'actions'>> = NotUndefined<
+export type ActionsMapFrom<T extends KeyU<'actions'>> = types.NotUndefined<
   T['actions']
 >;
 
@@ -749,21 +746,20 @@ export type ActionsMapFrom<T extends KeyU<'actions'>> = NotUndefined<
  *
  * @template : {@linkcode KeyU}<'__actionFn'> [T] - type of the machine action function
  *
- * @see {@linkcode NotUndefined} for ensuring the action function is not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the action function is not undefined.
  */
-export type ActionFnFrom<T extends KeyU<'__actionFn'>> = NotUndefined<
-  T['__actionFn']
->;
+export type ActionFnFrom<T extends KeyU<'__actionFn'>> =
+  types.NotUndefined<T['__actionFn']>;
 
 /**
  * Get the action function parameters from a machine.
  *
  * @template : {@linkcode KeyU}<'__actionParams'> [T] - type of the machine action parameters
  *
- * @see {@linkcode NotUndefined} for ensuring the action parameters are not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the action parameters are not undefined.
  */
 export type ActionParamsFrom<T extends KeyU<'__actionParams'>> =
-  NotUndefined<T['__actionParams']>;
+  types.NotUndefined<T['__actionParams']>;
 
 /**
  * Get the action keys from a machine.
@@ -780,29 +776,27 @@ export type ActionKeysFrom<T extends KeyU<'__actionKey'>> =
  *
  * @template : {@linkcode KeyU}<'predicates'> [T] - type of the machine predicates map.
  *
- * @see {@linkcode NotUndefined}
+ * @see {@linkcode types.NotUndefined}
  */
-export type PredicatesMapFrom<T extends KeyU<'predicates'>> = NotUndefined<
-  T['predicates']
->;
+export type PredicatesMapFrom<T extends KeyU<'predicates'>> =
+  types.NotUndefined<T['predicates']>;
 
 /**
  * Get the predicate function from a machine.
  *
  * @template : {@linkcode KeyU}<'__predicate'> [T] - type of the machine predicate function
  *
- * @see {@linkcode NotUndefined} for ensuring the predicate function is not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the predicate function is not undefined.
  */
-export type PredicateSFrom<T extends KeyU<'__predicate'>> = NotUndefined<
-  T['__predicate']
->;
+export type PredicateSFrom<T extends KeyU<'__predicate'>> =
+  types.NotUndefined<T['__predicate']>;
 
 /**
  * Get the guard keys from a machine.
  *
  * @template : {@linkcode KeyU}<'predicates'> [T] - type of the machine machine predicates map.
  *
- * @see {@linkcode NotUndefined} for ensuring the predicates map is not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the predicates map is not undefined.
  * @see {@linkcode PredicatesMapFrom} for extracting guards from the machine.
  */
 export type GuardKeysFrom<T extends KeyU<'__guardKey'>> = T['__guardKey'];
@@ -812,9 +806,9 @@ export type GuardKeysFrom<T extends KeyU<'__guardKey'>> = T['__guardKey'];
  *
  * @template : {@linkcode KeyU}<'delays'> [T] - type of the machine delays map.
  *
- * @see {@linkcode NotUndefined} for ensuring the delays map is not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the delays map is not undefined.
  */
-export type DelaysMapFrom<T extends KeyU<'delays'>> = NotUndefined<
+export type DelaysMapFrom<T extends KeyU<'delays'>> = types.NotUndefined<
   T['delays']
 >;
 
@@ -823,7 +817,7 @@ export type DelaysMapFrom<T extends KeyU<'delays'>> = NotUndefined<
  *
  * @template : {@linkcode KeyU}<'delays'> [T] - type of the machine delays map.
  *
- * @see {@linkcode NotUndefined} for ensuring the delays map is not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the delays map is not undefined.
  * @see {@linkcode DelaysMapFrom} for extracting delays from the machine.
  */
 export type DelayKeysFrom<T extends KeyU<'__delayKey'>> = T['__delayKey'];
@@ -833,9 +827,9 @@ export type DelayKeysFrom<T extends KeyU<'__delayKey'>> = T['__delayKey'];
  *
  * @template : {@linkcode KeyU}<'__delay'> [T] - type of the machine delay function.
  *
- * @see {@linkcode NotUndefined} for ensuring the delay function is not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the delay function is not undefined.
  */
-export type DelayFnFrom<T extends KeyU<'__delay'>> = NotUndefined<
+export type DelayFnFrom<T extends KeyU<'__delay'>> = types.NotUndefined<
   T['__delay']
 >;
 
@@ -844,21 +838,20 @@ export type DelayFnFrom<T extends KeyU<'__delay'>> = NotUndefined<
  *
  * @template : {@linkcode KeyU}<'promises'> [T] - type of the machine promises map.
  *
- * @see {@linkcode NotUndefined} for ensuring the promises map is not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the promises map is not undefined.
  */
-export type PromisesMapFrom<T extends KeyU<'promises'>> = NotUndefined<
-  T['promises']
->;
+export type PromisesMapFrom<T extends KeyU<'promises'>> =
+  types.NotUndefined<T['promises']>;
 
 /**
  * Get the promise keys from a machine.
  *
  * @template : {@linkcode KeyU}<'promises'> [T] - type of the machine promises map.
  *
- * @see {@linkcode NotUndefined} for ensuring the promises map is not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the promises map is not undefined.
  * @see {@linkcode PromisesMapFrom} for extracting promises from the machine.
  */
-export type PromiseKeysFrom<T extends KeyU<'__src'>> = NotUndefined<
+export type PromiseKeysFrom<T extends KeyU<'__src'>> = types.NotUndefined<
   T['__src']
 >;
 
@@ -867,11 +860,10 @@ export type PromiseKeysFrom<T extends KeyU<'__src'>> = NotUndefined<
  *
  * @template : {@linkcode KeyU}<'machines'> [T] - type of the machine machines map.
  *
- * @see {@linkcode NotUndefined} for ensuring the machines map is not undefined.
+ * @see {@linkcode types.NotUndefined} for ensuring the machines map is not undefined.
  */
-export type MachinesMapFrom<T extends KeyU<'machines'>> = NotUndefined<
-  T['machines']
->;
+export type MachinesMapFrom<T extends KeyU<'machines'>> =
+  types.NotUndefined<T['machines']>;
 
 /**
  * Get the childrend keys from a machine.
@@ -887,14 +879,14 @@ export type ChildrenKeysFrom<T extends KeyU<'__childKey'>> =
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promise
  * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  *
  */
 export type SimpleMachineOptions<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   initials: RecordS<string>;
   actions?: Partial<RecordS<Action<E, P, Pc, Tc>>>;
@@ -931,7 +923,7 @@ export type SimpleMachineOptions2 = Partial<
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promise
  * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  *
  * @see {@linkcode Promise}
  *
@@ -943,7 +935,7 @@ export type SimpleMachineOptions2 = Partial<
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promise
  * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  *
  * @see {@linkcode Promise}
  *
@@ -965,5 +957,5 @@ export type SimpleMachineOptions2 = Partial<
 export type MachineMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Partial<RecordS<ChildS<E, P, Pc>>>;

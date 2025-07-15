@@ -1,8 +1,4 @@
-import type {
-  Fn,
-  PrimitiveObject,
-  UnionToTuple,
-} from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import type { ChangeProperties, KeyStrings, ValuesOf } from '~types';
 
 export type ExtractLargeKeys<T> = string extends T
@@ -15,8 +11,8 @@ export type ExtractLargeKeys<T> = string extends T
 
 type _Simplify<T> = T extends { new: any }
   ? T
-  : T extends Fn
-    ? Fn<SimplifyArray<Parameters<T>>, ReturnType<T>>
+  : T extends types.Fn
+    ? types.Fn<SimplifyArray<Parameters<T>>, ReturnType<T>>
     : T extends object
       ? {
           [P in keyof T as ExtractLargeKeys<P>]: T[P] extends object
@@ -33,7 +29,7 @@ export type _SimplifyArray<T extends any[]> = {
   [K in IdxOf<T>]: Simplify<T[K]>;
 };
 
-export type SimplifyArray<T extends any[]> = UnionToTuple<
+export type SimplifyArray<T extends any[]> = types.UnionToTuple<
   ValuesOf<_SimplifyArray<T>>
 >;
 
@@ -65,17 +61,17 @@ const complexObject2 = {
   f: new TC(),
 };
 
-expectTypeOf(ttString).toExtend<PrimitiveObject>();
-expectTypeOf(ttNumber).toExtend<PrimitiveObject>();
-expectTypeOf(ttBoolean).toExtend<PrimitiveObject>();
-expectTypeOf(ttArra1).not.toExtend<PrimitiveObject>();
-expectTypeOf(ttArray2).not.toExtend<PrimitiveObject>();
-expectTypeOf(ttObject).toExtend<PrimitiveObject>();
-expectTypeOf(ttFunction).not.toExtend<PrimitiveObject>();
-expectTypeOf(ttArrowFunction).not.toExtend<PrimitiveObject>();
-expectTypeOf(ttClass).not.toExtend<PrimitiveObject>();
-expectTypeOf(complexObject1).toExtend<PrimitiveObject>();
-expectTypeOf(complexObject2).not.toExtend<PrimitiveObject>();
+expectTypeOf(ttString).toExtend<types.PrimitiveObject>();
+expectTypeOf(ttNumber).toExtend<types.PrimitiveObject>();
+expectTypeOf(ttBoolean).toExtend<types.PrimitiveObject>();
+expectTypeOf(ttArra1).not.toExtend<types.PrimitiveObject>();
+expectTypeOf(ttArray2).not.toExtend<types.PrimitiveObject>();
+expectTypeOf(ttObject).toExtend<types.PrimitiveObject>();
+expectTypeOf(ttFunction).not.toExtend<types.PrimitiveObject>();
+expectTypeOf(ttArrowFunction).not.toExtend<types.PrimitiveObject>();
+expectTypeOf(ttClass).not.toExtend<types.PrimitiveObject>();
+expectTypeOf(complexObject1).toExtend<types.PrimitiveObject>();
+expectTypeOf(complexObject2).not.toExtend<types.PrimitiveObject>();
 
 type _TT1 = {
   arg1: {
@@ -149,7 +145,7 @@ expectTypeOf({
 expectTypeOf<{
   user: string;
   password: string;
-}>().toExtend<PrimitiveObject>();
+}>().toExtend<types.PrimitiveObject>();
 
-expectTypeOf<TT11>().toExtend<PrimitiveObject>();
-expectTypeOf<TT13>().toExtend<PrimitiveObject>();
+expectTypeOf<TT11>().toExtend<types.PrimitiveObject>();
+expectTypeOf<TT13>().toExtend<types.PrimitiveObject>();

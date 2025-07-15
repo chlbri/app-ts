@@ -1,7 +1,6 @@
 import { toArray } from '@bemedev/basifun';
 import { identify } from '@bemedev/basifun/objects/identify';
 import { castings, type types } from '@bemedev/types';
-import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
 import { toAction } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { SimpleMachineOptions } from '~machines';
@@ -13,8 +12,8 @@ import { stateType } from './stateType';
 export type ResolveNode_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,
   promisees: P,

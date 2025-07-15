@@ -1,5 +1,4 @@
 import type { types } from '@bemedev/types';
-import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
 
 import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
 import type {
@@ -231,7 +230,7 @@ export type ReduceArray<T> = T extends readonly (infer U1)[]
  * @template : {@linkcode EventsMap} [E] - The events map used in the function.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the function.
  * @template Pc - The private context.
- * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - The context of the function, defaults to any object.
  * @template R - The return type of the function, defaults to any.
  *
  * @see {@linkcode ToEvents} for converting events and promisees to a map.
@@ -239,8 +238,8 @@ export type ReduceArray<T> = T extends readonly (infer U1)[]
 export type FnR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   R = any,
 > = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => R;
 
@@ -249,7 +248,7 @@ export type FnR<
  *
  * @template : {@linkcode EventsMap} [E] - The events map used in the function.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the function.
- * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - The context of the function, defaults to any object.
  * @template R - The return type of the function, defaults to any.
  *
  * @remarks This function signature is a reduced version of {@linkcode FnR} without the private context.
@@ -259,7 +258,7 @@ export type FnR<
 export type FnReduced<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   R = any,
 > = (state: State<Tc, ToEvents<E, P>>) => R;
 
@@ -268,7 +267,7 @@ export type FnReduced<
  *
  * @template : {@linkcode EventsMap} [E] - The events map used in the function.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the function.
- * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - The context of the function, defaults to any object.
  * @template R - The return type of the function, defaults to any.
  *
  * @see {@linkcode ToEvents} for converting events and promisees to a map.
@@ -278,7 +277,7 @@ export type FnReduced<
 export type FnMap2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   R = any,
   TT extends ToEventsR<E, P> = ToEventsR<E, P>,
 > = {
@@ -300,8 +299,8 @@ export type EventToType<T extends string | { type: string }> = T extends {
 type _FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   R = any,
   TT extends ToEvents<E, P> = ToEvents<E, P>,
 > = {
@@ -315,7 +314,7 @@ type _FnMap<
 type _FnMapR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   R = any,
   TT extends ToEvents<E, P> = ToEvents<E, P>,
 > = {
@@ -329,15 +328,15 @@ type _FnMapR<
 export type FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   R = any,
 > = FnR<E, P, Pc, Tc, R> | _FnMap<E, P, Pc, Tc, R, ToEvents<E, P>>;
 
 export type FnMapR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   R = any,
 > = FnReduced<E, P, Tc, R> | _FnMapR<E, P, Tc, R, ToEvents<E, P>>;
 

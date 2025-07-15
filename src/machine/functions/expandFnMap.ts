@@ -1,8 +1,4 @@
-import type {
-  Cast,
-  PrimitiveObject,
-} from '@bemedev/types/lib/types/commons.types';
-import { type Ru } from '@bemedev/types/lib/types/objects.types';
+import type { types } from '@bemedev/types';
 import type { ActionResultFn } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import { type FnMap } from '~types';
@@ -16,7 +12,7 @@ type ToPaths<
   D extends string = '.',
   P extends string = '',
   Parent extends boolean = false,
-> = T extends Ru
+> = T extends types.Ru
   ?
       | Required<{
           [K in keyof T]: ToPaths<
@@ -72,7 +68,7 @@ type DecomposeOpions = {
  * Decomposes a nested object into a flat object with paths as keys.
  * This type utility takes a nested object type `T` and returns a new type where each key is a path to the original value, separated by a specified separator (default is '.').
  * If the `parent` option is set to `true`, it will also include the parent paths in the keys.
- * @template : type {@linkcode Ru} [T] - The nested object type to decompose.
+ * @template : type {@linkcode types.Ru} [T] - The nested object type to decompose.
  * @template : type {@linkcode DecomposeOpions} [O] - Options for decomposition, including `sep` for the separator and `parent
  * @returns : A new type where each key is a path to the original value, with the specified separator.
  *
@@ -131,7 +127,7 @@ export type Decompose3<
 
 export type ExpandFnMap = <
   Pc,
-  Tc = PrimitiveObject,
+  Tc = types.PrimitiveObject,
   D = Decompose3<
     {
       pContext: Pc;
@@ -147,12 +143,18 @@ export type ExpandFnMap = <
   events: E,
   promisees: P,
   key: K,
-  fn: FnMap<E, P, Cast<Pc, PrimitiveObject>, Cast<Tc, PrimitiveObject>, R>,
+  fn: FnMap<
+    E,
+    P,
+    types.Cast<Pc, types.PrimitiveObject>,
+    types.Cast<Tc, types.PrimitiveObject>,
+    R
+  >,
 ) => ActionResultFn<
   E,
   P,
-  Cast<Pc, PrimitiveObject>,
-  Cast<Tc, PrimitiveObject>
+  types.Cast<Pc, types.PrimitiveObject>,
+  types.Cast<Tc, types.PrimitiveObject>
 >;
 /**
  *

@@ -1,5 +1,5 @@
 import type { KeysMatching } from '@bemedev/decompose';
-import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import type { ActionConfig, FromActionConfig } from '~actions';
 import type { GUARD_TYPE } from '~constants';
 import type { EventsMap, PromiseeMap } from '~events';
@@ -49,22 +49,22 @@ export type FromGuard<T extends GuardConfig> = T extends ActionConfig
 export type PredicateS<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnMap<E, P, Pc, Tc, boolean>;
 
 export type PredicateS2<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnR<E, P, Pc, Tc, boolean>;
 
 export type PredicateUnion<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > =
   | PredicateS<E, P, Pc, Tc>
   | PredicateAnd<E, P, Pc, Tc>
@@ -73,8 +73,8 @@ export type PredicateUnion<
 export type PredicateAnd<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   and: PredicateUnion<E, P, Pc, Tc>[];
 };
@@ -82,8 +82,8 @@ export type PredicateAnd<
 export type PredicateOr<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   or: PredicateUnion<E, P, Pc, Tc>[];
 };
@@ -93,7 +93,7 @@ export type PredicateOr<
  * @template : type {@linkcode EventsMap} [E], the events map to use for resolving the predicate.
  * @template : type {@linkcode PromiseeMap} [P], the promisees map to use for resolving the predicate.
  * @template : [Pc], the type of the private context.
- * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
+ * @template : type {@linkcode types.PrimitiveObject} [Tc], the type of the context.
  *
  * @returns A union type that can be a single predicate function, a combination of predicates with AND logic, or a combination of predicates with OR logic.
  *
@@ -104,8 +104,8 @@ export type PredicateOr<
 export type Predicate<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > =
   | PredicateS2<E, P, Pc, Tc>
   | PredicateAnd<E, P, Pc, Tc>
@@ -117,7 +117,7 @@ export type Predicate<
  * @template : type {@linkcode EventsMap} [E], the events map to use for resolving the predicate.
  * @template : type {@linkcode PromiseeMap} [P], the promisees map to use for resolving the predicate.
  * @template : [Pc], the type of the private context.
- * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
+ * @template : type {@linkcode types.PrimitiveObject} [Tc], the type of the context.
  *
  * @returns A partial record where each key is a string and each value is a {@linkcode PredicateS}.
  *
@@ -126,13 +126,13 @@ export type Predicate<
 export type PredicateMap<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
 
 type _DefinedValue<
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = KeysMatching<{
   pContext: Pc;
   context: Tc;
@@ -142,9 +142,9 @@ type _DefinedValue<
  * Represents a type that can be a defined value or a string representing an event or its type
  *
  * @template : [Pc] The type of the private context.
- * @template : type {@linkcode PrimitiveObject} [Tc] The type of the context.
+ * @template : type {@linkcode types.PrimitiveObject} [Tc] The type of the context.
  */
 export type DefinedValue<
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = _DefinedValue<Pc, Tc> | 'events' | 'events.type' | 'events.payload';

@@ -1,4 +1,4 @@
-import type { Fn } from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 
 import type {
   NodeConfig,
@@ -6,7 +6,7 @@ import type {
   StateType,
 } from '../types';
 
-export type StateType_F = Fn<
+export type StateType_F = types.Fn<
   [state: NodeConfig | NodeConfigWithInitials],
   StateType
 >;

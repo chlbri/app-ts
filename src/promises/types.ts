@@ -1,10 +1,4 @@
-import type {
-  NOmit,
-  NotUndefined,
-  PrimitiveObject,
-  ReduceArray,
-  Require,
-} from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import type { ActionConfig, FromActionConfig } from '~actions';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type {
@@ -22,7 +16,7 @@ import type { FnMap, FnR, SingleOrArrayL } from '~types';
  * @template : {@linkcode EventsMap} [E] - The events map.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map.
  * @template Pc - The context type, defaults to `any`.
- * @template : {@linkcode PrimitiveObject} [Tc] - The primitive object type, defaults to `PrimitiveObject`.
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - The primitive object type, defaults to `types.PrimitiveObject`.
  *
  * @see {@linkcode FnMap} for more details.
  * @see {@linkcode Promise} for a reduced version of this type.
@@ -31,8 +25,8 @@ import type { FnMap, FnR, SingleOrArrayL } from '~types';
 export type PromiseFunction<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnMap<E, P, Pc, Tc, Promise<any>>;
 
 /**
@@ -41,7 +35,7 @@ export type PromiseFunction<
  * @template : {@linkcode EventsMap} [E] - The events map.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map.
  * @template Pc - The context type, defaults to `any`.
- * @template : {@linkcode PrimitiveObject} [Tc] - The primitive object type, defaults to `PrimitiveObject`.
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - The primitive object type, defaults to `types.PrimitiveObject`.
  *
  * @see {@linkcode FnR} for more details.
  * @see {@linkcode Promise}
@@ -49,8 +43,8 @@ export type PromiseFunction<
 export type PromiseFunction2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnR<E, P, Pc, Tc, Promise<any>>;
 
 /**
@@ -58,17 +52,15 @@ export type PromiseFunction2<
  *
  * @see {@linkcode TransitionConfigMapA} for the type of transition configurations.
  * @see {@linkcode ActionConfig} for the type of action configurations.
- * @see {@linkcode NOmit}
- * @see {@linkcode Require}
+ * @see {@linkcode types.NOmit}
+ * @see {@linkcode types.Require}
  */
 export type FinallyConfig =
-  NOmit<TransitionConfigMapA, 'target'> extends infer F extends NOmit<
-    TransitionConfigMapA,
-    'target'
-  >
+  types.NOmit<TransitionConfigMapA, 'target'> extends infer F extends
+    types.NOmit<TransitionConfigMapA, 'target'>
     ?
         | (F | ActionConfig)
-        | readonly [...Require<F, 'guards'>[], F | ActionConfig]
+        | readonly [...types.Require<F, 'guards'>[], F | ActionConfig]
     : never;
 
 /**
@@ -96,12 +88,12 @@ export type PromiseeConfig = {
  *
  * @see {@linkcode ExtractActionsFromTransition} for the type of actions extracted from a transition.
  * @see {@linkcode SingleOrArrayL} for the type of single or array actions.
- * @see {@linkcode NotUndefined} for the type of non-undefined values.
- * @see {@linkcode ReduceArray} for the type of reduced arrays.
+ * @see {@linkcode types.NotUndefined} for the type of non-undefined values.
+ * @see {@linkcode types.ReduceArray} for the type of reduced arrays.
  */
 type _ExtractActionsFromMap<T> = ExtractActionsFromTransition<
   Extract<
-    ReduceArray<NotUndefined<T>>,
+    types.ReduceArray<types.NotUndefined<T>>,
     { actions: SingleOrArrayL<ActionConfig> }
   >
 >;
@@ -112,13 +104,13 @@ type _ExtractActionsFromMap<T> = ExtractActionsFromTransition<
  * @template : {@linkcode FinallyConfig} T - The type of the finally configuration.
  * @returns The extracted actions as a union of action configurations.
  *
- * @see {@linkcode ReduceArray} for the type of reduced arrays.
+ * @see {@linkcode types.ReduceArray} for the type of reduced arrays.
  * @see {@linkcode ActionConfig} for the type of action configurations.
  * @see {@linkcode FromActionConfig} for converting action configurations to a specific type.
  * @see {@linkcode _ExtractActionsFromMap} for extracting actions from a map.
  */
 export type ExtractActionsFromFinally<T extends FinallyConfig> =
-  ReduceArray<T> extends infer Tr
+  types.ReduceArray<T> extends infer Tr
     ? Tr extends ActionConfig
       ? FromActionConfig<Tr>
       : _ExtractActionsFromMap<Tr>
@@ -135,12 +127,12 @@ export type ExtractActionsFromFinally<T extends FinallyConfig> =
  * @see {@linkcode _ExtractActionsFromMap} for extracting actions from a map.
  * @see {@linkcode ExtractActionsFromFinally} for extracting actions from the `finally`
  * part of the promisee configuration.
- * @see {@linkcode NotUndefined} for handling undefined values in the promisee configuration.
+ * @see {@linkcode types.NotUndefined} for handling undefined values in the promisee configuration.
  */
 export type ExtractActionsFromPromisee<T extends PromiseeConfig> =
   | _ExtractActionsFromMap<T['then']>
   | _ExtractActionsFromMap<T['catch']>
-  | ExtractActionsFromFinally<NotUndefined<T['finally']>>;
+  | ExtractActionsFromFinally<types.NotUndefined<T['finally']>>;
 
 /**
  * Extracts the source string from a promisee configuration.
@@ -179,7 +171,7 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
  * @template : {@linkcode EventsMap} [E] - The events map.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map.
  * @template Pc - The context type, defaults to `any`.
- * @template : {@linkcode PrimitiveObject} [Tc] - The primitive object type
+ * @template : {@linkcode types.PrimitiveObject} [Tc] - The primitive object type
  *
  * @see {@linkcode PromiseFunction2} for the type of the source function.
  * @see {@linkcode Transition} for the type of transitions.
@@ -187,8 +179,8 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
 export type Promisee<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   src: PromiseFunction2<E, P, Pc, Tc>;
   description?: string;
@@ -203,7 +195,7 @@ export type Promisee<
  * @template E - The events map, defaults to {@linkcode EventsMap}.
  * @template P - The promisees map, defaults to {@linkcode PromiseeMap}.
  * @template Pc - The context type, defaults to `any`.
- * @template : {@linkcode PrimitiveObject} Tc - The primitive object type, defaults to `PrimitiveObject`.
+ * @template : {@linkcode types.PrimitiveObject} Tc - The primitive object type, defaults to `types.PrimitiveObject`.
  *
  * @see {@linkcode ToEvents} for converting events and promisees to a unified event type.
  * @see {@linkcode ActionResult} for the type of action results.

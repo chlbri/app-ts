@@ -1,6 +1,6 @@
 import { isDefined } from '@bemedev/basifun';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
-import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import { GUARD_TYPE } from '~constants';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { GuardConfig } from '~guards';
@@ -12,8 +12,8 @@ import type { PredicateMap, PredicateS2 } from '../types';
 export type _ToPredicateF = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,
   promisees: P,
@@ -29,8 +29,8 @@ export type _ToPredicateF = <
 export type ToPredicate_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,
   promisees: P,
@@ -104,7 +104,7 @@ const _toPredicate: _ToPredicateF = (
  * @returns an object containing the predicate function and any errors encountered during the conversion.
  *
  * @see {@linkcode ToEvents}
- * @see {@linkcode PrimitiveObject}
+ * @see {@linkcode types.PrimitiveObject}
  * @see {@linkcode PredicateS2}
  * @see {@linkcode GuardDefUnion}
  * @see {@linkcode reduceFnMap}

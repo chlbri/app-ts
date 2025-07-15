@@ -1,6 +1,5 @@
 import { isDefined, partialCall, toArray } from '@bemedev/basifun';
 import { castings, typings, type types } from '@bemedev/types';
-import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import cloneDeep from 'clone-deep';
 import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
@@ -68,7 +67,7 @@ import type {
  *
  * @template : {@linkcode Config} [C] - The configuration type of the machine.
  * @template Pc : The private context type of the machine.
- * @template : {@linkcode PrimitiveObject} [Pc] - The context type of the machine.
+ * @template : {@linkcode types.PrimitiveObject} [Pc] - The context type of the machine.
  * @template : {@linkcode GetEventsFromConfig}<{@linkcode C}> [E] - The events map type derived from the configuration.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map type derived from the configuration. Defaults to {@linkcode GetPromiseeSrcFromConfig}<{@linkcode C}>.
  * @template : {@linkcode SimpleMachineOptions2} [Mo] - The options type for the machine, which includes actions, predicates, delays, promises, and machines. Defaults to {@linkcode MachineOptions}<[{@linkcode C} , {@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} ]>.
@@ -78,8 +77,8 @@ import type {
 
 class Machine<
   const C extends Config = Config,
-  const Pc extends PrimitiveObject = PrimitiveObject,
-  const Tc extends PrimitiveObject = PrimitiveObject,
+  const Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  const Tc extends types.PrimitiveObject = types.PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
@@ -163,7 +162,7 @@ class Machine<
    * @see {@linkcode PromiseeMap}
    * @see {@linkcode P}
    * @see {@linkcode Pc}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __actionFn() {
@@ -191,7 +190,7 @@ class Machine<
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
    * @see {@linkcode Pc}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __actionParams() {
@@ -208,7 +207,7 @@ class Machine<
    * @see {@linkcode StateExtended}
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
@@ -226,7 +225,7 @@ class Machine<
    * @see {@linkcode State}
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
@@ -244,7 +243,7 @@ class Machine<
    * @see {@linkcode StateP}
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
@@ -262,7 +261,7 @@ class Machine<
    * @see {@linkcode StatePextended}
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
@@ -312,7 +311,7 @@ class Machine<
    * @see {@linkcode PromiseeMap}
    * @see {@linkcode P}
    * @see {@linkcode Pc}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __predictate() {
@@ -343,7 +342,7 @@ class Machine<
    * @see {@linkcode PromiseeMap}
    * @see {@linkcode P}
    * @see {@linkcode Pc}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __delay() {
@@ -359,7 +358,7 @@ class Machine<
    *
    * @see {@linkcode DefinedValue}
    * @see {@linkcode Pc}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __definedValue() {
@@ -390,7 +389,7 @@ class Machine<
    * @see {@linkcode PromiseeMap}
    * @see {@linkcode P}
    * @see {@linkcode Pc}
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __promise() {
@@ -439,7 +438,7 @@ class Machine<
   /**
    * Context for this {@linkcode Machine}.
    *
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Tc}
    */
   #context!: Tc;
@@ -527,7 +526,7 @@ class Machine<
   /**
    * The accessor of context for this {@linkcode Machine}.
    *
-   * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode types.PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get context() {
@@ -679,7 +678,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * @see {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   * @see {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
   get #elements(): Elements<C, E, P, Pc, Tc, Mo> {
     const config = structuredClone(this.#config);
@@ -721,7 +720,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
 
   #provideElements = <T extends keyof Elements>(
@@ -750,7 +749,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
   #renew = <T extends keyof Elements>(
     key?: T,
@@ -798,7 +797,9 @@ class Machine<
    * @deprecated
    * @remarks used internally
    */
-  _providePrivateContext = <T extends PrimitiveObject = PrimitiveObject>(
+  _providePrivateContext = <
+    T extends types.PrimitiveObject = types.PrimitiveObject,
+  >(
     pContext: T,
   ) => {
     const { context, initials, config, events, promisees } =
@@ -823,7 +824,7 @@ class Machine<
    * @deprecated
    * @remarks used internally
    */
-  _provideContext = <T extends PrimitiveObject>(context: T) => {
+  _provideContext = <T extends types.PrimitiveObject>(context: T) => {
     const { pContext, initials, config, events, promisees } =
       this.#elements;
 
@@ -938,7 +939,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isValue}
    */
@@ -951,7 +952,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isNotValue}
    */
@@ -964,7 +965,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isDefinedS}
    */
@@ -976,7 +977,7 @@ class Machine<
    * Function helper to check if a value is undefined or null
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isDefinedS}
    */
@@ -1005,7 +1006,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode reduceFnMap}
    */
@@ -1033,7 +1034,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode VoidAction_F}
    */
@@ -1188,8 +1189,8 @@ export type { Machine };
 
 export type CreateMachine_F = <
   const C extends Config = Config,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
 >(

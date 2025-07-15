@@ -1,5 +1,5 @@
 import { toArray } from '@bemedev/basifun';
-import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
+import type { types } from '@bemedev/types';
 import { toAction } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import { toPredicate, type GuardConfig } from '~guards';
@@ -10,8 +10,8 @@ import { isString } from '~types';
 export type ToTransition_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,
   promisees: P,

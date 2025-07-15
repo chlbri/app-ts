@@ -1,8 +1,5 @@
 import { toArray } from '@bemedev/basifun';
-import type {
-  NOmit,
-  PrimitiveObject,
-} from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { SimpleMachineOptions } from '~machines';
 import type { PromiseeConfig } from '~promises';
@@ -13,13 +10,13 @@ import { toPromiseSrc } from './src';
 type ToPromise_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  TC extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  TC extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,
   promisees: P,
   src: PromiseeConfig,
-  promises?: NOmit<SimpleMachineOptions<E, P, Pc, TC>, 'initials'>,
+  promises?: types.NOmit<SimpleMachineOptions<E, P, Pc, TC>, 'initials'>,
 ) => Promisee<E, P, Pc, TC>;
 
 /**

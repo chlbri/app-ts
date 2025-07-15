@@ -1,8 +1,4 @@
-import type {
-  PrimitiveObject,
-  SoRa,
-  Unionize,
-} from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 
 import type { INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE } from './constants';
 
@@ -19,13 +15,13 @@ export type EventObject<T = any> = {
 /**
  * Represents a map of events where the keys are event names and the values are the payloads.
  *
- * @see {@linkcode PrimitiveObject} for the type of the payload.
+ * @see {@linkcode types.PrimitiveObject} for the type of the payload.
  */
-export type EventsMap = Record<string, PrimitiveObject>;
+export type EventsMap = Record<string, types.PrimitiveObject>;
 
 export type PromiseeDef = {
-  then: SoRa<PrimitiveObject>;
-  catch: SoRa<PrimitiveObject>;
+  then: types.SoRa<types.PrimitiveObject>;
+  catch: types.SoRa<types.PrimitiveObject>;
 };
 
 export type PromiseeMap = Record<string, PromiseeDef>;
@@ -49,7 +45,7 @@ export type AllEvent = EventObject | EventStrings;
  * the keys of the map.
  */
 export type _EventsR<T extends EventsMap> =
-  Unionize<T> extends infer U
+  types.Unionize<T> extends infer U
     ? U extends any
       ? { type: keyof U & string; payload: U[keyof U] }
       : never
@@ -64,7 +60,7 @@ export type _EventsR<T extends EventsMap> =
  * the keys of the map.
  */
 type _PromiseesR<T extends PromiseeMap> =
-  Unionize<T> extends infer U extends PromiseeMap
+  types.Unionize<T> extends infer U extends PromiseeMap
     ? U extends any
       ?
           | {
