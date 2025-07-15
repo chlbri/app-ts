@@ -1,4 +1,4 @@
-import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import type { ActionConfig, ActionMap, ActionResult } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import { isDescriber, type FnR } from '~types';
@@ -7,8 +7,8 @@ import { reduceFnMap } from '~utils';
 export type ToAction_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,
   promisees: P,
@@ -23,7 +23,7 @@ export type ToAction_F = <
  * @param action of type {@linkcode ActionConfig}, action configuration to convert.
  * @param actions of type {@linkcode ActionMap}, The actions map containing functions to execute.
  *
- * @see {@linkcode PrimitiveObject}
+ * @see {@linkcode types.PrimitiveObject}
  * @see {@linkcode ActionResult}
  * @see {@linkcode reduceFnMap}
  * @see {@linkcode isDescriber}

@@ -1,9 +1,4 @@
-import type {
-  AllowedNames,
-  NotUndefined,
-  PrimitiveObject,
-  UnionToIntersection2,
-} from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { FromGuard, GuardConfig } from '~guards';
@@ -146,7 +141,7 @@ type FlatMapNodeConfig<
         ? FlatMapNodeConfig<
             S,
             withChildren,
-            `${Remaining}${AllowedNames<NotUndefined<T['states']>, { states: NodesConfig }> & string}/`
+            `${Remaining}${types.AllowedNames<types.NotUndefined<T['states']>, { states: NodesConfig }> & string}/`
           >
         : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
           {}
@@ -157,7 +152,7 @@ type FlatMapNodeConfig<
 export type FlatMapN<
   T extends NodeConfig = NodeConfig,
   withChildren extends boolean = true,
-> = UnionToIntersection2<FlatMapNodeConfig<T, withChildren>> & {
+> = types.UnionToIntersection2<FlatMapNodeConfig<T, withChildren>> & {
   readonly '/': T;
 };
 // #endregion
@@ -165,8 +160,8 @@ export type FlatMapN<
 export type Node<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   id?: string;
   description?: string;

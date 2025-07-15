@@ -1,10 +1,6 @@
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
-import type { types } from '@bemedev/types/';
-import type {
-  Equals,
-  Primitive,
-} from '@bemedev/types/lib/types/commons.types';
+import type { types } from '@bemedev/types';
 import type {
   Action,
   Action2,
@@ -68,13 +64,15 @@ export type InterpreterOptions<
 > = {
   mode?: Mode;
   exact?: boolean;
-} & (Equals<P, Partial<P>> extends true
+} & (types.Equals<P, Partial<P>> extends true
   ? { pContext?: P }
   : { pContext: P }) &
-  (Equals<C, Partial<C>> extends true ? { context?: C } : { context: C });
+  (types.Equals<C, Partial<C>> extends true
+    ? { context?: C }
+    : { context: C });
 
 export type InterpretArgs<M extends AnyMachine> =
-  Equals<
+  types.Equals<
     InterpreterOptions<M>,
     Partial<InterpreterOptions<M>>
   > extends true
@@ -292,7 +290,7 @@ export type Subscribe_F<
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (subscriber: FnSubReduced<E, P, Tc>) => SubscriberClass<E, P, Tc>;
 
-export type Selector_F<T = any> = T extends Primitive
+export type Selector_F<T = any> = T extends types.Primitive
   ? undefined
   : <
       D extends Decompose2<T>,

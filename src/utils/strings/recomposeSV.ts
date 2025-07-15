@@ -1,8 +1,8 @@
-import type { Fn } from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { StateValue } from '~states';
 
-export type RecomposeSV_F = Fn<
+export type RecomposeSV_F = types.Fn<
   [arg: string, delimiter?: string],
   StateValue
 >;

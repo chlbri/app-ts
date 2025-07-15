@@ -1,4 +1,4 @@
-import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { DefinedValue } from '~guards';
 import type { FnR } from '~types';
@@ -7,8 +7,8 @@ import { isNotValue, isValue } from './value';
 export type IsDefinedS_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   path: DefinedValue<Pc, Tc>,
 ) => FnR<E, P, Pc, Tc, boolean>;
@@ -21,7 +21,7 @@ export type IsDefinedS_F = <
  * @see {@linkcode isNotValue} for more details.
  * @see {@linkcode EventsMap}
  * @see {@linkcode PromiseeMap}
- * @see {@linkcode PrimitiveObject}
+ * @see {@linkcode types.PrimitiveObject}
  *
  */
 export const isDefinedS: IsDefinedS_F = path => {
@@ -36,7 +36,7 @@ export const isDefinedS: IsDefinedS_F = path => {
  * @see {@linkcode isValue} for more details.
  * @see {@linkcode EventsMap}
  * @see {@linkcode PromiseeMap}
- * @see {@linkcode PrimitiveObject}
+ * @see {@linkcode types.PrimitiveObject}
  */
 export const isNotDefinedS: IsDefinedS_F = path => {
   return isValue(path, undefined, null);

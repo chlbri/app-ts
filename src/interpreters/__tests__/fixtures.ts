@@ -1,6 +1,6 @@
 import sleep from '@bemedev/sleep';
+import type { types } from '@bemedev/types';
 import { castings } from '@bemedev/types';
-import type { PrimitiveObject } from '@bemedev/types/lib/types/types';
 import { DEFAULT_NOTHING } from '~constants';
 import type { EventArg, EventsMap, PromiseeMap } from '~events';
 import type { Interpreter } from '~interpreter';
@@ -45,8 +45,8 @@ export const constructWaiter: ConstructWaiter_F = (DELAY = 0) => {
 
 type ConstructValue_F = <
   const C extends Config = Config,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
@@ -68,8 +68,8 @@ export const constructValue: ConstructValue_F = service => {
 
 type ConstructSend_F = <
   const C extends Config = Config,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,

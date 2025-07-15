@@ -1,10 +1,10 @@
-import type { NotUndefined } from '@bemedev/types/lib/types/types';
+import type { types } from '@bemedev/types';
 import { aliasTs } from '@bemedev/vitest-alias';
 import { exclude } from '@bemedev/vitest-exclude';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
 import tsconfig from '../tsconfig.json';
 
-type Inline = NotUndefined<ViteUserConfig['test']>;
+type Inline = types.NotUndefined<ViteUserConfig['test']>;
 type Plugins = ViteUserConfig['plugins'];
 
 const plugins = [

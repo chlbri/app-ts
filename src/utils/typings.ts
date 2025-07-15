@@ -70,7 +70,7 @@ export type TransformPrimitiveObject<T> = T extends Types
     : T extends PartialCustom
       ? Partial<TransformPrimitiveObject<types.NOmit<T, typeof PARTIAL>>>
       : T extends types.AnyArray<any>
-        ? T[number] extends infer TKN extends PrimitiveObject
+        ? T[number] extends infer TKN extends types.PrimitiveObject
           ? TransformPrimitiveObject<TKN>[]
           : never
         : {

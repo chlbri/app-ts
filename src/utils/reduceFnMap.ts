@@ -1,5 +1,5 @@
+import type { types } from '@bemedev/types';
 import { castings } from '@bemedev/types';
-import type { PrimitiveObject } from '@bemedev/types/lib/types/commons.types';
 import type { EventsMap, PromiseeMap, ToEventsR } from '~events';
 import {
   isFunction,
@@ -34,8 +34,8 @@ export const toEventsMap: ToEventMap_F = (events, _promisees) => {
 export type ReduceFnMap_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends PrimitiveObject = PrimitiveObject,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   R = any,
 >(
   events: E,
@@ -91,7 +91,7 @@ export const reduceFnMap: ReduceFnMap_F = (events, promisees, fn) => {
 export type ReduceFnMap2_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
   R = any,
 >(
   events: E,
