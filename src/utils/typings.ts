@@ -91,7 +91,10 @@ const transformPrimitiveObject = (obj: any): any => {
     const out: any = {};
     if (isCustom) return out;
 
-    const entries = Object.entries(_obj);
+    const entries = Object.entries(_obj).filter(
+      ([key]) => key !== PARTIAL,
+    );
+    if (entries.length === 0) return out;
     entries.forEach(([key, value]) => {
       out[key] = transformPrimitiveObject(value as any);
     });
@@ -116,10 +119,13 @@ const DEFAULT_ARGS = {
   promiseesMap: 'primitive',
 } satisfies Args;
 
-const typings = <T extends Partial<Args>>(
-  args = DEFAULT_ARGS as T,
-): TransformArgs<T> => {
-  const out = transformPrimitiveObject(args);
+const defaultArgs = <T extends Partial<Args>>(values: T) => {
+  const args = { ...DEFAULT_ARGS, ...values } as Args;
+  return args;
+};
+
+const typings = <T extends Partial<Args>>(args: T): TransformArgs<T> => {
+  const out = transformPrimitiveObject(defaultArgs(args));
   return out;
 };
 

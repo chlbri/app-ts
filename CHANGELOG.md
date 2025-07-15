@@ -9,6 +9,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <br/>
 
 <details>
+<summary><h2> [0.8.1] - 2025/07/15 => 02:35 </h2></summary>
+
+- **Enhancement of typings** :
+  - better implementation of lib @bemedev/types
+  - default function for Args
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary><h2> [0.8.0] - 2025/07/15 => 02:00 </h2></summary>
+
+- **Enhancement of typings** :
+  - better implementation of lib @bemedev/types
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
 <summary><h2> [0.8.0] - 2025/07/15 => 02:00 </h2></summary>
 
 - **Enhancement of typings** :
