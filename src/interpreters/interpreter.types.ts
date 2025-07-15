@@ -1,7 +1,10 @@
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { types } from '@bemedev/types/';
-import type { Primitive } from '@bemedev/types/lib/types/commons.types';
+import type {
+  Equals,
+  Primitive,
+} from '@bemedev/types/lib/types/commons.types';
 import type {
   Action,
   Action2,
@@ -43,7 +46,7 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import type { FnR } from '~types';
-import type { InterpreterFrom } from './interpreter';
+import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
 
 export type WorkingStatus =
@@ -58,16 +61,28 @@ export type WorkingStatus =
 
 export type Mode = 'normal' | 'strict';
 
-export type InterpreterOptions<M extends AnyMachine> = {
-  pContext: PrivateContextFrom<M>;
-  context: ContextFrom<M>;
+export type InterpreterOptions<
+  M extends AnyMachine,
+  P extends PrivateContextFrom<M> = PrivateContextFrom<M>,
+  C extends ContextFrom<M> = ContextFrom<M>,
+> = {
   mode?: Mode;
   exact?: boolean;
-};
+} & (Equals<P, Partial<P>> extends true
+  ? { pContext?: P }
+  : { pContext: P }) &
+  (Equals<C, Partial<C>> extends true ? { context?: C } : { context: C });
+
+export type InterpretArgs<M extends AnyMachine> =
+  Equals<
+    InterpreterOptions<M>,
+    Partial<InterpreterOptions<M>>
+  > extends true
+    ? [machine: M, config?: InterpreterOptions<M>]
+    : [machine: M, config: InterpreterOptions<M>];
 
 export type Interpreter_F = <M extends AnyMachine>(
-  machine: M,
-  config: InterpreterOptions<M>,
+  ...args: InterpretArgs<M>
 ) => InterpreterFrom<M>;
 
 export type ToAction_F<

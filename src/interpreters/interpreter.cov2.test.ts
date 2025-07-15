@@ -4,7 +4,7 @@ import { createMachine } from '~machine';
 import { typings } from '~utils';
 
 describe('Coverage of interpretr #2', () => {
-  describe('#01 => Cov slect and pSelect for primitive units', () => {
+  describe('#01 => Cov select and pSelect for primitive units', () => {
     const machine = createMachine(
       {
         states: {

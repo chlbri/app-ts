@@ -2090,6 +2090,16 @@ export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   MachineOptionsFrom<M>
 >;
 
+export const _interpret: any = (machine: any, args: any) => {
+  const { context, pContext, mode, exact } = args ?? {};
+  const out = new (Interpreter as any)(machine, mode, exact);
+
+  out._ppC(pContext ?? {});
+  out._provideContext(context ?? {});
+
+  return out as any;
+};
+
 /**
  * Creates an {@linkcode Interpreter} service from the given {@linkcode MachineConfig} machine.
  *
@@ -2099,18 +2109,7 @@ export type InterpreterFrom<M extends AnyMachine> = Interpreter<
  *
  * @see {@linkcode MachineConfig}
  */
-export const interpret: Interpreter_F = (
-  machine,
-  { context, pContext, mode, exact },
-) => {
-  //@ts-expect-error for build
-  const out = new Interpreter(machine, mode, exact);
-
-  out._ppC(pContext);
-  out._provideContext(context);
-
-  return out as any;
-};
+export const interpret: Interpreter_F = _interpret;
 
 export const DEFAULT_SERVICE = interpret(DEFAULT_MACHINE, {
   context: {
