@@ -9,6 +9,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <br/>
 
 <details>
+<summary><h2> [0.7.0] - 2025/07/15 => 01:00 </h2></summary>
+
+- **Enhancement of functions** :
+  - _interpret_
+  - _typings_, add partial possibility to typings
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
 <summary><h2> [0.6.0] - 2025/07/14 => 23:00 </h2></summary>
 
 - **Enhancement of functions** :

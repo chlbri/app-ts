@@ -322,6 +322,7 @@ describe('Covers all inner actions', () => {
   describe('#03 => Performs send to itself actions', () => {
     const machine101 = createMachine(
       {
+        entry: 'init',
         states: {
           idle: {
             on: {
@@ -353,31 +354,29 @@ describe('Covers all inner actions', () => {
         promiseesMap: 'primitive',
         pContext: 'primitive',
 
-        context: {
+        context: typings.partial({
           iterator: 'number',
-        },
+        }),
       }),
       { '/': 'idle' },
     ).provideOptions(({ assign, forceSend, resend }) => ({
       actions: {
         inc: assign(
           'context.iterator',
-          ({ context: { iterator } }) => iterator + 1,
+          ({ context: { iterator } }) => iterator! + 1,
         ),
+
+        init: assign('context.iterator', () => 0),
         dec: assign(
           'context.iterator',
-          ({ context: { iterator } }) => iterator - 1,
+          ({ context: { iterator } }) => iterator! - 1,
         ),
         forceSendInc: forceSend('INCREMENT'),
         sendDec: resend('DECREMENT'),
       },
     }));
 
-    const service = interpret(machine101, {
-      pContext: {},
-      context: { iterator: 0 },
-      exact: true,
-    });
+    const service = interpret(machine101);
 
     type SE = Parameters<typeof service.send>[0];
 
@@ -442,6 +441,7 @@ describe('Covers all inner actions', () => {
   describe('#03.bis - cov => Performs send to itself actions', () => {
     const machine101 = createMachine(
       {
+        entry: 'init',
         states: {
           idle: {
             on: {
@@ -472,29 +472,31 @@ describe('Covers all inner actions', () => {
         promiseesMap: 'primitive',
         pContext: 'primitive',
 
-        context: {
+        context: typings.partial({
           iterator: 'number',
-        },
+        }),
       }),
       { '/': 'idle' },
     ).provideOptions(({ assign, forceSend, resend }) => ({
       actions: {
-        inc: assign(
-          'context.iterator',
-          ({ context: { iterator } }) => iterator + 1,
-        ),
-        dec: assign(
-          'context.iterator',
-          ({ context: { iterator } }) => iterator - 1,
-        ),
+        inc: assign('context.iterator', ({ context: { iterator } }) => {
+          if (iterator === undefined) return;
+
+          return iterator + 1;
+        }),
+        dec: assign('context.iterator', ({ context: { iterator } }) => {
+          if (iterator === undefined) return;
+          return iterator - 1;
+        }),
+
+        init: assign('context.iterator', () => 0),
+
         forceSendInc: forceSend('INCREMENT'),
         sendDec: resend('DECREMENT'),
       },
     }));
 
     const service = interpret(machine101, {
-      pContext: {},
-      context: { iterator: 0 },
       exact: true,
     });
 
