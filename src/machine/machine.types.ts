@@ -93,8 +93,6 @@ export interface AnyMachine<
 
   addInitials: types.Fn<[any], any>;
 
-  isInitial: types.Fn<[string], boolean>;
-  retrieveParentFromInitial: types.Fn<[string], NodeConfigWithInitials>;
   toNode: types.Fn<[StateValue], NodeConfigWithInitials>;
 }
 

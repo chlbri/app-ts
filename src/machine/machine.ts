@@ -67,7 +67,7 @@ import type {
  *
  * @template : {@linkcode Config} [C] - The configuration type of the machine.
  * @template Pc : The private context type of the machine.
- * @template : {@linkcode types.PrimitiveObject} [Pc] - The context type of the machine.
+ * @template : {@linkcode types} [Pc] - The context type of the machine.
  * @template : {@linkcode GetEventsFromConfig}<{@linkcode C}> [E] - The events map type derived from the configuration.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map type derived from the configuration. Defaults to {@linkcode GetPromiseeSrcFromConfig}<{@linkcode C}>.
  * @template : {@linkcode SimpleMachineOptions2} [Mo] - The options type for the machine, which includes actions, predicates, delays, promises, and machines. Defaults to {@linkcode MachineOptions}<[{@linkcode C} , {@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} ]>.
@@ -79,7 +79,7 @@ class Machine<
   const C extends Config = Config,
   const Pc extends types.PrimitiveObject = types.PrimitiveObject,
   const Tc extends types.PrimitiveObject = types.PrimitiveObject,
-  E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
+  E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
 > implements AnyMachine<E, P, Pc, Tc>
@@ -99,7 +99,7 @@ class Machine<
    * @see {@linkcode Config}
    * @see {@linkcode C}
    */
-  #flat: FlatMapN<C, true>;
+  #flat: FlatMapN<C>;
 
   /**
    * The map of events for this {@linkcode Machine}.
@@ -483,7 +483,7 @@ class Machine<
    */
   constructor(config: C) {
     this.#config = config;
-    this.#flat = flatMap<C, true>(config);
+    this.#flat = (flatMap as any)(config, true) as unknown as FlatMapN<C>;
   }
 
   /**
@@ -601,7 +601,7 @@ class Machine<
 
   #getInitialKeys = () => {
     const postConfig = this.#postConfig as NodeConfig;
-    this.#postflat = flatMap(postConfig) as any;
+    this.#postflat = (flatMap as any)(postConfig) as any;
 
     const entries = Object.entries(this.#postflat);
     entries.forEach(([key, { initial }]) => {
@@ -619,6 +619,7 @@ class Machine<
 
   retrieveParentFromInitial = (target: string): NodeConfigWithInitials => {
     const check1 = this.isInitial(target);
+    // console.warn(JSON.stringify(this.#postflat, null, 2));
     if (check1) {
       const parent = target.substring(
         0,
@@ -1156,20 +1157,11 @@ const getIO: GetIO_F = (key, node) => {
   if (!node) return [];
   const out = toArray.typed(node?.[key]);
 
-  if (isAtomic(node)) {
-    return out;
-  }
+  if (isAtomic(node)) return out;
 
   if (isCompound(node)) {
     const initial = node.states[node.initial];
-
     out.push(...getIO(key, initial));
-  } else {
-    const values = Object.values(node.states);
-
-    values.forEach(node1 => {
-      out.push(...getIO(key, node1));
-    });
   }
 
   return out;
@@ -1220,7 +1212,7 @@ export const createMachine: CreateMachine_F = (
   initials,
 ) => {
   const out = new Machine(config)
-    ._provideInitials(initials)
+    ._provideInitials(initials as any)
     ._provideEvents(eventsMap)
     ._providePrivateContext(pContext)
     ._provideContext(context)

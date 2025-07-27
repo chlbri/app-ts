@@ -2,6 +2,7 @@ import type { types } from '@bemedev/types';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { FromGuard, GuardConfig } from '~guards';
+import type { Decompose3 } from '~machines';
 import type { Transitions, TransitionsConfig } from '~transitions';
 import type {
   Identitfy,
@@ -126,35 +127,45 @@ export interface StateValueMap {
   [key: string]: StateValue;
 }
 
+export type LowPick<P, K extends string> = types.NotSubType<
+  {
+    [key in K]: key extends keyof P ? P[key] : never;
+  },
+  never
+>;
+
 // #region Flat
-type FlatMapNodeConfig<
-  T extends NodeConfig,
-  withChildren extends boolean = true,
-  Remaining extends string = '/',
-> = 'states' extends keyof T
-  ? {
-      readonly [key in keyof T['states'] as `${Remaining}${key & string}`]: withChildren extends true
-        ? T['states'][key]
-        : Omit<T['states'][key], 'states'>;
-    } & (T['states'][keyof T['states']] extends infer S
-      ? S extends NodeConfigParallel | NodeConfigCompound
-        ? FlatMapNodeConfig<
-            S,
-            withChildren,
-            `${Remaining}${types.AllowedNames<types.NotUndefined<T['states']>, { states: NodesConfig }> & string}/`
-          >
-        : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-          {}
-      : never)
-  : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    {};
+
+export type ExcludeS<
+  S extends string,
+  T extends string,
+  D extends string = '/',
+> = S extends `${infer P}${T}${D}${infer R}`
+  ? `${P extends `${infer P}${D}` ? ExcludeS<P, T> : ExcludeS<P, T>}/${ExcludeS<R, T>}`
+  : S;
+
+// #region Flat
 
 export type FlatMapN<
   T extends NodeConfig = NodeConfig,
-  withChildren extends boolean = true,
-> = types.UnionToIntersection2<FlatMapNodeConfig<T, withChildren>> & {
-  readonly '/': T;
-};
+  wc extends boolean = true,
+> =
+  types.SubType<
+    Decompose3<T, { parent: wc; sep: '/' }>,
+    NodeConfig
+  > extends infer D
+    ? Readonly<
+        {
+          [key in keyof D as ExcludeS<
+            key & string,
+            'states',
+            '/'
+          >]: D[key];
+        } & {
+          '/': T;
+        }
+      >
+    : never;
 // #endregion
 
 export type Node<

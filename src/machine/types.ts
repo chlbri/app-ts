@@ -11,11 +11,11 @@ import type {
   ExtractDelaysFromActivity,
   ExtractGuardsFromActivity,
   FlatMapN,
+  NodeConfig,
   NodeConfigCompound,
   NodeConfigCompoundWithInitials,
   NodeConfigParallel,
   NodeConfigParallelWithInitials,
-  NodesConfig,
 } from '~states';
 import type {
   ExtractActionKeysFromTransitions,
@@ -81,12 +81,12 @@ export type Config = ConfigNode & {
  *
  * @see {@linkcode FlatMapN} for more details on the flat map structure.
  * @see {@linkcode NodesConfig} for the structure of nodes configuration.
- * @see {@linkcode types.SubType} for extracting subtypes from a type.
+ * @see {@linkcode types} for extracting subtypes from a type.
  */
-export type GetInititalsFromFlat<Flat extends FlatMapN = FlatMapN> =
+export type GetInititalsFromFlat<Flat> =
   types.SubType<
-    Flat,
-    { type?: 'compound'; states: NodesConfig }
+    Extract<Flat, types.Ru>,
+    NodeConfigCompound
   > extends infer Sub
     ? {
         [key in keyof Sub]: keyof ('states' extends keyof Sub[key]
@@ -101,7 +101,7 @@ export type GetInititalsFromFlat<Flat extends FlatMapN = FlatMapN> =
  * @returns A type representing the initials of the machine config.
  */
 export type InitialsFromConfig<C extends Config> = GetInititalsFromFlat<
-  FlatMapN<C>
+  types.SubType<Extract<FlatMapN<C>, types.Ru>, NodeConfigCompound>
 >;
 
 /**
@@ -168,7 +168,7 @@ type _GetKeyGuardsFromFlat<Flat extends FlatMapN> = {
  * @see {@linkcode TransitionsConfig} for the structure of transitions.
  * @see {@linkcode ExtractSrcFromTransitions} for extracting promise keys from transitions.
  */
-type _GetKeySrcFromFlat<Flat extends FlatMapN> = {
+type _GetKeySrcFromFlat<Flat> = {
   [key in keyof Flat]: ExtractSrcFromTransitions<
     Extract<Flat[key], TransitionsConfig>
   > extends infer V
@@ -184,7 +184,7 @@ type _GetKeySrcFromFlat<Flat extends FlatMapN> = {
  * @returns A type representing all event types from this flat map.
  *
  */
-type _GetEventKeysFromFlat<Flat extends FlatMapN> = {
+type _GetEventKeysFromFlat<Flat> = {
   [key in keyof Flat]: Flat[key] extends { on: infer V } ? keyof V : never;
 }[keyof Flat];
 
@@ -293,7 +293,7 @@ export type GetDelaysFromFlat<
  *
  * @see {@linkcode _GetEventKeysFromFlat} for extracting event keys from the flat map.
  */
-export type GetEventsFromFlat<Flat extends FlatMapN> = Record<
+export type GetEventsFromFlat<Flat> = Record<
   _GetEventKeysFromFlat<Flat>,
   types.PrimitiveObject
 >;
@@ -308,7 +308,7 @@ export type GetEventsFromFlat<Flat extends FlatMapN> = Record<
  * @see {@linkcode GetEventsFromFlat} for extracting events from the flat map.
  * @see {@linkcode ConfigFrom} for extracting the config from the config.
  */
-export type GetEventsFromConfig<C extends Config> = GetEventsFromFlat<
+export type GetEventsFromConfig<C extends NodeConfig> = GetEventsFromFlat<
   FlatMapN<C>
 >;
 

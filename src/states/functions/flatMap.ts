@@ -1,15 +1,15 @@
 import { DEFAULT_DELIMITER } from '~constants';
-import type { FlatMapN, NodeConfig } from '../types';
+import type { NodeConfig } from '../types';
 
 export type FlatMap_F<T extends NodeConfig = NodeConfig> = <
   const SN extends T,
-  Wc extends boolean = true,
+  const Wc extends boolean = true,
 >(
   config: SN,
   withChildren?: Wc,
   delimiter?: string,
   path?: string,
-) => FlatMapN<SN, Wc>;
+) => any;
 
 /**
  * Flattens a state node configuration into a map structure.
@@ -39,7 +39,7 @@ export const flatMap: FlatMap_F = (
     for (const key in states) {
       if (Object.prototype.hasOwnProperty.call(states, key)) {
         const element = states[key];
-        const inner = flatMap(
+        const inner = (flatMap as any)(
           element,
           withChildren,
           delimiter,

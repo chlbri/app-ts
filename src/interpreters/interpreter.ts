@@ -1753,12 +1753,13 @@ export class Interpreter<
    *
    * //
    *
-   * @see {@linkcode Machine.valueToConfig} for more details.
+   * @see {@linkcode Machine} for more details.
    *
    * //
    */
   protected proposedNextConfig = (target: string) => {
     const nextValue = this.#proposedNextSV(target);
+
     const out = this.#machine.valueToConfig(nextValue);
 
     return out;
@@ -1778,15 +1779,18 @@ export class Interpreter<
       return { sv: this.#value, diffEntries: [], diffExits: [] };
     }
 
-    const next = castings.commons.unknown<NodeConfig>(
-      this.proposedNextConfig(target),
+    const next = castings._unknown<NodeConfig>(
+      initialConfig(this.proposedNextConfig(target)),
     );
+
     const flatNext = flatMap(next, false);
 
     const entriesCurrent = Object.entries(this.#flat);
-    const keysNext = Object.keys(flatNext);
+    const keysNext = Object.keys(flatNext).filter(key => key !== '/');
 
-    const keys = entriesCurrent.map(([key]) => key);
+    const keys = entriesCurrent
+      .map(([key]) => key)
+      .filter(key => key !== '/');
     const diffEntries: ActionConfig[] = [];
     const diffExits: ActionConfig[] = [];
 
@@ -1797,7 +1801,7 @@ export class Interpreter<
       const check2 = !keys.includes(key);
 
       if (check2) {
-        const out2 = this.#machine.retrieveParentFromInitial(key);
+        const out2 = (flatNext as any)[key];
         diffEntries.push(...getEntries(out2));
       }
     });

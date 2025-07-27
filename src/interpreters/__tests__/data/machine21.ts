@@ -19,6 +19,7 @@ export const config21 = createConfig({
     },
     working: {
       type: 'parallel',
+      entry: 'inc',
       activities: {
         DELAY2: 'inc2',
       },

@@ -672,7 +672,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(6, 2));
+        test(...useIterator(7, 2));
         test(...useIteratorC(6, 3));
 
         describe(...useConsole(4, 'NEXT time, you will see!!'));
@@ -681,7 +681,7 @@ describe('Interpreter', () => {
       test(...useWaiter(6, 5));
 
       describe('#06 => Check the service', () => {
-        test(...useIterator(18, 1));
+        test(...useIterator(19, 1));
         test(...useIteratorC(12, 2));
         describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
       });
@@ -701,7 +701,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(18, 2));
+        test(...useIterator(19, 2));
         test(...useIteratorC(12, 3));
 
         describe(...useConsole(4));
@@ -722,7 +722,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(18, 2));
+        test(...useIterator(19, 2));
         test(...useIteratorC(12, 3));
 
         describe(...useConsole(4));
@@ -745,7 +745,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(42, 2));
+        test(...useIterator(43, 2));
         test(...useIteratorC(24, 3));
 
         describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
@@ -766,7 +766,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(42, 2));
+        test(...useIterator(43, 2));
         test(...useIteratorC(24, 3));
         test(...useInput('', 4));
         describe(...useConsole(5, ['WRITE with', ':', '""']));
@@ -787,7 +787,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(66, 2));
+        test(...useIterator(67, 2));
         test(...useIteratorC(36, 3));
         test(...useInput('', 4));
 
@@ -819,7 +819,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(66, 2));
+        test(...useIterator(67, 2));
         test(...useIteratorC(36, 3));
         test(...useInput('', 4));
         describe(...useConsole(5, ['WRITE with', ':', `"${INPUT}"`]));
@@ -840,7 +840,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(90, 2));
+        test(...useIterator(91, 2));
         test(...useIteratorC(48, 3));
         test(...useInput('', 4));
         describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
@@ -866,7 +866,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(90, 2));
+        test(...useIterator(91, 2));
         test(...useIteratorC(48, 3));
         test(...useInput(INPUT, 4));
         describe(...useConsole(5));
@@ -887,7 +887,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(102, 2));
+        test(...useIterator(103, 2));
         test(...useIteratorC(54, 3));
         test(...useInput(INPUT, 4));
         describe(...useData(5));
@@ -909,7 +909,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(102, 2));
+        test(...useIterator(103, 2));
         test(...useIteratorC(54, 3));
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));
@@ -931,7 +931,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(102, 2));
+        test(...useIterator(103, 2));
         test(...useIteratorC(54, 3));
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));
@@ -953,7 +953,7 @@ describe('Interpreter', () => {
           ),
         );
 
-        test(...useIterator(114, 2));
+        test(...useIterator(115, 2));
         test(...useIteratorC(60, 3));
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));

@@ -1,10 +1,11 @@
 import { castings } from '@bemedev/types';
+import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
-import { DELAY, fakeDB, machine2 } from '~fixturesData';
+import { DELAY, fakeDB, machine2, machine3 } from '~fixturesData';
 import { interpret } from '~interpreters';
 import { createMachine, getEntries } from '~machine';
 import type { StateValue } from '~states';
-import { nothing } from '~utils';
+import { nothing, typings } from '~utils';
 import {
   constructSend,
   constructValue,
@@ -1301,11 +1302,480 @@ describe('machine coverage', () => {
       });
     });
   });
+
+  describe('#07 => Cov => retrieveParentFromInitial', () => {
+    const { acceptation, success } = createTests(
+      machine2.retrieveParentFromInitial,
+    );
+
+    describe('#07.00 => Acceptation', acceptation);
+
+    describe(
+      '#07.01 => Success',
+      success(
+        {
+          invite: 'For /idle',
+          expected: {
+            activities: { DELAY: 'inc' },
+            on: { NEXT: '/working' },
+          },
+          parameters: '/idle',
+        },
+        {
+          invite: 'For /working',
+          expected: {
+            type: 'parallel',
+            activities: {
+              DELAY2: 'inc2',
+            },
+            on: {
+              FINISH: '/final',
+            },
+            states: {
+              fetch: {
+                states: {
+                  idle: {
+                    activities: {
+                      DELAY: 'sendPanelToUser',
+                    },
+                    on: {
+                      FETCH: {
+                        guards: 'isInputNotEmpty',
+                        target: '/working/fetch/fetch',
+                      },
+                    },
+                  },
+                  fetch: {
+                    promises: {
+                      src: 'fetch',
+                      then: {
+                        actions: {
+                          name: 'insertData',
+                          description: 'Database insert',
+                        },
+                        target: '/working/fetch/idle',
+                      },
+                      catch: '/working/fetch/idle',
+                    },
+                  },
+                },
+                initial: 'idle',
+              },
+              ui: {
+                states: {
+                  idle: {
+                    on: {
+                      WRITE: {
+                        actions: 'write',
+                        target: '/working/ui/input',
+                      },
+                    },
+                  },
+                  input: {
+                    activities: {
+                      DELAY: {
+                        guards: 'isInputEmpty',
+                        actions: 'askUsertoInput',
+                      },
+                    },
+                    on: {
+                      WRITE: [
+                        {
+                          guards: 'isInputNotEmpty',
+                          actions: 'write',
+                          target: '/working/ui/idle',
+                        },
+                        '/working/ui/idle',
+                      ],
+                    },
+                  },
+                  final: {},
+                },
+                initial: 'idle',
+              },
+            },
+          },
+          parameters: '/working',
+        },
+        {
+          invite: 'For /working/fetch/idle',
+          expected: {
+            states: {
+              idle: {
+                activities: {
+                  DELAY: 'sendPanelToUser',
+                },
+                on: {
+                  FETCH: {
+                    guards: 'isInputNotEmpty',
+                    target: '/working/fetch/fetch',
+                  },
+                },
+              },
+              fetch: {
+                promises: {
+                  src: 'fetch',
+                  then: {
+                    actions: {
+                      name: 'insertData',
+                      description: 'Database insert',
+                    },
+                    target: '/working/fetch/idle',
+                  },
+                  catch: '/working/fetch/idle',
+                },
+              },
+            },
+            initial: 'idle',
+          },
+          parameters: '/working/fetch/idle',
+        },
+        {
+          invite: 'For /working/fetch/fetch',
+          expected: {
+            promises: {
+              src: 'fetch',
+              then: {
+                actions: {
+                  name: 'insertData',
+                  description: 'Database insert',
+                },
+                target: '/working/fetch/idle',
+              },
+              catch: '/working/fetch/idle',
+            },
+          },
+          parameters: '/working/fetch/fetch',
+        },
+        {
+          invite: 'For /working/ui/idle',
+          expected: {
+            states: {
+              idle: {
+                on: {
+                  WRITE: {
+                    actions: 'write',
+                    target: '/working/ui/input',
+                  },
+                },
+              },
+              input: {
+                activities: {
+                  DELAY: {
+                    guards: 'isInputEmpty',
+                    actions: 'askUsertoInput',
+                  },
+                },
+                on: {
+                  WRITE: [
+                    {
+                      guards: 'isInputNotEmpty',
+                      actions: 'write',
+                      target: '/working/ui/idle',
+                    },
+                    '/working/ui/idle',
+                  ],
+                },
+              },
+              final: {},
+            },
+            initial: 'idle',
+          },
+          parameters: '/working/ui/idle',
+        },
+        {
+          invite: 'For /working/ui/input',
+          expected: {
+            activities: {
+              DELAY: {
+                guards: 'isInputEmpty',
+                actions: 'askUsertoInput',
+              },
+            },
+            on: {
+              WRITE: [
+                {
+                  guards: 'isInputNotEmpty',
+                  actions: 'write',
+                  target: '/working/ui/idle',
+                },
+                '/working/ui/idle',
+              ],
+            },
+          },
+          parameters: '/working/ui/input',
+        },
+        {
+          invite: 'For /working/ui/final',
+          expected: {},
+          parameters: '/working/ui/final',
+        },
+      ),
+    );
+
+    describe('#07.02 => Cov => Nested parent', () => {
+      const { acceptation, success } = createTests(
+        machine3.retrieveParentFromInitial,
+      );
+
+      describe('#07.02.00 => Acceptation', acceptation);
+
+      describe(
+        '#07.02.01 => Success',
+        success(
+          {
+            invite: 'For /state1, the same',
+            expected: {
+              states: {
+                state11: {
+                  states: {
+                    state111: {},
+                  },
+                  initial: 'state111',
+                },
+                state12: {
+                  activities: {
+                    DELAY5: 'deal',
+                    DELAY17: 'deal17',
+                  },
+                },
+              },
+              initial: 'state11',
+            },
+            parameters: '/state1',
+          },
+          {
+            invite: 'For /state1/state11',
+            expected: {
+              states: {
+                state11: {
+                  states: {
+                    state111: {},
+                  },
+                  initial: 'state111',
+                },
+                state12: {
+                  activities: {
+                    DELAY5: 'deal',
+                    DELAY17: 'deal17',
+                  },
+                },
+              },
+              initial: 'state11',
+            },
+            parameters: '/state1/state11',
+          },
+          {
+            invite: 'For /state1/state12',
+            expected: {
+              activities: {
+                DELAY5: 'deal',
+                DELAY17: 'deal17',
+              },
+            },
+            parameters: '/state1/state12',
+          },
+          {
+            invite: 'For /state1/state11/state111',
+            expected: {
+              states: {
+                state11: {
+                  states: {
+                    state111: {},
+                  },
+                  initial: 'state111',
+                },
+                state12: {
+                  activities: {
+                    DELAY5: 'deal',
+                    DELAY17: 'deal17',
+                  },
+                },
+              },
+              initial: 'state11',
+            },
+            parameters: '/state1/state11/state111',
+          },
+        ),
+      );
+    });
+  });
+
+  describe('#08 => From paralle to atomic or compound', () => {
+    // #region Config
+    const machine = createMachine(
+      {
+        states: {
+          idle: {
+            on: {
+              NEXT: '/parallel',
+            },
+            exit: 'inc',
+            entry: 'inc',
+          },
+          compound: {
+            exit: 'inc',
+            entry: 'inc',
+            states: {
+              idle: {
+                exit: 'inc',
+                entry: 'inc',
+                on: {
+                  NEXT: '/compound/step1',
+                },
+              },
+              step1: {
+                exit: 'inc',
+                entry: 'inc',
+                on: {
+                  PREVIOUS: '/compound/idle',
+                  NEXT: '/compound/step2',
+                },
+              },
+              step2: {
+                exit: 'inc',
+                entry: 'inc',
+                on: {
+                  NEXT: '/parallel',
+                },
+              },
+            },
+          },
+          parallel: {
+            type: 'parallel',
+            exit: 'inc',
+            entry: 'inc',
+            states: {
+              atomic: {
+                exit: 'inc',
+                entry: 'inc',
+                on: {
+                  PREVIOUS: '/idle',
+                },
+                states: {
+                  idle: {
+                    exit: 'inc',
+                    entry: 'inc',
+                    on: {
+                      NEXT: '/parallel/atomic/next',
+                    },
+                  },
+                  next: {
+                    exit: 'inc',
+                    entry: 'inc',
+                    on: {
+                      PREVIOUS2: '/parallel/atomic/idle',
+                    },
+                  },
+                },
+              },
+              compound: {
+                exit: 'inc',
+                entry: 'inc',
+                on: {
+                  PREVIOUS: '/compound',
+                },
+                states: {
+                  idle: {
+                    exit: 'inc',
+                    entry: 'inc',
+                    on: {
+                      NEXT: '/parallel/compound/next',
+                    },
+                  },
+                  next: {
+                    exit: 'inc',
+                    entry: 'inc',
+                    on: {
+                      PREVIOUS2: '/parallel/compound/idle',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      typings({
+        eventsMap: {
+          NEXT: 'primitive',
+          PREVIOUS: 'primitive',
+          PREVIOUS2: 'primitive',
+        },
+        context: 'number',
+      }),
+      {
+        '/': 'idle',
+        '/compound': 'idle',
+        '/parallel/atomic': 'idle',
+        '/parallel/compound': 'idle',
+      },
+    ).provideOptions(({ assign }) => ({
+      actions: {
+        inc: assign('context', ({ context }) => context + 1),
+      },
+    }));
+
+    const service = interpret(machine, {
+      context: 0,
+    });
+
+    // #region Hooks
+    const useValue = (value: StateValue, index: number) => {
+      const invite = `#${index < 10 ? '0' + index : index} => value is right`;
+      return castings.arrays.tupleOf(invite, async () => {
+        expect(service.value).toEqual(value);
+      });
+    };
+
+    const useIterator = (num: number, index: number) => {
+      const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
+      return castings.arrays.tupleOf(invite, async () => {
+        expect(service.context).toBe(num);
+      });
+    };
+
+    type SE = Parameters<typeof service.send>[0];
+
+    const useSend = (event: SE, index: number) => {
+      const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
+
+      return castings.arrays.tupleOf(invite, () => service.send(event));
+    };
+    // #endregion
+    // #endregion
+
+    describe('TESTS', () => {
+      test('#00 => start', service.start);
+
+      test(...useValue('idle', 1));
+
+      test(...useSend('NEXT', 2));
+
+      test(
+        ...useValue(
+          {
+            parallel: {
+              atomic: 'idle',
+              compound: 'idle',
+            },
+          },
+          3,
+        ),
+      );
+
+      test(...useIterator(8, 4));
+    });
+  });
 });
 
 test('#my', () => {
   const array = [1, 2, 3, 4, 5];
   const readOnlyArray = ['ert', 'ert2', 'ert3'] as const;
+  const parent = machine3.retrieveParentFromInitial(
+    '/state1/state11/state111',
+  );
+  console.warn('parent', JSON.stringify(parent, null, 2));
 
   expect(Array.isArray(array)).toBe(true);
   expect(Array.isArray(readOnlyArray)).toBe(true);
