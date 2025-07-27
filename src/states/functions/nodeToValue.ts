@@ -25,13 +25,12 @@ export const nodeToValue: NodeToValue_F = body => {
   const check2 = isCompound(body);
 
   if (check2) {
-    const length = entries.length;
+    // const length = entries.length;
     const __id = body.initial;
     const initial = body.states[__id];
 
-    const check3 = length === 1;
     const check4 = !!initial && isAtomic(initial);
-    const check5 = check3 && check4;
+    const check5 = check4;
 
     if (check5) return __id;
     const keys = Object.keys(body.states);

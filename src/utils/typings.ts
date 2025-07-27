@@ -94,7 +94,7 @@ const transformPrimitiveObject = (obj: any): any => {
     const entries = Object.entries(_obj).filter(
       ([key]) => key !== PARTIAL,
     );
-    if (entries.length === 0) return out;
+
     entries.forEach(([key, value]) => {
       out[key] = transformPrimitiveObject(value as any);
     });
