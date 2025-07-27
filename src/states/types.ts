@@ -127,6 +127,7 @@ export interface StateValueMap {
 }
 
 // #region Flat
+
 type FlatMapNodeConfig<
   T extends NodeConfig,
   withChildren extends boolean = true,
@@ -136,16 +137,18 @@ type FlatMapNodeConfig<
       readonly [key in keyof T['states'] as `${Remaining}${key & string}`]: withChildren extends true
         ? T['states'][key]
         : Omit<T['states'][key], 'states'>;
-    } & (T['states'][keyof T['states']] extends infer S
-      ? S extends NodeConfigParallel | NodeConfigCompound
+    } & {
+      [key in keyof T['states']]: T['states'][key] extends infer S extends
+        | NodeConfigParallel
+        | NodeConfigCompound
         ? FlatMapNodeConfig<
             S,
             withChildren,
-            `${Remaining}${types.AllowedNames<types.NotUndefined<T['states']>, { states: NodesConfig }> & string}/`
+            `${Remaining}${key & string}/`
           >
         : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-          {}
-      : never)
+          {};
+    }[keyof T['states']]
   : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     {};
 

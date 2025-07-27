@@ -1797,7 +1797,7 @@ export class Interpreter<
       const check2 = !keys.includes(key);
 
       if (check2) {
-        const out2 = this.#machine.retrieveParentFromInitial(key);
+        const out2 = (flatNext as any)[key];
         diffEntries.push(...getEntries(out2));
       }
     });

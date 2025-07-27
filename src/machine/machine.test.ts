@@ -1,4 +1,5 @@
 import { castings } from '@bemedev/types';
+import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
 import { DELAY, fakeDB, machine2 } from '~fixturesData';
 import { interpret } from '~interpreters';
@@ -87,7 +88,7 @@ describe('machine coverage', () => {
       const useState = (state: StateValue, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Current state is "${state}"`;
         return castings.arrays.tupleOf(invite, () => {
-          expect(service.value).toStrictEqual(state);
+          expect(service.state.value).toStrictEqual(state);
         });
       };
 
@@ -1208,6 +1209,7 @@ describe('machine coverage', () => {
         states: {
           idle: { on: { NEXT: '/state1' } },
           state1: {
+            activities: { DELAY: 'inc' },
             states: {
               state11: {
                 states: {
@@ -1216,6 +1218,7 @@ describe('machine coverage', () => {
                       state1111: {},
                     },
                   },
+                  state112: {},
                 },
               },
             },
@@ -1258,6 +1261,89 @@ describe('machine coverage', () => {
         3,
       ),
     );
+
+    describe('#04 => Cover machine.retrieveParentFromInitial', () => {
+      const { acceptation, success } = createTests(
+        machine.retrieveParentFromInitial,
+      );
+
+      describe('#00 => Acceptation', acceptation);
+
+      const state1 = {
+        activities: {
+          DELAY: 'inc',
+        },
+        states: {
+          state11: {
+            states: {
+              state111: {
+                states: {
+                  state1111: {},
+                },
+                initial: 'state1111',
+              },
+              state112: {},
+            },
+            initial: 'state111',
+          },
+        },
+        initial: 'state11',
+      };
+
+      describe(
+        '#01 => Success',
+        success(
+          {
+            invite: 'For /idle',
+            expected: {
+              on: { NEXT: '/state1' },
+            },
+            parameters: '/idle',
+          },
+          {
+            invite: 'For /state1',
+            expected: state1,
+            parameters: '/state1',
+          },
+          {
+            invite: 'For /state1/state11',
+            expected: state1,
+            parameters: '/state1/state11',
+          },
+          {
+            invite: 'For /state1/state11/state111',
+            expected: state1,
+            parameters: '/state1/state11/state111',
+          },
+          {
+            invite: 'For /state1/state11/state111/state1111',
+            expected: state1,
+            parameters: '/state1/state11/state111/state1111',
+          },
+          {
+            invite: 'For /state1/state11/state112',
+            expected: {},
+            parameters: '/state1/state11/state112',
+          },
+          {
+            invite: 'For /not exits',
+            expected: undefined,
+            parameters: '/not exists',
+          },
+        ),
+      );
+
+      test('Debug', () => {
+        console.warn(
+          'value',
+          JSON.stringify(
+            machine.retrieveParentFromInitial('/state1/state11/state111'),
+            null,
+            2,
+          ),
+        );
+      });
+    });
   });
 
   test('#05 => getEntries - coverage', () => {

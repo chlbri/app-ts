@@ -1156,16 +1156,17 @@ const getIO: GetIO_F = (key, node) => {
   if (!node) return [];
   const out = toArray.typed(node?.[key]);
 
-  if (isAtomic(node)) {
-    return out;
-  }
+  if (isAtomic(node)) return out;
+  const states = node.states;
 
   if (isCompound(node)) {
-    const initial = node.states[node.initial];
+    const initial = states[node.initial];
 
     out.push(...getIO(key, initial));
   } else {
-    const values = Object.values(node.states);
+    if (!states) return out;
+    //TODO: Create a real machine to test this part
+    const values = Object.values(states);
 
     values.forEach(node1 => {
       out.push(...getIO(key, node1));
