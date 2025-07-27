@@ -8,7 +8,7 @@ import type {
   Transition,
   TransitionConfigMapA,
 } from '~transitions';
-import type { FnMap, FnR, SingleOrArrayL } from '~types';
+import type { FnMap, FnR, PrimitiveObject, SingleOrArrayL } from '~types';
 
 /**
  * A function type that represents a promise function with map.
@@ -16,7 +16,7 @@ import type { FnMap, FnR, SingleOrArrayL } from '~types';
  * @template : {@linkcode EventsMap} [E] - The events map.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map.
  * @template Pc - The context type, defaults to `any`.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The primitive object type, defaults to `types.PrimitiveObject`.
+ * @template : {@linkcode PrimitiveObject} [Tc] - The primitive object type, defaults to `PrimitiveObject`.
  *
  * @see {@linkcode FnMap} for more details.
  * @see {@linkcode Promise} for a reduced version of this type.
@@ -25,8 +25,8 @@ import type { FnMap, FnR, SingleOrArrayL } from '~types';
 export type PromiseFunction<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = FnMap<E, P, Pc, Tc, Promise<any>>;
 
 /**
@@ -35,7 +35,7 @@ export type PromiseFunction<
  * @template : {@linkcode EventsMap} [E] - The events map.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map.
  * @template Pc - The context type, defaults to `any`.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The primitive object type, defaults to `types.PrimitiveObject`.
+ * @template : {@linkcode PrimitiveObject} [Tc] - The primitive object type, defaults to `PrimitiveObject`.
  *
  * @see {@linkcode FnR} for more details.
  * @see {@linkcode Promise}
@@ -43,8 +43,8 @@ export type PromiseFunction<
 export type PromiseFunction2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = FnR<E, P, Pc, Tc, Promise<any>>;
 
 /**
@@ -171,7 +171,7 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
  * @template : {@linkcode EventsMap} [E] - The events map.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map.
  * @template Pc - The context type, defaults to `any`.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The primitive object type
+ * @template : {@linkcode PrimitiveObject} [Tc] - The primitive object type
  *
  * @see {@linkcode PromiseFunction2} for the type of the source function.
  * @see {@linkcode Transition} for the type of transitions.
@@ -179,8 +179,8 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
 export type Promisee<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   src: PromiseFunction2<E, P, Pc, Tc>;
   description?: string;
@@ -195,7 +195,7 @@ export type Promisee<
  * @template E - The events map, defaults to {@linkcode EventsMap}.
  * @template P - The promisees map, defaults to {@linkcode PromiseeMap}.
  * @template Pc - The context type, defaults to `any`.
- * @template : {@linkcode types.PrimitiveObject} Tc - The primitive object type, defaults to `types.PrimitiveObject`.
+ * @template : {@linkcode PrimitiveObject} Tc - The primitive object type, defaults to `PrimitiveObject`.
  *
  * @see {@linkcode ToEvents} for converting events and promisees to a unified event type.
  * @see {@linkcode ActionResult} for the type of action results.

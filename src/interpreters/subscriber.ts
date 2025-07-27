@@ -1,9 +1,9 @@
 import type { TimerState } from '@bemedev/interval2';
-import type { types } from '@bemedev/types';
 import { castings } from '@bemedev/types';
 import equal from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
 import type { EventsMap, PromiseeMap, ToEvents } from '~events';
+import type { PrimitiveObject } from '~types';
 import { nothing, toEventsMap } from '~utils';
 import { isFunction } from '../types/primitives';
 import type { FnSubReduced, State } from './interpreter.types';
@@ -14,14 +14,14 @@ import type { FnSubReduced, State } from './interpreter.types';
  *
  * @template : {@linkcode EventsMap} [E] - Type of the events map
  * @template : {@linkcode PromiseeMap} [P] - Type of the promisees map
- * @template : {@linkcode types.PrimitiveObject} [Tc] - Type of the context
+ * @template : {@linkcode PrimitiveObject} [Tc] - Type of the context
  * @template : [R] - Type of the return value
  *
  */
 class SubscriberClass<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > {
   #subscriber: FnSubReduced<E, P, Tc, void>;
 
@@ -149,7 +149,7 @@ class SubscriberClass<
 export type { SubscriberClass };
 
 export type SubscriberOptions<
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   id?: string;
   equals?: (a: State<Tc>, b: State<Tc>) => boolean;
@@ -158,7 +158,7 @@ export type SubscriberOptions<
 type CreateSubscriber_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   eventsMap: E,
   promiseesMap: P,

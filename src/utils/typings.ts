@@ -38,7 +38,7 @@ export type PartialCustom = {
 };
 
 type PrimitiveObjectMap = {
-  [key: types.Keys]: types.SoRa<_PrimitiveObject>;
+  [key: types.Keys]: types.SingleOrArray<_PrimitiveObject>;
 };
 type _PrimitiveObject =
   | Types
@@ -70,7 +70,7 @@ export type TransformPrimitiveObject<T> = T extends Types
     : T extends PartialCustom
       ? Partial<TransformPrimitiveObject<types.NOmit<T, typeof PARTIAL>>>
       : T extends types.AnyArray<any>
-        ? T[number] extends infer TKN extends types.PrimitiveObject
+        ? T[number] extends infer TKN extends PrimitiveObject
           ? TransformPrimitiveObject<TKN>[]
           : never
         : {

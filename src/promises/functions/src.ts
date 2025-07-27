@@ -1,14 +1,14 @@
-import type { types } from '@bemedev/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { SimpleMachineOptions } from '~machines';
+import type { PrimitiveObject } from '~types';
 import { reduceFnMap } from '~utils';
 import type { PromiseFunction2 } from '../types';
 
 export type ToPromiseSrc_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  TC extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  TC extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
   promisees: P,

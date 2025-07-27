@@ -6,14 +6,15 @@ import type { EventsMap, PromiseeMap } from '~events';
 import type { SimpleMachineOptions } from '~machines';
 import { toPromise } from '~promises';
 import { toTransition } from '~transitions';
+import { type PrimitiveObject } from '~types';
 import type { Node, NodeConfigWithInitials } from '../types';
 import { stateType } from './stateType';
 
 export type ResolveNode_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
   promisees: P,

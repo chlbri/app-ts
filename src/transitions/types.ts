@@ -12,6 +12,7 @@ import type {
 } from '~promises';
 import type {
   Identitfy,
+  PrimitiveObject,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
@@ -298,7 +299,7 @@ export type ExtractSrcFromTransitions<T extends TransitionsConfig> =
  * @template : {@linkcode EventsMap} [E] - The events map used in the transition.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the transition.
  * @template : [Pc] - The private context type for the transition.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The context for the transition.
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context for the transition.
  *
  * @see {@linkcode Action} for the structure of actions in the transition.
  * @see {@linkcode Predicate} for the structure of guards in the transition.
@@ -306,8 +307,8 @@ export type ExtractSrcFromTransitions<T extends TransitionsConfig> =
 export type Transition<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   readonly target: string[];
   readonly actions: Action<E, P, Pc, Tc>[];
@@ -322,7 +323,7 @@ export type Transition<
  * @template : {@linkcode EventsMap} [E] - The events map used in the transitions.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the transitions.
  * @template : [Pc] - The private context type for the transitions.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The context for the transitions
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context for the transitions
  *
  * @see {@linkcode Transition} for the structure of a single transition.
  * @see {@linkcode Promisee} for the structure of promises in the transitions.
@@ -331,8 +332,8 @@ export type Transition<
 export type Transitions<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   on: Identitfy<Transition<E, P, Pc, Tc>>[];
   always: Transition<E, P, Pc, Tc>[];

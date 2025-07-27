@@ -6,6 +6,7 @@ import type { Decompose3 } from '~machines';
 import type { Transitions, TransitionsConfig } from '~transitions';
 import type {
   Identitfy,
+  PrimitiveObject,
   ReduceArray,
   SingleOrArrayL,
   SingleOrArrayR,
@@ -146,33 +147,36 @@ export type ExcludeS<
 
 // #region Flat
 
+export type _FlatMapN<
+  T extends NodeConfig = NodeConfig,
+  wc extends boolean = true,
+> = T extends types.Ru
+  ? types.SubType<
+      Decompose3<T, { parent: wc; sep: '/' }>,
+      NodeConfig
+    > extends infer D
+    ? Readonly<{
+        [key in keyof D as ExcludeS<key & string, 'states', '/'>]: D[key];
+      }>
+    : never
+  : never;
+
 export type FlatMapN<
   T extends NodeConfig = NodeConfig,
   wc extends boolean = true,
 > =
-  types.SubType<
-    Decompose3<T, { parent: wc; sep: '/' }>,
-    NodeConfig
-  > extends infer D
-    ? Readonly<
-        {
-          [key in keyof D as ExcludeS<
-            key & string,
-            'states',
-            '/'
-          >]: D[key];
-        } & {
-          '/': T;
-        }
-      >
-    : never;
+  _FlatMapN<T, wc> extends never
+    ? never
+    : _FlatMapN<T, wc> & {
+        '/': T;
+      };
 // #endregion
 
 export type Node<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   id?: string;
   description?: string;

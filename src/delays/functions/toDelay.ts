@@ -1,14 +1,13 @@
-import type { types } from '@bemedev/types';
 import type { EventsMap, PromiseeMap } from '~events';
-import type { FnR } from '~types';
+import type { FnR, PrimitiveObject } from '~types';
 import { reduceFnMap } from '~utils';
 import type { DelayMap } from '../types';
 
 export type ToDelay_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
   promisees: P,
@@ -27,7 +26,7 @@ export type ToDelay_F = <
  * @param delays of type {@linkcode DelayMap}, the map of delays containing functions to execute.
  * @returns a function that returns the delay in milliseconds or undefined if not found.
  *
- * @see {@linkcode types.PrimitiveObject}
+ * @see {@linkcode PrimitiveObject}
  * @see {@linkcode reduceFnMap}
  */
 export const toDelay: ToDelay_F = (events, promisees, delay, delays) => {

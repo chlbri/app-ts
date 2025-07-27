@@ -1,5 +1,10 @@
 import type { types } from '@bemedev/types';
-import type { ChangeProperties, KeyStrings, ValuesOf } from '~types';
+import type {
+  ChangeProperties,
+  KeyStrings,
+  PrimitiveObject,
+  ValuesOf,
+} from '~types';
 
 export type ExtractLargeKeys<T> = string extends T
   ? never
@@ -61,17 +66,17 @@ const complexObject2 = {
   f: new TC(),
 };
 
-expectTypeOf(ttString).toExtend<types.PrimitiveObject>();
-expectTypeOf(ttNumber).toExtend<types.PrimitiveObject>();
-expectTypeOf(ttBoolean).toExtend<types.PrimitiveObject>();
-expectTypeOf(ttArra1).not.toExtend<types.PrimitiveObject>();
-expectTypeOf(ttArray2).not.toExtend<types.PrimitiveObject>();
-expectTypeOf(ttObject).toExtend<types.PrimitiveObject>();
-expectTypeOf(ttFunction).not.toExtend<types.PrimitiveObject>();
-expectTypeOf(ttArrowFunction).not.toExtend<types.PrimitiveObject>();
-expectTypeOf(ttClass).not.toExtend<types.PrimitiveObject>();
-expectTypeOf(complexObject1).toExtend<types.PrimitiveObject>();
-expectTypeOf(complexObject2).not.toExtend<types.PrimitiveObject>();
+expectTypeOf(ttString).toExtend<PrimitiveObject>();
+expectTypeOf(ttNumber).toExtend<PrimitiveObject>();
+expectTypeOf(ttBoolean).toExtend<PrimitiveObject>();
+expectTypeOf(ttArra1).toExtend<PrimitiveObject>();
+expectTypeOf(ttArray2).toExtend<PrimitiveObject>();
+expectTypeOf(ttObject).toExtend<PrimitiveObject>();
+expectTypeOf(ttFunction).not.toExtend<PrimitiveObject>();
+expectTypeOf(ttArrowFunction).not.toExtend<PrimitiveObject>();
+expectTypeOf(ttClass).not.toExtend<PrimitiveObject>();
+expectTypeOf(complexObject1).toExtend<PrimitiveObject>();
+expectTypeOf(complexObject2).not.toExtend<PrimitiveObject>();
 
 type _TT1 = {
   arg1: {
@@ -145,7 +150,7 @@ expectTypeOf({
 expectTypeOf<{
   user: string;
   password: string;
-}>().toExtend<types.PrimitiveObject>();
+}>().toExtend<PrimitiveObject>();
 
-expectTypeOf<TT11>().toExtend<types.PrimitiveObject>();
-expectTypeOf<TT13>().toExtend<types.PrimitiveObject>();
+expectTypeOf<TT11>().toExtend<PrimitiveObject>();
+expectTypeOf<TT13>().toExtend<PrimitiveObject>();

@@ -1,11 +1,10 @@
-import type { types } from '@bemedev/types';
 import { deepmerge } from 'deepmerge-ts';
 import type { Contexts } from '~interpreters';
-import type { Describer, Describer2 } from '~types';
+import type { Describer, Describer2, PrimitiveObject } from '~types';
 
 export const reduceRemainings = <
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   ...remains: (() => {
     result: Contexts<Pc, Tc>;

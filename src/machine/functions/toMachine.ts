@@ -1,13 +1,12 @@
-import type { types } from '@bemedev/types';
 import type { ActionConfig } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
-import { isDescriber } from '~types';
+import { isDescriber, type PrimitiveObject } from '~types';
 import type { ChildS, MachineMap } from '../types';
 
 export type ToMachine_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   machine: ActionConfig,
   machines?: MachineMap<E, P, Tc>,
@@ -24,7 +23,7 @@ export type ToMachine_F = <
  *
  * @see {@linkcode ChildS} for the structure of the machine object.
  * @see {@linkcode isDescriber} to check if the machine is a describer
- * @see {@linkcode types.PrimitiveObject} for the type of the context
+ * @see {@linkcode PrimitiveObject} for the type of the context
  * @see {@linkcode EventsMap} for the events map
  * @see {@linkcode PromiseeMap} for the promisees map
  */

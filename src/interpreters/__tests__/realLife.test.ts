@@ -2,7 +2,6 @@ import { castings } from '@bemedev/types';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
 import type { StateValue } from '~states';
-import type { SingleOrArrayL } from '~types';
 import { typings } from '~utils';
 
 type State = 'registration' | 'registered' | 'idle';
@@ -71,7 +70,7 @@ export const mainMachine = createMachine(
     context: typings.partial({
       lang: typings.custom<Lang>(),
       fields: [typings.custom<Field>()],
-      responses: [typings.custom<SingleOrArrayL<string>>()],
+      responses: ['string'],
       states: typings.partial({
         fields: typings.custom<State>(),
         values: typings.custom<State>(),
@@ -171,7 +170,18 @@ export const mainMachine = createMachine(
 }));
 
 describe('Real Life Machine', () => {
-  const service = interpret(mainMachine);
+  const service = interpret(mainMachine, {
+    context: {
+      lang: 'en',
+      fields: [],
+      responses: [],
+      states: {
+        fields: 'idle',
+        values: 'idle',
+      },
+      values: {},
+    },
+  });
 
   // type SE = Parameters<typeof service.send>[0];
 

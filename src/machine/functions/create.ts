@@ -1,4 +1,3 @@
-import type { types } from '@bemedev/types';
 import { castings } from '@bemedev/types';
 import type { EventsMap, PromiseeMap } from '~events';
 import type {
@@ -8,8 +7,7 @@ import type {
   PrivateContextFrom,
   SubscriberType,
 } from '~machines';
-import type { KeyU } from '~types';
-
+import type { KeyU, PrimitiveObject } from '~types';
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
 
 /**
@@ -24,24 +22,19 @@ export type CreateConfig_F = <const T extends Config>(config: T) => T;
  */
 export const createConfig: CreateConfig_F = castings.commons.any;
 
-export type CreateChildS_F = <
-  T extends KeyU<'preConfig' | 'context' | 'pContext'>,
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
->(
-  machine: T,
+export type CreateChildS_F = (
+  machine: any,
   initials: {
-    pContext: PrivateContextFrom<T>;
-    context: ContextFrom<T>;
+    pContext: any;
+    context: any;
   },
-  ...subscribers: SubscriberType<E, P, Pc, T>[]
-) => ChildS<E, P, Pc, T>;
+  ...subscribers: any
+) => any;
 
 export type CreateChild_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
 > = <const T extends KeyU<'preConfig' | 'context' | 'pContext'>>(
   machine: T,
   initials: {

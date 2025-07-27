@@ -1,4 +1,5 @@
 import type { types } from '@bemedev/types';
+import type { PrimitiveObject } from '~types';
 
 import type { INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE } from './constants';
 
@@ -15,13 +16,13 @@ export type EventObject<T = any> = {
 /**
  * Represents a map of events where the keys are event names and the values are the payloads.
  *
- * @see {@linkcode types.PrimitiveObject} for the type of the payload.
+ * @see {@linkcode PrimitiveObject} for the type of the payload.
  */
-export type EventsMap = Record<string, types.PrimitiveObject>;
+export type EventsMap = Record<string, PrimitiveObject>;
 
 export type PromiseeDef = {
-  then: types.SoRa<types.PrimitiveObject>;
-  catch: types.SoRa<types.PrimitiveObject>;
+  then: types.SoRa<PrimitiveObject>;
+  catch: types.SoRa<PrimitiveObject>;
 };
 
 export type PromiseeMap = Record<string, PromiseeDef>;

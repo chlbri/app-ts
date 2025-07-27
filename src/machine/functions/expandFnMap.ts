@@ -1,7 +1,7 @@
 import type { types } from '@bemedev/types';
 import type { ActionResultFn } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
-import { type FnMap } from '~types';
+import { type FnMap, type PrimitiveObject } from '~types';
 import { reduceFnMap } from '~utils';
 import { assignByKey } from './subcriber';
 
@@ -127,7 +127,7 @@ export type Decompose3<
 
 export type ExpandFnMap = <
   Pc,
-  Tc = types.PrimitiveObject,
+  Tc = PrimitiveObject,
   D = Decompose3<
     {
       pContext: Pc;
@@ -146,15 +146,15 @@ export type ExpandFnMap = <
   fn: FnMap<
     E,
     P,
-    types.Cast<Pc, types.PrimitiveObject>,
-    types.Cast<Tc, types.PrimitiveObject>,
+    types.Cast<Pc, PrimitiveObject>,
+    types.Cast<Tc, PrimitiveObject>,
     R
   >,
 ) => ActionResultFn<
   E,
   P,
-  types.Cast<Pc, types.PrimitiveObject>,
-  types.Cast<Tc, types.PrimitiveObject>
+  types.Cast<Pc, PrimitiveObject>,
+  types.Cast<Tc, PrimitiveObject>
 >;
 /**
  *

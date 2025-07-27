@@ -99,7 +99,7 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '~transitions';
-import { isDescriber, type RecordS } from '~types';
+import { isDescriber, type PrimitiveObject, type RecordS } from '~types';
 import { IS_TEST, merge, reduceFnMap, replaceAll } from '~utils';
 import {
   type _Send_F,
@@ -137,7 +137,7 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
  *
  * @template : type {@linkcode Config} [C] - The configuration type of the machine.
  * @template : [Pc] - The private context type, which can be any type.
- * @template : type {@linkcode types.PrimitiveObject} [Tc] - The context type.
+ * @template : type {@linkcode PrimitiveObject} [Tc] - The context type.
  * @template : type {@linkcode EventsMap} [E] - The events map type, which maps event names to their types.
  * @template : type {@linkcode PromiseeMap} [P] - The promisees map type, which maps promise names to their types.
  * @template Mo : type {@linkcode SimpleMachineOptions2} - The machine options type, which includes various configurations for the machine. Default to {@linkcode MachineOptions}.
@@ -156,8 +156,8 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
  */
 export class Interpreter<
   const C extends Config = Config,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,

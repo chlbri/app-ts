@@ -4,14 +4,15 @@ import type { EventsMap, PromiseeMap } from '~events';
 import type { SimpleMachineOptions } from '~machines';
 import type { PromiseeConfig } from '~promises';
 import { toTransition } from '~transitions';
+import type { PrimitiveObject } from '~types';
 import type { Promisee } from '../types';
 import { toPromiseSrc } from './src';
 
 type ToPromise_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  TC extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc extends PrimitiveObject = PrimitiveObject,
+  TC extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
   promisees: P,
