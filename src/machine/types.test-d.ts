@@ -16,8 +16,8 @@ expectTypeOf<TT2>().toEqualTypeOf<
   'NEXT' | 'FINISH' | 'FETCH' | 'WRITE' | 'else'
 >;
 
-type GEFC1 = GetEventsFromMachine<typeof machine2>;
-expectTypeOf<GEFC1>().toMatchTypeOf<{
+type GEFC2 = GetEventsFromMachine<typeof machine2>;
+expectTypeOf<GEFC2>().toEqualTypeOf<{
   NEXT: types.PrimitiveObject;
   FINISH: types.PrimitiveObject;
   FETCH: types.PrimitiveObject;

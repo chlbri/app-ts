@@ -1,4 +1,5 @@
 import type { TimeoutPromise } from '@bemedev/basifun';
+import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { types } from '@bemedev/types';
 import type {
@@ -21,7 +22,6 @@ import type {
   AnyMachine,
   ChildS,
   ContextFrom,
-  Decompose2,
   PrivateContextFrom,
 } from '~machines';
 import type {
@@ -293,7 +293,7 @@ export type Subscribe_F<
 export type Selector_F<T = any> = T extends types.Primitive
   ? undefined
   : <
-      D extends Decompose2<T>,
+      D extends Decompose<T, { start: false }>,
       K extends Extract<keyof D, string>,
       R = D[K],
     >(

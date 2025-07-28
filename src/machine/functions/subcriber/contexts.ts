@@ -73,9 +73,8 @@ export interface GetByKey {
 }
 
 const _getByKey: GetByKey['low'] = (obj, key) => {
-  const func = decompose as unknown as types.Fn;
-  const decomposed = func(obj);
-  return decomposed[key];
+  const decomposed = decompose.low(obj, { start: false });
+  return (decomposed as any)[key];
 };
 
 /**

@@ -16,7 +16,7 @@ export type ActionConfig = string | Describer;
  *
  * @see {@linkcode FromDescriber} for more details.
  */
-export type FromActionConfig<T extends ActionConfig> = T extends Describer
+export type FromActionConfig<T> = T extends Describer
   ? FromDescriber<T>
   : T;
 

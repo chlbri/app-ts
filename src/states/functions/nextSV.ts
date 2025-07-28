@@ -68,7 +68,9 @@ export const nextSV: NextStateValue_F = (from, target) => {
   }
 
   const decomposed = castings.commons.any(
-    decompose(castings.objects.trueObject.forceCast(from)),
+    decompose(castings.objects.trueObject.forceCast(from), {
+      start: false,
+    }),
   );
 
   const last = target.lastIndexOf(DEFAULT_DELIMITER);
