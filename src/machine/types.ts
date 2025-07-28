@@ -386,9 +386,12 @@ export type Decompose2<T> = T extends types.Ru
 
 // #region typ SubscriberType
 type HeritageMap<U extends types.Ru, Tc extends types.Ru> =
-  Decompose<U> extends infer KU extends object
+  Decompose<U, { start: false }> extends infer KU extends object
     ? {
-        [key in keyof KU]?: Decompose<Tc> extends infer KT extends object
+        [key in keyof KU]?: Decompose<
+          Tc,
+          { start: false }
+        > extends infer KT extends object
           ? SingleOrArrayL<keyof types.SubType<KT, KU[key]>>
           : never;
       }
@@ -458,7 +461,7 @@ export type SubscriberType<
         : Pc extends infer Tc1 extends TrueObject
           ? {
               contexts: SingleOrArrayL<
-                keyof types.SubType<Decompose<Tc1>, CU>
+                types.AllowedNames<Decompose<Tc1, { start: false }>, CU>
               >;
             }
           : SubNev

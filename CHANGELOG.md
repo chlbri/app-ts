@@ -9,6 +9,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <br/>
 
 <details>
+<summary><h2> [0.8.3] - 2025/07/28 => 20:00 </h2></summary>
+
+- Improve FlatMapN typings
+- Upgrade deps
+- <u>Test coverage **_99%_**</u>
+
+</details>
+
+<br/>
+
+<details>
 <summary><h2> [0.8.2] - 2025/07/27 => 23:30 </h2></summary>
 
 - Fix FlatMapN typings
