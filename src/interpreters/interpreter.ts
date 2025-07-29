@@ -1652,7 +1652,7 @@ export class Interpreter<
 
     flat.forEach(([from, transitions], _, all) => {
       const canTake = all.every(
-        ([from2]) => from2 === from || !from2.startsWith(from),
+        ([from2]) => !from2.startsWith(`${from}${DEFAULT_DELIMITER}`),
       );
       if (canTake) flat2.push([from, transitions]);
     });
