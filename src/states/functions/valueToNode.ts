@@ -34,13 +34,13 @@ export type ValueToNode_F = <T extends StateValue>(
  */
 export const valueToNode: ValueToNode_F = (body, from) => {
   const flatBody = flatMap(body as NodeConfig, false);
-  const keysB = Object.keys(flatBody);
-  const check1 = isString(from);
-  if (check1) {
-    const check2 = keysB.includes(from);
+  const keysFlatBody = Object.keys(flatBody);
+  const fromIsString = isString(from);
+  if (fromIsString) {
+    const check2 = keysFlatBody.includes(from);
     if (check2) {
       const parents = getParents(from as any);
-      const children = getChildren(from, ...keysB);
+      const children = getChildren(from, ...keysFlatBody);
 
       const out1: any = {};
 
@@ -66,18 +66,21 @@ export const valueToNode: ValueToNode_F = (body, from) => {
 
   const out1: any = {};
 
-  flatFrom.forEach(key1 => {
-    const check4 = keysB.includes(key1);
+  flatFrom.forEach((key1, _, all) => {
+    const check4 = keysFlatBody.some(key => key.startsWith(key1));
 
     if (check4) {
-      const children = getChildren(key1, ...keysB).filter(key =>
-        flatFrom.includes(key),
-      );
-
       out1[key1] = (flatBody as any)[key1];
-      children.forEach(key2 => {
-        out1[key2] = (flatBody as any)[key2];
-      });
+
+      const initial = (flatBody as any)[key1].initial;
+      if (initial) {
+        const _initial = `${key1}${DEFAULT_DELIMITER}${initial}`;
+        const cannotContinue = all.some(key =>
+          key.startsWith(`${key1}${DEFAULT_DELIMITER}`),
+        );
+        if (cannotContinue) return;
+        out1[_initial] = (flatBody as any)[_initial];
+      }
     }
   });
 
