@@ -1638,6 +1638,8 @@ export class Interpreter<
     this.#setStatus('sending');
     let sv = this.#value;
     type FlatArray = [from: string, transitions: TransitionConfig[]][];
+
+    // #region //TODO: To factorize
     const entriesFlat = Object.entries(this.#flat);
     const flat: FlatArray = [];
     const flat2: FlatArray = [];
@@ -1666,9 +1668,11 @@ export class Interpreter<
       const split1 = from1.split(DEFAULT_DELIMITER).length;
       const split2 = from2.split(DEFAULT_DELIMITER).length;
 
+      //TODO: Covers this
       if (split1 !== split2) return split1 - split2;
       return from1.localeCompare(from2);
     });
+    // #endregion
 
     flat2.forEach(([from, transitions]) => {
       const cannotContinue = !this.#isInsideValue2(sv, from);
@@ -1681,7 +1685,6 @@ export class Interpreter<
       const diffTarget = target === false ? undefined : target;
       sv = nextSV(sv, diffTarget);
     });
-
 
     const next = switchV({
       condition: equal(this.#value, sv),
