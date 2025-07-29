@@ -1163,14 +1163,6 @@ const getIO: GetIO_F = (key, node) => {
     const initial = states[node.initial];
 
     out.push(...getIO(key, initial));
-  } else {
-    if (!states) return out;
-    //TODO: Create a real machine to test this part
-    const values = Object.values(states);
-
-    values.forEach(node1 => {
-      out.push(...getIO(key, node1));
-    });
   }
 
   return out;

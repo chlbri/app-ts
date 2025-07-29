@@ -1637,8 +1637,10 @@ export class Interpreter<
     this.#changeEvent(event);
     this.#setStatus('sending');
     let sv = this.#value;
+    type FlatArray = [from: string, transitions: TransitionConfig[]][];
     const entriesFlat = Object.entries(this.#flat);
-    const flat: [from: string, transitions: TransitionConfig[]][] = [];
+    const flat: FlatArray = [];
+    const flat2: FlatArray = [];
 
     const type = event.type;
     entriesFlat.forEach(([from, node]) => {
@@ -1650,15 +1652,36 @@ export class Interpreter<
       }
     });
 
-    flat.forEach(([, transitions]) => {
+    flat.forEach(([from, transitions], _, all) => {
+      const canTake = all.every(
+        ([from2]) => from2 === from || !from2.startsWith(from),
+      );
+      if (canTake) flat2.push([from, transitions]);
+    });
+
+    flat2.sort((a, b) => {
+      const from1 = a[0];
+      const from2 = b[0];
+
+      const split1 = from1.split(DEFAULT_DELIMITER).length;
+      const split2 = from2.split(DEFAULT_DELIMITER).length;
+
+      if (split1 !== split2) return split1 - split2;
+      return from1.localeCompare(from2);
+    });
+
+    flat2.forEach(([from, transitions]) => {
+      const cannotContinue = !this.#isInsideValue2(sv, from);
+      if (cannotContinue) return;
+
       const target = this.#performTransitions(
         ...toArray.typed(transitions),
       );
 
       const diffTarget = target === false ? undefined : target;
-
       sv = nextSV(sv, diffTarget);
     });
+
 
     const next = switchV({
       condition: equal(this.#value, sv),
@@ -1779,7 +1802,9 @@ export class Interpreter<
     }
 
     const next = castings.commons.unknown<NodeConfig>(
-      this.proposedNextConfig(target),
+      initialConfig(
+        castings.commons.unknown(this.proposedNextConfig(target)),
+      ),
     );
     const flatNext = flatMap(next, false);
 
@@ -1798,7 +1823,8 @@ export class Interpreter<
 
       if (check2) {
         const out2 = (flatNext as any)[key];
-        diffEntries.push(...getEntries(out2));
+        const _entries = getEntries(out2);
+        diffEntries.push(..._entries);
       }
     });
     // #endregion
@@ -1810,7 +1836,8 @@ export class Interpreter<
       const check2 = !keysNext.includes(key);
 
       if (check2) {
-        diffExits.push(...getExits(node));
+        const _exits = getExits(node);
+        diffExits.push(..._exits);
       }
     });
     // #endregion
@@ -1824,7 +1851,11 @@ export class Interpreter<
    * @returns true if the value is inside the current state value, false otherwise.
    */
   #isInsideValue = (value: string) => {
-    const values = decomposeSV(this.#value);
+    return this.#isInsideValue2(this.#value, value);
+  };
+
+  #isInsideValue2 = (sv: StateValue, value: string) => {
+    const values = decomposeSV(sv);
     const entry = value.substring(1);
     const state = replaceAll({
       entry,

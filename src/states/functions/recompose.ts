@@ -25,15 +25,13 @@ const recomposeObjectUrl: Url_F = (shape, value) => {
 
   const keys = shape.split(DEFAULT_DELIMITER).filter(str => str !== '');
 
-  if (keys.length <= 1) {
+  obj.states = {};
+  if (keys.length === 1) {
     const key = keys.shift()!;
-    obj.states = {};
     obj.states[key] = value;
   } else {
     const key = keys.shift()!;
     const _value = recomposeObjectUrl(keys.join(DEFAULT_DELIMITER), value);
-
-    obj.states = {};
 
     obj.states[key] = _value;
   }

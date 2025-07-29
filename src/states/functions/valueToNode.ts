@@ -42,13 +42,14 @@ export const valueToNode: ValueToNode_F = (body, from) => {
       const parents = getParents(from as any);
       const children = getChildren(from, ...keysB);
 
-      const out1: any = {
-        '/': flatBody['/'],
-      };
+      const out1: any = {};
 
-      parents.concat(children).forEach(key => {
-        out1[key] = (flatBody as any)[key];
-      });
+      parents
+        .concat(children)
+        .filter(k => k !== '/')
+        .forEach(key => {
+          out1[key] = (flatBody as any)[key];
+        });
 
       const out: any = recomposeConfig(out1);
       return out;
