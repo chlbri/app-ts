@@ -48,12 +48,7 @@ import {
   type ToEventsR,
 } from '~events';
 import { toPredicate, type GuardConfig } from '~guards';
-import {
-  DEFAULT_MACHINE,
-  getEntries,
-  getExits,
-  type Machine,
-} from '~machine';
+import { getEntries, getExits, type Machine } from '~machine';
 import {
   assignByKey,
   ChildS,
@@ -100,7 +95,13 @@ import type {
   TransitionConfig,
 } from '~transitions';
 import { isDescriber, type RecordS } from '~types';
-import { IS_TEST, merge, reduceFnMap, replaceAll } from '~utils';
+import {
+  IS_TEST,
+  isStringEmpty,
+  merge,
+  reduceFnMap,
+  replaceAll,
+} from '~utils';
 import {
   type _Send_F,
   type AddSubscriber_F,
@@ -137,7 +138,7 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
  *
  * @template : type {@linkcode Config} [C] - The configuration type of the machine.
  * @template : [Pc] - The private context type, which can be any type.
- * @template : type {@linkcode types.PrimitiveObject} [Tc] - The context type.
+ * @template : type {@linkcode types} [Tc] - The context type.
  * @template : type {@linkcode EventsMap} [E] - The events map type, which maps event names to their types.
  * @template : type {@linkcode PromiseeMap} [P] - The promisees map type, which maps promise names to their types.
  * @template Mo : type {@linkcode SimpleMachineOptions2} - The machine options type, which includes various configurations for the machine. Default to {@linkcode MachineOptions}.
@@ -1633,12 +1634,11 @@ export class Interpreter<
 
   // #region Next
 
-  protected _send: _Send_F<E, P> = event => {
-    this.#changeEvent(event);
-    this.#setStatus('sending');
-    let sv = this.#value;
+  #extractTransitions = (event: ToEventsR<E, P>) => {
+    type FlatArray = [from: string, transitions: TransitionConfig[]][];
     const entriesFlat = Object.entries(this.#flat);
-    const flat: [from: string, transitions: TransitionConfig[]][] = [];
+    const flat: FlatArray = [];
+    const flat2: FlatArray = [];
 
     const type = event.type;
     entriesFlat.forEach(([from, node]) => {
@@ -1650,13 +1650,50 @@ export class Interpreter<
       }
     });
 
-    flat.forEach(([, transitions]) => {
+    flat.forEach(([from, transitions], _, all) => {
+      const canTake = all.every(
+        ([from2]) => from2 === from || !from2.startsWith(from),
+      );
+      if (canTake) flat2.push([from, transitions]);
+    });
+
+    flat2.sort((a, b) => {
+      const from1 = a[0];
+      const from2 = b[0];
+
+      const split1 = from1
+        .split(DEFAULT_DELIMITER)
+        .filter(val => !isStringEmpty(val)).length;
+
+      const split2 = from2
+        .split(DEFAULT_DELIMITER)
+        .filter(val => !isStringEmpty(val)).length;
+
+      const splitsAreDifferents = split1 !== split2;
+      if (splitsAreDifferents) return split2 - split1;
+      return from2.localeCompare(from1);
+    });
+
+    return flat2;
+  };
+
+  protected _send: _Send_F<E, P> = event => {
+    this.#changeEvent(event);
+    this.#setStatus('sending');
+    let sv = this.#value;
+
+    const flat2 = this.#extractTransitions(event);
+    // #endregion
+
+    flat2.forEach(([from, transitions]) => {
+      const cannotContinue = !this.#isInsideValue2(sv, from);
+      if (cannotContinue) return;
+
       const target = this.#performTransitions(
         ...toArray.typed(transitions),
       );
 
       const diffTarget = target === false ? undefined : target;
-
       sv = nextSV(sv, diffTarget);
     });
 
@@ -1779,7 +1816,9 @@ export class Interpreter<
     }
 
     const next = castings.commons.unknown<NodeConfig>(
-      this.proposedNextConfig(target),
+      initialConfig(
+        castings.commons.unknown(this.proposedNextConfig(target)),
+      ),
     );
     const flatNext = flatMap(next, false);
 
@@ -1798,7 +1837,8 @@ export class Interpreter<
 
       if (check2) {
         const out2 = (flatNext as any)[key];
-        diffEntries.push(...getEntries(out2));
+        const _entries = getEntries(out2);
+        diffEntries.push(..._entries);
       }
     });
     // #endregion
@@ -1810,7 +1850,8 @@ export class Interpreter<
       const check2 = !keysNext.includes(key);
 
       if (check2) {
-        diffExits.push(...getExits(node));
+        const _exits = getExits(node);
+        diffExits.push(..._exits);
       }
     });
     // #endregion
@@ -1824,7 +1865,11 @@ export class Interpreter<
    * @returns true if the value is inside the current state value, false otherwise.
    */
   #isInsideValue = (value: string) => {
-    const values = decomposeSV(this.#value);
+    return this.#isInsideValue2(this.#value, value);
+  };
+
+  #isInsideValue2 = (sv: StateValue, value: string) => {
+    const values = decomposeSV(sv);
     const entry = value.substring(1);
     const state = replaceAll({
       entry,
@@ -2109,10 +2154,3 @@ export const _interpret: any = (machine: any, args: any) => {
  * @see {@linkcode MachineConfig}
  */
 export const interpret: Interpreter_F = _interpret;
-
-export const DEFAULT_SERVICE = interpret(DEFAULT_MACHINE, {
-  context: {
-    iterator: 0,
-  },
-  pContext: {},
-});

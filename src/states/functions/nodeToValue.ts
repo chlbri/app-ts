@@ -30,9 +30,8 @@ export const nodeToValue: NodeToValue_F = body => {
     const initial = body.states[__id];
 
     const check4 = !!initial && isAtomic(initial);
-    const check5 = check4;
 
-    if (check5) return __id;
+    if (check4) return __id;
     const keys = Object.keys(body.states);
     const check6 = keys.length === 1;
     if (check6) {

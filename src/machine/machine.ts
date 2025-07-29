@@ -1163,14 +1163,6 @@ const getIO: GetIO_F = (key, node) => {
     const initial = states[node.initial];
 
     out.push(...getIO(key, initial));
-  } else {
-    if (!states) return out;
-    //TODO: Create a real machine to test this part
-    const values = Object.values(states);
-
-    values.forEach(node1 => {
-      out.push(...getIO(key, node1));
-    });
   }
 
   return out;
@@ -1229,46 +1221,3 @@ export const createMachine: CreateMachine_F = (
 
   return out;
 };
-
-export const DEFAULT_MACHINE = createMachine(
-  {
-    states: {
-      on: {
-        on: {
-          SWITCH: {
-            actions: 'inc',
-            target: '/off',
-          },
-        },
-      },
-      off: {
-        on: {
-          SWITCH: {
-            actions: 'dec',
-            target: '/on',
-          },
-        },
-      },
-    },
-  },
-  {
-    eventsMap: { SWITCH: typings.objects.dynamic({}) },
-    context: castings.commons.primitiveObject.dynamic({
-      iterator: 0 as number,
-    }),
-    pContext: typings.objects.dynamic({}),
-    promiseesMap: typings.objects.dynamic({}),
-  },
-  { '/': 'off' },
-).provideOptions(({ assign }) => ({
-  actions: {
-    inc: assign(
-      'context.iterator',
-      ({ context: { iterator } }) => iterator + 1,
-    ),
-    dec: assign(
-      'context.iterator',
-      ({ context: { iterator } }) => iterator - 1,
-    ),
-  },
-}));

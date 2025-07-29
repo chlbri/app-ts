@@ -36,14 +36,14 @@ export type NextStateValue_F = <T extends StateValue>(
  * @see {@linkcode DEFAULT_DELIMITER} for the default delimiter used in state paths
  */
 export const nextSV: NextStateValue_F = (from, target) => {
-  const check0 = isStringEmpty(from);
-  if (check0) return {};
+  const isFromEmpty = isStringEmpty(from);
+  if (isFromEmpty) return {};
 
-  const checkT = isDefined(target);
-  if (!checkT) return from;
+  const isTargetDefined = isDefined(target);
+  if (!isTargetDefined) return from;
 
-  const check1 = isStringEmpty(target);
-  if (check1) return from;
+  const targetIsEmpty = isStringEmpty(target);
+  if (targetIsEmpty) return from;
 
   const check11 = !target.startsWith('/');
   if (check11) return from;
@@ -63,9 +63,7 @@ export const nextSV: NextStateValue_F = (from, target) => {
   const keys = Object.keys(from);
 
   const check4 = keys.length === 0;
-  if (check4) {
-    return from;
-  }
+  if (check4) return from;
 
   const decomposed = castings.commons.any(
     decompose(castings.objects.trueObject.forceCast(from), {
