@@ -140,7 +140,7 @@ describe('Real life testing', () => {
 
   // #endregion
 
-  describe.only('TESTS', () => {
+  describe('TESTS', () => {
     test('#00 => start the machine', service.start);
 
     test(...useValue('idle', 1));
