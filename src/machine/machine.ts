@@ -1192,6 +1192,7 @@ export type CreateMachine_F = <
   initials: InitialsFromConfig<C>,
 ) => Machine<C, Pc, Tc, EventM, P>;
 
+//TODO:  Add targets alongside initials to the machine config
 /**
  * Creates a new instance of {@linkcode Machine} with the provided configuration and types.
  *
