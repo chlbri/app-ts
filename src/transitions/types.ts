@@ -98,6 +98,7 @@ export type TransitionConfigMap =
 
 /**
  * A version {@linkcode TransitionConfigMap} with string declaration.
+ * //TODO: Use object only
  */
 export type TransitionConfig = string | TransitionConfigMap;
 
