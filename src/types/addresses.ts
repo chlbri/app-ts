@@ -9,7 +9,7 @@ type GetParentsA<
 ]
   ?
       | (Remaining extends ''
-          ? '..'| '../'
+          ? '..' | '../'
           : `${Remaining}${Last}` | `${Remaining}`)
       | GetParentsA<Rest, `../${Remaining}`>
   : never;
