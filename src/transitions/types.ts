@@ -1,4 +1,5 @@
 import type { types } from '@bemedev/types';
+import type { NotUndefined } from '@bemedev/types/lib/types/commons.types';
 import type { Action, ActionConfig, FromActionConfig } from '~actions';
 import type { EventsMap, PromiseeMap } from '~events';
 import type { FromGuard, GuardConfig, Predicate } from '~guards';
@@ -7,6 +8,7 @@ import type {
   ExtractGuardsFromPromise,
   ExtractMaxFromPromisee,
   ExtractSrcFromPromisee,
+  GetEventKeysFromPromisee,
   Promisee,
   PromiseeConfig,
 } from '~promises';
@@ -151,6 +153,12 @@ export type AlwaysConfig =
  */
 export type DelayedTransitions = RecordS<SingleOrArrayT>;
 
+export type GetEventKeysFromDelayed<T> = {
+  [key in keyof T & string]: T[key] extends types.AnyArray
+    ? `${key}.[${types.IndexesOfArray<T[key]>}]`
+    : key;
+}[keyof T & string];
+
 /**
  * Extracts action keys from a {@linkcode DelayedTransitions}.
  *
@@ -204,6 +212,29 @@ export type TransitionsConfig = {
   readonly after?: DelayedTransitions;
   readonly promises?: SingleOrArrayL<PromiseeConfig>;
 };
+
+export type GetEventKeysFromTransitions<T> =
+  | ('on' extends keyof T
+      ? `on.${GetEventKeysFromDelayed<NotUndefined<T['on']>>}`
+      : never)
+  | ('after' extends keyof T
+      ? `after.${GetEventKeysFromDelayed<NotUndefined<T['after']>>}`
+      : never)
+  | ('always' extends keyof T
+      ? T['always'] extends infer TA extends types.AnyArray
+        ? `always.[${types.IndexesOfArray<TA>}]`
+        : 'always'
+      : never)
+  | ('promises' extends keyof T
+      ? `${NotUndefined<T['promises']> extends infer TP
+          ? TP extends types.AnyArray
+            ? `promises.${{
+                [key in keyof TP &
+                  string]: `[${key}].${GetEventKeysFromPromisee<Extract<TP[key], PromiseeConfig>>}`;
+              }[keyof TP & string]}`
+            : `promises.${GetEventKeysFromPromisee<Extract<TP, PromiseeConfig>>}`
+          : never}`
+      : never);
 
 /**
  * Extracts delay keys from a {@linkcode TransitionsConfig}.

@@ -11,6 +11,7 @@ import type {
   ExtractDelaysFromActivity,
   ExtractGuardsFromActivity,
   FlatMapN,
+  GetTargetsFromMap,
   NodeConfigCompound,
   NodeConfigCompoundWithInitials,
   NodeConfigParallel,
@@ -312,6 +313,9 @@ export type GetEventsFromConfig<C extends Config> = GetEventsFromFlat<
   FlatMapN<C>
 >;
 
+export type GetTargetsFrom<C extends Config> = GetTargetsFromMap<
+  FlatMapN<C>
+>;
 /**
  * Get all events from a machine.
  *

@@ -1,6 +1,7 @@
 import { castings } from '@bemedev/types';
 import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
+import path from 'path';
 import { DELAY, fakeDB, machine2 } from '~fixturesData';
 import { interpret } from '~interpreters';
 import { createMachine, getEntries } from '~machine';
@@ -1390,9 +1391,10 @@ describe('machine coverage', () => {
 });
 
 test('#my', () => {
-  const array = [1, 2, 3, 4, 5];
-  const readOnlyArray = ['ert', 'ert2', 'ert3'] as const;
-
-  expect(Array.isArray(array)).toBe(true);
-  expect(Array.isArray(readOnlyArray)).toBe(true);
+  console.warn(
+    path.resolve(
+      '/parent/child/grandchild/grantchild',
+      '../../grandchild',
+    ),
+  );
 });

@@ -4,6 +4,7 @@ import type { EventsMap, PromiseeMap, ToEvents } from '~events';
 import type {
   ExtractActionsFromTransition,
   ExtractGuardKeysFromDelayed,
+  GetEventKeysFromDelayed,
   SingleOrArrayT,
   Transition,
   TransitionConfigMapA,
@@ -79,6 +80,9 @@ export type PromiseeConfig = {
   readonly catch: SingleOrArrayT;
   readonly finally?: FinallyConfig;
 };
+
+export type GetEventKeysFromPromisee<T extends PromiseeConfig> =
+  GetEventKeysFromDelayed<Pick<T, 'then' | 'catch'>>;
 
 /**
  * Extracts actions from a map of promisee configurations.

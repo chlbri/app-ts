@@ -8,6 +8,7 @@
     "declaration": true,
     "sourceMap": true,
     "rootDir": "./src",
+    "noErrorTruncation": true,
     "outDir": "./lib",
     "resolveJsonModule": true,
     "strict": true,
