@@ -1,6 +1,8 @@
-import { isDefined, partialCall, toArray } from '@bemedev/basifun';
+import { partialCall, toArray } from '@bemedev/basifun';
+import { decompose, recompose, type Decompose } from '@bemedev/decompose';
 import { castings, typings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
+import { resolve } from 'src/utils/resolve';
 import type { Action } from '~actions';
 import { DEFAULT_DELIMITER } from '~constants';
 import type { Delay } from '~delays';
@@ -56,7 +58,6 @@ import type {
   Config,
   GetEventsFromConfig,
   GetPromiseeSrcFromConfig,
-  InitialsFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
 } from './types';
@@ -100,6 +101,8 @@ class Machine<
    * @see {@linkcode C}
    */
   #flat: FlatMapN<C, true>;
+
+  #decomposed: Decompose<C, { sep: '.'; start: false; object: 'both' }>;
 
   /**
    * The map of events for this {@linkcode Machine}.
@@ -434,6 +437,7 @@ class Machine<
    * Initials {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
    */
   #initials!: Mo['initials'];
+  #targets!: Mo['targets'];
 
   /**
    * Context for this {@linkcode Machine}.
@@ -483,6 +487,10 @@ class Machine<
    */
   constructor(config: C) {
     this.#config = config;
+    this.#decomposed = decompose(config, {
+      start: false,
+      object: 'both',
+    }) as Decompose<C, { sep: '.'; start: false; object: 'both' }>;
     this.#flat = flatMap<C, true>(config);
   }
 
@@ -521,6 +529,10 @@ class Machine<
    */
   get initials() {
     return this.#initials;
+  }
+
+  get targets() {
+    return this.#targets;
   }
 
   /**
@@ -570,21 +582,39 @@ class Machine<
 
   // #region Providers
 
-  /**
-   * This method is used to add initials to the machine.
-   *
-   * It takes an object of initials where each key is a state value and the value is the initial state value for that state.
-   *
-   * @param initials of type {@linkcode Mo}['initials'] An object where keys are state values and values are the initial state values.
-   * @return The updated post configuration of the machine
-   * with initial {@linkcode StateValue}s added.
-   *
-   * @see {@linkcode structuredClone} to create a deep copy of the flat map.
-   * @see {@linkcode recomposeConfig} to recompose the configuration with initials.
-   * @see {@linkcode initialConfig} to get the initial configuration from the post configuration.
-   */
-  addInitials = (initials: Mo['initials']) => {
-    this.#initials = initials;
+  #addValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
+    this.#initials = values.initials;
+    this.#targets = values.targets;
+
+    if (this.#targets) {
+      const entriesT = Object.entries(this.#targets).map(
+        ([key, target]) => {
+          const key1 = key
+            .slice(1)
+            .replace(new RegExp(DEFAULT_DELIMITER, 'g'), '.states.');
+          const _key = `states.${key1}.target`;
+          return [_key, target] as const;
+        },
+      );
+
+      const decomposed: any = structuredClone(this.#decomposed);
+
+      entriesT.forEach(([key, _target]) => {
+        const from = key
+          .split(DEFAULT_DELIMITER)
+          .slice(0, -1)
+          .join(DEFAULT_DELIMITER);
+
+        const target = resolve(from, _target as string);
+
+        decomposed[key] = target;
+      });
+
+      const recomposed = recompose(decomposed);
+
+      this.#flat = (flatMap as any)(recomposed, true) as FlatMapN<C, true>;
+    }
+
     const entries = Object.entries(this.#initials);
     const flat: any = structuredClone(this.#flat);
     entries.forEach(([key, initial]) => {
@@ -636,8 +666,11 @@ class Machine<
    * @deprecated
    * @remarks used internally
    */
-  _provideInitials = (initials: Mo['initials']) =>
-    this.#renew('initials', initials);
+  _provideValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
+    const out = this.#renew();
+    out.#addValues(values);
+    return out;
+  };
 
   #addActions = (actions?: Mo['actions']) =>
     (this.#actions = merge(this.#actions, actions));
@@ -682,7 +715,6 @@ class Machine<
    */
   get #elements(): Elements<C, E, P, Pc, Tc, Mo> {
     const config = structuredClone(this.#config);
-    const initials = structuredClone(this.#initials);
     const pContext = cloneDeep(this.#pContext);
     const context = structuredClone(this.#context);
     const actions = cloneDeep(this.#actions);
@@ -695,7 +727,6 @@ class Machine<
 
     return {
       config,
-      initials,
       pContext,
       context,
       actions,
@@ -716,27 +747,11 @@ class Machine<
    * @returns the elements of the machine with the provided key and value.
    *
    * @see {@linkcode Elements}
-   * @see {@linkcode isDefined}
    *
    * @see type inferences :
    *
    *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
-
-  #provideElements = <T extends keyof Elements>(
-    key?: T,
-    value?: Elements<C, E, P, Pc, Tc, Mo>[T],
-  ): Elements<C, E, P, Pc, Tc, Mo> => {
-    const out = this.#elements;
-    const check = isDefined(key);
-
-    return check
-      ? {
-          ...out,
-          [key]: value,
-        }
-      : out;
-  };
 
   /**
    * Renews the machine with the provided key and value.
@@ -749,15 +764,11 @@ class Machine<
    *
    * @see type inferences :
    *
-   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
-  #renew = <T extends keyof Elements>(
-    key?: T,
-    value?: Elements<C, E, P, Pc, Tc, Mo>[T],
-  ): Machine<C, Pc, Tc, E, P, Mo> => {
+  #renew = (): Machine<C, Pc, Tc, E, P, Mo> => {
     const {
       config,
-      initials,
       pContext,
       context,
       predicates,
@@ -767,10 +778,9 @@ class Machine<
       machines,
       promisees,
       events,
-    } = this.#provideElements(key, value);
+    } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, E, P, Mo>(config);
-    out.addInitials(initials);
 
     out.#pContext = pContext;
     out.#context = context;
@@ -790,7 +800,12 @@ class Machine<
    * Returns a new instance from this {@linkcode Machine} with all its {@linkcode Elements}.
    */
   get renew() {
-    return this.#renew();
+    const out = this.#renew();
+    out.#addValues({
+      initials: this.#initials,
+      targets: this.#targets,
+    });
+    return out;
   }
 
   /**
@@ -802,12 +817,11 @@ class Machine<
   >(
     pContext: T,
   ) => {
-    const { context, initials, config, events, promisees } =
-      this.#elements;
+    const { context, config, events, promisees } = this.#elements;
 
     const out = new Machine<C, T, Tc, E, P>(config);
 
-    out.addInitials(initials);
+    out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#context = context;
     out.#pContext = pContext;
     out.#eventsMap = events;
@@ -825,12 +839,11 @@ class Machine<
    * @remarks used internally
    */
   _provideContext = <T extends types.PrimitiveObject>(context: T) => {
-    const { pContext, initials, config, events, promisees } =
-      this.#elements;
+    const { pContext, config, events, promisees } = this.#elements;
 
     const out = new Machine<C, Pc, T, E, P>(config);
 
-    out.addInitials(initials);
+    out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
@@ -847,12 +860,11 @@ class Machine<
    * @remarks used internally
    */
   _provideEvents = <T extends EventsMap>(map: T) => {
-    const { pContext, initials, config, context, promisees } =
-      this.#elements;
+    const { pContext, config, context, promisees } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, T, P>(config);
 
-    out.addInitials(initials);
+    out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = map;
@@ -866,11 +878,11 @@ class Machine<
    * @remarks used internally
    */
   _providePromisees = <T extends PromiseeMap>(map: T) => {
-    const { pContext, initials, config, context, events } = this.#elements;
+    const { pContext, config, context, events } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, E, T>(config);
 
-    out.addInitials(initials);
+    out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
@@ -1065,83 +1077,88 @@ class Machine<
    * @param option a function that provides options for the machine.
    * Options can include actions, predicates, delays, promises, and child machines.
    */
-  addOptions: AddOptions_F<E, P, Pc, Tc, types.NOmit<Mo, 'initials'>> =
-    func => {
-      const isValue = this.#isValue;
-      const isNotValue = this.#isNotValue;
-      const isDefined = this.#isDefined;
-      const isNotDefined = this.#isNotDefined;
-      const createChild = this.#createChild;
-      const voidAction = this.#voidAction;
-      const sendTo = this.#sendTo;
+  addOptions: AddOptions_F<
+    E,
+    P,
+    Pc,
+    Tc,
+    types.NOmit<Mo, 'initials' | 'targets'>
+  > = func => {
+    const isValue = this.#isValue;
+    const isNotValue = this.#isNotValue;
+    const isDefined = this.#isDefined;
+    const isNotDefined = this.#isNotDefined;
+    const createChild = this.#createChild;
+    const voidAction = this.#voidAction;
+    const sendTo = this.#sendTo;
 
-      const out = func({
-        isValue,
-        isNotValue,
-        isDefined,
-        isNotDefined,
-        createChild,
-        assign: (key, fn) => {
-          const out = castings.commons.any(expandFnMap)(
-            this.#eventsMap,
-            this.#promiseesMap,
-            castings.commons.any(key),
-            fn,
-          );
+    const out = func({
+      isValue,
+      isNotValue,
+      isDefined,
+      isNotDefined,
+      createChild,
+      assign: (key, fn) => {
+        const out = castings.commons.any(expandFnMap)(
+          this.#eventsMap,
+          this.#promiseesMap,
+          castings.commons.any(key),
+          fn,
+        );
 
-          return out;
-        },
-        voidAction,
-        sendTo,
-        debounce: (fn, { id, ms = 100 }) => {
-          return ({ context, pContext, ...rest }) => {
-            const state = this.#cloneState({ context, pContext, ...rest });
-            const data = fn(state);
+        return out;
+      },
+      voidAction,
+      sendTo,
+      debounce: (fn, { id, ms = 100 }) => {
+        return ({ context, pContext, ...rest }) => {
+          const state = this.#cloneState({ context, pContext, ...rest });
+          const data = fn(state);
 
-            const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
+          const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
 
-            return castings.commons.any({
-              context,
-              pContext,
-              scheduled,
-            });
-          };
-        },
+          return castings.commons.any({
+            context,
+            pContext,
+            scheduled,
+          });
+        };
+      },
 
-        resend: resend => {
-          return ({ context, pContext }) => {
-            return castings.commons.any({
-              context,
-              pContext,
-              resend,
-            });
-          };
-        },
+      resend: resend => {
+        return ({ context, pContext }) => {
+          return castings.commons.any({
+            context,
+            pContext,
+            resend,
+          });
+        };
+      },
 
-        forceSend: forceSend => {
-          return ({ context, pContext }) => {
-            return castings.commons.any({
-              context,
-              pContext,
-              forceSend,
-            });
-          };
-        },
+      forceSend: forceSend => {
+        return ({ context, pContext }) => {
+          return castings.commons.any({
+            context,
+            pContext,
+            forceSend,
+          });
+        };
+      },
 
-        pauseActivity: this.#timeAction('pauseActivity'),
-        resumeActivity: this.#timeAction('resumeActivity'),
-        stopActivity: this.#timeAction('stopActivity'),
-        pauseTimer: this.#timeAction('pauseTimer'),
-        resumeTimer: this.#timeAction('resumeTimer'),
-        stopTimer: this.#timeAction('stopTimer'),
-      });
+      pauseActivity: this.#timeAction('pauseActivity'),
+      resumeActivity: this.#timeAction('resumeActivity'),
+      stopActivity: this.#timeAction('stopActivity'),
+      pauseTimer: this.#timeAction('pauseTimer'),
+      resumeTimer: this.#timeAction('resumeTimer'),
+      stopTimer: this.#timeAction('stopTimer'),
+    });
 
-      this.#addActions(out?.actions);
-      this.#addPredicates(out?.predicates);
-      this.#addDelays(out?.delays);
-      this.#addPromises(out?.promises);
-      this.#addMachines(out?.machines);
-    };
+    this.#addActions(out?.actions);
+    this.#addPredicates(out?.predicates);
+    this.#addDelays(out?.delays);
+    this.#addPromises(out?.promises);
+    this.#addMachines(out?.machines);
+  };
 }
 
 /**
@@ -1186,12 +1203,20 @@ export type CreateMachine_F = <
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
+  Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<
+    C,
+    EventM,
+    P,
+    Pc,
+    Tc
+  >,
 >(
   config: C,
   types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
-  initials: InitialsFromConfig<C>,
+  values: Pick<Mo, 'initials' | 'targets'>,
 ) => Machine<C, Pc, Tc, EventM, P>;
 
+//TODO:  Add targets alongside initials to the machine config
 /**
  * Creates a new instance of {@linkcode Machine} with the provided configuration and types.
  *
@@ -1210,10 +1235,10 @@ export type CreateMachine_F = <
 export const createMachine: CreateMachine_F = (
   config,
   { eventsMap, pContext, context, promiseesMap },
-  initials,
+  values,
 ) => {
   const out = new Machine(config)
-    ._provideInitials(initials)
+    ._provideValues(values)
     ._provideEvents(eventsMap)
     ._providePrivateContext(pContext)
     ._provideContext(context)

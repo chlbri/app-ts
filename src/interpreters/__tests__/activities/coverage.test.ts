@@ -15,31 +15,36 @@ describe('Interpreter integration ofr activities coverage', () => {
   const DELAY = 1000;
   const activity1 = vi.fn().mockReturnValue(defaultC);
   const useWaiter = createFakeWaiter.withDefaultDelay(vi, DELAY);
+  const machine = createMachine(
+    {
+      states: {
+        state1: {
+          activities: { DELAY: 'activity1' },
+          on: {
+            NEXT: {},
+          },
+        },
+        state2: {
+          on: {
+            NEXT: {},
+          },
+        },
+      },
+    },
+    { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
+    {
+      initials: { '/': 'state1' },
+      targets: {
+        '/state1.on.NEXT': '/state2',
+        '/state2.on.NEXT': '/state1',
+      },
+    },
+  );
 
   describe('#01 => delay is not defined', () => {
     afterAll(() => {
       activity1.mockClear();
     });
-
-    const machine = createMachine(
-      {
-        states: {
-          state1: {
-            activities: { DELAY: 'activity1' },
-            on: {
-              NEXT: '/state2',
-            },
-          },
-          state2: {
-            on: {
-              NEXT: '/state1',
-            },
-          },
-        },
-      },
-      { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
-      { '/': 'state1' },
-    );
 
     machine.addOptions(() => ({
       actions: {
@@ -109,26 +114,6 @@ describe('Interpreter integration ofr activities coverage', () => {
   });
 
   describe('#02 => Duration', () => {
-    const machine = createMachine(
-      {
-        states: {
-          state1: {
-            activities: { DELAY: 'activity1' },
-            on: {
-              NEXT: '/state2',
-            },
-          },
-          state2: {
-            on: {
-              NEXT: '/state1',
-            },
-          },
-        },
-      },
-      { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
-      { '/': 'state1' },
-    );
-
     machine.addOptions(() => ({
       actions: {
         activity1,
@@ -230,18 +215,24 @@ describe('Interpreter integration ofr activities coverage', () => {
           state1: {
             activities: { DELAY: 'activity2' },
             on: {
-              NEXT: '/state2',
+              NEXT: {},
             },
           },
           state2: {
             on: {
-              NEXT: '/state1',
+              NEXT: {},
             },
           },
         },
       },
       { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
-      { '/': 'state1' },
+      {
+        initials: { '/': 'state1' },
+        targets: {
+          '/state1.on.NEXT': '/state2',
+          '/state2.on.NEXT': '/state1',
+        },
+      },
     );
 
     machine.addOptions(() => ({

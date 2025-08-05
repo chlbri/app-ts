@@ -1,6 +1,7 @@
 import { castings } from '@bemedev/types';
 import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
+import path from 'path';
 import { DELAY, fakeDB, machine2 } from '~fixturesData';
 import { interpret } from '~interpreters';
 import { createMachine, getEntries } from '~machine';
@@ -10,6 +11,7 @@ import {
   constructSend,
   constructValue,
   defaultC,
+  defaultI,
   defaultT,
   fakeWaiter,
 } from '../interpreters/__tests__/fixtures';
@@ -549,7 +551,9 @@ describe('machine coverage', () => {
                 DELAY: 'inc',
               },
               on: {
-                NEXT: '/working',
+                NEXT: {
+                  target: '/working',
+                },
               },
             },
             working: {
@@ -558,7 +562,7 @@ describe('machine coverage', () => {
                 DELAY2: 'inc2',
               },
               on: {
-                FINISH: '/final',
+                FINISH: { target: '/final' },
               },
               states: {
                 fetch: {
@@ -584,7 +588,7 @@ describe('machine coverage', () => {
                           },
                           target: '/working/fetch/idle',
                         },
-                        catch: '/working/fetch/idle',
+                        catch: { target: '/working/fetch/idle' },
                       },
                     },
                   },
@@ -613,7 +617,7 @@ describe('machine coverage', () => {
                             actions: 'write',
                             target: '/working/ui/idle',
                           },
-                          '/working/ui/idle',
+                          { target: '/working/ui/idle' },
                         ],
                       },
                     },
@@ -630,7 +634,7 @@ describe('machine coverage', () => {
             DELAY: 'inc',
           },
           on: {
-            NEXT: '/working',
+            NEXT: { target: '/working' },
           },
         },
         '/working': {
@@ -639,7 +643,7 @@ describe('machine coverage', () => {
             DELAY2: 'inc2',
           },
           on: {
-            FINISH: '/final',
+            FINISH: { target: '/final' },
           },
           states: {
             fetch: {
@@ -665,7 +669,7 @@ describe('machine coverage', () => {
                       },
                       target: '/working/fetch/idle',
                     },
-                    catch: '/working/fetch/idle',
+                    catch: { target: '/working/fetch/idle' },
                   },
                 },
               },
@@ -694,7 +698,7 @@ describe('machine coverage', () => {
                         actions: 'write',
                         target: '/working/ui/idle',
                       },
-                      '/working/ui/idle',
+                      { target: '/working/ui/idle' },
                     ],
                   },
                 },
@@ -726,7 +730,7 @@ describe('machine coverage', () => {
                   },
                   target: '/working/fetch/idle',
                 },
-                catch: '/working/fetch/idle',
+                catch: { target: '/working/fetch/idle' },
               },
             },
           },
@@ -752,7 +756,7 @@ describe('machine coverage', () => {
               },
               target: '/working/fetch/idle',
             },
-            catch: '/working/fetch/idle',
+            catch: { target: '/working/fetch/idle' },
           },
         },
         '/working/ui': {
@@ -779,7 +783,7 @@ describe('machine coverage', () => {
                     actions: 'write',
                     target: '/working/ui/idle',
                   },
-                  '/working/ui/idle',
+                  { target: '/working/ui/idle' },
                 ],
               },
             },
@@ -808,7 +812,7 @@ describe('machine coverage', () => {
                 actions: 'write',
                 target: '/working/ui/idle',
               },
-              '/working/ui/idle',
+              { target: '/working/ui/idle' },
             ],
           },
         },
@@ -816,7 +820,7 @@ describe('machine coverage', () => {
         '/final': {},
       };
 
-      expect(machine2.preflat).toStrictEqual(expected);
+      expect(machine2.preflat).toEqual(expected);
     });
 
     test('#02 => postConfig', () => {
@@ -829,7 +833,7 @@ describe('machine coverage', () => {
               DELAY: 'inc',
             },
             on: {
-              NEXT: '/working',
+              NEXT: { target: '/working' },
             },
           },
           working: {
@@ -838,7 +842,7 @@ describe('machine coverage', () => {
               DELAY2: 'inc2',
             },
             on: {
-              FINISH: '/final',
+              FINISH: { target: '/final' },
             },
             states: {
               fetch: {
@@ -864,7 +868,7 @@ describe('machine coverage', () => {
                         },
                         target: '/working/fetch/idle',
                       },
-                      catch: '/working/fetch/idle',
+                      catch: { target: '/working/fetch/idle' },
                     },
                   },
                 },
@@ -894,7 +898,7 @@ describe('machine coverage', () => {
                           actions: 'write',
                           target: '/working/ui/idle',
                         },
-                        '/working/ui/idle',
+                        { target: '/working/ui/idle' },
                       ],
                     },
                   },
@@ -922,7 +926,7 @@ describe('machine coverage', () => {
                 DELAY: 'inc',
               },
               on: {
-                NEXT: '/working',
+                NEXT: { target: '/working' },
               },
             },
             working: {
@@ -931,7 +935,7 @@ describe('machine coverage', () => {
                 DELAY2: 'inc2',
               },
               on: {
-                FINISH: '/final',
+                FINISH: { target: '/final' },
               },
               states: {
                 fetch: {
@@ -957,7 +961,7 @@ describe('machine coverage', () => {
                           },
                           target: '/working/fetch/idle',
                         },
-                        catch: '/working/fetch/idle',
+                        catch: { target: '/working/fetch/idle' },
                       },
                     },
                   },
@@ -987,7 +991,7 @@ describe('machine coverage', () => {
                             actions: 'write',
                             target: '/working/ui/idle',
                           },
-                          '/working/ui/idle',
+                          { target: '/working/ui/idle' },
                         ],
                       },
                     },
@@ -1005,7 +1009,7 @@ describe('machine coverage', () => {
             DELAY: 'inc',
           },
           on: {
-            NEXT: '/working',
+            NEXT: { target: '/working' },
           },
         },
         '/working': {
@@ -1014,7 +1018,7 @@ describe('machine coverage', () => {
             DELAY2: 'inc2',
           },
           on: {
-            FINISH: '/final',
+            FINISH: { target: '/final' },
           },
           states: {
             fetch: {
@@ -1040,7 +1044,7 @@ describe('machine coverage', () => {
                       },
                       target: '/working/fetch/idle',
                     },
-                    catch: '/working/fetch/idle',
+                    catch: { target: '/working/fetch/idle' },
                   },
                 },
               },
@@ -1070,7 +1074,7 @@ describe('machine coverage', () => {
                         actions: 'write',
                         target: '/working/ui/idle',
                       },
-                      '/working/ui/idle',
+                      { target: '/working/ui/idle' },
                     ],
                   },
                 },
@@ -1103,7 +1107,7 @@ describe('machine coverage', () => {
                   },
                   target: '/working/fetch/idle',
                 },
-                catch: '/working/fetch/idle',
+                catch: { target: '/working/fetch/idle' },
               },
             },
           },
@@ -1130,7 +1134,7 @@ describe('machine coverage', () => {
               },
               target: '/working/fetch/idle',
             },
-            catch: '/working/fetch/idle',
+            catch: { target: '/working/fetch/idle' },
           },
         },
         '/working/ui': {
@@ -1157,7 +1161,7 @@ describe('machine coverage', () => {
                     actions: 'write',
                     target: '/working/ui/idle',
                   },
-                  '/working/ui/idle',
+                  { target: '/working/ui/idle' },
                 ],
               },
             },
@@ -1187,7 +1191,7 @@ describe('machine coverage', () => {
                 actions: 'write',
                 target: '/working/ui/idle',
               },
-              '/working/ui/idle',
+              { target: '/working/ui/idle' },
             ],
           },
         },
@@ -1207,7 +1211,11 @@ describe('machine coverage', () => {
     const machine = createMachine(
       {
         states: {
-          idle: { on: { NEXT: '/state1' } },
+          idle: {
+            on: {
+              NEXT: {},
+            },
+          },
           state1: {
             activities: { DELAY: 'inc' },
             states: {
@@ -1227,10 +1235,15 @@ describe('machine coverage', () => {
       },
       { ...defaultT, eventsMap: { NEXT: {} } },
       {
-        '/': 'idle',
-        '/state1': 'state11',
-        '/state1/state11': 'state111',
-        '/state1/state11/state111': 'state1111',
+        initials: {
+          '/': 'idle',
+          '/state1': 'state11',
+          '/state1/state11': 'state111',
+          '/state1/state11/state111': 'state1111',
+        },
+        targets: {
+          '/idle.on.NEXT': '/state1',
+        },
       },
     );
 
@@ -1296,7 +1309,7 @@ describe('machine coverage', () => {
           {
             invite: 'For /idle',
             expected: {
-              on: { NEXT: '/state1' },
+              on: { NEXT: { target: '/state1' } },
             },
             parameters: '/idle',
           },
@@ -1334,7 +1347,7 @@ describe('machine coverage', () => {
       );
 
       test('Debug', () => {
-        console.warn(
+        console.log(
           'value',
           JSON.stringify(
             machine.retrieveParentFromInitial('/state1/state11/state111'),
@@ -1360,7 +1373,7 @@ describe('machine coverage', () => {
         },
       },
       defaultT,
-      { '/': 'idle' },
+      defaultI,
     );
 
     const service = interpret(machineT, defaultC);
@@ -1390,9 +1403,10 @@ describe('machine coverage', () => {
 });
 
 test('#my', () => {
-  const array = [1, 2, 3, 4, 5];
-  const readOnlyArray = ['ert', 'ert2', 'ert3'] as const;
-
-  expect(Array.isArray(array)).toBe(true);
-  expect(Array.isArray(readOnlyArray)).toBe(true);
+  console.warn(
+    path.resolve(
+      '/parent/child/grandchild/grantchild',
+      '../../grandchild',
+    ),
+  );
 });

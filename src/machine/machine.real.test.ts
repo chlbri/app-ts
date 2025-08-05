@@ -1,7 +1,7 @@
 import { castings } from '@bemedev/types';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
-import { nextSV, type StateValue } from '~states';
+import { type StateValue } from '~states';
 import { typings } from '~utils';
 
 describe('#01 => Real life testing', () => {
@@ -17,26 +17,36 @@ describe('#01 => Real life testing', () => {
         idle: {
           ...actions,
           on: {
-            NEXT: '/parallel',
+            NEXT: {
+              /*  target: '/parallel' */
+            },
           },
         },
         compound: {
           ...actions,
           on: {
-            NEXT: '/idle',
+            NEXT: {
+              /* target: '/idle' */
+            },
           },
           states: {
             idle: {
               ...actions,
               on: {
-                NEXT: '/compound/next',
+                NEXT: {
+                  /* target: '/compound/next' */
+                },
               },
             },
             next: {
               ...actions,
               on: {
-                PREVIOUS: '/compound/idle',
-                NEXT: '/parallel',
+                PREVIOUS: {
+                  /* target: '/compound/idle' */
+                },
+                NEXT: {
+                  /* target: '/parallel' */
+                },
               },
             },
           },
@@ -44,26 +54,34 @@ describe('#01 => Real life testing', () => {
         parallel: {
           ...actions,
           on: {
-            PREVIOUS: '/compound/next',
+            PREVIOUS: {
+              /* target: '/compound/next'  */
+            },
           },
           type: 'parallel',
           states: {
             atomic: {
               ...actions,
               on: {
-                NEXT: '/idle',
+                NEXT: {
+                  /* target: '/idle' */
+                },
               },
               states: {
                 idle: {
                   entry: 'inc',
                   on: {
-                    NEXT: '/parallel/atomic/next',
+                    NEXT: {
+                      /* target: '/parallel/atomic/next'  */
+                    },
                   },
                 },
                 next: {
                   ...actions,
                   on: {
-                    PREVIOUS: '/parallel/atomic/idle',
+                    PREVIOUS: {
+                      /* target: '/parallel/atomic/idle' */
+                    },
                   },
                 },
               },
@@ -71,19 +89,25 @@ describe('#01 => Real life testing', () => {
             compound: {
               ...actions,
               on: {
-                NEXT: '/compound',
+                NEXT: {
+                  /* target: '/compound' */
+                },
               },
               states: {
                 idle: {
                   ...actions,
                   on: {
-                    NEXT: '/parallel/compound/next',
+                    NEXT: {
+                      /* target: '/parallel/compound/next' */
+                    },
                   },
                 },
                 next: {
                   ...actions,
                   on: {
-                    PREVIOUS: '/parallel/compound/idle',
+                    PREVIOUS: {
+                      /* target: '/parallel/compound/idle' */
+                    },
                   },
                 },
               },
@@ -100,10 +124,27 @@ describe('#01 => Real life testing', () => {
       context: 'number',
     }),
     {
-      '/': 'idle',
-      '/compound': 'idle',
-      '/parallel/atomic': 'idle',
-      '/parallel/compound': 'idle',
+      initials: {
+        '/': 'idle',
+        '/compound': 'idle',
+        '/parallel/atomic': 'idle',
+        '/parallel/compound': 'idle',
+      },
+      targets: {
+        '/idle.on.NEXT': '/parallel',
+        '/compound.on.NEXT': '/idle',
+        '/compound/idle.on.NEXT': '/compound/next',
+        '/compound/next.on.PREVIOUS': '/compound/idle',
+        '/compound/next.on.NEXT': '/parallel',
+        '/parallel.on.PREVIOUS': '/compound/next',
+
+        '/parallel/atomic.on.NEXT': '/idle',
+        '/parallel/atomic/idle.on.NEXT': '/parallel/atomic/next',
+        '/parallel/atomic/next.on.PREVIOUS': '/parallel/atomic/idle',
+        '/parallel/compound.on.NEXT': '/compound',
+        '/parallel/compound/idle.on.NEXT': '/parallel/compound/next',
+        '/parallel/compound/next.on.PREVIOUS': '/parallel/compound/idle',
+      },
     },
   ).provideOptions(({ assign }) => ({
     actions: {
@@ -158,11 +199,6 @@ describe('#01 => Real life testing', () => {
         4,
       ),
     );
-
-    test('#debug', () => {
-      const value = service.state.value;
-      console.warn('value', nextSV(value, '/parallel/atomic/next'));
-    });
 
     test(...useIterator(8, 5));
 
@@ -254,7 +290,9 @@ describe('#02 => Cover', () => {
         idle: {
           ...io,
           on: {
-            NEXT: '/parallel',
+            NEXT: {
+              /* target: '/parallel' */
+            },
           },
         },
         parallel: {
@@ -268,14 +306,20 @@ describe('#02 => Cover', () => {
                 idle: {
                   ...io,
                   on: {
-                    NEXT: '/parallel/atomic/next',
+                    NEXT: {
+                      /* target: '/parallel/atomic/next' */
+                    },
                   },
                 },
                 next: {
                   ...io,
                   on: {
-                    PREVIOUS: '/parallel/atomic/idle',
-                    NEXT: '/parallel/atomic/idle',
+                    PREVIOUS: {
+                      /*  target: '/parallel/atomic/idle' */
+                    },
+                    NEXT: {
+                      /*  target: '/parallel/atomic/idle' */
+                    },
                   },
                 },
               },
@@ -287,7 +331,9 @@ describe('#02 => Cover', () => {
                 idle: {
                   ...io,
                   on: {
-                    NEXT: '/parallel/compound/compound',
+                    NEXT: {
+                      /* target: '/parallel/compound/compound' */
+                    },
                   },
                 },
                 compound: {
@@ -296,14 +342,20 @@ describe('#02 => Cover', () => {
                     idle: {
                       ...io,
                       on: {
-                        NEXT: '/parallel/compound/compound/next',
+                        NEXT: {
+                          /* target: '/parallel/compound/compound/next', */
+                        },
                       },
                     },
                     next: {
                       ...io,
                       on: {
-                        PREVIOUS: '/parallel/compound/compound/idle',
-                        NEXT: '/idle',
+                        PREVIOUS: {
+                          /* target: '/parallel/compound/compound/idle', */
+                        },
+                        NEXT: {
+                          /* target: '/idle' */
+                        },
                       },
                     },
                   },
@@ -322,10 +374,24 @@ describe('#02 => Cover', () => {
       context: 'number',
     }),
     {
-      '/': 'idle',
-      '/parallel/compound': 'idle',
-      '/parallel/atomic': 'idle',
-      '/parallel/compound/compound': 'idle',
+      initials: {
+        '/': 'idle',
+        '/parallel/compound': 'idle',
+        '/parallel/atomic': 'idle',
+        '/parallel/compound/compound': 'idle',
+      },
+      targets: {
+        '/idle.on.NEXT': '/parallel',
+        '/parallel/atomic/idle.on.NEXT': '/parallel/atomic/next',
+        '/parallel/atomic/next.on.PREVIOUS': '/parallel/atomic/idle',
+        '/parallel/atomic/next.on.NEXT': '/parallel/atomic/idle',
+        '/parallel/compound/idle.on.NEXT': '/parallel/compound/compound',
+        '/parallel/compound/compound/idle.on.NEXT':
+          '/parallel/compound/compound/next',
+        '/parallel/compound/compound/next.on.PREVIOUS':
+          '/parallel/compound/compound/idle',
+        '/parallel/compound/compound/next.on.NEXT': '/idle',
+      },
     },
   ).provideOptions(({ assign }) => ({
     actions: {

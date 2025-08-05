@@ -1,4 +1,5 @@
 import type { types } from '@bemedev/types';
+import type { DEFAULT_DELIMITER } from '~constants';
 
 import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
 import type {
@@ -132,7 +133,7 @@ export type KeyStrings<
   T extends object,
   AddObjectKey extends boolean = true,
   Key extends keyof T = keyof T,
-> = types.UnionToIntersection<_KeyStrings<T, AddObjectKey, Key>>;
+> = types._UnionToIntersection2<_KeyStrings<T, AddObjectKey, Key>>;
 
 export type HighMy = '@my';
 
@@ -412,3 +413,5 @@ export type TrueObject = types.Ru & {
  *
  */
 export type NoValue = void | undefined | null;
+
+export type Delimiter = typeof DEFAULT_DELIMITER;

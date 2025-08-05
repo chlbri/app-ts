@@ -14,7 +14,9 @@ export const config2 = createConfig({
         DELAY: 'inc',
       },
       on: {
-        NEXT: '/working',
+        NEXT: {
+          /* target: '/working' */
+        },
       },
     },
     working: {
@@ -23,7 +25,9 @@ export const config2 = createConfig({
         DELAY2: 'inc2',
       },
       on: {
-        FINISH: '/final',
+        FINISH: {
+          /* target: '/final'  */
+        },
       },
       states: {
         fetch: {
@@ -35,7 +39,7 @@ export const config2 = createConfig({
               on: {
                 FETCH: {
                   guards: 'isInputNotEmpty',
-                  target: '/working/fetch/fetch',
+                  // target: '/working/fetch/fetch',
                 },
               },
             },
@@ -47,9 +51,11 @@ export const config2 = createConfig({
                     name: 'insertData',
                     description: 'Database insert',
                   },
-                  target: '/working/fetch/idle',
+                  // target: '/working/fetch/idle',
                 },
-                catch: '/working/fetch/idle',
+                catch: {
+                  /* target: '/working/fetch/idle' */
+                },
               },
             },
           },
@@ -60,7 +66,7 @@ export const config2 = createConfig({
               on: {
                 WRITE: {
                   actions: 'write',
-                  target: '/working/ui/input',
+                  // target: '/working/ui/input',
                 },
               },
             },
@@ -76,9 +82,11 @@ export const config2 = createConfig({
                   {
                     guards: 'isInputNotEmpty',
                     actions: 'write',
-                    target: '/working/ui/idle',
+                    // target: '/working/ui/idle',
                   },
-                  '/working/ui/idle',
+                  {
+                    /* target: '/working/ui/idle' */
+                  },
                 ],
               },
             },
@@ -118,7 +126,23 @@ export const machine2 = createMachine(
       },
     },
   }),
-  { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
+  {
+    initials: {
+      '/': 'idle',
+      '/working/fetch': 'idle',
+      '/working/ui': 'idle',
+    },
+    targets: {
+      '/idle.on.NEXT': '/working',
+      '/working.on.FINISH': '/final',
+      '/working/fetch/idle.on.FETCH': '/working/fetch/fetch',
+      '/working/fetch/fetch.promises.then': '/working/fetch/idle',
+      '/working/fetch/fetch.promises.catch': '/working/fetch/idle',
+      '/working/ui/idle.on.WRITE': '/working/ui/input',
+      '/working/ui/input.on.WRITE.[0]': '/working/ui/idle',
+      '/working/ui/input.on.WRITE.[1]': '/working/ui/idle',
+    },
+  },
 ).provideOptions(
   ({ isNotValue, isValue, createChild, assign, voidAction }) => ({
     actions: {
@@ -197,7 +221,23 @@ export const _machine2 = createMachine(
       },
     },
   }),
-  { '/': 'idle', '/working/fetch': 'idle', '/working/ui': 'idle' },
+  {
+    initials: {
+      '/': 'idle',
+      '/working/fetch': 'idle',
+      '/working/ui': 'idle',
+    },
+    targets: {
+      '/idle.on.NEXT': '/working',
+      '/working.on.FINISH': '/final',
+      '/working/fetch/idle.on.FETCH': '/working/fetch/fetch',
+      '/working/fetch/fetch.promises.then': '/working/fetch/idle',
+      '/working/fetch/fetch.promises.catch': '/working/fetch/idle',
+      '/working/ui/idle.on.WRITE': '/working/ui/input',
+      '/working/ui/input.on.WRITE.[0]': '/working/ui/idle',
+      '/working/ui/input.on.WRITE.[1]': '/working/ui/idle',
+    },
+  },
 ).provideOptions(
   ({ isNotValue, isValue, assign, voidAction, debounce: _debounce }) => ({
     actions: {

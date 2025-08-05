@@ -23,28 +23,43 @@ export const config3 = createConfig({
     state2: {
       after: {
         DELAY: { actions: ['dodo1', 'doré'] },
-        DELAY2: '/state2',
+        DELAY2: {
+          /* target: '/state2' */
+        },
         DELAY3: { actions: 'dodo2' },
       },
       on: {
         EVENT: { actions: ['dodo3', 'doré1'] },
-        EVENT2: '/state4',
+        EVENT2: {
+          /* target: '/state4'  */
+        },
         EVENT3: { actions: 'dodo5' },
       },
       always: [
-        { actions: 'dodo6', guards: 'guard2', target: '/state3' },
+        {
+          actions: 'dodo6',
+          guards: 'guard2',
+          // target: '/state3',
+        },
         {
           actions: ['dodo7', 'doré3', 'doré1'],
           guards: 'guard2',
-          target: '/state3',
+          // target: '/state3',
         },
-        '/state1',
+        {
+          /* target: '/state1'  */
+        },
       ],
       promises: [
         {
           src: 'promise1',
           then: { actions: 'action1' },
-          catch: [{ guards: 'ert', actions: 'action14' }, '/state1'],
+          catch: [
+            { guards: 'ert', actions: 'action14' },
+            {
+              /* target: '/state1' */
+            },
+          ],
           finally: [
             {
               actions: 'action13',
@@ -63,7 +78,12 @@ export const config3 = createConfig({
             { actions: 'action4', guards: 'guard2' },
             { actions: 'action3' },
           ],
-          catch: [{ guards: 'ert', actions: 'action15' }, '/state1'],
+          catch: [
+            { guards: 'ert', actions: 'action15' },
+            {
+              /* target:'/state1' */
+            },
+          ],
           finally: [
             {
               guards: 'guard',
@@ -91,9 +111,20 @@ export const machine3 = createMachine(
     context: { age: 'number' },
   }),
   {
-    '/': 'state1',
-    '/state1': 'state11',
-    '/state1/state11': 'state111',
+    initials: {
+      '/': 'state1',
+      '/state1': 'state11',
+      '/state1/state11': 'state111',
+    },
+    targets: {
+      '/state2.after.DELAY2': '/state2',
+      '/state2.on.EVENT2': '/',
+      '/state2.always.[0]': '/state1/state11',
+      '/state2.always.[1]': '/state1/state12',
+      '/state2.always.[2]': '/state1/state11',
+      '/state2.promises.[0].catch.[1]': '/state1/state12',
+      '/state2.promises.[1].catch.[1]': '/state1/state12',
+    },
   },
 );
 

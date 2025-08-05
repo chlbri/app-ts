@@ -19,7 +19,7 @@ export const defaultT = {
   eventsMap: {},
   promiseesMap: {},
 } as const;
-export const defaultI = { '/': 'idle' } as const;
+export const defaultI = { initials: { '/': 'idle' } } as const;
 
 export const fakeWaiter = async (ms = 0, times = 1) => {
   const check = vi.isFakeTimers();

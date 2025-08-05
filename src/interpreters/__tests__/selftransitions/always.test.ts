@@ -24,16 +24,22 @@ describe('Integration testing for interpret, Children', () => {
         states: {
           idle: {
             after: {
-              DELAY: '/notActive',
+              DELAY: {},
             },
-            always: '/active',
+            always: {},
           },
           active: {},
           notActive: {},
         },
       },
       defaultT,
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.after.DELAY': '/notActive',
+          '/idle.always': '/active',
+        },
+      },
     );
 
     machine.addOptions(() => ({
@@ -57,16 +63,22 @@ describe('Integration testing for interpret, Children', () => {
         states: {
           idle: {
             after: {
-              DELAY3: '/notActive',
+              DELAY3: {},
             },
-            always: { target: '/active', guards: 'returnFalse' },
+            always: { guards: 'returnFalse' },
           },
           active: {},
           notActive: {},
         },
       },
       defaultT,
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.after.DELAY3': '/notActive',
+          '/idle.always': '/active',
+        },
+      },
     );
 
     machine.addOptions(() => ({
@@ -95,9 +107,9 @@ describe('Integration testing for interpret, Children', () => {
         states: {
           idle: {
             always: [
-              { target: '/result1', guards: 'returnFalse' },
-              { target: '/result3', guards: 'returnFalse' },
-              { target: '/result2' },
+              { guards: 'returnFalse' },
+              { guards: 'returnFalse' },
+              {},
             ],
           },
           result1: {},
@@ -106,7 +118,14 @@ describe('Integration testing for interpret, Children', () => {
         },
       },
       defaultT,
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.always.[0]': '/result1',
+          '/idle.always.[1]': '/result3',
+          '/idle.always.[2]': '/result2',
+        },
+      },
     );
 
     // machine.addPredicates({ returnFalse });

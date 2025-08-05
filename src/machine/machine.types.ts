@@ -22,7 +22,7 @@ import type {
  * @template :  {@linkcode EventsMap} [E] - type of the events map
  * @template :  {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template :  any [Pc] - type of the private context
- * @template :  {@linkcode types.PrimitiveObject} [Tc] - type of the context
+ * @template :  {@linkcode types} [Tc] - type of the context
  * @template :  {@linkcode SimpleMachineOptions2} [Mo] - type of the machine options
  */
 export type Elements<
@@ -34,7 +34,6 @@ export type Elements<
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = {
   config: C;
-  initials: Mo['initials'];
   pContext: Pc;
   events: E;
   promisees: P;
@@ -90,8 +89,6 @@ export interface AnyMachine<
   renew: any;
   initialConfig: NodeConfigWithInitials;
   initialValue: StateValue;
-
-  addInitials: types.Fn<[any], any>;
 
   isInitial: types.Fn<[string], boolean>;
   retrieveParentFromInitial: types.Fn<[string], NodeConfigWithInitials>;

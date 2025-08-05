@@ -158,7 +158,7 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
 export class Interpreter<
   const C extends Config = Config,
   Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  const Tc extends types.PrimitiveObject = types.PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
@@ -1051,15 +1051,6 @@ export class Interpreter<
   protected _cachedIntervals: Interval2[] = [];
 
   #performTransition: PerformTransition_F = transition => {
-    const check = typeof transition == 'string';
-    if (check) {
-      const { diffEntries, diffExits } = this.#diffNext(transition);
-      this.#performActions(...toArray<ActionConfig>(diffExits));
-      this.#performActions(...toArray<ActionConfig>(diffEntries));
-
-      return transition;
-    }
-
     const { guards, actions, target } = transition;
     const { diffEntries, diffExits } = this.#diffNext(target);
 
@@ -1652,7 +1643,7 @@ export class Interpreter<
 
     flat.forEach(([from, transitions], _, all) => {
       const canTake = all.every(
-        ([from2]) => from2 === from || !from2.startsWith(from),
+        ([from2]) => !from2.startsWith(`${from}${DEFAULT_DELIMITER}`),
       );
       if (canTake) flat2.push([from, transitions]);
     });
@@ -1963,6 +1954,7 @@ export class Interpreter<
 
   protected interpretChild = interpret;
 
+  //TODO: Add a subscribeTo Method to subscribe to a already started service
   /**
    * Subscribes a child machine to the current machine.
    *

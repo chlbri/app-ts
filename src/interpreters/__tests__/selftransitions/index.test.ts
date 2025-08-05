@@ -1,6 +1,6 @@
 import { createMachine } from '~machine';
 import { interpret } from '../../interpreter';
-import { defaultT } from '../fixtures';
+import { defaultI, defaultT } from '../fixtures';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -14,14 +14,14 @@ describe('Self Transitions', () => {
         states: {
           idle: {
             after: {
-              DELAY: '/active',
+              DELAY: {},
             },
           },
           active: {},
         },
       },
       defaultT,
-      { '/': 'idle' },
+      { ...defaultI, targets: { '/idle.after.DELAY': '/active' } },
     );
 
     machine.addOptions(() => ({
@@ -47,13 +47,13 @@ describe('Self Transitions', () => {
       {
         states: {
           idle: {
-            always: [{ target: '/active' }],
+            always: [{}],
           },
           active: {},
         },
       },
       defaultT,
-      { '/': 'idle' },
+      { ...defaultI, targets: { '/idle.always.[0]': '/active' } },
     );
 
     const service = interpret(machine, {
@@ -73,8 +73,8 @@ describe('Self Transitions', () => {
             promises: [
               {
                 src: 'resolvePromise',
-                then: '/active',
-                catch: '/active',
+                then: {},
+                catch: {},
               },
             ],
           },
@@ -82,7 +82,13 @@ describe('Self Transitions', () => {
         },
       },
       defaultT,
-      { '/': 'idle' },
+      {
+        ...defaultI,
+        targets: {
+          '/idle.promises.[0].then': '/active',
+          '/idle.promises.[0].catch': '/active',
+        },
+      },
     );
 
     machine.addOptions(() => ({

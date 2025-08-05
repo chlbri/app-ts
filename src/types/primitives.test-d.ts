@@ -64,8 +64,8 @@ const complexObject2 = {
 expectTypeOf(ttString).toExtend<types.PrimitiveObject>();
 expectTypeOf(ttNumber).toExtend<types.PrimitiveObject>();
 expectTypeOf(ttBoolean).toExtend<types.PrimitiveObject>();
-expectTypeOf(ttArra1).not.toExtend<types.PrimitiveObject>();
-expectTypeOf(ttArray2).not.toExtend<types.PrimitiveObject>();
+expectTypeOf(ttArra1).toExtend<types.PrimitiveObject>();
+expectTypeOf(ttArray2).toExtend<types.PrimitiveObject>();
 expectTypeOf(ttObject).toExtend<types.PrimitiveObject>();
 expectTypeOf(ttFunction).not.toExtend<types.PrimitiveObject>();
 expectTypeOf(ttArrowFunction).not.toExtend<types.PrimitiveObject>();

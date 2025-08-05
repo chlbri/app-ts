@@ -3,7 +3,7 @@ import { DELAY } from '~fixturesData';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
 import { typings } from '~utils';
-import { fakeWaiter } from './__tests__/fixtures';
+import { defaultI, fakeWaiter } from './__tests__/fixtures';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -38,7 +38,7 @@ describe('Covers all inner actions', () => {
           iterator: 'number',
         },
       }),
-      { '/': 'idle' },
+      defaultI,
     ).provideOptions(
       ({ assign, pauseActivity, resumeActivity, stopActivity }) => ({
         actions: {
@@ -146,11 +146,11 @@ describe('Covers all inner actions', () => {
               PAUSE: { actions: 'pause' },
               RESUME: { actions: 'resume' },
               STOP: { actions: 'stop' },
-              NEXT: '/next',
+              NEXT: {},
             },
           },
           next: {
-            always: '/idle',
+            always: {},
           },
         },
       },
@@ -169,7 +169,13 @@ describe('Covers all inner actions', () => {
           iterator: 'number',
         },
       }),
-      { '/': 'idle' },
+      {
+        ...defaultI,
+        targets: {
+          '/idle.on.NEXT': '/next',
+          '/next.always': '/idle',
+        },
+      },
     ).provideOptions(
       ({ assign, pauseTimer, resumeTimer, stopTimer, debounce }) => ({
         actions: {
@@ -329,12 +335,12 @@ describe('Covers all inner actions', () => {
               DECREMENT: { actions: 'dec' },
               INCREMENT: { actions: 'inc' },
               REDECREMENT: { actions: 'sendDec' },
-              NEXT: '/next',
+              NEXT: {},
             },
           },
           next: {
             on: {
-              NEXT: '/idle',
+              NEXT: {},
               'INCREMENT.FORCE': { actions: 'forceSendInc' },
               DECREMENT: { actions: 'sendDec' },
               INCREMENT: { actions: ['inc', 'inc'] },
@@ -358,7 +364,13 @@ describe('Covers all inner actions', () => {
           iterator: 'number',
         }),
       }),
-      { '/': 'idle' },
+      {
+        ...defaultI,
+        targets: {
+          '/idle.on.NEXT': '/next',
+          '/next.on.NEXT': '/idle',
+        },
+      },
     ).provideOptions(({ assign, forceSend, resend }) => ({
       actions: {
         inc: assign(
@@ -448,12 +460,12 @@ describe('Covers all inner actions', () => {
               DECREMENT: { actions: 'dec' },
               INCREMENT: { actions: 'inc' },
               REDECREMENT: { actions: 'sendDec' },
-              NEXT: '/next',
+              NEXT: {},
             },
           },
           next: {
             on: {
-              NEXT: '/idle',
+              NEXT: {},
               'INCREMENT.FORCE': { actions: 'forceSendInc' },
               REDECREMENT: { actions: 'sendDec' },
             },
@@ -476,7 +488,13 @@ describe('Covers all inner actions', () => {
           iterator: 'number',
         }),
       }),
-      { '/': 'idle' },
+      {
+        ...defaultI,
+        targets: {
+          '/idle.on.NEXT': '/next',
+          '/next.on.NEXT': '/idle',
+        },
+      },
     ).provideOptions(({ assign, forceSend, resend }) => ({
       actions: {
         inc: assign('context.iterator', ({ context: { iterator } }) => {
