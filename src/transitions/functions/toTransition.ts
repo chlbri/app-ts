@@ -5,7 +5,6 @@ import type { EventsMap, PromiseeMap } from '~events';
 import { toPredicate, type GuardConfig } from '~guards';
 import type { SimpleMachineOptions2 } from '~machines';
 import type { Transition, TransitionConfig } from '~transitions';
-import { isString } from '~types';
 
 export type ToTransition_F = <
   E extends EventsMap = EventsMap,
@@ -15,7 +14,7 @@ export type ToTransition_F = <
 >(
   events: E,
   promisees: P,
-  config: TransitionConfig,
+  config: TransitionConfig & { target?: string },
   options?: Pick<SimpleMachineOptions2, 'actions' | 'predicates'>,
 ) => Transition<E, P, Pc, Tc>;
 
@@ -33,7 +32,6 @@ export type ToTransition_F = <
  * @see {@linkcode toPredicate} for converting guards
  * @see {@linkcode toArray.typed} for ensuring typed arrays
  * @see {@linkcode toArray} for ensuring typed arrays
- * @see {@linkcode isString} for checking if the config is a string
  */
 export const toTransition: ToTransition_F = (
   events,
@@ -41,13 +39,7 @@ export const toTransition: ToTransition_F = (
   config,
   options,
 ) => {
-  if (isString(config)) {
-    const target = toArray<string>(config);
-    return { target, actions: [], guards: [], in: [] };
-  }
-
-  const { description } = config;
-  const target = toArray<string>(config.target);
+  const { description, target } = config;
 
   const actions = toArray
     .typed(config.actions)

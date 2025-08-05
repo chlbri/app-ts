@@ -75,16 +75,16 @@ type Config1 = ConfigFrom<typeof machine1>;
 
 type Targets1 = GetTargetsFrom<Config1>;
 
-expectTypeOf<Targets1>().toEqualTypeOf<{
-  '/idle/on.NEXT': '/' | '/final' | '/idle' | '..' | '../';
+expectTypeOf<Targets1>().branded.toEqualTypeOf<{
+  '/idle.on.NEXT'?: '/' | '/final' | '/idle' | '..' | '../';
 }>();
 
 type Config2 = ConfigFrom<typeof machine2>;
 
 type Targets2 = GetTargetsFrom<Config2>;
 
-expectTypeOf<Targets2>().toEqualTypeOf<{
-  '/idle/on.NEXT':
+expectTypeOf<Targets2>().branded.toEqualTypeOf<{
+  '/idle.on.NEXT'?:
     | '/'
     | '/final'
     | '/idle'
@@ -98,7 +98,7 @@ expectTypeOf<Targets2>().toEqualTypeOf<{
     | '/working/fetch'
     | '/working/ui'
     | '/working/ui/final';
-  '/working/on.FINISH':
+  '/working.on.FINISH'?:
     | '/'
     | '/final'
     | '/idle'
@@ -119,7 +119,7 @@ expectTypeOf<Targets2>().toEqualTypeOf<{
     | './ui/input'
     | './ui/idle'
     | './ui/final';
-  '/working/fetch/fetch/promises.then':
+  '/working/fetch/fetch.promises.then'?:
     | '/'
     | '/final'
     | '/idle'
@@ -136,7 +136,7 @@ expectTypeOf<Targets2>().toEqualTypeOf<{
     | '../fetch'
     | '../../'
     | '../../working';
-  '/working/fetch/fetch/promises.catch':
+  '/working/fetch/fetch.promises.catch'?:
     | '/'
     | '/final'
     | '/idle'
@@ -153,7 +153,7 @@ expectTypeOf<Targets2>().toEqualTypeOf<{
     | '../fetch'
     | '../../'
     | '../../working';
-  '/working/fetch/idle/on.FETCH':
+  '/working/fetch/idle.on.FETCH'?:
     | '/'
     | '/final'
     | '/idle'
@@ -170,7 +170,7 @@ expectTypeOf<Targets2>().toEqualTypeOf<{
     | '../fetch'
     | '../../'
     | '../../working';
-  '/working/ui/input/on.WRITE.[0]':
+  '/working/ui/input.on.WRITE.[0]'?:
     | '/'
     | '..'
     | '../'
@@ -187,7 +187,7 @@ expectTypeOf<Targets2>().toEqualTypeOf<{
     | '/working/ui/final'
     | '../../working'
     | '../ui';
-  '/working/ui/input/on.WRITE.[1]':
+  '/working/ui/input.on.WRITE.[1]'?:
     | '/'
     | '..'
     | '../'
@@ -204,7 +204,7 @@ expectTypeOf<Targets2>().toEqualTypeOf<{
     | '/working/ui/final'
     | '../../working'
     | '../ui';
-  '/working/ui/idle/on.WRITE':
+  '/working/ui/idle.on.WRITE'?:
     | '/'
     | '..'
     | '../'

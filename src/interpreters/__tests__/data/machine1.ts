@@ -11,7 +11,7 @@ export const machine1 = createMachine(
           DELAY: 'inc',
         },
         on: {
-          NEXT: { target: '/final', description: 'Next' },
+          NEXT: { description: 'Next' },
         },
       },
       final: {},
@@ -25,7 +25,12 @@ export const machine1 = createMachine(
       iterator: 'number',
     },
   }),
-  { '/': 'idle' },
+  {
+    initials: { '/': 'idle' },
+    targets: {
+      '/idle.on.NEXT': '/final',
+    },
+  },
 );
 
 machine1.addOptions(({ assign }) => ({

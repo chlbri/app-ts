@@ -158,7 +158,7 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
 export class Interpreter<
   const C extends Config = Config,
   Pc extends types.PrimitiveObject = types.PrimitiveObject,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  const Tc extends types.PrimitiveObject = types.PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
@@ -1051,15 +1051,6 @@ export class Interpreter<
   protected _cachedIntervals: Interval2[] = [];
 
   #performTransition: PerformTransition_F = transition => {
-    const check = typeof transition == 'string';
-    if (check) {
-      const { diffEntries, diffExits } = this.#diffNext(transition);
-      this.#performActions(...toArray<ActionConfig>(diffExits));
-      this.#performActions(...toArray<ActionConfig>(diffEntries));
-
-      return transition;
-    }
-
     const { guards, actions, target } = transition;
     const { diffEntries, diffExits } = this.#diffNext(target);
 

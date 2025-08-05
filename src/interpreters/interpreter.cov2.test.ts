@@ -2,6 +2,7 @@ import { castings } from '@bemedev/types';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
 import { typings } from '~utils';
+import { defaultI } from './__tests__/fixtures';
 
 describe('Coverage of interpretr #2', () => {
   describe('#01 => Cov select and pSelect for primitive units', () => {
@@ -14,7 +15,6 @@ describe('Coverage of interpretr #2', () => {
               INC: { actions: 'inc' },
               'INC.PRIVATE': { actions: 'incPrivate' },
               NEXT: {
-                target: '/final',
                 description: 'Next',
                 actions: ['inc', 'incPrivate'],
               },
@@ -32,7 +32,12 @@ describe('Coverage of interpretr #2', () => {
         context: 'number',
         pContext: 'number',
       }),
-      { '/': 'idle' },
+      {
+        ...defaultI,
+        targets: {
+          '/idle.on.NEXT': '/final',
+        },
+      },
     ).provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context', ({ context }) => context + 1),

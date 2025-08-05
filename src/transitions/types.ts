@@ -24,7 +24,7 @@ import type {
  * Used as Helper
  */
 type _TransitionConfigMap = {
-  readonly target?: string;
+  // readonly target?: string;
   // readonly internal?: boolean;
   readonly actions?: SingleOrArrayL<ActionConfig>;
   readonly guards?: SingleOrArrayL<GuardConfig>;
@@ -68,14 +68,6 @@ export type ExtractGuardsFromTransition<
     : never;
 
 /**
- * A {@linkcode _TransitionConfigMap} that requires a target.
- */
-export type TransitionConfigMapF = types.Require<
-  _TransitionConfigMap,
-  'target'
->;
-
-/**
  * A {@linkcode _TransitionConfigMap} that requires actions.
  */
 export type TransitionConfigMapA = types.Require<
@@ -92,20 +84,12 @@ export type TransitionConfigMapA = types.Require<
  * @see {@linkcode TransitionConfigMapF} for a version that requires a target.
  * @see {@linkcode TransitionConfigMapA} for a version that requires actions.
  */
-export type TransitionConfigMap =
-  | TransitionConfigMapF
-  | TransitionConfigMapA;
+export type TransitionConfig = _TransitionConfigMap | TransitionConfigMapA;
 
 /**
- * A version {@linkcode TransitionConfigMap} with string declaration.
+ * A version {@linkcode TransitionConfig} with string declaration.
  * //TODO: Use object only
  */
-export type TransitionConfig = string | TransitionConfigMap;
-
-/**
- * A version {@linkcode TransitionConfigMapF} with string declaration.
- */
-export type TransitionConfigF = string | TransitionConfigMapF;
 
 /**
  * An array of transitions that can be used in a state machine.
@@ -114,14 +98,11 @@ export type TransitionConfigF = string | TransitionConfigMapF;
  *
  * @see {@linkcode TransitionConfigMapF} for a version that requires a target.
  * @see {@linkcode TransitionConfigMapA} for a version that requires actions.
- * @see {@linkcode TransitionConfig} for a version that can be a string or a {@linkcode TransitionConfigMap}.
+ * @see {@linkcode TransitionConfig} for a version that can be a string or a {@linkcode TransitionConfig}.
  * @see {@linkcode types.Require}
  */
 export type ArrayTransitions = readonly [
-  ...(
-    | types.Require<TransitionConfigMapF, 'guards'>
-    | types.Require<TransitionConfigMapA, 'guards'>
-  )[],
+  ...types.Require<TransitionConfig, 'guards'>[],
   TransitionConfig,
 ];
 
@@ -142,10 +123,10 @@ export type SingleOrArrayT = ArrayTransitions | TransitionConfig;
  */
 export type AlwaysConfig =
   | readonly [
-      ...types.Require<TransitionConfigMap, 'guards'>[],
-      TransitionConfigF,
+      ...types.Require<TransitionConfig, 'guards'>[],
+      TransitionConfig,
     ]
-  | TransitionConfigF;
+  | TransitionConfig;
 
 /**
  * A type used to represent a record of transitions.
@@ -330,7 +311,7 @@ export type ExtractSrcFromTransitions<T extends TransitionsConfig> =
  * @template : {@linkcode EventsMap} [E] - The events map used in the transition.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the transition.
  * @template : [Pc] - The private context type for the transition.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The context for the transition.
+ * @template : {@linkcode types} [Tc] - The context for the transition.
  *
  * @see {@linkcode Action} for the structure of actions in the transition.
  * @see {@linkcode Predicate} for the structure of guards in the transition.
@@ -341,7 +322,7 @@ export type Transition<
   Pc extends types.PrimitiveObject = types.PrimitiveObject,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
-  readonly target: string[];
+  readonly target: string;
   readonly actions: Action<E, P, Pc, Tc>[];
   readonly guards: Predicate<E, P, Pc, Tc>[];
   readonly description?: string;

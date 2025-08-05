@@ -3,7 +3,7 @@ import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { interpret } from '~interpreter';
 import { createMachine } from '~machine';
 import { EVENTS_FULL } from '~machines';
-import { defaultC, defaultT } from './fixtures';
+import { defaultC, defaultI, defaultT } from './fixtures';
 
 describe('Integration testing for interpret, Children', () => {
   beforeAll(() => {
@@ -19,7 +19,7 @@ describe('Integration testing for interpret, Children', () => {
       },
     },
     { ...defaultT, context: typings.numbers.type },
-    { '/': 'idle' },
+    defaultI,
   ).provideOptions(({ assign }) => ({
     actions: {
       inc: assign('context', ({ context }) => context + 1),
@@ -36,7 +36,7 @@ describe('Integration testing for interpret, Children', () => {
         },
       },
       { ...defaultT, pContext: typings.numbers.type },
-      { '/': 'idle' },
+      defaultI,
     ).provideOptions(({ createChild }) => ({
       machines: {
         child: createChild(
@@ -88,7 +88,7 @@ describe('Integration testing for interpret, Children', () => {
           idle: {},
           working: {
             on: {
-              NEXT: '/idle',
+              NEXT: {},
             },
           },
         },
@@ -98,7 +98,12 @@ describe('Integration testing for interpret, Children', () => {
         pContext: { iterator: typings.numbers.type },
         eventsMap: { NEXT: {} },
       },
-      { '/': 'idle' },
+      {
+        ...defaultI,
+        targets: {
+          '/working.on.NEXT': '/idle',
+        },
+      },
     ).provideOptions(({ createChild }) => ({
       machines: {
         child: createChild(

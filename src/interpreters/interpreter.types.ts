@@ -195,7 +195,7 @@ export type Contexts<
 };
 
 export type PerformTransition_F = (
-  transition: TransitionConfig,
+  transition: TransitionConfig & { target?: string },
 ) => string | false;
 
 export type PerformTransitions_F = (
@@ -293,7 +293,7 @@ export type Subscribe_F<
 export type Selector_F<T = any> = T extends types.Primitive
   ? undefined
   : <
-      D extends Decompose<T, { start: false }>,
+      D extends Decompose<Required<T>, { start: false; object: 'both' }>,
       K extends Extract<keyof D, string>,
       R = D[K],
     >(

@@ -25,8 +25,8 @@ describe('promisee', () => {
           idle: {
             promises: {
               src: 'notDefined',
-              then: '/active',
-              catch: '/active',
+              then: {},
+              catch: {},
               description: 'notDefined',
             },
           },
@@ -34,7 +34,13 @@ describe('promisee', () => {
         },
       },
       defaultT,
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.promises.then': '/active',
+          '/idle.promises.catch': '/active',
+        },
+      },
     );
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
@@ -54,8 +60,8 @@ describe('promisee', () => {
           idle: {
             promises: {
               src: 'rejectPromise',
-              then: '/active',
-              catch: '/inactive',
+              then: {},
+              catch: {},
             },
           },
           active: {},
@@ -63,7 +69,13 @@ describe('promisee', () => {
         },
       },
       defaultT,
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.promises.then': '/active',
+          '/idle.promises.catch': '/inactive',
+        },
+      },
     );
 
     machine.addOptions(() => ({
@@ -89,8 +101,8 @@ describe('promisee', () => {
           idle: {
             promises: {
               src: 'resolvePromise',
-              then: '/active',
-              catch: '/inactive',
+              then: {},
+              catch: {},
             },
           },
           active: {},
@@ -98,7 +110,13 @@ describe('promisee', () => {
         },
       },
       defaultT,
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.promises.then': '/active',
+          '/idle.promises.catch': '/inactive',
+        },
+      },
     );
 
     machine.addOptions(() => ({
@@ -124,11 +142,11 @@ describe('promisee', () => {
           idle: {
             promises: {
               src: 'rejectPromise',
-              then: '/active',
-              catch: '/inactive',
+              then: {},
+              catch: {},
             },
             on: {
-              NEXT: '/active2',
+              NEXT: {},
             },
           },
           active: {},
@@ -137,7 +155,14 @@ describe('promisee', () => {
         },
       },
       { ...defaultT, eventsMap: { NEXT: {} } },
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.promises.then': '/active',
+          '/idle.promises.catch': '/inactive',
+          '/idle.on.NEXT': '/active2',
+        },
+      },
     );
 
     machine.addOptions(() => ({
@@ -172,8 +197,8 @@ describe('promisee', () => {
           idle: {
             promises: {
               src: 'rejectPromise',
-              then: '/active',
-              catch: '/inactive',
+              then: {},
+              catch: {},
               max: 'DELAY',
             },
           },
@@ -182,7 +207,13 @@ describe('promisee', () => {
         },
       },
       defaultT,
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.promises.then': '/active',
+          '/idle.promises.catch': '/inactive',
+        },
+      },
     );
 
     machine.addOptions(() => ({
@@ -270,8 +301,8 @@ describe('promisee', () => {
             idle: {
               promises: {
                 src: 'rejectPromise',
-                then: '/active',
-                catch: '/active',
+                then: {},
+                catch: {},
                 finally: 'finalAction',
               },
             },
@@ -279,7 +310,13 @@ describe('promisee', () => {
           },
         },
         defaultT,
-        defaultI,
+        {
+          ...defaultI,
+          targets: {
+            '/idle.promises.then': '/active',
+            '/idle.promises.catch': '/active',
+          },
+        },
       );
 
       machine.addOptions(() => ({
@@ -321,8 +358,8 @@ describe('promisee', () => {
             idle: {
               promises: {
                 src: 'rejectPromise',
-                then: '/active',
-                catch: '/active',
+                then: {},
+                catch: {},
                 finally: { actions: 'finalAction', guards: 'guard' },
               },
             },
@@ -330,7 +367,13 @@ describe('promisee', () => {
           },
         },
         defaultT,
-        defaultI,
+        {
+          ...defaultI,
+          targets: {
+            '/idle.promises.then': '/active',
+            '/idle.promises.catch': '/active',
+          },
+        },
       );
 
       const actionVi = vi.fn();

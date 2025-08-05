@@ -56,13 +56,12 @@ export type PromiseFunction2<
  * @see {@linkcode types.NOmit}
  * @see {@linkcode types.Require}
  */
-export type FinallyConfig =
-  types.NOmit<TransitionConfigMapA, 'target'> extends infer F extends
-    types.NOmit<TransitionConfigMapA, 'target'>
-    ?
-        | (F | ActionConfig)
-        | readonly [...types.Require<F, 'guards'>[], F | ActionConfig]
-    : never;
+export type FinallyConfig = TransitionConfigMapA extends infer F extends
+  TransitionConfigMapA
+  ?
+      | (F | ActionConfig)
+      | readonly [...types.Require<F, 'guards'>[], F | ActionConfig]
+  : never;
 
 /**
  * Represents a promisee configuration.

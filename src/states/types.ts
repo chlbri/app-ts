@@ -161,17 +161,23 @@ type FlatMapNodeConfig<
 export type FlatMapN<
   T extends NodeConfig = NodeConfig,
   withChildren extends boolean = true,
-> = types.UnionToIntersection2<FlatMapNodeConfig<T, withChildren>> & {
+> = types.UnionToIntersection<FlatMapNodeConfig<T, withChildren>> & {
   readonly '/': T;
 };
 // #endregion
+
+type AlwaysEnd = `${string}.always` | `${string}.always.[${number}]`;
+
+export type EndWithAlways<T extends types.Keys> = Extract<T, AlwaysEnd>;
+
+export type EndwA<T extends types.Keys> = EndWithAlways<T>;
 
 export type _GetTargetsFromMap<T extends FlatMapN> = {
   [key in keyof T & string]: T[key] extends infer TK
     ? GetEventKeysFromTransitions<TK> extends infer GE extends string
       ? {
           //TODO: Add .target at the end of key
-          [key2 in `${key}/${GE}`]:
+          [key2 in `${key}.${GE}`]:
             | keyof T
             | GetParents<key>
             | `./${GetChildren<keyof T & string, key>}`;
@@ -180,8 +186,15 @@ export type _GetTargetsFromMap<T extends FlatMapN> = {
     : never;
 }[keyof T & string];
 
+type __GetTargetsFromMap<T extends FlatMapN> = types.UnionToIntersection<
+  _GetTargetsFromMap<T>
+>;
+
 export type GetTargetsFromMap<T extends FlatMapN> =
-  types.UnionToIntersection<_GetTargetsFromMap<T>>;
+  __GetTargetsFromMap<T> extends infer GEP
+    ? Partial<Omit<GEP, EndwA<keyof GEP>>> &
+        Required<Pick<GEP, EndwA<keyof GEP>>>
+    : never;
 
 export type Node<
   E extends EventsMap = EventsMap,

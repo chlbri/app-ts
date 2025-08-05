@@ -12,7 +12,12 @@ import type { StateValue } from '~states';
 import { nothing, toFunction, typings } from '~utils';
 import { machine21 } from './__tests__/data/machine21';
 import { machine3 } from './__tests__/data/machine3';
-import { defaultC, defaultT, fakeWaiter } from './__tests__/fixtures';
+import {
+  defaultC,
+  defaultI,
+  defaultT,
+  fakeWaiter,
+} from './__tests__/fixtures';
 import { interpret, TIME_TO_RINIT_SELF_COUNTER } from './interpreter';
 import type { AnyInterpreter } from './interpreter.types';
 
@@ -27,7 +32,7 @@ describe('Interpreter', () => {
   };
 
   describe('#01 => Status', () => {
-    let service = castings._unknown<AnyInterpreter>();
+    let service = castings.commons.unknown<AnyInterpreter>(null);
 
     test('#0 => Create the machine', () => {
       service = castings.commons.any(interpret(machine3, resultC));
@@ -221,21 +226,19 @@ describe('Interpreter', () => {
           idle: {
             entry: 'inc',
             always: {
-              target: '/working',
               guards: ['condition', 'limit'],
             },
             after: {
-              DELAY: '/working',
+              DELAY: {},
             },
           },
           working: {
             entry: 'inc',
             always: {
-              target: '/idle',
               guards: ['condition', 'limit'],
             },
             after: {
-              DELAY: '/idle',
+              DELAY: {},
             },
           },
         },
@@ -253,7 +256,15 @@ describe('Interpreter', () => {
           iterator: 'number',
         },
       }),
-      { '/': 'idle' },
+      {
+        ...defaultI,
+        targets: {
+          '/idle.always': '/working',
+          '/idle.after.DELAY': '/working',
+          '/working.always': '/idle',
+          '/working.after.DELAY': '/idle',
+        },
+      },
     ).provideOptions(({ isValue, assign }) => ({
       actions: {
         addCondition: ({ pContext, context }) => ({
@@ -326,7 +337,7 @@ describe('Interpreter', () => {
         },
       },
       { ...defaultT, eventsMap: { NEXT: {} } },
-      { '/': 'idle' },
+      defaultI,
     ).provideOptions(() => ({
       actions: {
         inc,
@@ -395,7 +406,7 @@ describe('Interpreter', () => {
         },
       },
       defaultT,
-      { '/': 'idle' },
+      defaultI,
     ).provideOptions(() => ({
       actions: {
         inc,
@@ -447,7 +458,7 @@ describe('Interpreter', () => {
         },
       },
       { ...defaultT, context: { iterator: 0 } },
-      { '/': 'idle' },
+      defaultI,
     ).provideOptions(() => ({
       actions: {
         inc,

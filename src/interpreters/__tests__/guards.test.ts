@@ -16,7 +16,6 @@ describe('Interpret for guards', () => {
         states: {
           state1: {
             always: {
-              target: '/state2',
               guards: 'guard1',
             },
           },
@@ -24,7 +23,10 @@ describe('Interpret for guards', () => {
         },
       },
       defaultT,
-      { '/': 'state1' },
+      {
+        initials: { '/': 'state1' },
+        targets: { '/state1.always': '/state2' },
+      },
     );
 
     machine.addOptions(({ isDefined }) => ({
@@ -49,13 +51,12 @@ describe('Interpret for guards', () => {
         states: {
           state1: {
             always: {
-              target: '/state2',
               guards: 'guard1',
             },
           },
           state2: {
             on: {
-              NEXT: '/state1',
+              NEXT: {},
             },
           },
         },
@@ -67,7 +68,13 @@ describe('Interpret for guards', () => {
         },
         promiseesMap: {},
       },
-      { '/': 'state1' },
+      {
+        initials: { '/': 'state1' },
+        targets: {
+          '/state1.always': '/state2',
+          '/state2.on.NEXT': '/state1',
+        },
+      },
     );
 
     const service = interpret(machine, defaultC);
@@ -131,13 +138,12 @@ describe('Interpret for guards', () => {
         states: {
           state1: {
             always: {
-              target: '/state2',
               guards: { name: 'guard1', description: 'Just a guard' },
             },
           },
           state2: {
             on: {
-              NEXT: '/state1',
+              NEXT: {},
             },
           },
         },
@@ -149,7 +155,13 @@ describe('Interpret for guards', () => {
         },
         promiseesMap: {},
       },
-      { '/': 'state1' },
+      {
+        initials: { '/': 'state1' },
+        targets: {
+          '/state1.always': '/state2',
+          '/state2.on.NEXT': '/state1',
+        },
+      },
     );
 
     const service = interpret(machine, defaultC);
@@ -213,7 +225,6 @@ describe('Interpret for guards', () => {
         states: {
           state1: {
             always: {
-              target: '/state2',
               guards: [
                 'returnTrue',
                 {
@@ -238,7 +249,10 @@ describe('Interpret for guards', () => {
           data: typings.strings.type,
         },
       },
-      { '/': 'state1' },
+      {
+        initials: { '/': 'state1' },
+        targets: { '/state1.always': '/state2' },
+      },
     );
 
     machine.addOptions(({ isDefined, isNotDefined }) => ({

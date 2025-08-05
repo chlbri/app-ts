@@ -26,7 +26,7 @@ describe('after', () => {
     states: {
       idle: {
         after: {
-          DELAY: '/active',
+          DELAY: {},
         },
       },
       active: {},
@@ -34,7 +34,10 @@ describe('after', () => {
   });
 
   describe('#01 => simple', () => {
-    const machine = createMachine(simpleConfig, defaultT, defaultI);
+    const machine = createMachine(simpleConfig, defaultT, {
+      ...defaultI,
+      targets: { '/idle.after.DELAY': '/active' },
+    });
 
     machine.addOptions(() => ({
       delays: {
@@ -60,8 +63,8 @@ describe('after', () => {
         states: {
           idle: {
             after: {
-              DELAY1: '/result1',
-              DELAY2: ['/result2'],
+              DELAY1: {},
+              DELAY2: {},
             },
           },
           result1: {},
@@ -69,7 +72,13 @@ describe('after', () => {
         },
       },
       defaultT,
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.after.DELAY1': '/result1',
+          '/idle.after.DELAY2': '/result2',
+        },
+      },
     );
 
     machine.addOptions(() => ({
@@ -101,8 +110,8 @@ describe('after', () => {
         states: {
           idle: {
             after: {
-              DELAY: { target: '/result1', guards: 'returnFalse' },
-              DELAY2: '/result2',
+              DELAY: { guards: 'returnFalse' },
+              DELAY2: {},
             },
           },
           result1: {},
@@ -110,7 +119,13 @@ describe('after', () => {
         },
       },
       defaultT,
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.after.DELAY': '/result1',
+          '/idle.after.DELAY2': '/result2',
+        },
+      },
     );
     machine.addOptions(() => ({
       delays: {
@@ -180,21 +195,28 @@ describe('after', () => {
         states: {
           idle: {
             after: {
-              DELAY2: '/active',
+              DELAY2: {},
             },
             on: {
-              NEXT: '/active',
+              NEXT: {},
             },
           },
           active: {
             on: {
-              NEXT: '/idle',
+              NEXT: {},
             },
           },
         },
       },
       { ...defaultT, eventsMap: { NEXT: {} } },
-      defaultI,
+      {
+        ...defaultI,
+        targets: {
+          '/idle.after.DELAY2': '/active',
+          '/idle.on.NEXT': '/active',
+          '/active.on.NEXT': '/idle',
+        },
+      },
     );
 
     machine.addOptions(() => ({

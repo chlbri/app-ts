@@ -7,8 +7,8 @@ import type {
 
 // #region Delayed Keys
 const ttest1 = {
-  START: '/state1',
-  END: [{ guards: 'guard1', actions: 'build1' }, 'd'],
+  START: { actions: '/state1' },
+  END: [{ guards: 'guard1', actions: 'build1' }, { actions: 'd' }],
 } as const satisfies DelayedTransitions;
 
 type TTest1 = GetEventKeysFromDelayed<typeof ttest1>;
@@ -20,12 +20,12 @@ expectTypeOf<TTest1>().toEqualTypeOf<'START' | 'END.[0]' | 'END.[1]'>();
 
 const ttest2 = {
   on: {
-    START: '/state1',
-    END: [{ guards: 'guard1', actions: 'build1' }, 'd'],
+    START: { actions: '/state1' },
+    END: [{ guards: 'guard1', actions: 'build1' }, { actions: 'd' }],
   },
   after: {
-    START: '/state2',
-    END: [{ guards: 'guard2', actions: 'build2' }, 'e'],
+    START: { actions: '/state2' },
+    END: [{ guards: 'guard2', actions: 'build2' }, { actions: 'e' }],
   },
 } as const satisfies TransitionsConfig;
 
@@ -43,26 +43,26 @@ expectTypeOf<TTest2>().toEqualTypeOf<
 //Create tests with promises
 const ttest3 = {
   on: {
-    START: '/state1',
-    END: [{ guards: 'guard1', actions: 'build1' }, 'd'],
+    START: { actions: '/state1' },
+    END: [{ guards: 'guard1', actions: 'build1' }, { actions: 'd' }],
   },
   after: {
-    START: '/state2',
-    END: [{ guards: 'guard2', actions: 'build2' }, 'e'],
+    START: { actions: '/state2' },
+    END: [{ guards: 'guard2', actions: 'build2' }, { actions: 'e' }],
   },
-  always: [{ guards: 'guard3', actions: 'build3' }, 'f'],
+  always: [{ guards: 'guard3', actions: 'build3' }, { actions: 'f' }],
   promises: [
     {
       src: 'source1',
-      then: [{ guards: 'guard4', actions: 'build4' }, 'g'],
-      catch: [{ guards: 'guard5', actions: 'build5' }, 'h'],
-      finally: [{ guards: 'guard6', actions: 'build6' }, 'i'],
+      then: [{ guards: 'guard4', actions: 'build4' }, { actions: 'g' }],
+      catch: [{ guards: 'guard5', actions: 'build5' }, { actions: 'h' }],
+      finally: [{ guards: 'guard6', actions: 'build6' }, { actions: 'i' }],
     },
     {
       src: 'source2',
-      then: [{ guards: 'guard7', actions: 'build7' }, 'j'],
-      catch: [{ guards: 'guard8', actions: 'build8' }, 'k'],
-      finally: [{ guards: 'guard9', actions: 'build9' }, 'l'],
+      then: [{ guards: 'guard7', actions: 'build7' }, { actions: 'j' }],
+      catch: [{ guards: 'guard8', actions: 'build8' }, { actions: 'k' }],
+      finally: [{ guards: 'guard9', actions: 'build9' }, { actions: 'l' }],
     },
   ],
 } as const satisfies TransitionsConfig;

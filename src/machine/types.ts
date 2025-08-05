@@ -616,7 +616,14 @@ export type MachineOptions<
   promises?: Partial<GetSrcFromFlat<Flat, E, P, Pc, Tc>>;
   delays?: Partial<GetDelaysFromFlat<Flat, E, P, Pc, Tc>>;
   machines?: Partial<GetMachinesFromConfig<C, E, P, Pc>>;
-};
+} & (GetTargetsFromMap<Flat> extends infer G
+  ? types.NotUndefined<
+      types.NotAllowedNamesLow<G, undefined>
+    > extends never
+    ? Partial<{ targets: G }>
+    : { targets: G }
+  : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    { targets?: {} });
 
 /**
  * Getting the options from a machine.
@@ -901,6 +908,7 @@ export type SimpleMachineOptions<
   promises?: Partial<RecordS<PromiseFunction<E, P, Pc, Tc>>>;
   delays?: Partial<RecordS<Delay<E, P, Pc, Tc>>>;
   machines?: Partial<RecordS<any>>;
+  targets?: Partial<RecordS<string>>;
 };
 
 /**
@@ -914,15 +922,16 @@ export type SimpleMachineOptions<
  */
 export type SimpleMachineOptions2 = Partial<
   Record<
-    | 'initials'
     | 'actions'
     | 'predicates'
     | 'promises'
     | 'delays'
-    | 'machines',
+    | 'machines'
+    | 'targets',
     any
   >
->;
+> &
+  Record<'initials', any>;
 
 /**
  * Type representing a function that returns a {@linkcode FnMap} of promise.

@@ -28,25 +28,25 @@ type TT8 = {
 
 type TT9 = { name: 'exists2'; description: 'description' };
 
-expectTypeOf<TT1>().toMatchTypeOf<GuardConfig>();
+expectTypeOf<TT1>().toExtend<GuardConfig>();
 expectTypeOf<FromGuard<TT1>>().toEqualTypeOf<'exists'>();
 
-expectTypeOf<TT2>().not.toMatchTypeOf<GuardConfig>();
-expectTypeOf<TT3>().not.toMatchTypeOf<GuardConfig>();
+expectTypeOf<TT2>().not.toExtend<GuardConfig>();
+expectTypeOf<TT3>().not.toExtend<GuardConfig>();
 
-expectTypeOf<TT4>().toMatchTypeOf<GuardConfig>();
+expectTypeOf<TT4>().toExtend<GuardConfig>();
 expectTypeOf<FromGuard<TT4>>().toEqualTypeOf<'check'>();
 
-expectTypeOf<TT5>().toMatchTypeOf<GuardConfig>();
+expectTypeOf<TT5>().toExtend<GuardConfig>();
 expectTypeOf<FromGuard<TT5>>().toEqualTypeOf<never>();
 
-expectTypeOf<TT6>().toMatchTypeOf<GuardConfig>();
+expectTypeOf<TT6>().toExtend<GuardConfig>();
 expectTypeOf<FromGuard<TT6>>().toEqualTypeOf<
   'check' | 'exists' | 'exists2'
 >();
 
-expectTypeOf<TT7>().not.toMatchTypeOf<GuardConfig>();
-expectTypeOf<TT8>().not.toMatchTypeOf<GuardConfig>();
+expectTypeOf<TT7>().not.toExtend<GuardConfig>();
+expectTypeOf<TT8>().not.toExtend<GuardConfig>();
 
-expectTypeOf<TT9>().toMatchTypeOf<GuardConfig>();
+expectTypeOf<TT9>().toExtend<GuardConfig>();
 expectTypeOf<FromGuard<TT9>>().toEqualTypeOf<'exists2'>();

@@ -9,6 +9,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <br/>
 
 <details>
+<summary>
+
+## **[0.9.0] - 2025/08/05** => _16:20_
+
+</summary>
+
+- BREAKING CHANGES
+- Upgrade deps
+- Improve createMachine
+- Now you don't have to pass target inside config
+- The targets are now defined in the thrird argument of **createMachine**
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
 <summary><h2> [0.8.5] - 2025/07/29 => 21:00 </h2></summary>
 
 - Improve valueToNode

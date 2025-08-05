@@ -10,13 +10,12 @@ describe('Interpret for actions', () => {
         states: {
           state1: {
             always: {
-              target: '/state2',
               actions: 'action1',
             },
           },
           state2: {
             on: {
-              NEXT: '/state1',
+              NEXT: {},
             },
           },
         },
@@ -28,7 +27,13 @@ describe('Interpret for actions', () => {
         },
         promiseesMap: {},
       },
-      { '/': 'state1' },
+      {
+        initials: { '/': 'state1' },
+        targets: {
+          '/state1.always': '/state2',
+          '/state2.on.NEXT': '/state1',
+        },
+      },
     );
 
     const service = interpret(machine, defaultC);
@@ -92,7 +97,6 @@ describe('Interpret for actions', () => {
         states: {
           state1: {
             always: {
-              target: '/state2',
               actions: {
                 name: 'action1',
                 description: 'Just an action',
@@ -101,7 +105,7 @@ describe('Interpret for actions', () => {
           },
           state2: {
             on: {
-              NEXT: '/state1',
+              NEXT: {},
             },
           },
         },
@@ -113,7 +117,13 @@ describe('Interpret for actions', () => {
         },
         promiseesMap: {},
       },
-      { '/': 'state1' },
+      {
+        initials: { '/': 'state1' },
+        targets: {
+          '/state1.always': '/state2',
+          '/state2.on.NEXT': '/state1',
+        },
+      },
     );
 
     const service = interpret(machine, defaultC);
