@@ -124,7 +124,9 @@ const defaultArgs = <T extends Partial<Args>>(values: T) => {
   return args;
 };
 
-const typings = <T extends Partial<Args>>(args: T): TransformArgs<T> => {
+export const typings = <T extends Partial<Args>>(
+  args: T,
+): TransformArgs<T> => {
   const out = transformPrimitiveObject(defaultArgs(args));
   return out;
 };
@@ -143,5 +145,3 @@ typings.partial = <T extends PrimitiveObject>(
 
   return out;
 };
-
-export default typings;
