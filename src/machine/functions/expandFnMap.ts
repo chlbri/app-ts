@@ -41,7 +41,7 @@ export type ExpandFnMap = <
  *
  * @param events : type {@linkcode EventsMap} [E] - The events map.
  * @param promisees  : type {@linkcode PromiseeMap} [P] - The promisees map.
- * @param key  : type {@linkcode Decompose3} [D] - The key to assign the result to in the context and the private context.
+ * @param key  : type {@linkcode Decompose} [D] - The key to assign the result to in the context and the private context.
  * @param fn  : type {@linkcode FnMap} [E, P, Pc, Tc, R] - The function to reduce the events and promisees and performs the action.
  * @returns a {@linkcode ActionResultFn} function.
  *
