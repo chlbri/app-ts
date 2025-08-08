@@ -390,7 +390,8 @@ export type Decompose2<T> = T extends types.Ru
 
 // #region typ SubscriberType
 type HeritageMap<U extends types.Ru, Tc extends types.Ru> =
-  Decompose<U, { start: false }> extends infer KU extends object
+  Decompose<U, { start: false; object: 'both' }> extends infer KU extends
+    object
     ? {
         [key in keyof KU]?: Decompose<
           Tc,

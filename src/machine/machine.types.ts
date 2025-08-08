@@ -1,10 +1,10 @@
+import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
 import type { ActionConfig, ActionResult, ActionResultFn } from '~actions';
 import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '~events';
 import type { DefinedValue } from '~guards';
 import type { NodeConfigWithInitials, StateValue } from '~states';
 import type { FnMap, FnR, KeyU } from '~types';
-import type { Decompose3 } from './functions';
 import type {
   ChildS,
   Config,
@@ -95,24 +95,20 @@ export interface AnyMachine<
   toNode: types.Fn<[StateValue], NodeConfigWithInitials>;
 }
 
-type AssignKeys<D = any> = keyof D | 'context' | 'pContext';
-
 export type AssignAction_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = types.PrimitiveObject,
-  Tc = types.PrimitiveObject,
+  E extends EventsMap,
+  P extends PromiseeMap,
+  Pc extends types.PrimitiveObject,
+  Tc extends types.PrimitiveObject,
 > = <
-  D = Decompose3<
-    {
+  D = Decompose<
+    types.DeepRequired<{
       pContext: Pc;
       context: Tc;
-    },
-    { parent: true }
+    }>,
+    { object: 'both'; start: false; sep: '.' }
   >,
-  const K extends keyof D = AssignKeys<D> extends keyof D
-    ? AssignKeys<D>
-    : keyof D,
+  K extends keyof D = keyof D,
   R = D[K],
 >(
   key: K,
@@ -207,9 +203,7 @@ export type AllActions_F<
   P extends PromiseeMap = PromiseeMap,
   Pc extends types.PrimitiveObject = types.PrimitiveObject,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
-> =
-  | AssignAction_F<E, P, Pc, types.Cast<Tc, types.Ru>>
-  | VoidAction_F<E, P, Pc, Tc>;
+> = AssignAction_F<E, P, Pc, Tc> | VoidAction_F<E, P, Pc, Tc>;
 
 export type DebounceAction_F<
   E extends EventsMap = EventsMap,

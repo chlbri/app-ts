@@ -176,7 +176,6 @@ export type _GetTargetsFromMap<T extends FlatMapN> = {
   [key in keyof T & string]: T[key] extends infer TK
     ? GetEventKeysFromTransitions<TK> extends infer GE extends string
       ? {
-          //TODO: Add .target at the end of key
           [key2 in `${key}.${GE}`]:
             | keyof T
             | GetParents<key>
