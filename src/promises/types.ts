@@ -26,7 +26,7 @@ import type { types } from '@bemedev/types';
 export type PromiseFunction<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnMap<E, P, Pc, Tc, Promise<any>>;
 
@@ -44,7 +44,7 @@ export type PromiseFunction<
 export type PromiseFunction2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnR<E, P, Pc, Tc, Promise<any>>;
 
@@ -182,7 +182,7 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
 export type Promisee<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   src: PromiseFunction2<E, P, Pc, Tc>;

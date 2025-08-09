@@ -2,7 +2,7 @@ import type { EventsMap, PromiseeMap } from '../../events/index.js';
 import type { SimpleMachineOptions } from '../../machine/index.js';
 import type { types } from '@bemedev/types';
 import type { PromiseFunction2 } from '../types';
-export type ToPromiseSrc_F = <E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, TC extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, src: string, promises?: SimpleMachineOptions<E, P, Pc, TC>['promises']) => PromiseFunction2<E, P, Pc, TC> | undefined;
+export type ToPromiseSrc_F = <E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, TC extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, src: string, promises?: SimpleMachineOptions<E, P, Pc, TC>['promises']) => PromiseFunction2<E, P, Pc, TC> | undefined;
 /**
  * Converts a source string to a function that can be used to retrieve the promise.
  * @param events of type {@linkcode EventsMap}, the events map.

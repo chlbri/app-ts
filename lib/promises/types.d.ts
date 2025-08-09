@@ -15,7 +15,7 @@ import type { types } from '@bemedev/types';
  * @see {@linkcode Promise} for a reduced version of this type.
  * @see {@linkcode PromiseFunction2} for a reduced version with a context.
  */
-export type PromiseFunction<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = FnMap<E, P, Pc, Tc, Promise<any>>;
+export type PromiseFunction<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = FnMap<E, P, Pc, Tc, Promise<any>>;
 /**
  * A reduced version of {@linkcode PromiseFunction} that takes a context.
  *
@@ -27,7 +27,7 @@ export type PromiseFunction<E extends EventsMap = EventsMap, P extends PromiseeM
  * @see {@linkcode FnR} for more details.
  * @see {@linkcode Promise}
  */
-export type PromiseFunction2<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = FnR<E, P, Pc, Tc, Promise<any>>;
+export type PromiseFunction2<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = FnR<E, P, Pc, Tc, Promise<any>>;
 /**
  * The finally part of a promise configuration.
  *
@@ -132,7 +132,7 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> = ExtractGuardKey
  * @see {@linkcode PromiseFunction2} for the type of the source function.
  * @see {@linkcode Transition} for the type of transitions.
  */
-export type Promisee<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
+export type Promisee<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
     src: PromiseFunction2<E, P, Pc, Tc>;
     description?: string;
     then: Transition<E, P, Pc, Tc>[];

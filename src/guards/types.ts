@@ -49,21 +49,21 @@ export type FromGuard<T extends GuardConfig> = T extends ActionConfig
 export type PredicateS<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnMap<E, P, Pc, Tc, boolean>;
 
 export type PredicateS2<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnR<E, P, Pc, Tc, boolean>;
 
 export type PredicateUnion<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > =
   | PredicateS<E, P, Pc, Tc>
@@ -73,7 +73,7 @@ export type PredicateUnion<
 export type PredicateAnd<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   and: PredicateUnion<E, P, Pc, Tc>[];
@@ -82,7 +82,7 @@ export type PredicateAnd<
 export type PredicateOr<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   or: PredicateUnion<E, P, Pc, Tc>[];
@@ -104,7 +104,7 @@ export type PredicateOr<
 export type Predicate<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > =
   | PredicateS2<E, P, Pc, Tc>
@@ -126,12 +126,12 @@ export type Predicate<
 export type PredicateMap<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
 
 type _DefinedValue<
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = KeysMatching<{
   pContext: Pc;
@@ -145,6 +145,6 @@ type _DefinedValue<
  * @template : type {@linkcode types.PrimitiveObject} [Tc] The type of the context.
  */
 export type DefinedValue<
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = _DefinedValue<Pc, Tc> | 'events' | 'events.type' | 'events.payload';

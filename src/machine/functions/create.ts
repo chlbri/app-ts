@@ -7,7 +7,6 @@ import type {
   SubscriberType,
 } from '#machines';
 import type { KeyU } from '#types';
-import type { types } from '@bemedev/types';
 import { castings } from '@bemedev/types';
 
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
@@ -28,7 +27,7 @@ export type CreateChildS_F = <
   T extends KeyU<'preConfig' | 'context' | 'pContext'>,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
 >(
   machine: T,
   initials: {
@@ -41,7 +40,7 @@ export type CreateChildS_F = <
 export type CreateChild_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
 > = <const T extends KeyU<'preConfig' | 'context' | 'pContext'>>(
   machine: T,
   initials: {

@@ -198,7 +198,7 @@ export type GetTargetsFromMap<T extends FlatMapN> =
 export type Node<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   id?: string;

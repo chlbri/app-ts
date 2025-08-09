@@ -144,7 +144,7 @@ type _GetDelayKeysFromFlat<Flat extends FlatMapN> = {
  *
  * @see {@linkcode _GetKeyActionsFromFlat} for extracting action keys from the flat map.
  */
-export type GetActionsFromFlat<Flat extends FlatMapN, E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Record<_GetKeyActionsFromFlat<Flat>, Action<E, P, Pc, Tc>>;
+export type GetActionsFromFlat<Flat extends FlatMapN, E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Record<_GetKeyActionsFromFlat<Flat>, Action<E, P, Pc, Tc>>;
 /**
  * Provide a record of all guards by key and {@linkcode PredicateS} function.
  *
@@ -156,7 +156,7 @@ export type GetActionsFromFlat<Flat extends FlatMapN, E extends EventsMap, P ext
  *
  * @see {@linkcode _GetKeyGuardsFromFlat} for extracting guard keys from the flat map.
  */
-export type GetGuardsFromFlat<Flat extends FlatMapN, E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, P, Pc, Tc>>;
+export type GetGuardsFromFlat<Flat extends FlatMapN, E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, P, Pc, Tc>>;
 /**
  * Provide a record of all promisee src(s) by key and {@linkcode PromiseFunction} function.
  *
@@ -168,7 +168,7 @@ export type GetGuardsFromFlat<Flat extends FlatMapN, E extends EventsMap, P exte
  *
  * @see {@linkcode _GetKeySrcFromFlat} for extracting promise src keys from the flat map.
  */
-export type GetSrcFromFlat<Flat extends FlatMapN, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Record<_GetKeySrcFromFlat<Flat>, PromiseFunction<E, P, Pc, Tc>>;
+export type GetSrcFromFlat<Flat extends FlatMapN, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Record<_GetKeySrcFromFlat<Flat>, PromiseFunction<E, P, Pc, Tc>>;
 /**
  * Provide a record of all delays by key and {@linkcode Delay} function.
  *
@@ -180,7 +180,7 @@ export type GetSrcFromFlat<Flat extends FlatMapN, E extends EventsMap = EventsMa
  *
  * @see {@linkcode _GetDelayKeysFromFlat} for extracting delay keys from the flat map.
  */
-export type GetDelaysFromFlat<Flat extends FlatMapN, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Record<_GetDelayKeysFromFlat<Flat>, Delay<E, P, Pc, Tc>>;
+export type GetDelaysFromFlat<Flat extends FlatMapN, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Record<_GetDelayKeysFromFlat<Flat>, Delay<E, P, Pc, Tc>>;
 /**
  * Provide a record of all events by key and {@linkcode types.PrimitiveObject} payload.
  *
@@ -291,7 +291,7 @@ type SubEventsKeys<E extends EventsMap, P extends PromiseeMap> = keyof E | (keyo
  * @see {@linkcode SubNev} for the case when contexts are not defined.
  * @see {@linkcode ContextFrom} for extracting context from the pre-config and context keys.
  */
-export type SubscriberType<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, U extends KeyU<'preConfig' | 'context'> = KeyU<'preConfig' | 'context'>> = {
+export type SubscriberType<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, U extends KeyU<'preConfig' | 'context'> = KeyU<'preConfig' | 'context'>> = {
     events: SingleOrArrayL<{
         [key in SubEventsKeysFrom<U>]?: SingleOrArrayL<SubEventsKeys<E, P>>;
     } | SubEventsKeys<E, P>> | typeof EVENTS_FULL;
@@ -316,7 +316,7 @@ export type SubscriberType<E extends EventsMap = EventsMap, P extends PromiseeMa
  * @see {@linkcode SingleOrArrayL} for single or array types.
  * @see {@linkcode NoInfer} for preventing type inference in the child service type.
  */
-export type ChildS<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<'preConfig' | 'context' | 'pContext'>> = {
+export type ChildS<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<'preConfig' | 'context' | 'pContext'>> = {
     machine: T;
     initials: {
         pContext: PrivateContextFrom<T>;
@@ -340,7 +340,7 @@ export type ChildS<E extends EventsMap = EventsMap, P extends PromiseeMap = Prom
  * @see {@linkcode NoInfer} for preventing type inference in the child service type.
  * @see {@linkcode FnMap} for the function map type.
  */
-export type ChildS2<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<'preConfig' | 'context' | 'pContext'>> = {
+export type ChildS2<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<'preConfig' | 'context' | 'pContext'>> = {
     machine: T;
     initials: FnMap<E, P, Pc, Tc, {
         pContext: PrivateContextFrom<T>;
@@ -363,7 +363,7 @@ export type FnMapFrom<T extends KeyU<'eventsMap' | 'pContext' | 'context' | 'pro
  *
  * @see {@linkcode GetMachineKeysFromConfig} for extracting machine keys from the config.
  */
-export type GetMachinesFromConfig<C extends Config, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject> = Record<GetMachineKeysFromConfig<C>, ChildS<E, P, Pc>>;
+export type GetMachinesFromConfig<C extends Config, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any> = Record<GetMachineKeysFromConfig<C>, ChildS<E, P, Pc>>;
 /**
  * The big one !
  *
@@ -393,7 +393,7 @@ export type GetMachinesFromConfig<C extends Config, E extends EventsMap = Events
  * @see {@linkcode GetMachinesFromConfig} for extracting child services from the machine config
  * @see {@linkcode Partial} - intern type to make all properties optional.
  */
-export type MachineOptions<C extends Config = Config, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, Flat extends FlatMapN<C> = FlatMapN<C>> = {
+export type MachineOptions<C extends Config = Config, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, Flat extends FlatMapN<C> = FlatMapN<C>> = {
     initials: GetInititalsFromFlat<Flat>;
     actions?: Partial<GetActionsFromFlat<Flat, E, P, Pc, Tc>>;
     predicates?: Partial<GetGuardsFromFlat<Flat, E, P, Pc, Tc>>;
@@ -619,7 +619,7 @@ export type ChildrenKeysFrom<T extends KeyU<'__childKey'>> = T['__childKey'];
  * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
  *
  */
-export type SimpleMachineOptions<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
+export type SimpleMachineOptions<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
     initials: RecordS<string>;
     actions?: Partial<RecordS<Action<E, P, Pc, Tc>>>;
     predicates?: Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
@@ -673,6 +673,6 @@ export type SimpleMachineOptions2 = Partial<Record<'actions' | 'predicates' | 'p
  * @see {@linkcode RecordS} for the record structure.
  * @see {@linkcode Partial}
  */
-export type MachineMap<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject> = Partial<RecordS<ChildS<E, P, Pc>>>;
+export type MachineMap<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any> = Partial<RecordS<ChildS<E, P, Pc>>>;
 export {};
 //# sourceMappingURL=types.d.ts.map

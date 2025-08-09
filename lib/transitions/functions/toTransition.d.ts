@@ -2,7 +2,7 @@ import type { EventsMap, PromiseeMap } from '../../events/index.js';
 import type { SimpleMachineOptions2 } from '../../machine/index.js';
 import type { Transition, TransitionConfig } from '../index.js';
 import type { types } from '@bemedev/types';
-export type ToTransition_F = <E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, config: TransitionConfig & {
+export type ToTransition_F = <E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, config: TransitionConfig & {
     target?: string;
 }, options?: Pick<SimpleMachineOptions2, 'actions' | 'predicates'>) => Transition<E, P, Pc, Tc>;
 /**

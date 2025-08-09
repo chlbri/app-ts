@@ -10,7 +10,7 @@ import { toPromiseSrc } from './src';
 type ToPromise_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   TC extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,

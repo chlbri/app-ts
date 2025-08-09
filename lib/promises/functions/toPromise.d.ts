@@ -3,7 +3,7 @@ import type { SimpleMachineOptions } from '../../machine/index.js';
 import type { PromiseeConfig } from '../index.js';
 import type { types } from '@bemedev/types';
 import type { Promisee } from '../types';
-type ToPromise_F = <E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, TC extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, src: PromiseeConfig, promises?: types.NOmit<SimpleMachineOptions<E, P, Pc, TC>, 'initials'>) => Promisee<E, P, Pc, TC>;
+type ToPromise_F = <E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, TC extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, src: PromiseeConfig, promises?: types.NOmit<SimpleMachineOptions<E, P, Pc, TC>, 'initials'>) => Promisee<E, P, Pc, TC>;
 /**
  * Converts a promise config to a promisee object with a source and transitions.
  * @param events of type {@linkcode EventsMap}, the events map.

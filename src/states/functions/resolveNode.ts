@@ -12,7 +12,7 @@ import { stateType } from './stateType';
 export type ResolveNode_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,

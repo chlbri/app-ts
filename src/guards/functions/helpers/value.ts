@@ -7,7 +7,7 @@ import type { DefinedValue } from '../../types';
 export type IsValueS_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   path: DefinedValue<Pc, Tc>,

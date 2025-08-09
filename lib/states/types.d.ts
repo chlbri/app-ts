@@ -86,7 +86,7 @@ export type _GetTargetsFromMap<T extends FlatMapN> = {
 }[keyof T & string];
 type __GetTargetsFromMap<T extends FlatMapN> = types.UnionToIntersection<_GetTargetsFromMap<T>>;
 export type GetTargetsFromMap<T extends FlatMapN> = __GetTargetsFromMap<T> extends infer GEP ? Partial<Omit<GEP, EndwA<keyof GEP>>> & Required<Pick<GEP, EndwA<keyof GEP>>> : never;
-export type Node<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
+export type Node<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
     id?: string;
     description?: string;
     type: StateType;

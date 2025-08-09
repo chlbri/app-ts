@@ -33,13 +33,13 @@ export type GuardConfig = GuardUnion;
  * @see {@linkcode GuardOr} for more details.
  */
 export type FromGuard<T extends GuardConfig> = T extends ActionConfig ? FromActionConfig<T> : T extends GuardAnd ? FromGuard<ReduceArray<T['and']>> : T extends GuardOr ? FromGuard<ReduceArray<T['or']>> : never;
-export type PredicateS<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = FnMap<E, P, Pc, Tc, boolean>;
-export type PredicateS2<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = FnR<E, P, Pc, Tc, boolean>;
-export type PredicateUnion<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = PredicateS<E, P, Pc, Tc> | PredicateAnd<E, P, Pc, Tc> | PredicateOr<E, P, Pc, Tc>;
-export type PredicateAnd<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
+export type PredicateS<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = FnMap<E, P, Pc, Tc, boolean>;
+export type PredicateS2<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = FnR<E, P, Pc, Tc, boolean>;
+export type PredicateUnion<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = PredicateS<E, P, Pc, Tc> | PredicateAnd<E, P, Pc, Tc> | PredicateOr<E, P, Pc, Tc>;
+export type PredicateAnd<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
     and: PredicateUnion<E, P, Pc, Tc>[];
 };
-export type PredicateOr<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
+export type PredicateOr<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
     or: PredicateUnion<E, P, Pc, Tc>[];
 };
 /**
@@ -55,7 +55,7 @@ export type PredicateOr<E extends EventsMap, P extends PromiseeMap = PromiseeMap
  * @see {@linkcode PredicateAnd} for combining multiple predicates with AND logic.
  * @see {@linkcode PredicateOr} for combining multiple predicates with OR logic.
  */
-export type Predicate<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = PredicateS2<E, P, Pc, Tc> | PredicateAnd<E, P, Pc, Tc> | PredicateOr<E, P, Pc, Tc>;
+export type Predicate<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = PredicateS2<E, P, Pc, Tc> | PredicateAnd<E, P, Pc, Tc> | PredicateOr<E, P, Pc, Tc>;
 /**
  * Represents a map of predicates, where each key is a string and each value is a {@linkcode Predicate}.
  *
@@ -68,8 +68,8 @@ export type Predicate<E extends EventsMap, P extends PromiseeMap = PromiseeMap, 
  *
  * @see {@linkcode RecordS} for single predicate function.
  */
-export type PredicateMap<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
-type _DefinedValue<Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = KeysMatching<{
+export type PredicateMap<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
+type _DefinedValue<Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = KeysMatching<{
     pContext: Pc;
     context: Tc;
 }>;
@@ -79,6 +79,6 @@ type _DefinedValue<Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc 
  * @template : [Pc] The type of the private context.
  * @template : type {@linkcode types.PrimitiveObject} [Tc] The type of the context.
  */
-export type DefinedValue<Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = _DefinedValue<Pc, Tc> | 'events' | 'events.type' | 'events.payload';
+export type DefinedValue<Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = _DefinedValue<Pc, Tc> | 'events' | 'events.type' | 'events.payload';
 export {};
 //# sourceMappingURL=types.d.ts.map

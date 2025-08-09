@@ -12,7 +12,7 @@ import type { PredicateMap, PredicateS2 } from '../types';
 export type _ToPredicateF = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,
@@ -29,7 +29,7 @@ export type _ToPredicateF = <
 export type ToPredicate_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,

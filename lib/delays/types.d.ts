@@ -10,7 +10,7 @@ import type { types } from '@bemedev/types';
  * @template : type {@linkcode types.PrimitiveObject} [Tc], the type of the context.
  * @returns : A number or a {@linkcode FnMap} function that returns a number.
  */
-export type Delay<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = number | FnMap<E, P, Pc, Tc, number>;
+export type Delay<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = number | FnMap<E, P, Pc, Tc, number>;
 /**
  * Delay configuration map.
  * Maps a string key to a {@linkcode Delay} function.
@@ -20,5 +20,5 @@ export type Delay<E extends EventsMap = EventsMap, P extends PromiseeMap = Promi
  * @template : type {@linkcode types.PrimitiveObject} [Tc] - The type of the context.
  * @returns : A partial record where each key is a string and each value is a {@linkcode Delay}.
  */
-export type DelayMap<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Partial<Record<string, Delay<E, P, Pc, Tc>>>;
+export type DelayMap<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Partial<Record<string, Delay<E, P, Pc, Tc>>>;
 //# sourceMappingURL=types.d.ts.map

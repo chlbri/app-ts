@@ -16,7 +16,7 @@ import type { ChildS, Config, ContextFrom, EventsMapFrom, PrivateContextFrom, Si
  * @template :  {@linkcode types} [Tc] - type of the context
  * @template :  {@linkcode SimpleMachineOptions2} [Mo] - type of the machine options
  */
-export type Elements<C extends Config = Config, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends SimpleMachineOptions2 = SimpleMachineOptions2> = {
+export type Elements<C extends Config = Config, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends SimpleMachineOptions2 = SimpleMachineOptions2> = {
     config: C;
     pContext: Pc;
     events: E;
@@ -43,7 +43,7 @@ export type GetIO_F = (key: 'exit' | 'entry', node?: NodeConfigWithInitials) => 
  * @see {@linkcode Fn} for creating functions
  *
  */
-export interface AnyMachine<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> {
+export interface AnyMachine<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> {
     options: any;
     preConfig: Config;
     preflat: Record<string, any>;
@@ -67,7 +67,7 @@ export interface AnyMachine<E extends EventsMap = EventsMap, P extends PromiseeM
     retrieveParentFromInitial: types.Fn<[string], NodeConfigWithInitials>;
     toNode: types.Fn<[StateValue], NodeConfigWithInitials>;
 }
-export type AssignAction_F<E extends EventsMap, P extends PromiseeMap, Pc extends types.PrimitiveObject, Tc extends types.PrimitiveObject> = <D = Decompose<{
+export type AssignAction_F<E extends EventsMap, P extends PromiseeMap, Pc, Tc extends types.PrimitiveObject> = <D = Decompose<{
     pContext: Pc;
     context: Tc;
 }, {
@@ -75,25 +75,25 @@ export type AssignAction_F<E extends EventsMap, P extends PromiseeMap, Pc extend
     start: false;
     sep: '.';
 }>, K extends keyof D = keyof D, R = D[K]>(key: K, fn: FnMap<E, P, Pc, Tc, R>) => ActionResultFn<E, P, Pc, Tc>;
-export type ResendAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (event: EventArg<E>) => ActionResultFn<E, P, Pc, Tc>;
-export type TimeAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (id: string) => ActionResultFn<E, P, Pc, Tc>;
-export type VoidAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (fn?: FnR<E, P, Pc, Tc, void>) => ActionResultFn<E, P, Pc, Tc>;
-export type SendAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = <T extends AnyMachine>(_?: T) => (fn: FnMap<E, P, Pc, Tc, {
+export type ResendAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (event: EventArg<E>) => ActionResultFn<E, P, Pc, Tc>;
+export type TimeAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (id: string) => ActionResultFn<E, P, Pc, Tc>;
+export type VoidAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (fn?: FnR<E, P, Pc, Tc, void>) => ActionResultFn<E, P, Pc, Tc>;
+export type SendAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = <T extends AnyMachine>(_?: T) => (fn: FnMap<E, P, Pc, Tc, {
     to: string;
     event: EventArg<EventsMapFrom<T>>;
 }>) => ActionResultFn<E, P, Pc, Tc>;
-export type ValueCheckerGuard_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (path: DefinedValue<Pc, Tc>, ...values: any[]) => FnR<E, P, Pc, Tc, boolean>;
-export type DefineGuard_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (path: DefinedValue<Pc, Tc>) => FnR<E, P, Pc, Tc, boolean>;
-export type ChildProvider_F<E extends EventsMap, P extends PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject> = <const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<'pContext' | 'context' | 'preConfig'>>(machine: T, initials: {
+export type ValueCheckerGuard_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (path: DefinedValue<Pc, Tc>, ...values: any[]) => FnR<E, P, Pc, Tc, boolean>;
+export type DefineGuard_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (path: DefinedValue<Pc, Tc>) => FnR<E, P, Pc, Tc, boolean>;
+export type ChildProvider_F<E extends EventsMap, P extends PromiseeMap, Pc = any> = <const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<'pContext' | 'context' | 'preConfig'>>(machine: T, initials: {
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
 }, ...subscribers: SubscriberType<E, P, Pc, T>[]) => ChildS<E, P, Pc, T>;
-export type AllActions_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = AssignAction_F<E, P, Pc, Tc> | VoidAction_F<E, P, Pc, Tc>;
-export type DebounceAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = <T extends ActionResultFn<E, P, Pc, Tc>>(fn: T, options: {
+export type AllActions_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = AssignAction_F<E, P, Pc, Tc> | VoidAction_F<E, P, Pc, Tc>;
+export type DebounceAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = <T extends ActionResultFn<E, P, Pc, Tc>>(fn: T, options: {
     ms?: number;
     id: string;
 }) => ActionResultFn<E, P, Pc, Tc>;
-export type AddOptionsParam_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends types.NOmit<SimpleMachineOptions2, 'initials'> = types.NOmit<SimpleMachineOptions2, 'initials'>> = (option: {
+export type AddOptionsParam_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends types.NOmit<SimpleMachineOptions2, 'initials'> = types.NOmit<SimpleMachineOptions2, 'initials'>> = (option: {
     isDefined: DefineGuard_F<E, P, Pc, Tc>;
     isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
     isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
@@ -115,7 +115,7 @@ export type AddOptionsParam_F<E extends EventsMap = EventsMap, P extends Promise
     resumeTimer: TimeAction_F<E, P, Pc, Tc>;
     stopTimer: TimeAction_F<E, P, Pc, Tc>;
 }) => Mo | undefined;
-export type AddOptions_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends types.NOmit<SimpleMachineOptions2, 'initials'> = types.NOmit<SimpleMachineOptions2, 'initials'>> = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => void;
+export type AddOptions_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends types.NOmit<SimpleMachineOptions2, 'initials'> = types.NOmit<SimpleMachineOptions2, 'initials'>> = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => void;
 /**
  * Represents a scheduled action with its data and execution time.
  *
@@ -124,7 +124,7 @@ export type AddOptions_F<E extends EventsMap = EventsMap, P extends PromiseeMap 
  *
  * @see {@linkcode ActionResult} for the result of the action.
  */
-export type ScheduledData<Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
+export type ScheduledData<Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
     data: ActionResult<Pc, Tc>;
     ms: number;
     id: string;
@@ -133,7 +133,7 @@ export type SendToEvent<T = any> = {
     to: string;
     event: T;
 };
-export type ExtendedActionsParams<E extends EventsMap = EventsMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Partial<{
+export type ExtendedActionsParams<E extends EventsMap = EventsMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = Partial<{
     scheduled: ScheduledData<Pc, Tc>;
     resend: EventArg<E>;
     forceSend: EventArg<E>;

@@ -11,6 +11,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[0.9.7] - 2025/08/09** => _16:45_
+
+</summary>
+
+- Reorganize all
+- Improve flatMap function
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[0.9.6] - 2025/08/09** => _03:20_
 
 </summary>

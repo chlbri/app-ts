@@ -1,14 +1,14 @@
 import { DEFAULT_DELIMITER } from '#constants';
+import { flatByKey } from '@bemedev/decompose';
 import type { FlatMapN, NodeConfig } from '../types';
 
 export type FlatMap_F<T extends NodeConfig = NodeConfig> = <
   const SN extends T,
-  Wc extends boolean = true,
+  Wc extends boolean = false,
 >(
   config: SN,
-  withChildren?: Wc,
-  delimiter?: string,
-  path?: string,
+  children?: Wc,
+  sep?: string,
 ) => FlatMapN<SN, Wc>;
 
 /**
@@ -24,33 +24,11 @@ export type FlatMap_F<T extends NodeConfig = NodeConfig> = <
  */
 export const flatMap: FlatMap_F = (
   node,
-  withChildren,
-  delimiter = DEFAULT_DELIMITER,
-  path = '',
+  children,
+  sep = DEFAULT_DELIMITER,
 ) => {
-  //TODO: use it to perform flat in @bemedev/decompose
-  //TODO: Export flat in @bemedev/decompose
-  const { states, ...rest } = node;
-
-  const check = withChildren === undefined || withChildren === true;
-
-  let out: any = {};
-  out[path === '' ? DEFAULT_DELIMITER : path] = check ? node : rest;
-
-  if (states) {
-    for (const key in states) {
-      if (Object.prototype.hasOwnProperty.call(states, key)) {
-        const element = states[key];
-        const inner = flatMap(
-          element,
-          withChildren,
-          delimiter,
-          `${path}${DEFAULT_DELIMITER}${key}`,
-        );
-        out = { ...out, ...inner };
-      }
-    }
-  }
-
-  return out;
+  return flatByKey.low(node, 'states', {
+    children,
+    sep,
+  });
 };

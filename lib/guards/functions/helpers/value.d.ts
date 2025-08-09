@@ -2,7 +2,7 @@ import type { EventsMap, PromiseeMap } from '../../../events/index.js';
 import type { FnR } from '../../../types/index.js';
 import type { types } from '@bemedev/types';
 import type { DefinedValue } from '../../types';
-export type IsValueS_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject>(path: DefinedValue<Pc, Tc>, ...values: any[]) => FnR<E, P, Pc, Tc, boolean>;
+export type IsValueS_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(path: DefinedValue<Pc, Tc>, ...values: any[]) => FnR<E, P, Pc, Tc, boolean>;
 /**
  * Checks if the value at the specified path in pContext, context, or events matches any of the provided values.
  * @param path of type {@linkcode DefinedValue}, the path to retrieve.

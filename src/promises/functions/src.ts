@@ -7,7 +7,7 @@ import type { PromiseFunction2 } from '../types';
 export type ToPromiseSrc_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   TC extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   events: E,

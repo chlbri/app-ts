@@ -2,7 +2,7 @@ import type { ActionConfig, ActionMap, ActionResult } from '../index.js';
 import type { EventsMap, PromiseeMap } from '../../events/index.js';
 import { type FnR } from '../../types/index.js';
 import type { types } from '@bemedev/types';
-export type ToAction_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, action: ActionConfig, actions?: ActionMap<E, P, Pc, Tc>) => FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>> | undefined;
+export type ToAction_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, action: ActionConfig, actions?: ActionMap<E, P, Pc, Tc>) => FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>> | undefined;
 /**
  * Converts an ActionConfig to a function that can be executed with the provided eventsMap and promisees.
  * @param events of type {@linkcode EventsMap}, events map to use for resolving the action.
