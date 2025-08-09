@@ -11,6 +11,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[0.9.3] - 2025/08/09** => _01:40_
+
+</summary>
+
+- Fix typings of assign
+- Test real life machine
+- Add types tests for AssignAction
+- Upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[0.9.2] - 2025/08/08** => _16:00_
 
 </summary>
