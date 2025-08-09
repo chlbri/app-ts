@@ -1,0 +1,1 @@
+{"version":3,"file":"deleteFirst.d.ts","sourceRoot":"","sources":["../../../src/utils/strings/deleteFirst.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,KAAK,EAAE,MAAM,gBAAgB,CAAC;AAE5C,MAAM,MAAM,aAAa,GAAG,KAAK,CAAC,EAAE,CAClC;IAAC,GAAG,EAAE,MAAM;IAAE,QAAQ,CAAC,EAAE,MAAM;CAAC,EAChC,MAAM,CACP,CAAC;AAEF;;;;;;;;GAQG;AACH,eAAO,MAAM,WAAW,EAAE,aAMzB,CAAC"}

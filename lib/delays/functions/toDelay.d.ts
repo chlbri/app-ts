@@ -1,0 +1,21 @@
+import type { EventsMap, PromiseeMap } from '../../events/index.js';
+import type { FnR } from '../../types/index.js';
+import type { types } from '@bemedev/types';
+import type { DelayMap } from '../types';
+export type ToDelay_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, delay: string, delays?: DelayMap<E, P, Pc, Tc>) => FnR<E, P, Pc, Tc, number> | undefined;
+/**
+ * Converts a delay configuration to a function that returns the delay in milliseconds.
+ * If the delay is a number, it returns a function that returns that number.
+ * If the delay is a function, it reduces the function map with the provided events and promisees.
+ *
+ * @param events of type {@linkcode EventsMap} [E], the events map to use for resolving the delay.
+ * @param promisees of type {@linkcode PromiseeMap} [P], the promisees map to use for resolving the delay.
+ * @param delay of type string,  The delay configuration.
+ * @param delays of type {@linkcode DelayMap}, the map of delays containing functions to execute.
+ * @returns a function that returns the delay in milliseconds or undefined if not found.
+ *
+ * @see {@linkcode types.PrimitiveObject}
+ * @see {@linkcode reduceFnMap}
+ */
+export declare const toDelay: ToDelay_F;
+//# sourceMappingURL=toDelay.d.ts.map

@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -39,12 +39,13 @@
     "public"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "build": "pnpm run rollup",
     "ci": "pnpm run config:off && pnpm run lint && pnpm run test",
-    "ci:admin": "pnpm run rm && pnpm run upgrade && pnpm run ci",
+    "ci:local": "pnpm run config:off && pnpm run lint && pnpm run test:local",
+    "ci:admin": "pnpm run rm && pnpm run upgrade && pnpm run ci:local",
     "config": "pnpm install",
     "config:off": "pnpm run config --offline",
     "eslint": "eslint \"{src/**/*,App}.{ts,tsx}\"",
@@ -55,13 +56,13 @@
     "posttest": "pnpm run prettier && pnpm run p-q",
     "prepare": "husky",
     "prepublishOnly": "",
-    "pretest": "pnpm run build",
     "prettier": "prettier --write \"src/**/*.{ts,tsx}\" --log-level silent",
     "rinit": "pnpm run rm && pnpm run config",
     "rinit:off": "pnpm run rm && pnpm run config:off",
     "rm": "pnpx rimraf ./node_modules ./pnpm-lock.yaml",
     "rollup": "rollup -c",
     "test": "pnpm run test:coverage --no-coverage",
+    "test:local": "pnpm run build && pnpm run test:coverage --no-coverage",
     "test:coverage": "vitest run",
     "test:machine": "vitest run ./src/machine/**/*.ts",
     "test:no-type": "pnpm run test:coverage -c \"vitest.config.notype.ts\" --no-coverage",

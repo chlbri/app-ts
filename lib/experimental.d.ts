@@ -1,0 +1,13 @@
+import type { Contexts } from './interpreters/index.js';
+import type { Describer, Describer2 } from './types/index.js';
+import type { types } from '@bemedev/types';
+export declare const reduceRemainings: <Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject>(...remains: (() => {
+    result: Contexts<Pc, Tc>;
+    target?: string;
+})[]) => () => {
+    target?: string;
+    result: Contexts<Pc, Tc>;
+};
+export type ToDescriber_F = (arg: string | Describer) => Describer2;
+export declare const toDescriber: ToDescriber_F;
+//# sourceMappingURL=experimental.d.ts.map

@@ -1,0 +1,1 @@
+{"version":3,"file":"objects.js","sources":["../../src/constants/objects.ts"],"sourcesContent":["export const EMPTY_OBJECT = {} as const;\n\nexport const GUARD_TYPE = {\n  guard: 'guard',\n  and: 'and',\n  or: 'or',\n} as const;\n"],"names":[],"mappings":"AAAO,MAAM,YAAY,GAAG;AAErB,MAAM,UAAU,GAAG;AACxB,IAAA,KAAK,EAAE,OAAO;AACd,IAAA,GAAG,EAAE,KAAK;AACV,IAAA,EAAE,EAAE,IAAI;;;;;"}

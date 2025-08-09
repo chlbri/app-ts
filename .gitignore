@@ -2,7 +2,6 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
 
 #For Libraries
-lib
 dist
 
 #
@@ -47,8 +46,6 @@ bower_components
 # Dependency directories
 node_modules
 jspm_packages/
-
-
 
 # TypeScript cache
 *.tsbuildinfo
