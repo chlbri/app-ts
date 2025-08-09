@@ -1,6 +1,6 @@
-import { createMachine } from '~machine';
-import { createConfig, EVENTS_FULL } from '~machines';
-import { typings } from '~utils';
+import { createMachine } from '#machine';
+import { createConfig, EVENTS_FULL } from '#machines';
+import { typings } from '#utils';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';

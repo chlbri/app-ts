@@ -1,10 +1,10 @@
-import { createFakeWaiter } from '@bemedev/vitest-extended';
 import {
   DEFAULT_MAX_TIME_PROMISE,
   DEFAULT_MIN_ACTIVITY_TIME,
-} from '~constants';
-import { interpret } from '~interpreter';
-import { createMachine } from '~machine';
+} from '#constants';
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
+import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { constructSend, constructValue, defaultC } from '../fixtures';
 
 describe('Interpreter integration ofr activities coverage', () => {

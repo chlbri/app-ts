@@ -1,10 +1,10 @@
+import { DELAY, fakeDB } from '#fixturesData';
+import { interpret } from '#interpreter';
+import type { StateValue } from '#states';
+import { nothing } from '#utils';
 import { castings } from '@bemedev/types';
 import equal from 'fast-deep-equal';
-import { DELAY, fakeDB } from '~fixturesData';
-import { interpret } from '~interpreter';
-import type { StateValue } from '~states';
-import { nothing } from '~utils';
-import { machine22 } from '../data/machine22';
+import { machine22 } from '../data';
 import { fakeWaiter } from '../fixtures';
 
 beforeAll(() => {

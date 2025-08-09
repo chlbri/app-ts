@@ -1,12 +1,12 @@
+import { DELAY, fakeDB, machine2 } from '#fixturesData';
+import { interpret } from '#interpreters';
+import { createMachine, getEntries } from '#machine';
+import type { StateValue } from '#states';
+import { nothing } from '#utils';
 import { castings } from '@bemedev/types';
 import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
 import path from 'path';
-import { DELAY, fakeDB, machine2 } from '~fixturesData';
-import { interpret } from '~interpreters';
-import { createMachine, getEntries } from '~machine';
-import type { StateValue } from '~states';
-import { nothing } from '~utils';
 import {
   constructSend,
   constructValue,

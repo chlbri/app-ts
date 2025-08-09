@@ -1,4 +1,4 @@
-import type { InitEvent, MaxExceededEvent } from '~events';
+import type { InitEvent, MaxExceededEvent } from '#events';
 import type {
   ActionKeysFrom,
   ChildrenKeysFrom,

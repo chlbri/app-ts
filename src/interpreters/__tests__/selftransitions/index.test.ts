@@ -1,4 +1,4 @@
-import { createMachine } from '~machine';
+import { createMachine } from '#machine';
 import { interpret } from '../../interpreter';
 import { defaultI, defaultT } from '../fixtures';
 

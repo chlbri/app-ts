@@ -1,7 +1,7 @@
+import type { EventsMap, PromiseeMap } from '#events';
+import type { FnR } from '#types';
+import { reduceFnMap } from '#utils';
 import type { types } from '@bemedev/types';
-import type { EventsMap, PromiseeMap } from '~events';
-import type { FnR } from '~types';
-import { reduceFnMap } from '~utils';
 import type { DelayMap } from '../types';
 
 export type ToDelay_F = <

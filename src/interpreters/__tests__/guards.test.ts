@@ -1,6 +1,6 @@
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
 import { typings } from '@bemedev/types';
-import { interpret } from '~interpreter';
-import { createMachine } from '~machine';
 import {
   constructSend,
   constructValue,

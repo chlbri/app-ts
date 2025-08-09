@@ -1,8 +1,6 @@
-import type { types } from '@bemedev/types';
-import type { NotUndefined } from '@bemedev/types/lib/types/commons.types';
-import type { Action, ActionConfig, FromActionConfig } from '~actions';
-import type { EventsMap, PromiseeMap } from '~events';
-import type { FromGuard, GuardConfig, Predicate } from '~guards';
+import type { Action, ActionConfig, FromActionConfig } from '#actions';
+import type { EventsMap, PromiseeMap } from '#events';
+import type { FromGuard, GuardConfig, Predicate } from '#guards';
 import type {
   ExtractActionsFromPromisee,
   ExtractGuardsFromPromise,
@@ -11,13 +9,15 @@ import type {
   GetEventKeysFromPromisee,
   Promisee,
   PromiseeConfig,
-} from '~promises';
+} from '#promises';
 import type {
   Identitfy,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
-} from '~types';
+} from '#types';
+import type { types } from '@bemedev/types';
+import type { NotUndefined } from '@bemedev/types/lib/types/commons.types';
 
 /**
  * Represents the simpliest configuration map for a transition.

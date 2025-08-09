@@ -1,6 +1,6 @@
-import { createMachine } from '~machine';
-import { createConfig } from '~machines';
-import { typings } from '~utils';
+import { createMachine } from '#machine';
+import { createConfig } from '#machines';
+import { typings } from '#utils';
 
 export const config3 = createConfig({
   description: 'cdd',

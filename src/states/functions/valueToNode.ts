@@ -1,7 +1,7 @@
+import { DEFAULT_DELIMITER } from '#constants';
+import { isString } from '#types';
+import { replaceAll } from '#utils';
 import { decomposeSV, type StateValue } from '@bemedev/decompose';
-import { DEFAULT_DELIMITER } from '~constants';
-import { isString } from '~types';
-import { replaceAll } from '~utils';
 
 import type { NodeConfig, NodeConfigWithInitials } from '../types';
 import { flatMap } from './flatMap';

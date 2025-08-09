@@ -1,10 +1,10 @@
+import type { EventsMap, PromiseeMap, ToEvents } from '#events';
+import { nothing, toEventsMap } from '#utils';
 import type { TimerState } from '@bemedev/interval2';
 import type { types } from '@bemedev/types';
 import { castings } from '@bemedev/types';
 import equal from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
-import { nothing, toEventsMap } from '~utils';
 import { isFunction } from '../types/primitives';
 import type { FnSubReduced, State } from './interpreter.types';
 

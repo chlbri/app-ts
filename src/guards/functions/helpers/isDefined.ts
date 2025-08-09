@@ -1,7 +1,7 @@
+import type { EventsMap, PromiseeMap } from '#events';
+import type { DefinedValue } from '#guards';
+import type { FnR } from '#types';
 import type { types } from '@bemedev/types';
-import type { EventsMap, PromiseeMap } from '~events';
-import type { DefinedValue } from '~guards';
-import type { FnR } from '~types';
 import { isNotValue, isValue } from './value';
 
 export type IsDefinedS_F = <

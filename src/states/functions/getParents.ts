@@ -1,5 +1,5 @@
-import { DEFAULT_DELIMITER } from '~constants';
-import { isStringEmpty } from '~utils';
+import { DEFAULT_DELIMITER } from '#constants';
+import { isStringEmpty } from '#utils';
 
 type _GetParents_F = (value: string) => string[];
 type GetParents_F = (value: `/${string}`) => string[];

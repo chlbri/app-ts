@@ -1,6 +1,6 @@
-import { returnFalse } from '~guards';
-import { interpret } from '~interpreter';
-import { createMachine } from '~machines';
+import { returnFalse } from '#guards';
+import { interpret } from '#interpreter';
+import { createMachine } from '#machines';
 import {
   constructValue,
   constructWaiter,

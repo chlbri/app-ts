@@ -1,14 +1,14 @@
-import type { types } from '@bemedev/types';
-import { castings } from '@bemedev/types';
-import type { EventsMap, PromiseeMap } from '~events';
+import type { EventsMap, PromiseeMap } from '#events';
 import type {
   ChildS,
   Config,
   ContextFrom,
   PrivateContextFrom,
   SubscriberType,
-} from '~machines';
-import type { KeyU } from '~types';
+} from '#machines';
+import type { KeyU } from '#types';
+import type { types } from '@bemedev/types';
+import { castings } from '@bemedev/types';
 
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
 

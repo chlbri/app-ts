@@ -1,5 +1,5 @@
-import { DEFAULT_NOTHING } from '~constants';
-import { IS_TEST } from '~utils';
+import { DEFAULT_NOTHING } from '#constants';
+import { IS_TEST } from '#utils';
 
 /**
  * A utility function used when no action is required or when a placeholder value is needed.

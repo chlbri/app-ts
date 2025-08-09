@@ -1,4 +1,4 @@
-import { DEFAULT_DELIMITER } from '~constants';
+import { DEFAULT_DELIMITER } from '#constants';
 
 /**
  * Resolves a relative path against a base path, similar to path.resolve but without dependencies

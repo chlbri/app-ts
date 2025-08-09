@@ -1,12 +1,12 @@
+import { GUARD_TYPE } from '#constants';
+import type { EventsMap, PromiseeMap, ToEvents } from '#events';
+import type { GuardConfig } from '#guards';
+import type { StateExtended } from '#interpreters';
+import { isDescriber, isString } from '#types';
+import { reduceFnMap } from '#utils';
 import { isDefined } from '@bemedev/basifun';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
 import type { types } from '@bemedev/types';
-import { GUARD_TYPE } from '~constants';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
-import type { GuardConfig } from '~guards';
-import type { StateExtended } from '~interpreters';
-import { isDescriber, isString } from '~types';
-import { reduceFnMap } from '~utils';
 import type { PredicateMap, PredicateS2 } from '../types';
 
 export type _ToPredicateF = <

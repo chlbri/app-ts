@@ -1,5 +1,5 @@
-import { DEFAULT_DELIMITER } from '~constants';
-import { merge } from '~utils';
+import { DEFAULT_DELIMITER } from '#constants';
+import { merge } from '#utils';
 import type { NodeConfig, NodeConfigCompoundWithInitials } from '../types';
 
 type Url_F = <T>(shape: string, value: T) => any;

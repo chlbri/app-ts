@@ -1,17 +1,12 @@
-import { partialCall, toArray } from '@bemedev/basifun';
-import { decompose, recompose, type Decompose } from '@bemedev/decompose';
-import { castings, typings, type types } from '@bemedev/types';
-import cloneDeep from 'clone-deep';
-import { resolve } from 'src/utils/resolve';
-import type { Action } from '~actions';
-import { DEFAULT_DELIMITER } from '~constants';
-import type { Delay } from '~delays';
+import type { Action } from '#actions';
+import { DEFAULT_DELIMITER } from '#constants';
+import type { Delay } from '#delays';
 import {
   type EventsMap,
   type PromiseeMap,
   type ToEvents,
   type ToEventsR,
-} from '~events';
+} from '#events';
 import {
   isDefinedS,
   isNotDefinedS,
@@ -19,14 +14,14 @@ import {
   isValue,
   type DefinedValue,
   type PredicateS,
-} from '~guards';
+} from '#guards';
 import type {
   State,
   StateExtended,
   StateP,
   StatePextended,
-} from '~interpreters';
-import type { PromiseFunction } from '~promises';
+} from '#interpreters';
+import { type PromiseFunction } from '#promises';
 import {
   flatMap,
   initialConfig,
@@ -39,11 +34,18 @@ import {
   type NodeConfig,
   type NodeConfigWithInitials,
   type StateValue,
-} from '~states';
-import type { RecordS } from '~types';
-import { merge, reduceFnMap } from '~utils';
-import { expandFnMap } from './functions';
-import { createChildS, type CreateChild_F } from './functions/create';
+} from '#states';
+import { type RecordS } from '#types';
+import { merge, reduceFnMap, resolve } from '#utils';
+import { partialCall, toArray } from '@bemedev/basifun';
+import { decompose, recompose, type Decompose } from '@bemedev/decompose';
+import { castings, typings, type types } from '@bemedev/types';
+import cloneDeep from 'clone-deep';
+import {
+  createChildS,
+  expandFnMap,
+  type CreateChild_F,
+} from './functions';
 import type {
   AddOptions_F,
   AnyMachine,

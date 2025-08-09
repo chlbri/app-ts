@@ -1,23 +1,22 @@
-import { castings } from '@bemedev/types';
-import { createFakeWaiter } from '@bemedev/vitest-extended';
-import equal from 'fast-deep-equal';
 import {
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MIN_ACTIVITY_TIME,
-} from '~constants';
-import { DELAY, fakeDB, machine1 } from '~fixturesData';
-import { createMachine } from '~machine';
-import { EVENTS_FULL } from '~machines';
-import type { StateValue } from '~states';
-import { nothing, toFunction, typings } from '~utils';
-import { machine21 } from './__tests__/data/machine21';
-import { machine3 } from './__tests__/data/machine3';
+} from '#constants';
+import { defaultC, defaultI, defaultT, fakeWaiter } from '#fixtures';
 import {
-  defaultC,
-  defaultI,
-  defaultT,
-  fakeWaiter,
-} from './__tests__/fixtures';
+  DELAY,
+  fakeDB,
+  machine1,
+  machine21,
+  machine3,
+} from '#fixturesData';
+import { createMachine } from '#machine';
+import { EVENTS_FULL } from '#machines';
+import type { StateValue } from '#states';
+import { nothing, toFunction, typings } from '#utils';
+import { castings } from '@bemedev/types';
+import { createFakeWaiter } from '@bemedev/vitest-extended';
+import equal from 'fast-deep-equal';
 import { interpret, TIME_TO_RINIT_SELF_COUNTER } from './interpreter';
 import type { AnyInterpreter } from './interpreter.types';
 

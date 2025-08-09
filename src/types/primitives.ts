@@ -1,14 +1,14 @@
+import type { DEFAULT_DELIMITER } from '#constants';
 import type { types } from '@bemedev/types';
-import type { DEFAULT_DELIMITER } from '~constants';
 
-import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '~events';
+import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '#events';
 import type {
   State,
   StateExtended,
   StateP,
   StatePextended,
-} from '~interpreters';
-import { checkKeys } from '~utils';
+} from '#interpreters';
+import { checkKeys } from '#utils';
 
 export type IsString_F = (value: unknown) => value is string;
 

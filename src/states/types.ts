@@ -1,12 +1,11 @@
-import type { types } from '@bemedev/types';
-import type { Action, ActionConfig, FromActionConfig } from '~actions';
-import type { EventsMap, PromiseeMap } from '~events';
-import type { FromGuard, GuardConfig } from '~guards';
+import type { Action, ActionConfig, FromActionConfig } from '#actions';
+import type { EventsMap, PromiseeMap } from '#events';
+import type { FromGuard, GuardConfig } from '#guards';
 import type {
   GetEventKeysFromTransitions,
   Transitions,
   TransitionsConfig,
-} from '~transitions';
+} from '#transitions';
 import type {
   GetChildren,
   GetParents,
@@ -14,7 +13,8 @@ import type {
   ReduceArray,
   SingleOrArrayL,
   SingleOrArrayR,
-} from '~types';
+} from '#types';
+import type { types } from '@bemedev/types';
 
 export type StateType = 'atomic' | 'compound' | 'parallel';
 

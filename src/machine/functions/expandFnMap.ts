@@ -1,9 +1,9 @@
+import type { ActionResultFn } from '#actions';
+import type { EventsMap, PromiseeMap } from '#events';
+import { type FnMap } from '#types';
+import { reduceFnMap } from '#utils';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
-import type { ActionResultFn } from '~actions';
-import type { EventsMap, PromiseeMap } from '~events';
-import { type FnMap } from '~types';
-import { reduceFnMap } from '~utils';
 import { assignByKey } from './subcriber';
 
 export type ExpandFnMap = <

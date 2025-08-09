@@ -1,8 +1,8 @@
+import type { ActionConfig, ActionMap, ActionResult } from '#actions';
+import type { EventsMap, PromiseeMap } from '#events';
+import { isDescriber, type FnR } from '#types';
+import { reduceFnMap } from '#utils';
 import type { types } from '@bemedev/types';
-import type { ActionConfig, ActionMap, ActionResult } from '~actions';
-import type { EventsMap, PromiseeMap } from '~events';
-import { isDescriber, type FnR } from '~types';
-import { reduceFnMap } from '~utils';
 
 export type ToAction_F = <
   E extends EventsMap,

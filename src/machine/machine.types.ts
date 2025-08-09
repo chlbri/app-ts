@@ -1,10 +1,10 @@
+import type { ActionConfig, ActionResult, ActionResultFn } from '#actions';
+import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '#events';
+import type { DefinedValue } from '#guards';
+import type { NodeConfigWithInitials, StateValue } from '#states';
+import type { FnMap, FnR, KeyU } from '#types';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
-import type { ActionConfig, ActionResult, ActionResultFn } from '~actions';
-import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '~events';
-import type { DefinedValue } from '~guards';
-import type { NodeConfigWithInitials, StateValue } from '~states';
-import type { FnMap, FnR, KeyU } from '~types';
 import type {
   ChildS,
   Config,

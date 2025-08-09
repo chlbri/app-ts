@@ -1,9 +1,9 @@
+import { _machine2, DELAY, fakeDB } from '#fixturesData';
+import { interpret } from '#interpreters';
+import { nothing } from '#utils';
 import { castings } from '@bemedev/types';
 import equal from 'fast-deep-equal';
 import { fakeWaiter } from '../fixtures';
-import { _machine2, DELAY, fakeDB } from '~fixturesData';
-import { interpret } from '~interpreters';
-import { nothing } from '~utils';
 
 describe('machine coverage', () => {
   beforeAll(() => {
