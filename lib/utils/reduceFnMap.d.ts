@@ -3,7 +3,7 @@ import { type FnMap, type FnMapR, type FnR, type FnReduced } from '../types/inde
 import type { types } from '@bemedev/types';
 type ToEventMap_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap>(events: E, promisees: P) => ToEventsR<E, P>;
 export declare const toEventsMap: ToEventMap_F;
-export type ReduceFnMap_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, R = any>(events: E, promisees: P, fn: FnMap<E, P, Pc, Tc, R>) => FnR<E, P, Pc, Tc, R>;
+export type ReduceFnMap_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, R = any>(events: E, promisees: P, fn: FnMap<E, P, Pc, Tc, R>) => FnR<E, P, Pc, Tc, R>;
 /**
  * Reduces a function map to a single function that processes events.
  * @param events the events map.

@@ -124,7 +124,7 @@ export type ReduceArray<T> = T extends readonly (infer U1)[] ? U1 : T extends (i
  *
  * @see {@linkcode ToEvents} for converting events and promisees to a map.
  */
-export type FnR<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, R = any> = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => R;
+export type FnR<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, R = any> = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => R;
 /**
  * A helper type to reduce a function signature to its context and events map.
  *
@@ -162,7 +162,7 @@ export type EventToType<T extends string | {
 }> = T extends {
     type: infer U extends string;
 } ? U : T extends string ? T : never;
-type _FnMap<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, R = any, TT extends ToEvents<E, P> = ToEvents<E, P>> = {
+type _FnMap<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, R = any, TT extends ToEvents<E, P> = ToEvents<E, P>> = {
     [key in EventToType<TT>]?: (state: StatePextended<Pc, Tc, Extract<TT, {
         type: key;
     }>['payload']>) => R;
@@ -176,7 +176,7 @@ type _FnMapR<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMa
 } & {
     else?: FnReduced<E, P, Tc, R>;
 };
-export type FnMap<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, R = any> = FnR<E, P, Pc, Tc, R> | _FnMap<E, P, Pc, Tc, R, ToEvents<E, P>>;
+export type FnMap<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, R = any> = FnR<E, P, Pc, Tc, R> | _FnMap<E, P, Pc, Tc, R, ToEvents<E, P>>;
 export type FnMapR<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Tc extends types.PrimitiveObject = types.PrimitiveObject, R = any> = FnReduced<E, P, Tc, R> | _FnMapR<E, P, Tc, R, ToEvents<E, P>>;
 /**
  * A type that represents a record with string keys and values of type {@linkcode T}.

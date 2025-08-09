@@ -1,7 +1,7 @@
 import type { Contexts } from './interpreters/index.js';
 import type { Describer, Describer2 } from './types/index.js';
 import type { types } from '@bemedev/types';
-export declare const reduceRemainings: <Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject>(...remains: (() => {
+export declare const reduceRemainings: <Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(...remains: (() => {
     result: Contexts<Pc, Tc>;
     target?: string;
 })[]) => () => {

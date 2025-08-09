@@ -86,56 +86,56 @@ export type Interpreter_F = <M extends AnyMachine>(
 export type ToAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (action?: ActionConfig) => Action2<E, P, Pc, Tc>;
 
 export type PerformActionLater_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (action: Action2<E, P, Pc, Tc>) => ActionResult<Pc, Tc>;
 
 export type PerformAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (action: Action2<E, P, Pc, Tc>) => void;
 
 export type ToPredicate_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (predicate?: GuardConfig) => PredicateS2<E, P, Pc, Tc>;
 
 export type PerformPredicate_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (predicate: PredicateS2<E, P, Pc, Tc>) => boolean;
 
 export type ToDelay_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (delay?: string) => FnR<E, P, Pc, Tc, number> | undefined;
 
 export type PerformDelay_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (delay: FnR<E, P, Pc, Tc, number>) => number;
 
 export type PerformPromise_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (promise: PromiseFunction2<E, P, Pc, Tc>) => Promise<any>;
 
@@ -150,7 +150,7 @@ export type PerformAfter_F = (
 ) => TimeoutPromise<string | false> | undefined;
 
 export type TransitionAfterResult<
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > =
   | {
@@ -174,7 +174,7 @@ export type Collected0<
 export type ToPromiseSrc_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (promise: string) => PromiseFunction2<E, P, Pc, Tc>;
 
@@ -187,7 +187,7 @@ export type PerformPromisee_F<
 ) => TimeoutPromise<PromiseeResult<E, P> | undefined> | undefined;
 
 export type Contexts<
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   pContext?: Pc;
@@ -203,7 +203,7 @@ export type PerformTransitions_F = (
 ) => string | false;
 
 export type SleepContexts_F = <
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   ms?: number,
@@ -237,7 +237,7 @@ export type StateP<
 };
 
 export type StateExtended<
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
   E extends AllEvent = AllEvent,
 > = {
@@ -245,7 +245,7 @@ export type StateExtended<
 } & State<Tc, E>;
 
 export type StatePextended<
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
   E = any,
 > = {
@@ -303,7 +303,7 @@ export type Selector_F<T = any> = T extends types.Primitive
 export interface AnyInterpreter<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > {
   mode: Mode;

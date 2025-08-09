@@ -7,7 +7,7 @@ import { isNotValue, isValue } from './value';
 export type IsDefinedS_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   path: DefinedValue<Pc, Tc>,

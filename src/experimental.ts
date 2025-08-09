@@ -4,7 +4,7 @@ import type { types } from '@bemedev/types';
 import { deepmerge } from 'deepmerge-ts';
 
 export const reduceRemainings = <
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
   ...remains: (() => {

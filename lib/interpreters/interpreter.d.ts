@@ -32,7 +32,7 @@ import { type SubscriberClass } from './subscriber';
  *
  * @see {@linkcode GetEventsFromConfig} for extracting events from the machine configuration.
  */
-export declare class Interpreter<const C extends Config = Config, Pc extends types.PrimitiveObject = types.PrimitiveObject, const Tc extends types.PrimitiveObject = types.PrimitiveObject, E extends EventsMap = GetEventsFromConfig<C>, P extends PromiseeMap = PromiseeMap, Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>> implements AnyInterpreter<E, P, Pc, Tc> {
+export declare class Interpreter<const C extends Config = Config, Pc = any, const Tc extends types.PrimitiveObject = types.PrimitiveObject, E extends EventsMap = GetEventsFromConfig<C>, P extends PromiseeMap = PromiseeMap, Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>> implements AnyInterpreter<E, P, Pc, Tc> {
     #private;
     /**
      * Public getter of the service subscribers of this {@linkcode Interpreter} service.

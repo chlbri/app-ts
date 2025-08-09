@@ -4,11 +4,11 @@ import type { StateExtended } from '../../interpreters/index.js';
 import { type GuardDefUnion } from '@bemedev/boolean-recursive';
 import type { types } from '@bemedev/types';
 import type { PredicateMap, PredicateS2 } from '../types';
-export type _ToPredicateF = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, guard: GuardConfig, predicates?: PredicateMap<E, P, Pc, Tc>) => {
+export type _ToPredicateF = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, guard: GuardConfig, predicates?: PredicateMap<E, P, Pc, Tc>) => {
     func?: GuardDefUnion<[StateExtended<Pc, Tc, ToEvents<E, P>>]> | undefined;
     errors: string[];
 };
-export type ToPredicate_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, guard: GuardConfig, predicates?: PredicateMap<E, P, Pc, Tc>) => {
+export type ToPredicate_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, guard: GuardConfig, predicates?: PredicateMap<E, P, Pc, Tc>) => {
     predicate?: PredicateS2<E, P, Pc, Tc> | undefined;
     errors: string[];
 };

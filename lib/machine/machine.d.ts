@@ -22,7 +22,7 @@ import type { Config, GetEventsFromConfig, GetPromiseeSrcFromConfig, MachineOpti
  *
  * @implements {@linkcode AnyMachine}<{@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} >
  */
-declare class Machine<const C extends Config = Config, const Pc extends types.PrimitiveObject = types.PrimitiveObject, const Tc extends types.PrimitiveObject = types.PrimitiveObject, E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>> implements AnyMachine<E, P, Pc, Tc> {
+declare class Machine<const C extends Config = Config, const Pc = any, const Tc extends types.PrimitiveObject = types.PrimitiveObject, E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>> implements AnyMachine<E, P, Pc, Tc> {
     #private;
     /**
      * Public accessor for the events map for this {@linkcode Machine}.
@@ -332,7 +332,7 @@ declare class Machine<const C extends Config = Config, const Pc extends types.Pr
      * @deprecated
      * @remarks used internally
      */
-    _providePrivateContext: <T extends types.PrimitiveObject = types.PrimitiveObject>(pContext: T) => Machine<C, T, Tc, E, P, MachineOptions<C, E, P, T, Tc>>;
+    _providePrivateContext: <T = any>(pContext: T) => Machine<C, T, Tc, E, P, MachineOptions<C, E, P, T, Tc>>;
     addPrivateContext: (pContext: Pc) => void;
     /**
      * @deprecated
@@ -391,7 +391,7 @@ export declare const getEntries: (node?: NodeConfigWithInitials | undefined) => 
  */
 export declare const getExits: (node?: NodeConfigWithInitials | undefined) => import("../actions/index.js").ActionConfig[];
 export type { Machine };
-export type CreateMachine_F = <const C extends Config = Config, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject, EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<C, EventM, P, Pc, Tc>>(config: C, types: {
+export type CreateMachine_F = <const C extends Config = Config, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<C, EventM, P, Pc, Tc>>(config: C, types: {
     pContext: Pc;
     context: Tc;
     eventsMap: EventM;

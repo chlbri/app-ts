@@ -2,7 +2,7 @@ import type { EventsMap, PromiseeMap } from '../../events/index.js';
 import type { FnR } from '../../types/index.js';
 import type { types } from '@bemedev/types';
 import type { DelayMap } from '../types';
-export type ToDelay_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, delay: string, delays?: DelayMap<E, P, Pc, Tc>) => FnR<E, P, Pc, Tc, number> | undefined;
+export type ToDelay_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, delay: string, delays?: DelayMap<E, P, Pc, Tc>) => FnR<E, P, Pc, Tc, number> | undefined;
 /**
  * Converts a delay configuration to a function that returns the delay in milliseconds.
  * If the delay is a number, it returns a function that returns that number.

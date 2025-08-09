@@ -1,7 +1,6 @@
 import type { EventsMap, PromiseeMap } from '../../events/index.js';
 import type { ChildS, Config, ContextFrom, PrivateContextFrom, SubscriberType } from '../index.js';
 import type { KeyU } from '../../types/index.js';
-import type { types } from '@bemedev/types';
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
 /**
  * Creates a machine configuration.
@@ -14,11 +13,11 @@ export type CreateConfig_F = <const T extends Config>(config: T) => T;
  *
  */
 export declare const createConfig: CreateConfig_F;
-export type CreateChildS_F = <T extends KeyU<'preConfig' | 'context' | 'pContext'>, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject>(machine: T, initials: {
+export type CreateChildS_F = <T extends KeyU<'preConfig' | 'context' | 'pContext'>, E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any>(machine: T, initials: {
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
 }, ...subscribers: SubscriberType<E, P, Pc, T>[]) => ChildS<E, P, Pc, T>;
-export type CreateChild_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject> = <const T extends KeyU<'preConfig' | 'context' | 'pContext'>>(machine: T, initials: {
+export type CreateChild_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any> = <const T extends KeyU<'preConfig' | 'context' | 'pContext'>>(machine: T, initials: {
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
 }, ...subscribers: SubscriberType<E, P, Pc, T>[]) => ChildS<E, P, Pc, T>;

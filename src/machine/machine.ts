@@ -80,7 +80,7 @@ import type {
 
 class Machine<
   const C extends Config = Config,
-  const Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  const Pc = any,
   const Tc extends types.PrimitiveObject = types.PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
@@ -633,7 +633,7 @@ class Machine<
 
   #getInitialKeys = () => {
     const postConfig = this.#postConfig as NodeConfig;
-    this.#postflat = flatMap(postConfig) as any;
+    this.#postflat = flatMap(postConfig, true) as any;
 
     const entries = Object.entries(this.#postflat);
     entries.forEach(([key, { initial }]) => {
@@ -814,11 +814,7 @@ class Machine<
    * @deprecated
    * @remarks used internally
    */
-  _providePrivateContext = <
-    T extends types.PrimitiveObject = types.PrimitiveObject,
-  >(
-    pContext: T,
-  ) => {
+  _providePrivateContext = <T = any>(pContext: T) => {
     const { context, config, events, promisees } = this.#elements;
 
     const out = new Machine<C, T, Tc, E, P>(config);
@@ -1201,7 +1197,7 @@ export type { Machine };
 
 export type CreateMachine_F = <
   const C extends Config = Config,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,

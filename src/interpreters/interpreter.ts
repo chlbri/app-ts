@@ -156,7 +156,7 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
  */
 export class Interpreter<
   const C extends Config = Config,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   const Tc extends types.PrimitiveObject = types.PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
@@ -1810,7 +1810,7 @@ export class Interpreter<
         castings.commons.unknown(this.proposedNextConfig(target)),
       ),
     );
-    const flatNext = flatMap(next, false);
+    const flatNext = flatMap(next);
 
     const entriesCurrent = Object.entries(this.#flat);
     const keysNext = Object.keys(flatNext);

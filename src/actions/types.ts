@@ -23,7 +23,7 @@ export type FromActionConfig<T> = T extends Describer
 export type Action<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnMap<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
 
@@ -39,14 +39,14 @@ export type Action<
 export type ActionMap<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Partial<Record<string, Action<E, P, Pc, Tc>>>;
 
 export type ActionResultFn<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
 
@@ -58,7 +58,7 @@ export type ActionResultFn<
  * @returns a {@linkcode DeepPartial} object containing the private context and the {@linkcode types.PrimitiveObject} context.
  */
 export type ActionResult<
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = types.DeepPartial<{
   pContext: Pc;
@@ -68,6 +68,6 @@ export type ActionResult<
 export type Action2<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = ActionResultFn<E, P, Pc, Tc>;

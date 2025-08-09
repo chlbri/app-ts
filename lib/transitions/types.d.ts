@@ -222,7 +222,7 @@ export type ExtractSrcFromTransitions<T extends TransitionsConfig> = ExtractSrcF
  * @see {@linkcode Action} for the structure of actions in the transition.
  * @see {@linkcode Predicate} for the structure of guards in the transition.
  */
-export type Transition<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
+export type Transition<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
     readonly target: string;
     readonly actions: Action<E, P, Pc, Tc>[];
     readonly guards: Predicate<E, P, Pc, Tc>[];
@@ -241,7 +241,7 @@ export type Transition<E extends EventsMap, P extends PromiseeMap = PromiseeMap,
  * @see {@linkcode Promisee} for the structure of promises in the transitions.
  * @see {@linkcode Identitfy} for identifying properties in the transitions.
  */
-export type Transitions<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc extends types.PrimitiveObject = types.PrimitiveObject, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
+export type Transitions<E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = {
     on: Identitfy<Transition<E, P, Pc, Tc>>[];
     always: Transition<E, P, Pc, Tc>[];
     after: Identitfy<Transition<E, P, Pc, Tc>>[];

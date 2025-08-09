@@ -226,7 +226,7 @@ export type GetActionsFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Record<_GetKeyActionsFromFlat<Flat>, Action<E, P, Pc, Tc>>;
 
@@ -245,7 +245,7 @@ export type GetGuardsFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, P, Pc, Tc>>;
 
@@ -264,7 +264,7 @@ export type GetSrcFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Record<_GetKeySrcFromFlat<Flat>, PromiseFunction<E, P, Pc, Tc>>;
 
@@ -283,7 +283,7 @@ export type GetDelaysFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Record<_GetDelayKeysFromFlat<Flat>, Delay<E, P, Pc, Tc>>;
 
@@ -442,7 +442,7 @@ type SubEventsKeys<E extends EventsMap, P extends PromiseeMap> =
 export type SubscriberType<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   U extends KeyU<'preConfig' | 'context'> = KeyU<'preConfig' | 'context'>,
 > = {
   events:
@@ -491,7 +491,7 @@ export type SubscriberType<
 export type ChildS<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
     'preConfig' | 'context' | 'pContext'
   >,
@@ -523,7 +523,7 @@ export type ChildS<
 export type ChildS2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
   T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
     'preConfig' | 'context' | 'pContext'
@@ -571,7 +571,7 @@ export type GetMachinesFromConfig<
   C extends Config,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
 > = Record<GetMachineKeysFromConfig<C>, ChildS<E, P, Pc>>;
 
 /**
@@ -607,7 +607,7 @@ export type MachineOptions<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
   Flat extends FlatMapN<C> = FlatMapN<C>,
 > = {
@@ -900,7 +900,7 @@ export type ChildrenKeysFrom<T extends KeyU<'__childKey'>> =
 export type SimpleMachineOptions<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   initials: RecordS<string>;
@@ -974,5 +974,5 @@ export type SimpleMachineOptions2 = Partial<
 export type MachineMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
 > = Partial<RecordS<ChildS<E, P, Pc>>>;

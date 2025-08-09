@@ -1,5 +1,5 @@
 import type { FlatMapN, NodeConfig } from '../types';
-export type FlatMap_F<T extends NodeConfig = NodeConfig> = <const SN extends T, Wc extends boolean = true>(config: SN, withChildren?: Wc, delimiter?: string, path?: string) => FlatMapN<SN, Wc>;
+export type FlatMap_F<T extends NodeConfig = NodeConfig> = <const SN extends T, Wc extends boolean = false>(config: SN, children?: Wc, sep?: string) => FlatMapN<SN, Wc>;
 /**
  * Flattens a state node configuration into a map structure.
  *

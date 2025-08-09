@@ -14,7 +14,7 @@ import type { types } from '@bemedev/types';
 export type Delay<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = number | FnMap<E, P, Pc, Tc, number>;
 
@@ -30,6 +30,6 @@ export type Delay<
 export type DelayMap<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Pc extends types.PrimitiveObject = types.PrimitiveObject,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = Partial<Record<string, Delay<E, P, Pc, Tc>>>;
