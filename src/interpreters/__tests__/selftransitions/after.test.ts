@@ -1,9 +1,9 @@
+import { DEFAULT_MAX_TIME_PROMISE } from '#constants';
+import { returnFalse } from '#guards';
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
+import { createConfig } from '#machines';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { DEFAULT_MAX_TIME_PROMISE } from '~constants';
-import { returnFalse } from '~guards';
-import { interpret } from '~interpreter';
-import { createMachine } from '~machine';
-import { createConfig } from '~machines';
 import {
   constructSend,
   constructValue,

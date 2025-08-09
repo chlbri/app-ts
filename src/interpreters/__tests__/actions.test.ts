@@ -1,5 +1,5 @@
-import { interpret } from '~interpreter';
-import { createMachine } from '~machine';
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
 import { constructSend, constructValue, defaultC } from './fixtures';
 
 describe('Interpret for actions', () => {

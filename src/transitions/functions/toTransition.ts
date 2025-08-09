@@ -1,10 +1,10 @@
+import { toAction } from '#actions';
+import type { EventsMap, PromiseeMap } from '#events';
+import { toPredicate, type GuardConfig } from '#guards';
+import type { SimpleMachineOptions2 } from '#machines';
+import type { Transition, TransitionConfig } from '#transitions';
 import { toArray } from '@bemedev/basifun';
 import type { types } from '@bemedev/types';
-import { toAction } from '~actions';
-import type { EventsMap, PromiseeMap } from '~events';
-import { toPredicate, type GuardConfig } from '~guards';
-import type { SimpleMachineOptions2 } from '~machines';
-import type { Transition, TransitionConfig } from '~transitions';
 
 export type ToTransition_F = <
   E extends EventsMap = EventsMap,

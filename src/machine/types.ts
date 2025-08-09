@@ -1,10 +1,8 @@
-import type { Decompose } from '@bemedev/decompose';
-import type { types } from '@bemedev/types';
-import type { Action, FromActionConfig } from '~actions';
-import type { Delay } from '~delays';
-import type { EventsMap, PromiseeDef, PromiseeMap } from '~events';
-import type { PredicateS } from '~guards';
-import type { PromiseFunction } from '~promises';
+import type { Action, FromActionConfig } from '#actions';
+import type { Delay } from '#delays';
+import type { EventsMap, PromiseeDef, PromiseeMap } from '#events';
+import type { PredicateS } from '#guards';
+import type { PromiseFunction } from '#promises';
 import type {
   ActivityConfig,
   ExtractActionsFromActivity,
@@ -17,14 +15,14 @@ import type {
   NodeConfigParallel,
   NodeConfigParallelWithInitials,
   NodesConfig,
-} from '~states';
+} from '#states';
 import type {
   ExtractActionKeysFromTransitions,
   ExtractDelayKeysFromTransitions,
   ExtractGuardKeysFromTransitions,
   ExtractSrcFromTransitions,
   TransitionsConfig,
-} from '~transitions';
+} from '#transitions';
 import type {
   Describer,
   FnMap,
@@ -34,7 +32,9 @@ import type {
   ReduceArray,
   SingleOrArrayL,
   TrueObject,
-} from '~types';
+} from '#types';
+import type { Decompose } from '@bemedev/decompose';
+import type { types } from '@bemedev/types';
 import type { EVENTS_FULL } from './constants';
 
 /**

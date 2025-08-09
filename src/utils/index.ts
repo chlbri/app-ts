@@ -5,6 +5,7 @@ export * from './merge';
 export * from './nothing';
 export * from './objects';
 export * from './reduceFnMap';
+export * from './resolve';
 export * from './strings';
 export * from './toFunction';
 export { typings } from './typings';

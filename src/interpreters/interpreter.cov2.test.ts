@@ -1,8 +1,8 @@
+import { defaultI } from '#fixtures';
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
+import { typings } from '#utils';
 import { castings } from '@bemedev/types';
-import { interpret } from '~interpreter';
-import { createMachine } from '~machine';
-import { typings } from '~utils';
-import { defaultI } from './__tests__/fixtures';
 
 describe('Coverage of interpretr #2', () => {
   describe('#01 => Cov select and pSelect for primitive units', () => {

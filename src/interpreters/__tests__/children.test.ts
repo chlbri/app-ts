@@ -1,8 +1,8 @@
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
+import { EVENTS_FULL } from '#machines';
 import { typings } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { interpret } from '~interpreter';
-import { createMachine } from '~machine';
-import { EVENTS_FULL } from '~machines';
 import { defaultC, defaultI, defaultT } from './fixtures';
 
 describe('Integration testing for interpret, Children', () => {

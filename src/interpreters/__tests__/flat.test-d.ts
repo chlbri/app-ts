@@ -1,5 +1,5 @@
-import { createConfig } from '~machines';
-import type { FlatMapN } from '~states';
+import { createConfig } from '#machines';
+import type { FlatMapN } from '#states';
 
 const config = createConfig({
   states: {

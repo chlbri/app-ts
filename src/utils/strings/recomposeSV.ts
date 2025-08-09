@@ -1,6 +1,6 @@
+import { DEFAULT_DELIMITER } from '#constants';
+import type { StateValue } from '#states';
 import type { types } from '@bemedev/types';
-import { DEFAULT_DELIMITER } from '~constants';
-import type { StateValue } from '~states';
 
 export type RecomposeSV_F = types.Fn<
   [arg: string, delimiter?: string],

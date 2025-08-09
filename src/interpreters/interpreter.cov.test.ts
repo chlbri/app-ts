@@ -1,9 +1,9 @@
+import { defaultI, fakeWaiter } from '#fixtures';
+import { DELAY } from '#fixturesData';
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
+import { typings } from '#utils';
 import { castings } from '@bemedev/types';
-import { DELAY } from '~fixturesData';
-import { interpret } from '~interpreter';
-import { createMachine } from '~machine';
-import { typings } from '~utils';
-import { defaultI, fakeWaiter } from './__tests__/fixtures';
 
 beforeAll(() => {
   vi.useFakeTimers();

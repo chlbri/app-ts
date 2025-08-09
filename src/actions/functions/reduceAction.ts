@@ -1,5 +1,5 @@
-import type { ActionConfig } from '~actions';
-import { isDescriber } from '~types';
+import { type ActionConfig } from '#actions';
+import { isDescriber } from '#types';
 
 export type ReduceAction_F = (action: ActionConfig) => string;
 

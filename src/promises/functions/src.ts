@@ -1,7 +1,7 @@
+import type { EventsMap, PromiseeMap } from '#events';
+import type { SimpleMachineOptions } from '#machines';
+import { reduceFnMap } from '#utils';
 import type { types } from '@bemedev/types';
-import type { EventsMap, PromiseeMap } from '~events';
-import type { SimpleMachineOptions } from '~machines';
-import { reduceFnMap } from '~utils';
 import type { PromiseFunction2 } from '../types';
 
 export type ToPromiseSrc_F = <

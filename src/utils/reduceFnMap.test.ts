@@ -1,11 +1,11 @@
-import { typings } from '@bemedev/types';
 import {
   INIT_EVENT,
   MAX_EXCEEDED_EVENT_TYPE,
   type EventsMap,
   type PromiseeMap,
-} from '~events';
-import type { FnMap, FnMapR } from '~types';
+} from '#events';
+import type { FnMap, FnMapR } from '#types';
+import { typings } from '@bemedev/types';
 import {
   reduceFnMap,
   reduceFnMapReduced,

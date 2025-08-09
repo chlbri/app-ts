@@ -1,4 +1,4 @@
-import { DEFAULT_DELIMITER } from '~constants';
+import { DEFAULT_DELIMITER } from '#constants';
 import type { FlatMapN, NodeConfig } from '../types';
 
 export type FlatMap_F<T extends NodeConfig = NodeConfig> = <
@@ -28,6 +28,8 @@ export const flatMap: FlatMap_F = (
   delimiter = DEFAULT_DELIMITER,
   path = '',
 ) => {
+  //TODO: use it to perform flat in @bemedev/decompose
+  //TODO: Export flat in @bemedev/decompose
   const { states, ...rest } = node;
 
   const check = withChildren === undefined || withChildren === true;

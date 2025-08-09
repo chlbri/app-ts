@@ -1,38 +1,16 @@
 import {
-  anyPromises,
-  asyncfy,
-  isDefined,
-  partialCall,
-  switchV,
-  toArray,
-  withTimeout,
-  type TimeoutPromise,
-} from '@bemedev/basifun';
-import type { SingleOrArray } from '@bemedev/boolean-recursive';
-import { decomposeSV } from '@bemedev/decompose';
-import {
-  createInterval,
-  createTimeout,
-  type Interval2,
-  type Timeout2,
-} from '@bemedev/interval2';
-import sleep from '@bemedev/sleep';
-import { castings, type types } from '@bemedev/types';
-import cloneDeep from 'clone-deep';
-import equal from 'fast-deep-equal';
-import {
   reduceAction,
   toAction,
   type ActionConfig,
   type ActionResult,
-} from '~actions';
+} from '#actions';
 import {
   DEFAULT_DELIMITER,
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MAX_TIME_PROMISE,
   DEFAULT_MIN_ACTIVITY_TIME,
-} from '~constants';
-import { toDelay } from '~delays';
+} from '#constants';
+import { toDelay } from '#delays';
 import {
   eventToType,
   INIT_EVENT,
@@ -46,9 +24,9 @@ import {
   type PromiseeMap,
   type ToEvents,
   type ToEventsR,
-} from '~events';
-import { toPredicate, type GuardConfig } from '~guards';
-import { getEntries, getExits, type Machine } from '~machine';
+} from '#events';
+import { toPredicate, type GuardConfig } from '#guards';
+import { getEntries, getExits, type Machine } from '#machine';
 import {
   assignByKey,
   ChildS,
@@ -71,12 +49,12 @@ import {
   type PromiseesMapFrom,
   type ScheduledData,
   type SimpleMachineOptions2,
-} from '~machines';
+} from '#machines';
 import {
   PromiseeConfig,
   toPromiseSrc,
   type PromiseeResult,
-} from '~promises';
+} from '#promises';
 import {
   flatMap,
   initialConfig,
@@ -88,44 +66,65 @@ import {
   type NodeConfig,
   type NodeConfigWithInitials,
   type StateValue,
-} from '~states';
+} from '#states';
 import type {
   AlwaysConfig,
   DelayedTransitions,
   TransitionConfig,
-} from '~transitions';
-import { isDescriber, type RecordS } from '~types';
+} from '#transitions';
+import { isDescriber, type RecordS } from '#types';
 import {
   IS_TEST,
   isStringEmpty,
   merge,
   reduceFnMap,
   replaceAll,
-} from '~utils';
+} from '#utils';
 import {
-  type _Send_F,
-  type AddSubscriber_F,
-  type AnyInterpreter,
-  type Collected0,
-  type CreateInterval2_F,
-  type DiffNext,
-  type ExecuteActivities_F,
-  type Interpreter_F,
-  type Mode,
-  type PerformAction_F,
-  type PerformActionLater_F,
-  type PerformAfter_F,
-  type PerformAlway_F,
-  type PerformDelay_F,
-  type PerformPredicate_F,
-  type PerformPromise_F,
-  type PerformPromisee_F,
-  type PerformTransition_F,
-  type PerformTransitions_F,
-  type Selector_F,
-  type State,
-  type StateExtended,
-  type WorkingStatus,
+  anyPromises,
+  asyncfy,
+  isDefined,
+  partialCall,
+  switchV,
+  toArray,
+  withTimeout,
+  type TimeoutPromise,
+} from '@bemedev/basifun';
+import { decomposeSV } from '@bemedev/decompose';
+import {
+  createInterval,
+  createTimeout,
+  type Interval2,
+  type Timeout2,
+} from '@bemedev/interval2';
+import sleep from '@bemedev/sleep';
+import { castings, type types } from '@bemedev/types';
+import cloneDeep from 'clone-deep';
+import equal from 'fast-deep-equal';
+import type {
+  _Send_F,
+  AddSubscriber_F,
+  AnyInterpreter,
+  Collected0,
+  CreateInterval2_F,
+  DiffNext,
+  ExecuteActivities_F,
+  Interpreter_F,
+  Mode,
+  PerformAction_F,
+  PerformActionLater_F,
+  PerformAfter_F,
+  PerformAlway_F,
+  PerformDelay_F,
+  PerformPredicate_F,
+  PerformPromise_F,
+  PerformPromisee_F,
+  PerformTransition_F,
+  PerformTransitions_F,
+  Selector_F,
+  State,
+  StateExtended,
+  WorkingStatus,
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
 
@@ -2040,7 +2039,7 @@ export class Interpreter<
               const callback = () => this.#mergeContexts({ pContext });
               this.#schedule(callback);
             } else {
-              type _Contexts = SingleOrArray<
+              type _Contexts = types.SingleOrArray<
                 string | Record<string, string | string[]>
               >;
               const _contexts =

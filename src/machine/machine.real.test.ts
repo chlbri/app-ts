@@ -1,9 +1,9 @@
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
+import { type StateValue } from '#states';
+import { typings } from '#utils';
 import { castings, type types } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { interpret } from '~interpreter';
-import { createMachine } from '~machine';
-import { type StateValue } from '~states';
-import { typings } from '~utils';
 
 beforeAll(() => {
   vi.useFakeTimers();

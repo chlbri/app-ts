@@ -1,17 +1,17 @@
-import sleep from '@bemedev/sleep';
-import type { types } from '@bemedev/types';
-import { castings } from '@bemedev/types';
-import { DEFAULT_NOTHING } from '~constants';
-import type { EventArg, EventsMap, PromiseeMap } from '~events';
-import type { Interpreter } from '~interpreter';
+import { DEFAULT_NOTHING } from '#constants';
+import type { EventArg, EventsMap, PromiseeMap } from '#events';
+import type { Interpreter } from '#interpreter';
 import type {
   Config,
   GetEventsFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
-} from '~machines';
-import type { StateValue } from '~states';
-import { IS_TEST } from '~utils';
+} from '#machines';
+import type { StateValue } from '#states';
+import { IS_TEST } from '#utils';
+import sleep from '@bemedev/sleep';
+import type { types } from '@bemedev/types';
+import { castings } from '@bemedev/types';
 
 export const defaultC = { pContext: {}, context: {} } as const;
 export const defaultT = {

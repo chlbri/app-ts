@@ -1,5 +1,5 @@
-import { createMachine } from '~machine';
-import { toFunction } from '~utils';
+import { createMachine } from '#machine';
+import { toFunction } from '#utils';
 import { config2, machine2 } from './machine2';
 
 // #region machine2

@@ -1,8 +1,8 @@
+import { returnFalse, returnTrue } from '#guards';
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
 import sleep from '@bemedev/sleep';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { returnFalse, returnTrue } from '~guards';
-import { interpret } from '~interpreter';
-import { createMachine } from '~machine';
 import {
   constructSend,
   constructValue,

@@ -1,5 +1,5 @@
 import type { EventArg, EventsMap } from '../types';
-import { _EventsR } from './../types';
+import { type _EventsR } from './../types';
 
 export type TransformEventArg = <E extends EventsMap>(
   event: EventArg<E>,

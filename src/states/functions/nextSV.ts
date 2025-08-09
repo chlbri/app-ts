@@ -1,14 +1,14 @@
-import { isDefined } from '@bemedev/basifun';
-import { decompose, decomposeKeys, recompose } from '@bemedev/decompose';
-import { castings } from '@bemedev/types';
-import { DEFAULT_DELIMITER } from '~constants';
-import { isString } from '~types';
+import { DEFAULT_DELIMITER } from '#constants';
+import { isString } from '#types';
 import {
   deleteFirst,
   isStringEmpty,
   recomposeSV,
   replaceAll,
-} from '~utils';
+} from '#utils';
+import { isDefined } from '@bemedev/basifun';
+import { decompose, decomposeKeys, recompose } from '@bemedev/decompose';
+import { castings } from '@bemedev/types';
 import type { StateValue } from '../types';
 
 export type NextStateValue_F = <T extends StateValue>(

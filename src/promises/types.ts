@@ -1,6 +1,5 @@
-import type { types } from '@bemedev/types';
-import type { ActionConfig, FromActionConfig } from '~actions';
-import type { EventsMap, PromiseeMap, ToEvents } from '~events';
+import type { ActionConfig, FromActionConfig } from '#actions';
+import type { EventsMap, PromiseeMap, ToEvents } from '#events';
 import type {
   ExtractActionsFromTransition,
   ExtractGuardKeysFromDelayed,
@@ -8,8 +7,9 @@ import type {
   SingleOrArrayT,
   Transition,
   TransitionConfigMapA,
-} from '~transitions';
-import type { FnMap, FnR, SingleOrArrayL } from '~types';
+} from '#transitions';
+import type { FnMap, FnR, SingleOrArrayL } from '#types';
+import type { types } from '@bemedev/types';
 
 /**
  * A function type that represents a promise function with map.

@@ -1,5 +1,5 @@
-import { createMachine } from '~machine';
-import { typings } from '~utils';
+import { createMachine } from '#machine';
+import { typings } from '#utils';
 import { DELAY } from './constants';
 
 // #region machine1

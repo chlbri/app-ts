@@ -1,6 +1,6 @@
+import { machine1, type Machine1 } from '#fixturesData';
+import type { StatePFrom } from '#machines';
 import { describe, expect, test, vi } from 'vitest';
-import type { StatePFrom } from '~machines';
-import { machine1, type Machine1 } from './__tests__/data/machine1';
 import { interpret } from './interpreter';
 import type { State } from './interpreter.types';
 

@@ -1,14 +1,10 @@
-import type { TimeoutPromise } from '@bemedev/basifun';
-import type { Decompose } from '@bemedev/decompose';
-import type { Interval2, IntervalParams } from '@bemedev/interval2';
-import type { types } from '@bemedev/types';
 import type {
   Action,
   Action2,
   ActionConfig,
   ActionResult,
-} from '~actions';
-import type { Delay } from '~delays';
+} from '#actions';
+import type { Delay } from '#delays';
 import type {
   AllEvent,
   EventArg,
@@ -16,32 +12,36 @@ import type {
   PromiseeMap,
   ToEvents,
   ToEventsR,
-} from '~events';
-import type { GuardConfig, PredicateS, PredicateS2 } from '~guards';
+} from '#events';
+import type { GuardConfig, PredicateS, PredicateS2 } from '#guards';
 import type {
   AnyMachine,
   ChildS,
   ContextFrom,
   PrivateContextFrom,
-} from '~machines';
+} from '#machines';
 import type {
   PromiseeConfig,
   PromiseeResult,
   PromiseFunction,
   PromiseFunction2,
-} from '~promises';
+} from '#promises';
 import type {
   ActivityConfig,
   Node,
   NodeConfigWithInitials,
   StateValue,
-} from '~states';
+} from '#states';
 import type {
   AlwaysConfig,
   DelayedTransitions,
   TransitionConfig,
-} from '~transitions';
-import type { FnR } from '~types';
+} from '#transitions';
+import type { FnR } from '#types';
+import type { TimeoutPromise } from '@bemedev/basifun';
+import type { Decompose } from '@bemedev/decompose';
+import type { Interval2, IntervalParams } from '@bemedev/interval2';
+import type { types } from '@bemedev/types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
 
