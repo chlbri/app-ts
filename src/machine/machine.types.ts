@@ -102,29 +102,18 @@ export type AssignAction_F<
   Tc extends types.PrimitiveObject,
 > = <
   D = Decompose<
-    types.DeepRequired<{
+    {
       pContext: Pc;
       context: Tc;
-    }>,
+    },
     { object: 'both'; start: false; sep: '.' }
   >,
   K extends keyof D = keyof D,
   R = D[K],
 >(
   key: K,
-  fn: FnMap<
-    E,
-    P,
-    types.Cast<Pc, types.PrimitiveObject>,
-    types.Cast<Tc, types.PrimitiveObject>,
-    R
-  >,
-) => ActionResultFn<
-  E,
-  P,
-  types.Cast<Pc, types.PrimitiveObject>,
-  types.Cast<Tc, types.PrimitiveObject>
->;
+  fn: FnMap<E, P, Pc, Tc, R>,
+) => ActionResultFn<E, P, Pc, Tc>;
 
 export type ResendAction_F<
   E extends EventsMap = EventsMap,
