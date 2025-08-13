@@ -32,10 +32,8 @@ import {
   valueToNode,
   type FlatMapN,
   type NodeConfig,
-  type NodeConfigWithInitials,
   type StateValue,
 } from '#states';
-import { type RecordS } from '#types';
 import { merge, reduceFnMap, resolve } from '#utils';
 import { partialCall, toArray } from '@bemedev/basifun';
 import { decompose, recompose, type Decompose } from '@bemedev/decompose';
@@ -456,26 +454,12 @@ class Machine<
    */
   #pContext!: Pc;
 
-  /**
-   * Config of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
-   *
-   * @see {@linkcode NodeConfigWithInitials}
-   */
-  #postConfig!: NodeConfigWithInitials;
-
-  /**
-   * Flat representation of the {@linkcode NodeConfigWithInitials} of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
-   *
-   * @see {@linkcode RecordS}
-   */
-  #postflat!: RecordS<NodeConfigWithInitials>;
-
   #initialKeys: string[] = [];
 
   /**
    * The initial node config of this {@linkcode Machine}.
    */
-  #initialConfig!: NodeConfigWithInitials;
+  #initialConfig!: NodeConfig;
   // #endregion
 
   /**
@@ -515,15 +499,6 @@ class Machine<
    */
   get preflat() {
     return this.#flat;
-  }
-
-  /**
-   * The public accessor of Config of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
-   *
-   * @see {@linkcode NodeConfigWithInitials}
-   */
-  get postConfig() {
-    return this.#postConfig!;
   }
 
   /**
@@ -578,10 +553,6 @@ class Machine<
     return this.#machines;
   }
 
-  get postflat() {
-    return this.#postflat;
-  }
-
   // #region Providers
 
   #addValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
@@ -632,10 +603,7 @@ class Machine<
   };
 
   #getInitialKeys = () => {
-    const postConfig = this.#postConfig as NodeConfig;
-    this.#postflat = flatMap(postConfig, true) as any;
-
-    const entries = Object.entries(this.#postflat);
+    const entries = Object.entries(this.#flat);
     entries.forEach(([key, { initial }]) => {
       const check1 = initial !== undefined;
       if (check1) {
@@ -649,8 +617,9 @@ class Machine<
     return this.#initialKeys.includes(target);
   };
 
-  retrieveParentFromInitial = (target: string): NodeConfigWithInitials => {
+  retrieveParentFromInitial = (target: string): NodeConfig => {
     const check1 = this.isInitial(target);
+    const flat: any = this.#flat;
     if (check1) {
       const parent = target.substring(
         0,
@@ -659,9 +628,9 @@ class Machine<
       const check2 = this.isInitial(parent);
 
       if (check2) return this.retrieveParentFromInitial.bind(this)(parent);
-      return this.#postflat[parent];
+      return flat[parent];
     }
-    return this.#postflat[target];
+    return flat[target];
   };
 
   /**
@@ -898,7 +867,7 @@ class Machine<
    * @see {@linkcode valueToNode}
    */
   valueToConfig = (from: StateValue) => {
-    return valueToNode(this.#postConfig, from);
+    return valueToNode(this.#config, from);
   };
 
   /**
@@ -1197,22 +1166,22 @@ export type { Machine };
 
 export type CreateMachine_F = <
   const C extends Config = Config,
+  const C2 extends types.DeepPartial<C> = types.DeepPartial<C>,
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
-  EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
-  Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<
-    C,
+  EventM extends GetEventsFromConfig<C & C2> = GetEventsFromConfig<C & C2>,
+  P extends PromiseeMap = GetPromiseeSrcFromConfig<C & C2>,
+  Mo extends MachineOptions<C & C2, EventM, P, Pc, Tc> = MachineOptions<
+    C & C2,
     EventM,
     P,
     Pc,
     Tc
   >,
 >(
-  config: C,
+  config: C & { __tsSchema?: C2 },
   types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
-  values: Pick<Mo, 'initials' | 'targets'>,
-) => Machine<C, Pc, Tc, EventM, P>;
+) => Machine<C & C2, Pc, Tc, EventM, P, Mo>;
 
 /**
  * Creates a new instance of {@linkcode Machine} with the provided configuration and types.
@@ -1232,14 +1201,12 @@ export type CreateMachine_F = <
 export const createMachine: CreateMachine_F = (
   config,
   { eventsMap, pContext, context, promiseesMap },
-  values,
 ) => {
   const out = new Machine(config)
-    ._provideValues(values)
     ._provideEvents(eventsMap)
     ._providePrivateContext(pContext)
     ._provideContext(context)
     ._providePromisees(promiseesMap);
 
-  return out;
+  return out as any;
 };

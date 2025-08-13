@@ -1,7 +1,7 @@
 import type { ActionConfig, ActionResult, ActionResultFn } from '#actions';
 import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '#events';
 import type { DefinedValue } from '#guards';
-import type { NodeConfigWithInitials, StateValue } from '#states';
+import type { NodeConfig, StateValue } from '#states';
 import type { FnMap, FnR, KeyU } from '#types';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
@@ -47,7 +47,7 @@ export type Elements<
 
 export type GetIO_F = (
   key: 'exit' | 'entry',
-  node?: NodeConfigWithInitials,
+  node?: NodeConfig,
 ) => ActionConfig[];
 
 /**
@@ -73,7 +73,6 @@ export interface AnyMachine<
   options: any;
   preConfig: Config;
   preflat: Record<string, any>;
-  postConfig: NodeConfigWithInitials;
   initials: any;
   context: Tc;
   pContext: Pc;
@@ -85,14 +84,13 @@ export interface AnyMachine<
   delays: any;
   promises: any;
   machines: any;
-  postflat: NodeConfigWithInitials;
   renew: any;
-  initialConfig: NodeConfigWithInitials;
+  initialConfig: NodeConfig;
   initialValue: StateValue;
 
   isInitial: types.Fn<[string], boolean>;
-  retrieveParentFromInitial: types.Fn<[string], NodeConfigWithInitials>;
-  toNode: types.Fn<[StateValue], NodeConfigWithInitials>;
+  retrieveParentFromInitial: types.Fn<[string], NodeConfig>;
+  toNode: types.Fn<[StateValue], NodeConfig>;
 }
 
 export type AssignAction_F<
