@@ -28,15 +28,14 @@ import {
   isAtomic,
   isCompound,
   nodeToValue,
-  recomposeConfig,
   valueToNode,
   type FlatMapN,
   type NodeConfig,
   type StateValue,
 } from '#states';
-import { merge, reduceFnMap, resolve } from '#utils';
+import { merge, reduceFnMap } from '#utils';
 import { partialCall, toArray } from '@bemedev/basifun';
-import { decompose, recompose, type Decompose } from '@bemedev/decompose';
+import { decompose, type Decompose } from '@bemedev/decompose';
 import { castings, typings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import {
@@ -56,10 +55,13 @@ import type {
 } from './machine.types';
 import type {
   Config,
+  ConfigDef,
   GetEventsFromConfig,
   GetPromiseeSrcFromConfig,
   MachineOptions,
+  NoExtraKeysConfigDef,
   SimpleMachineOptions2,
+  TransformConfigDef,
 } from './types';
 
 /**
@@ -103,6 +105,10 @@ class Machine<
   #flat: FlatMapN<C, true>;
 
   #decomposed: Decompose<C, { sep: '.'; start: false; object: 'both' }>;
+
+  get decomposed() {
+    return this.#decomposed;
+  }
 
   /**
    * The map of events for this {@linkcode Machine}.
@@ -459,7 +465,7 @@ class Machine<
   /**
    * The initial node config of this {@linkcode Machine}.
    */
-  #initialConfig!: NodeConfig;
+  #initialConfig: NodeConfig;
   // #endregion
 
   /**
@@ -478,6 +484,8 @@ class Machine<
       object: 'both',
     }) as Decompose<C, { sep: '.'; start: false; object: 'both' }>;
     this.#flat = flatMap<C, true>(config);
+    this.#initialConfig = initialConfig(this.#config);
+    this.#getInitialKeys();
   }
 
   /**
@@ -555,52 +563,52 @@ class Machine<
 
   // #region Providers
 
-  #addValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
-    this.#initials = values.initials;
-    this.#targets = values.targets;
+  // #addValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
+  //   this.#initials = values.initials;
+  //   this.#targets = values.targets;
 
-    if (this.#targets) {
-      const entriesT = Object.entries(this.#targets).map(
-        ([key, target]) => {
-          const key1 = key
-            .slice(1)
-            .replace(new RegExp(DEFAULT_DELIMITER, 'g'), '.states.');
-          const _key = `states.${key1}.target`;
-          return [_key, target] as const;
-        },
-      );
+  //   if (this.#targets) {
+  //     const entriesT = Object.entries(this.#targets).map(
+  //       ([key, target]) => {
+  //         const key1 = key
+  //           .slice(1)
+  //           .replace(new RegExp(DEFAULT_DELIMITER, 'g'), '.states.');
+  //         const _key = `states.${key1}.target`;
+  //         return [_key, target] as const;
+  //       },
+  //     );
 
-      const decomposed: any = structuredClone(this.#decomposed);
+  //     const decomposed: any = structuredClone(this.#decomposed);
 
-      entriesT.forEach(([key, _target]) => {
-        const from = key
-          .split(DEFAULT_DELIMITER)
-          .slice(0, -1)
-          .join(DEFAULT_DELIMITER);
+  //     entriesT.forEach(([key, _target]) => {
+  //       const from = key
+  //         .split(DEFAULT_DELIMITER)
+  //         .slice(0, -1)
+  //         .join(DEFAULT_DELIMITER);
 
-        const target = resolve(from, _target as string);
+  //       const target = resolve(from, _target as string);
 
-        decomposed[key] = target;
-      });
+  //       decomposed[key] = target;
+  //     });
 
-      const recomposed = recompose(decomposed);
+  //     const recomposed = recompose(decomposed);
 
-      this.#flat = (flatMap as any)(recomposed, true) as FlatMapN<C, true>;
-    }
+  //     this.#flat = (flatMap as any)(recomposed, true) as FlatMapN<C, true>;
+  //   }
 
-    const entries = Object.entries(this.#initials);
-    const flat: any = structuredClone(this.#flat);
-    entries.forEach(([key, initial]) => {
-      flat[key] = { ...flat[key], initial };
-    });
+  //   const entries = Object.entries(this.#initials);
+  //   const flat: any = structuredClone(this.#flat);
+  //   entries.forEach(([key, initial]) => {
+  //     flat[key] = { ...flat[key], initial };
+  //   });
 
-    this.#postConfig = recomposeConfig(flat);
-    this.#initialConfig = initialConfig(this.#postConfig);
+  //   this.#postConfig = recomposeConfig(flat);
+  //   this.#initialConfig = initialConfig(this.#postConfig);
 
-    this.#getInitialKeys();
+  //   this.#getInitialKeys();
 
-    return this.#postConfig;
-  };
+  //   return this.#postConfig;
+  // };
 
   #getInitialKeys = () => {
     const entries = Object.entries(this.#flat);
@@ -633,15 +641,15 @@ class Machine<
     return flat[target];
   };
 
-  /**
-   * @deprecated
-   * @remarks used internally
-   */
-  _provideValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
-    const out = this.#renew();
-    out.#addValues(values);
-    return out;
-  };
+  // /**
+  //  * @deprecated
+  //  * @remarks used internally
+  //  */
+  // _provideValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
+  //   const out = this.#renew();
+  //   out.#addValues(values);
+  //   return out;
+  // };
 
   #addActions = (actions?: Mo['actions']) =>
     (this.#actions = merge(this.#actions, actions));
@@ -772,10 +780,10 @@ class Machine<
    */
   get renew() {
     const out = this.#renew();
-    out.#addValues({
-      initials: this.#initials,
-      targets: this.#targets,
-    });
+    // out.#addValues({
+    //   initials: this.#initials,
+    //   targets: this.#targets,
+    // });
     return out;
   }
 
@@ -788,7 +796,7 @@ class Machine<
 
     const out = new Machine<C, T, Tc, E, P>(config);
 
-    out.#addValues({ initials: this.#initials, targets: this.#targets });
+    // out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#context = context;
     out.#pContext = pContext;
     out.#eventsMap = events;
@@ -810,7 +818,7 @@ class Machine<
 
     const out = new Machine<C, Pc, T, E, P>(config);
 
-    out.#addValues({ initials: this.#initials, targets: this.#targets });
+    // out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
@@ -831,7 +839,7 @@ class Machine<
 
     const out = new Machine<C, Pc, Tc, T, P>(config);
 
-    out.#addValues({ initials: this.#initials, targets: this.#targets });
+    // out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = map;
@@ -849,7 +857,7 @@ class Machine<
 
     const out = new Machine<C, Pc, Tc, E, T>(config);
 
-    out.#addValues({ initials: this.#initials, targets: this.#targets });
+    // out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
@@ -1165,23 +1173,25 @@ export const getExits = partialCall(getIO, 'exit');
 export type { Machine };
 
 export type CreateMachine_F = <
-  const C extends Config = Config,
-  const C2 extends types.DeepPartial<C> = types.DeepPartial<C>,
+  const C2 extends
+    NoExtraKeysConfigDef<ConfigDef> = NoExtraKeysConfigDef<ConfigDef>,
+  const C extends TransformConfigDef<C2> = TransformConfigDef<C2>,
+  C3 extends Config = Config & C,
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
-  EventM extends GetEventsFromConfig<C & C2> = GetEventsFromConfig<C & C2>,
-  P extends PromiseeMap = GetPromiseeSrcFromConfig<C & C2>,
-  Mo extends MachineOptions<C & C2, EventM, P, Pc, Tc> = MachineOptions<
-    C & C2,
+  EventM extends GetEventsFromConfig<C3> = GetEventsFromConfig<C3>,
+  P extends PromiseeMap = GetPromiseeSrcFromConfig<C3>,
+  Mo extends MachineOptions<C3, EventM, P, Pc, Tc> = MachineOptions<
+    C3,
     EventM,
     P,
     Pc,
     Tc
   >,
 >(
-  config: C & { __tsSchema?: C2 },
+  config: C & { __tsSchema?: NoExtraKeysConfigDef<C2> },
   types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
-) => Machine<C & C2, Pc, Tc, EventM, P, Mo>;
+) => Machine<C3, Pc, Tc, EventM, P, Mo>;
 
 /**
  * Creates a new instance of {@linkcode Machine} with the provided configuration and types.
@@ -1202,7 +1212,7 @@ export const createMachine: CreateMachine_F = (
   config,
   { eventsMap, pContext, context, promiseesMap },
 ) => {
-  const out = new Machine(config)
+  const out = new Machine(config as Config)
     ._provideEvents(eventsMap)
     ._providePrivateContext(pContext)
     ._provideContext(context)

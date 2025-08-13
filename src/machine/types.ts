@@ -10,11 +10,9 @@ import type {
   ExtractGuardsFromActivity,
   FlatMapN,
   GetTargetsFromMap,
+  NodeConfig,
   NodeConfigCompound,
-  NodeConfigCompoundWithInitials,
   NodeConfigParallel,
-  NodeConfigParallelWithInitials,
-  NodesConfig,
 } from '#states';
 import type {
   ExtractActionKeysFromTransitions,
@@ -46,16 +44,6 @@ import type { EVENTS_FULL } from './constants';
 export type ConfigNode = NodeConfigCompound | NodeConfigParallel;
 
 /**
- * Type representing the main node config  with initials.
- *
- * @see {@linkcode NodeConfigCompoundWithInitials} for compound nodes with initials.
- * @see {@linkcode NodeConfigParallelWithInitials} for parallel nodes with initials.
- */
-export type ConfigNodeWithInitials =
-  | NodeConfigCompoundWithInitials
-  | NodeConfigParallelWithInitials;
-
-/**
  * Type representing a describer for a child service.
  *
  * @see {@linkcode Describer} for more details.
@@ -74,6 +62,31 @@ export type Config = ConfigNode & {
   readonly strict?: boolean;
 };
 
+export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
+  [K in Exclude<keyof T, keyof ConfigDef>]: never;
+} & {
+  states?: Record<string, NoExtraKeysConfigDef<ConfigDef>>;
+};
+
+export type ConfigDef = {
+  readonly targets?: string;
+  readonly initial?: string;
+  readonly states?: RecordS<ConfigDef>;
+};
+
+export type TransformConfigDef<T extends ConfigDef> = TransitionsConfig<
+  Exclude<T['targets'], undefined>
+> & {
+  readonly initial?: T['initial'];
+} & {
+  states?: {
+    [Key in keyof T['states']]: T['states'][Key] extends infer TK extends
+      ConfigDef
+      ? TransformConfigDef<TK>
+      : never;
+  };
+};
+
 /**
  * Retreieves all initlal states from a flat map of nodes.
  *
@@ -87,7 +100,7 @@ export type Config = ConfigNode & {
 export type GetInititalsFromFlat<Flat extends FlatMapN = FlatMapN> =
   types.SubType<
     Flat,
-    { type?: 'compound'; states: NodesConfig }
+    { type?: 'compound'; states: RecordS<NodeConfig> }
   > extends infer Sub
     ? {
         [key in keyof Sub]: keyof ('states' extends keyof Sub[key]

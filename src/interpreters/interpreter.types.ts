@@ -29,7 +29,7 @@ import type {
 import type {
   ActivityConfig,
   Node,
-  NodeConfigWithInitials,
+  NodeConfig,
   StateValue,
 } from '#states';
 import type {
@@ -195,7 +195,7 @@ export type Contexts<
 };
 
 export type PerformTransition_F = (
-  transition: TransitionConfig & { target?: string },
+  transition: TransitionConfig,
 ) => string | false;
 
 export type PerformTransitions_F = (
@@ -212,7 +212,7 @@ export type SleepContexts_F = <
 export type _Send_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-> = (event: ToEventsR<E, P>) => NodeConfigWithInitials | undefined;
+> = (event: ToEventsR<E, P>) => NodeConfig | undefined;
 
 export type State<
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
@@ -314,9 +314,9 @@ export interface AnyInterpreter<
 
   makeStrict: () => void;
   status: WorkingStatus;
-  initialConfig: NodeConfigWithInitials;
+  initialConfig: NodeConfig;
   initialValue: StateValue;
-  config: NodeConfigWithInitials;
+  config: NodeConfig;
   renew: any;
   value: StateValue;
   context: any;
