@@ -80,7 +80,7 @@ export type TransformConfigDef<T extends ConfigDef> = TransitionsConfig<
   readonly initial?: [] extends Exclude<T['initial'], undefined>
     ? string
     : Exclude<T['initial'], undefined>[number];
-  states?: {
+  readonly states?: {
     [Key in keyof T['states']]: T['states'][Key] extends infer TK extends
       ConfigDef
       ? TransformConfigDef<TK>
