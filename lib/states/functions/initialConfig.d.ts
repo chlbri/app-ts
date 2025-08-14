@@ -1,8 +1,6 @@
 import { type types } from '@bemedev/types';
-import type { NodeConfigWithInitials } from '../types';
-export type InitialConfig_F = types.Fn<[
-    body: NodeConfigWithInitials
-], NodeConfigWithInitials>;
+import type { NodeConfig } from '../types';
+export type InitialConfig_F = types.Fn<[body: NodeConfig], NodeConfig>;
 /**
  * Returns the initial configuration of a state machine.
  *

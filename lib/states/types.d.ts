@@ -2,14 +2,10 @@ import type { Action, ActionConfig, FromActionConfig } from '../actions/index.js
 import type { EventsMap, PromiseeMap } from '../events/index.js';
 import type { FromGuard, GuardConfig } from '../guards/index.js';
 import type { GetEventKeysFromTransitions, Transitions, TransitionsConfig } from '../transitions/index.js';
-import type { GetChildren, GetParents, Identitfy, ReduceArray, SingleOrArrayL, SingleOrArrayR } from '../types/index.js';
+import type { GetChildren, GetParents, Identitfy, RecordS, ReduceArray, SingleOrArrayL, SingleOrArrayR } from '#types';
 import type { types } from '@bemedev/types';
 export type StateType = 'atomic' | 'compound' | 'parallel';
-export type NodeConfig = NodeConfigAtomic | NodeConfigCompound | NodeConfigParallel;
-export type NodeConfigWithInitials = NodeConfigAtomic | NodeConfigCompoundWithInitials | NodeConfigParallelWithInitials;
 export type SNC = NodeConfig;
-export type NodesConfig = Record<string, NodeConfig>;
-export type NodesConfigWithInitials = Record<string, NodeConfigWithInitials>;
 export type ActivityMap = {
     guards: SingleOrArrayL<GuardConfig>;
     actions: SingleOrArrayL<ActionConfig>;
@@ -33,36 +29,40 @@ export type ExtractGuardsFromActivity<T extends {
     [key in keyof TA]: GuardsFromActivity<TA[key]>;
 }[keyof TA] : never;
 export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T ? T['activities'] extends infer TA extends ActivityConfig ? TA extends any ? keyof TA : never : never : never;
-export type CommonNodeConfig = {
+export type CommonNodeConfig<Paths extends string = string> = {
     readonly description?: string;
     readonly entry?: SingleOrArrayR<ActionConfig>;
     readonly exit?: SingleOrArrayR<ActionConfig>;
     readonly tags?: SingleOrArrayR<string>;
     readonly activities?: ActivityConfig;
-};
-export type NodeConfigAtomic = TransitionsConfig & CommonNodeConfig & {
+} & TransitionsConfig<Paths>;
+export type NodeConfig<Paths extends string = string, I extends string = string> = CommonNodeConfig<Paths> & ({
+    readonly type?: 'atomic';
+    readonly initial?: never;
+    readonly states?: never;
+} | {
+    readonly type?: 'compound';
+    readonly initial: I;
+    readonly states: RecordS<NodeConfig>;
+} | {
+    readonly type: 'parallel';
+    readonly initial?: never;
+    readonly states: RecordS<NodeConfig>;
+});
+export type NodeConfigAtomic<Paths extends string = string> = CommonNodeConfig<Paths> & {
     readonly type?: 'atomic';
     readonly initial?: never;
     readonly states?: never;
 };
-export type NodeConfigCompound = TransitionsConfig & CommonNodeConfig & {
+export type NodeConfigCompound<Paths extends string = string, I extends string = string> = CommonNodeConfig<Paths> & {
     readonly type?: 'compound';
-    readonly initial?: never;
-    readonly states: NodesConfig;
+    readonly initial: I;
+    readonly states: RecordS<NodeConfig>;
 };
-export type NodeConfigCompoundWithInitials = TransitionsConfig & CommonNodeConfig & {
-    readonly initial: string;
-    readonly type?: 'compound';
-    readonly states: NodesConfigWithInitials;
-};
-export type NodeConfigParallel = TransitionsConfig & CommonNodeConfig & {
-    readonly type: 'parallel';
-    readonly states: NodesConfig;
-};
-export type NodeConfigParallelWithInitials = TransitionsConfig & CommonNodeConfig & {
+export type NodeConfigParallel<Paths extends string = string> = CommonNodeConfig<Paths> & {
     readonly type: 'parallel';
     readonly initial?: never;
-    readonly states: NodesConfigWithInitials;
+    readonly states: RecordS<NodeConfig>;
 };
 export type StateValue = string | StateValueMap;
 export interface StateValueMap {
@@ -71,7 +71,9 @@ export interface StateValueMap {
 type FlatMapNodeConfig<T extends NodeConfig, withChildren extends boolean = true, Remaining extends string = '/'> = 'states' extends keyof T ? {
     readonly [key in keyof T['states'] as `${Remaining}${key & string}`]: withChildren extends true ? T['states'][key] : Omit<T['states'][key], 'states'>;
 } & {
-    [key in keyof T['states']]: T['states'][key] extends infer S extends NodeConfigParallel | NodeConfigCompound ? FlatMapNodeConfig<S, withChildren, `${Remaining}${key & string}/`> : {};
+    [key in keyof T['states']]: T['states'][key] extends infer S extends NodeConfig & {
+        states: RecordS<NodeConfig>;
+    } ? FlatMapNodeConfig<S, withChildren, `${Remaining}${key & string}/`> : {};
 }[keyof T['states']] : {};
 export type FlatMapN<T extends NodeConfig = NodeConfig, withChildren extends boolean = true> = types.UnionToIntersection<FlatMapNodeConfig<T, withChildren>> & {
     readonly '/': T;

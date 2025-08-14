@@ -1,6 +1,6 @@
 import { type StateValue } from '@bemedev/decompose';
-import type { NodeConfigWithInitials } from '../types';
-export type ValueToNode_F = <T extends StateValue>(body: NodeConfigWithInitials, from: T, initial?: boolean) => NodeConfigWithInitials;
+import type { NodeConfig } from '../types';
+export type ValueToNode_F = <T extends StateValue>(body: NodeConfig, from: T, initial?: boolean) => NodeConfig;
 /**
  * Converts a state value to a node configuration based on the provided body and from value.
  *

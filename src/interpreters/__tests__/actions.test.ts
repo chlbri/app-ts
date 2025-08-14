@@ -7,15 +7,17 @@ describe('Interpret for actions', () => {
   describe('#01 => string', () => {
     const machine = createMachine(
       {
+        initial: 'state1',
         states: {
           state1: {
             always: {
               actions: 'action1',
+              target: '/state2',
             },
           },
           state2: {
             on: {
-              NEXT: {},
+              NEXT: '/state1',
             },
           },
         },
@@ -26,13 +28,6 @@ describe('Interpret for actions', () => {
           NEXT: {},
         },
         promiseesMap: {},
-      },
-      {
-        initials: { '/': 'state1' },
-        targets: {
-          '/state1.always': '/state2',
-          '/state2.on.NEXT': '/state1',
-        },
       },
     );
 
@@ -94,6 +89,7 @@ describe('Interpret for actions', () => {
   describe('#02 => describer', () => {
     const machine = createMachine(
       {
+        initial: 'state1',
         states: {
           state1: {
             always: {
@@ -101,11 +97,12 @@ describe('Interpret for actions', () => {
                 name: 'action1',
                 description: 'Just an action',
               },
+              target: '/state2',
             },
           },
           state2: {
             on: {
-              NEXT: {},
+              NEXT: '/state1',
             },
           },
         },
@@ -116,13 +113,6 @@ describe('Interpret for actions', () => {
           NEXT: {},
         },
         promiseesMap: {},
-      },
-      {
-        initials: { '/': 'state1' },
-        targets: {
-          '/state1.always': '/state2',
-          '/state2.on.NEXT': '/state1',
-        },
       },
     );
 

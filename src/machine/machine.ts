@@ -442,8 +442,6 @@ class Machine<
   /**
    * Initials {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
    */
-  #initials!: Mo['initials'];
-  #targets!: Mo['targets'];
 
   /**
    * Context for this {@linkcode Machine}.
@@ -475,7 +473,7 @@ class Machine<
    *
    * @remarks
    * This constructor initializes the machine with the provided configuration.
-   * It flattens the configuration and prepares it for further operations ({@linkcode preflat}).
+   * It flattens the configuration and prepares it for further operations ({@linkcode flat}).
    */
   constructor(config: C) {
     this.#config = config;
@@ -483,7 +481,7 @@ class Machine<
       start: false,
       object: 'both',
     }) as Decompose<C, { sep: '.'; start: false; object: 'both' }>;
-    this.#flat = flatMap<C, true>(config);
+    this.#flat = flatMap(config, true);
     this.#initialConfig = initialConfig(this.#config);
     this.#getInitialKeys();
   }
@@ -494,7 +492,7 @@ class Machine<
    * @see {@linkcode Config}
    * @see {@linkcode C}
    */
-  get preConfig() {
+  get config() {
     return this.#config;
   }
 
@@ -505,19 +503,8 @@ class Machine<
    * @see {@linkcode Config}
    * @see {@linkcode C}
    */
-  get preflat() {
+  get flat() {
     return this.#flat;
-  }
-
-  /**
-   * Public accessor of initial {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
-   */
-  get initials() {
-    return this.#initials;
-  }
-
-  get targets() {
-    return this.#targets;
   }
 
   /**
@@ -905,7 +892,6 @@ class Machine<
     const delays = this.#delays;
     const promises = this.#promises;
     const machines = this.#machines;
-    const initials = this.#initials;
 
     const out = castings.commons<Mo>({
       predicates,
@@ -913,7 +899,6 @@ class Machine<
       delays,
       promises,
       machines,
-      initials,
     });
 
     return out;
@@ -1052,13 +1037,7 @@ class Machine<
    * @param option a function that provides options for the machine.
    * Options can include actions, predicates, delays, promises, and child machines.
    */
-  addOptions: AddOptions_F<
-    E,
-    P,
-    Pc,
-    Tc,
-    types.NOmit<Mo, 'initials' | 'targets'>
-  > = func => {
+  addOptions: AddOptions_F<E, P, Pc, Tc, Mo> = func => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
@@ -1175,14 +1154,14 @@ export type { Machine };
 export type CreateMachine_F = <
   const C2 extends
     NoExtraKeysConfigDef<ConfigDef> = NoExtraKeysConfigDef<ConfigDef>,
-  const C extends TransformConfigDef<C2> = TransformConfigDef<C2>,
-  C3 extends Config = Config & C,
+  const C extends Config & TransformConfigDef<C2> = Config &
+    TransformConfigDef<C2>,
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
-  EventM extends GetEventsFromConfig<C3> = GetEventsFromConfig<C3>,
-  P extends PromiseeMap = GetPromiseeSrcFromConfig<C3>,
-  Mo extends MachineOptions<C3, EventM, P, Pc, Tc> = MachineOptions<
-    C3,
+  EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
+  P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
+  Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<
+    C,
     EventM,
     P,
     Pc,
@@ -1191,7 +1170,7 @@ export type CreateMachine_F = <
 >(
   config: C & { __tsSchema?: NoExtraKeysConfigDef<C2> },
   types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
-) => Machine<C3, Pc, Tc, EventM, P, Mo>;
+) => Machine<C, Pc, Tc, EventM, P, Mo>;
 
 /**
  * Creates a new instance of {@linkcode Machine} with the provided configuration and types.

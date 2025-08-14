@@ -2,7 +2,7 @@ import {
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MIN_ACTIVITY_TIME,
 } from '#constants';
-import { defaultC, defaultI, defaultT, fakeWaiter } from '#fixtures';
+import { defaultC, defaultT, fakeWaiter } from '#fixtures';
 import {
   DELAY,
   fakeDB,
@@ -221,23 +221,26 @@ describe('Interpreter', () => {
           ADD_CONDITION: { actions: 'addCondition' },
           REMOVE_CONDITION: { actions: 'removeCondition' },
         },
+        initial: 'idle',
         states: {
           idle: {
             entry: 'inc',
             always: {
               guards: ['condition', 'limit'],
+              target: '/working',
             },
             after: {
-              DELAY: {},
+              DELAY: '/working',
             },
           },
           working: {
             entry: 'inc',
             always: {
               guards: ['condition', 'limit'],
+              target: '/idle',
             },
             after: {
-              DELAY: {},
+              DELAY: '/idle',
             },
           },
         },
@@ -255,15 +258,6 @@ describe('Interpreter', () => {
           iterator: 'number',
         },
       }),
-      {
-        ...defaultI,
-        targets: {
-          '/idle.always': '/working',
-          '/idle.after.DELAY': '/working',
-          '/working.always': '/idle',
-          '/working.after.DELAY': '/idle',
-        },
-      },
     ).provideOptions(({ isValue, assign }) => ({
       actions: {
         addCondition: ({ pContext, context }) => ({
@@ -327,6 +321,7 @@ describe('Interpreter', () => {
 
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             on: {
@@ -336,7 +331,6 @@ describe('Interpreter', () => {
         },
       },
       { ...defaultT, eventsMap: { NEXT: {} } },
-      defaultI,
     ).provideOptions(() => ({
       actions: {
         inc,
@@ -396,6 +390,7 @@ describe('Interpreter', () => {
 
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             after: {
@@ -405,7 +400,6 @@ describe('Interpreter', () => {
         },
       },
       defaultT,
-      defaultI,
     ).provideOptions(() => ({
       actions: {
         inc,
@@ -443,6 +437,7 @@ describe('Interpreter', () => {
 
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             after: {
@@ -457,7 +452,6 @@ describe('Interpreter', () => {
         },
       },
       { ...defaultT, context: { iterator: 0 } },
-      defaultI,
     ).provideOptions(() => ({
       actions: {
         inc,

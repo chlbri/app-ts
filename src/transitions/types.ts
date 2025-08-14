@@ -73,8 +73,16 @@ export type ExtractGuardsFromTransition<
 export type TransitionConfigMapA<Paths extends string = string> =
   types.Require<_TransitionConfigMap<Paths>, 'actions'>;
 
+export type TransitionConfigA<Paths extends string = string> =
+  | types.Require<TransitionConfigMapA<Paths>, 'actions'>
+  | Paths;
+
 export type TransitionConfigMapF<Paths extends string = string> =
   types.Require<_TransitionConfigMap<Paths>, 'target'>;
+
+export type TransitionConfigF<Paths extends string = string> =
+  | types.Require<TransitionConfigMapF<Paths>, 'target'>
+  | Paths;
 
 export type TransitionConfigMap<Paths extends string = string> =
   | TransitionConfigMapF<Paths>
@@ -131,10 +139,10 @@ export type SingleOrArrayT<Paths extends string = string> =
  */
 export type AlwaysConfig<Paths extends string = string> =
   | readonly [
-      ...types.Require<TransitionConfigMap<Paths>, 'guards'>[],
-      TransitionConfig<Paths>,
+      ...types.Require<TransitionConfigMapF<Paths>, 'guards'>[],
+      TransitionConfigF<Paths>,
     ]
-  | TransitionConfig<Paths>;
+  | TransitionConfigF<Paths>;
 
 /**
  * A type used to represent a record of transitions.

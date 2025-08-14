@@ -9,7 +9,6 @@ import {
   constructValue,
   constructWaiter,
   defaultC,
-  defaultI,
   defaultT,
 } from '../fixtures';
 
@@ -23,10 +22,11 @@ describe('after', () => {
   });
 
   const simpleConfig = createConfig({
+    initial: 'idle',
     states: {
       idle: {
         after: {
-          DELAY: {},
+          DELAY: '/active',
         },
       },
       active: {},
@@ -34,10 +34,7 @@ describe('after', () => {
   });
 
   describe('#01 => simple', () => {
-    const machine = createMachine(simpleConfig, defaultT, {
-      ...defaultI,
-      targets: { '/idle.after.DELAY': '/active' },
-    });
+    const machine = createMachine(simpleConfig, defaultT);
 
     machine.addOptions(() => ({
       delays: {
@@ -60,11 +57,12 @@ describe('after', () => {
   describe('#02 => complex, two delays', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             after: {
-              DELAY1: {},
-              DELAY2: {},
+              DELAY1: '/result1',
+              DELAY2: '/result2',
             },
           },
           result1: {},
@@ -72,13 +70,6 @@ describe('after', () => {
         },
       },
       defaultT,
-      {
-        ...defaultI,
-        targets: {
-          '/idle.after.DELAY1': '/result1',
-          '/idle.after.DELAY2': '/result2',
-        },
-      },
     );
 
     machine.addOptions(() => ({
@@ -107,11 +98,12 @@ describe('after', () => {
   describe('#03 => complex, two delays with parameters', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             after: {
-              DELAY: { guards: 'returnFalse' },
-              DELAY2: {},
+              DELAY: { guards: 'returnFalse', target: '/result1' },
+              DELAY2: '/result2',
             },
           },
           result1: {},
@@ -119,13 +111,6 @@ describe('after', () => {
         },
       },
       defaultT,
-      {
-        ...defaultI,
-        targets: {
-          '/idle.after.DELAY': '/result1',
-          '/idle.after.DELAY2': '/result2',
-        },
-      },
     );
     machine.addOptions(() => ({
       delays: {
@@ -156,7 +141,7 @@ describe('after', () => {
   });
 
   describe('#04 => Delay is too long', () => {
-    const machine = createMachine(simpleConfig, defaultT, defaultI);
+    const machine = createMachine(simpleConfig, defaultT);
 
     machine.addOptions(() => ({
       delays: {
@@ -177,7 +162,7 @@ describe('after', () => {
   });
 
   describe('#05 => Delay is not defined', () => {
-    const machine = createMachine(simpleConfig, defaultT, defaultI);
+    const machine = createMachine(simpleConfig, defaultT);
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
 
@@ -192,31 +177,24 @@ describe('after', () => {
   describe('#07 => Inside the remainings', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             after: {
-              DELAY2: {},
+              DELAY2: '/active',
             },
             on: {
-              NEXT: {},
+              NEXT: '/active',
             },
           },
           active: {
             on: {
-              NEXT: {},
+              NEXT: '/idle',
             },
           },
         },
       },
       { ...defaultT, eventsMap: { NEXT: {} } },
-      {
-        ...defaultI,
-        targets: {
-          '/idle.after.DELAY2': '/active',
-          '/idle.on.NEXT': '/active',
-          '/active.on.NEXT': '/idle',
-        },
-      },
     );
 
     machine.addOptions(() => ({

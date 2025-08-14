@@ -71,9 +71,8 @@ export interface AnyMachine<
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > {
   options: any;
-  preConfig: Config;
-  preflat: Record<string, any>;
-  initials: any;
+  config: Config;
+  flat: Record<string, any>;
   context: Tc;
   pContext: Pc;
   eventsMap: E;
@@ -173,8 +172,8 @@ export type ChildProvider_F<
   P extends PromiseeMap,
   Pc = any,
 > = <
-  const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
-    'pContext' | 'context' | 'preConfig'
+  const T extends KeyU<'config' | 'context' | 'pContext'> = KeyU<
+    'pContext' | 'context' | 'config'
   >,
 >(
   machine: T,
@@ -210,10 +209,7 @@ export type AddOptionsParam_F<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
-  Mo extends types.NOmit<SimpleMachineOptions2, 'initials'> = types.NOmit<
-    SimpleMachineOptions2,
-    'initials'
-  >,
+  Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = (option: {
   isDefined: DefineGuard_F<E, P, Pc, Tc>;
   isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
@@ -242,10 +238,7 @@ export type AddOptions_F<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
-  Mo extends types.NOmit<SimpleMachineOptions2, 'initials'> = types.NOmit<
-    SimpleMachineOptions2,
-    'initials'
-  >,
+  Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => void;
 
 /**

@@ -5,7 +5,6 @@ import {
   constructValue,
   constructWaiter,
   defaultC,
-  defaultI,
   defaultT,
 } from '../fixtures';
 
@@ -21,25 +20,19 @@ describe('Integration testing for interpret, Children', () => {
   describe('#01 => With delay', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             after: {
-              DELAY: {},
+              DELAY: '/notActive',
             },
-            always: {},
+            always: '/active',
           },
           active: {},
           notActive: {},
         },
       },
       defaultT,
-      {
-        ...defaultI,
-        targets: {
-          '/idle.after.DELAY': '/notActive',
-          '/idle.always': '/active',
-        },
-      },
     );
 
     machine.addOptions(() => ({
@@ -60,25 +53,19 @@ describe('Integration testing for interpret, Children', () => {
   describe('#01 => With delay, but cannot reach caused by guard', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             after: {
-              DELAY3: {},
+              DELAY3: '/notActive',
             },
-            always: { guards: 'returnFalse' },
+            always: { guards: 'returnFalse', target: '/active' },
           },
           active: {},
           notActive: {},
         },
       },
       defaultT,
-      {
-        ...defaultI,
-        targets: {
-          '/idle.after.DELAY3': '/notActive',
-          '/idle.always': '/active',
-        },
-      },
     );
 
     machine.addOptions(() => ({
@@ -104,12 +91,13 @@ describe('Integration testing for interpret, Children', () => {
   describe('#02 => complex, two always with parameters', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             always: [
-              { guards: 'returnFalse' },
-              { guards: 'returnFalse' },
-              {},
+              { guards: 'returnFalse', target: '/result1' },
+              { guards: 'returnFalse', target: '/result3' },
+              '/result2',
             ],
           },
           result1: {},
@@ -118,14 +106,6 @@ describe('Integration testing for interpret, Children', () => {
         },
       },
       defaultT,
-      {
-        ...defaultI,
-        targets: {
-          '/idle.always.[0]': '/result1',
-          '/idle.always.[1]': '/result3',
-          '/idle.always.[2]': '/result2',
-        },
-      },
     );
 
     // machine.addPredicates({ returnFalse });

@@ -8,15 +8,14 @@ import { machine1 } from './machine1';
 // #region machine2
 
 export const config2 = createConfig({
+  initial: 'idle',
   states: {
     idle: {
       activities: {
         DELAY: 'inc',
       },
       on: {
-        NEXT: {
-          /* target: '/working' */
-        },
+        NEXT: '/working',
       },
     },
     working: {
@@ -25,12 +24,11 @@ export const config2 = createConfig({
         DELAY2: 'inc2',
       },
       on: {
-        FINISH: {
-          /* target: '/final'  */
-        },
+        FINISH: '/final',
       },
       states: {
         fetch: {
+          initial: 'idle',
           states: {
             idle: {
               activities: {
@@ -39,7 +37,7 @@ export const config2 = createConfig({
               on: {
                 FETCH: {
                   guards: 'isInputNotEmpty',
-                  // target: '/working/fetch/fetch',
+                  target: '/working/fetch/fetch',
                 },
               },
             },
@@ -51,22 +49,21 @@ export const config2 = createConfig({
                     name: 'insertData',
                     description: 'Database insert',
                   },
-                  // target: '/working/fetch/idle',
+                  target: '/working/fetch/idle',
                 },
-                catch: {
-                  /* target: '/working/fetch/idle' */
-                },
+                catch: '/working/fetch/idle',
               },
             },
           },
         },
         ui: {
+          initial: 'idle',
           states: {
             idle: {
               on: {
                 WRITE: {
                   actions: 'write',
-                  // target: '/working/ui/input',
+                  target: '/working/ui/input',
                 },
               },
             },
@@ -82,11 +79,9 @@ export const config2 = createConfig({
                   {
                     guards: 'isInputNotEmpty',
                     actions: 'write',
-                    // target: '/working/ui/idle',
+                    target: '/working/ui/idle',
                   },
-                  {
-                    /* target: '/working/ui/idle' */
-                  },
+                  '/working/ui/idle',
                 ],
               },
             },
@@ -126,23 +121,6 @@ export const machine2 = createMachine(
       },
     },
   }),
-  {
-    initials: {
-      '/': 'idle',
-      '/working/fetch': 'idle',
-      '/working/ui': 'idle',
-    },
-    targets: {
-      '/idle.on.NEXT': '/working',
-      '/working.on.FINISH': '/final',
-      '/working/fetch/idle.on.FETCH': '/working/fetch/fetch',
-      '/working/fetch/fetch.promises.then': '/working/fetch/idle',
-      '/working/fetch/fetch.promises.catch': '/working/fetch/idle',
-      '/working/ui/idle.on.WRITE': '/working/ui/input',
-      '/working/ui/input.on.WRITE.[0]': '/working/ui/idle',
-      '/working/ui/input.on.WRITE.[1]': '/working/ui/idle',
-    },
-  },
 ).provideOptions(
   ({ isNotValue, isValue, createChild, assign, voidAction }) => ({
     actions: {
@@ -221,23 +199,6 @@ export const _machine2 = createMachine(
       },
     },
   }),
-  {
-    initials: {
-      '/': 'idle',
-      '/working/fetch': 'idle',
-      '/working/ui': 'idle',
-    },
-    targets: {
-      '/idle.on.NEXT': '/working',
-      '/working.on.FINISH': '/final',
-      '/working/fetch/idle.on.FETCH': '/working/fetch/fetch',
-      '/working/fetch/fetch.promises.then': '/working/fetch/idle',
-      '/working/fetch/fetch.promises.catch': '/working/fetch/idle',
-      '/working/ui/idle.on.WRITE': '/working/ui/input',
-      '/working/ui/input.on.WRITE.[0]': '/working/ui/idle',
-      '/working/ui/input.on.WRITE.[1]': '/working/ui/idle',
-    },
-  },
 ).provideOptions(
   ({ isNotValue, isValue, assign, voidAction, debounce: _debounce }) => ({
     actions: {

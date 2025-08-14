@@ -1,5 +1,5 @@
-import type { NodeConfig, NodeConfigCompoundWithInitials } from '../types';
-export type RecomposeConfig_F = <T extends NodeConfig | NodeConfigCompoundWithInitials>(shape: T) => NodeConfigCompoundWithInitials;
+import type { NodeConfig } from '../types';
+export type RecomposeConfig_F = <T extends NodeConfig>(shape: T) => NodeConfig;
 /**
  * Recompose a configuration object into a nested structure based on the provided shape.
  *

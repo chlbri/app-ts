@@ -1,3 +1,3 @@
-import type { NodeConfigCompoundWithInitials } from '../../types';
-export declare function isCompound(arg: any): arg is NodeConfigCompoundWithInitials;
+import type { NodeConfigCompound } from '../../index.js';
+export declare function isCompound(arg: any): arg is NodeConfigCompound;
 //# sourceMappingURL=isCompound.d.ts.map

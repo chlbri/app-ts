@@ -286,7 +286,7 @@ export class Interpreter<
    * @see {@linkcode isDefined} for filtering out undefined machines.
    */
   get #childrenMachines() {
-    const _machines = toArray.typed(this.#machine.preConfig.machines);
+    const _machines = toArray.typed(this.#machine.config.machines);
     return _machines.map(this.toMachine).filter(isDefined);
   }
 
@@ -796,7 +796,7 @@ export class Interpreter<
   #performForceSendAction = (forceSend?: EventArg<E>) => {
     if (!forceSend) return;
 
-    const values = Object.values(this.#machine.preflat);
+    const values = Object.values(this.#machine.flat);
     values.forEach(({ on }) => {
       const type = eventToType(forceSend);
       const transitions = toArray.typed(on?.[type]);
@@ -1174,6 +1174,8 @@ export class Interpreter<
     );
 
     const check5 = promises.length < 1;
+
+    console.warn('len', promises.length);
     if (check5) return;
 
     const promise = anyPromises(from, ...promises);
@@ -1359,6 +1361,8 @@ export class Interpreter<
         });
       }
     });
+
+    console.warn('promises', '=>', entries);
 
     return entries;
   }

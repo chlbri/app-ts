@@ -5,13 +5,14 @@ import { DELAY } from './constants';
 // #region machine1
 export const machine1 = createMachine(
   {
+    initial: 'idle',
     states: {
       idle: {
         activities: {
           DELAY: 'inc',
         },
         on: {
-          NEXT: { description: 'Next' },
+          NEXT: { description: 'Next', target: '/final' },
         },
       },
       final: {},
@@ -25,12 +26,6 @@ export const machine1 = createMachine(
       iterator: 'number',
     },
   }),
-  {
-    initials: { '/': 'idle' },
-    targets: {
-      '/idle.on.NEXT': '/final',
-    },
-  },
 );
 
 machine1.addOptions(({ assign }) => ({

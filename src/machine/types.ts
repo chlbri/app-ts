@@ -339,7 +339,7 @@ export type GetTargetsFrom<C extends Config> = GetTargetsFromMap<
  * @see {@linkcode ConfigFrom} for extracting the config from the machine.
  * @see {@linkcode GetEventsFromConfig} for extracting events from the machine.
  */
-export type GetEventsFromMachine<T extends KeyU<'preConfig'>> =
+export type GetEventsFromMachine<T extends KeyU<'config'>> =
   GetEventsFromConfig<ConfigFrom<T>>;
 
 /**
@@ -377,7 +377,7 @@ export type GetPromiseeSrcFromConfig<C extends Config> =
  * @see {@linkcode ConfigFrom} for extracting the config from the machine.
  * @see {@linkcode GetPromiseeSrcFromConfig} for extracting promises from the machine.
  */
-export type GetPromiseeSrcFromMachine<T extends KeyU<'preConfig'>> =
+export type GetPromiseeSrcFromMachine<T extends KeyU<'config'>> =
   GetPromiseeSrcFromConfig<ConfigFrom<T>>;
 
 /**
@@ -421,7 +421,7 @@ type HeritageMap<U extends types.Ru, Tc extends types.Ru> =
 type SubNev = { contexts?: never };
 
 // #region Sub Events Helpers
-type SubEventsKeysFrom<T extends KeyU<'preConfig' | 'context'>> =
+type SubEventsKeysFrom<T extends KeyU<'config' | 'context'>> =
   | keyof GetEventsFromMachine<T>
   | (GetPromiseeSrcFromMachine<T> extends infer K extends string
       ? `${K}::${'then' | 'catch'}`
@@ -456,7 +456,7 @@ export type SubscriberType<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  U extends KeyU<'preConfig' | 'context'> = KeyU<'preConfig' | 'context'>,
+  U extends KeyU<'config' | 'context'> = KeyU<'config' | 'context'>,
 > = {
   events:
     | SingleOrArrayL<
@@ -505,8 +505,8 @@ export type ChildS<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
-    'preConfig' | 'context' | 'pContext'
+  T extends KeyU<'config' | 'context' | 'pContext'> = KeyU<
+    'config' | 'context' | 'pContext'
   >,
 > = {
   machine: T;
@@ -538,8 +538,8 @@ export type ChildS2<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
-  T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
-    'preConfig' | 'context' | 'pContext'
+  T extends KeyU<'config' | 'context' | 'pContext'> = KeyU<
+    'config' | 'context' | 'pContext'
   >,
 > = {
   machine: T;
@@ -624,20 +624,12 @@ export type MachineOptions<
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
   Flat extends FlatMapN<C> = FlatMapN<C>,
 > = {
-  initials: GetInititalsFromFlat<Flat>;
   actions?: Partial<GetActionsFromFlat<Flat, E, P, Pc, Tc>>;
   predicates?: Partial<GetGuardsFromFlat<Flat, E, P, Pc, Tc>>;
   promises?: Partial<GetSrcFromFlat<Flat, E, P, Pc, Tc>>;
   delays?: Partial<GetDelaysFromFlat<Flat, E, P, Pc, Tc>>;
   machines?: Partial<GetMachinesFromConfig<C, E, P, Pc>>;
-} & (GetTargetsFromMap<Flat> extends infer G
-  ? types.NotUndefined<
-      types.NotAllowedNamesLow<G, undefined>
-    > extends never
-    ? Partial<{ targets: G }>
-    : { targets: G }
-  : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    { targets?: {} });
+};
 
 /**
  * Getting the options from a machine.
@@ -663,8 +655,8 @@ export type MoF<T extends KeyU<'options'>> = MachineOptionsFrom<T>;
  *
  * @see {@linkcode Config} for the structure of the machine config.
  */
-export type ConfigFrom<T extends KeyU<'preConfig'>> = Extract<
-  T['preConfig'],
+export type ConfigFrom<T extends KeyU<'config'>> = Extract<
+  T['config'],
   Config
 >;
 
@@ -936,16 +928,10 @@ export type SimpleMachineOptions<
  */
 export type SimpleMachineOptions2 = Partial<
   Record<
-    | 'actions'
-    | 'predicates'
-    | 'promises'
-    | 'delays'
-    | 'machines'
-    | 'targets',
+    'actions' | 'predicates' | 'promises' | 'delays' | 'machines',
     any
   >
-> &
-  Record<'initials', any>;
+>;
 
 /**
  * Type representing a function that returns a {@linkcode FnMap} of promise.

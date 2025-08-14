@@ -1,1 +1,1 @@
-{"version":3,"file":"isParallel.d.ts","sourceRoot":"","sources":["../../../../src/states/functions/checks/isParallel.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EACV,kBAAkB,EAClB,8BAA8B,EAC/B,MAAM,aAAa,CAAC;AAErB,wBAAgB,UAAU,CACxB,GAAG,EAAE,OAAO,GACX,GAAG,IAAI,8BAA8B,GAAG,kBAAkB,CAE5D"}
+{"version":3,"file":"isParallel.d.ts","sourceRoot":"","sources":["../../../../src/states/functions/checks/isParallel.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,kBAAkB,EAAE,MAAM,aAAa,CAAC;AAEtD,wBAAgB,UAAU,CAAC,GAAG,EAAE,OAAO,GAAG,GAAG,IAAI,kBAAkB,CAElE"}

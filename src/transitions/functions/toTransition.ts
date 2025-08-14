@@ -14,7 +14,7 @@ export type ToTransition_F = <
 >(
   events: E,
   promisees: P,
-  config: TransitionConfig & { target?: string },
+  config: TransitionConfig,
   options?: Pick<SimpleMachineOptions2, 'actions' | 'predicates'>,
 ) => Transition<E, P, Pc, Tc>;
 
@@ -39,6 +39,8 @@ export const toTransition: ToTransition_F = (
   config,
   options,
 ) => {
+  const isString = typeof config === 'string';
+  if (isString) return { target: config };
   const { description, target } = config;
 
   const actions = toArray

@@ -50,7 +50,10 @@ const ttest3 = {
     START: { actions: '/state2' },
     END: [{ guards: 'guard2', actions: 'build2' }, { actions: 'e' }],
   },
-  always: [{ guards: 'guard3', actions: 'build3' }, { actions: 'f' }],
+  always: [
+    { guards: 'guard3', actions: 'build3', target: '/state' },
+    { actions: 'f', target: '/state' },
+  ],
   promises: [
     {
       src: 'source1',

@@ -63,7 +63,7 @@ type Sub2 = SubscriberType<
   {},
   {},
   string,
-  { preConfig: unknown; context: string }
+  { config: unknown; context: string }
 >;
 
 expectTypeOf<Sub2>().branded.toEqualTypeOf<{

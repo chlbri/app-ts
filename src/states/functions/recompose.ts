@@ -1,6 +1,6 @@
 import { DEFAULT_DELIMITER } from '#constants';
 import { merge } from '#utils';
-import type { NodeConfig, NodeConfigCompoundWithInitials } from '../types';
+import type { NodeConfig } from '../types';
 
 type Url_F = <T>(shape: string, value: T) => any;
 
@@ -38,11 +38,9 @@ const recomposeObjectUrl: Url_F = (shape, value) => {
   return obj;
 };
 
-export type RecomposeConfig_F = <
-  T extends NodeConfig | NodeConfigCompoundWithInitials,
->(
+export type RecomposeConfig_F = <T extends NodeConfig>(
   shape: T,
-) => NodeConfigCompoundWithInitials;
+) => NodeConfig;
 
 /**
  * Recompose a configuration object into a nested structure based on the provided shape.

@@ -2,14 +2,15 @@ import type { Action, ActionConfig, FromActionConfig } from '../actions/index.js
 import type { EventsMap, PromiseeMap } from '../events/index.js';
 import type { FromGuard, GuardConfig, Predicate } from '../guards/index.js';
 import type { ExtractActionsFromPromisee, ExtractGuardsFromPromise, ExtractMaxFromPromisee, ExtractSrcFromPromisee, GetEventKeysFromPromisee, Promisee, PromiseeConfig } from '../promises/index.js';
-import type { Identitfy, RecordS, ReduceArray, SingleOrArrayL } from '../types/index.js';
+import type { Identitfy, RecordS, ReduceArray, SingleOrArrayL } from '#types';
 import type { types } from '@bemedev/types';
 import type { NotUndefined } from '@bemedev/types/lib/types/commons.types';
 /**
  * Represents the simpliest configuration map for a transition.
  * Used as Helper
  */
-type _TransitionConfigMap = {
+type _TransitionConfigMap<Paths extends string = string> = {
+    readonly target?: Paths;
     readonly actions?: SingleOrArrayL<ActionConfig>;
     readonly guards?: SingleOrArrayL<GuardConfig>;
     readonly description?: string;
@@ -45,7 +46,11 @@ export type ExtractGuardsFromTransition<T extends {
 /**
  * A {@linkcode _TransitionConfigMap} that requires actions.
  */
-export type TransitionConfigMapA = types.Require<_TransitionConfigMap, 'actions'>;
+export type TransitionConfigMapA<Paths extends string = string> = types.Require<_TransitionConfigMap<Paths>, 'actions'>;
+export type TransitionConfigA<Paths extends string = string> = types.Require<TransitionConfigMapA<Paths>, 'actions'> | Paths;
+export type TransitionConfigMapF<Paths extends string = string> = types.Require<_TransitionConfigMap<Paths>, 'target'>;
+export type TransitionConfigF<Paths extends string = string> = types.Require<TransitionConfigMapF<Paths>, 'target'> | Paths;
+export type TransitionConfigMap<Paths extends string = string> = TransitionConfigMapF<Paths> | TransitionConfigMapA<Paths>;
 /**
  * A better version {@linkcode _TransitionConfigMap}.
  *
@@ -55,7 +60,7 @@ export type TransitionConfigMapA = types.Require<_TransitionConfigMap, 'actions'
  * @see {@linkcode TransitionConfigMapF} for a version that requires a target.
  * @see {@linkcode TransitionConfigMapA} for a version that requires actions.
  */
-export type TransitionConfig = _TransitionConfigMap | TransitionConfigMapA;
+export type TransitionConfig<Paths extends string = string> = Paths | TransitionConfigMap<Paths>;
 /**
  * A version {@linkcode TransitionConfig} with string declaration.
  */
@@ -69,9 +74,9 @@ export type TransitionConfig = _TransitionConfigMap | TransitionConfigMapA;
  * @see {@linkcode TransitionConfig} for a version that can be a string or a {@linkcode TransitionConfig}.
  * @see {@linkcode types.Require}
  */
-export type ArrayTransitions = readonly [
-    ...types.Require<TransitionConfig, 'guards'>[],
-    TransitionConfig
+export type ArrayTransitions<Paths extends string = string> = readonly [
+    ...types.Require<TransitionConfigMap<Paths>, 'guards'>[],
+    TransitionConfig<Paths>
 ];
 /**
  * A type that can be either an array of transitions or a single transition configuration.
@@ -79,7 +84,7 @@ export type ArrayTransitions = readonly [
  * @see {@linkcode ArrayTransitions} for an array of transitions.
  * @see {@linkcode TransitionConfig} for a single transition configuration.
  */
-export type SingleOrArrayT = ArrayTransitions | TransitionConfig;
+export type SingleOrArrayT<Paths extends string = string> = ArrayTransitions<Paths> | TransitionConfig<Paths>;
 /**
  * Representation of a always transition config.
  *
@@ -87,16 +92,16 @@ export type SingleOrArrayT = ArrayTransitions | TransitionConfig;
  * @see {@linkcode TransitionConfigF} for a single transition configuration with a target.
  * @see {@linkcode types.Require}
  */
-export type AlwaysConfig = readonly [
-    ...types.Require<TransitionConfig, 'guards'>[],
-    TransitionConfig
-] | TransitionConfig;
+export type AlwaysConfig<Paths extends string = string> = readonly [
+    ...types.Require<TransitionConfigMapF<Paths>, 'guards'>[],
+    TransitionConfigF<Paths>
+] | TransitionConfigF<Paths>;
 /**
  * A type used to represent a record of transitions.
  *
  * @remarks For the purpose of delay transition config.
  */
-export type DelayedTransitions = RecordS<SingleOrArrayT>;
+export type DelayedTransitions<Paths extends string = string> = RecordS<SingleOrArrayT<Paths>>;
 export type GetEventKeysFromDelayed<T> = {
     [key in keyof T & string]: T[key] extends types.AnyArray ? `${key}.[${types.IndexesOfArray<T[key]>}]` : key;
 }[keyof T & string];
@@ -141,11 +146,11 @@ export type ExtractGuardKeysFromDelayed<T> = ExtractGuardsFromTransition<Extract
  * @see {@linkcode PromiseeConfig} for promise configurations.
  * @see {@linkcode SingleOrArrayL} for handling single or array types.
  */
-export type TransitionsConfig = {
-    readonly on?: DelayedTransitions;
-    readonly always?: AlwaysConfig;
-    readonly after?: DelayedTransitions;
-    readonly promises?: SingleOrArrayL<PromiseeConfig>;
+export type TransitionsConfig<Paths extends string = string> = {
+    readonly on?: DelayedTransitions<Paths>;
+    readonly always?: AlwaysConfig<Paths>;
+    readonly after?: DelayedTransitions<Paths>;
+    readonly promises?: SingleOrArrayL<PromiseeConfig<Paths>>;
 };
 export type GetEventKeysFromTransitions<T> = ('on' extends keyof T ? `on.${GetEventKeysFromDelayed<NotUndefined<T['on']>>}` : never) | ('after' extends keyof T ? `after.${GetEventKeysFromDelayed<NotUndefined<T['after']>>}` : never) | ('always' extends keyof T ? T['always'] extends infer TA extends types.AnyArray ? `always.[${types.IndexesOfArray<TA>}]` : 'always' : never) | ('promises' extends keyof T ? `${NotUndefined<T['promises']> extends infer TP ? TP extends types.AnyArray ? `promises.${{
     [key in keyof TP & string]: `[${key}].${GetEventKeysFromPromisee<Extract<TP[key], PromiseeConfig>>}`;

@@ -1,11 +1,8 @@
 import { castings, type types } from '@bemedev/types';
-import type { NodeConfigWithInitials } from '../types';
+import type { NodeConfig } from '../types';
 import { isAtomic, isParallel } from './checks';
 
-export type InitialConfig_F = types.Fn<
-  [body: NodeConfigWithInitials],
-  NodeConfigWithInitials
->;
+export type InitialConfig_F = types.Fn<[body: NodeConfig], NodeConfig>;
 
 /**
  * Returns the initial configuration of a state machine.

@@ -4,11 +4,11 @@ import { type EventsMap, type PromiseeMap, type ToEvents, type ToEventsR } from 
 import { type DefinedValue, type PredicateS } from '../guards/index.js';
 import type { State, StateExtended, StateP, StatePextended } from '../interpreters/index.js';
 import { type PromiseFunction } from '../promises/index.js';
-import { type FlatMapN, type NodeConfigWithInitials, type StateValue } from '../states/index.js';
-import { type RecordS } from '../types/index.js';
+import { type FlatMapN, type NodeConfig, type StateValue } from '../states/index.js';
+import { type Decompose } from '@bemedev/decompose';
 import { type types } from '@bemedev/types';
 import type { AddOptions_F, AnyMachine } from './machine.types';
-import type { Config, GetEventsFromConfig, GetPromiseeSrcFromConfig, MachineOptions, SimpleMachineOptions2 } from './types';
+import type { Config, ConfigDef, GetEventsFromConfig, GetPromiseeSrcFromConfig, MachineOptions, NoExtraKeysConfigDef, SimpleMachineOptions2, TransformConfigDef } from './types';
 /**
  * A class representing a state machine.
  * It provides methods to manage states, actions, predicates, delays, promises, and machines.
@@ -24,6 +24,11 @@ import type { Config, GetEventsFromConfig, GetPromiseeSrcFromConfig, MachineOpti
  */
 declare class Machine<const C extends Config = Config, const Pc = any, const Tc extends types.PrimitiveObject = types.PrimitiveObject, E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>> implements AnyMachine<E, P, Pc, Tc> {
     #private;
+    get decomposed(): Decompose<C, {
+        sep: ".";
+        start: false;
+        object: "both";
+    }>;
     /**
      * Public accessor for the events map for this {@linkcode Machine}.
      *
@@ -261,7 +266,7 @@ declare class Machine<const C extends Config = Config, const Pc = any, const Tc 
      *
      * @remarks
      * This constructor initializes the machine with the provided configuration.
-     * It flattens the configuration and prepares it for further operations ({@linkcode preflat}).
+     * It flattens the configuration and prepares it for further operations ({@linkcode flat}).
      */
     constructor(config: C);
     /**
@@ -270,7 +275,7 @@ declare class Machine<const C extends Config = Config, const Pc = any, const Tc 
      * @see {@linkcode Config}
      * @see {@linkcode C}
      */
-    get preConfig(): C;
+    get config(): C;
     /**
      * The public accessor of the flat map of the configuration for this {@linkcode Machine}.
      *
@@ -278,18 +283,7 @@ declare class Machine<const C extends Config = Config, const Pc = any, const Tc 
      * @see {@linkcode Config}
      * @see {@linkcode C}
      */
-    get preflat(): FlatMapN<C, true>;
-    /**
-     * The public accessor of Config of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
-     *
-     * @see {@linkcode NodeConfigWithInitials}
-     */
-    get postConfig(): NodeConfigWithInitials;
-    /**
-     * Public accessor of initial {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
-     */
-    get initials(): Mo["initials"];
-    get targets(): Mo["targets"];
+    get flat(): FlatMapN<C, true>;
     /**
      * The accessor of context for this {@linkcode Machine}.
      *
@@ -308,14 +302,8 @@ declare class Machine<const C extends Config = Config, const Pc = any, const Tc 
     get delays(): Mo["delays"] | undefined;
     get promises(): Mo["promises"] | undefined;
     get machines(): Mo["machines"] | undefined;
-    get postflat(): RecordS<NodeConfigWithInitials>;
     isInitial: (target: string) => boolean;
-    retrieveParentFromInitial: (target: string) => NodeConfigWithInitials;
-    /**
-     * @deprecated
-     * @remarks used internally
-     */
-    _provideValues: (values: Pick<Mo, "initials" | "targets">) => Machine<C, Pc, Tc, E, P, Mo>;
+    retrieveParentFromInitial: (target: string) => NodeConfig;
     /**
      * Provides options for the machine.
      *
@@ -358,11 +346,11 @@ declare class Machine<const C extends Config = Config, const Pc = any, const Tc 
      *
      * @see {@linkcode valueToNode}
      */
-    valueToConfig: (from: StateValue) => NodeConfigWithInitials;
+    valueToConfig: (from: StateValue) => NodeConfig;
     /**
      * The accessor of the initial node config of this {@linkcode Machine}.
      */
-    get initialConfig(): NodeConfigWithInitials;
+    get initialConfig(): NodeConfig;
     /**
      * The accessor of the initial {@linkcode StateValue} of this {@linkcode Machine}.
      *
@@ -372,7 +360,7 @@ declare class Machine<const C extends Config = Config, const Pc = any, const Tc 
     /**
      * Alias of {@linkcode valueToConfig} method.
      */
-    toNode: (from: StateValue) => NodeConfigWithInitials;
+    toNode: (from: StateValue) => NodeConfig;
     get options(): Mo;
     /**
      * Provides options for the machine.
@@ -380,23 +368,25 @@ declare class Machine<const C extends Config = Config, const Pc = any, const Tc 
      * @param option a function that provides options for the machine.
      * Options can include actions, predicates, delays, promises, and child machines.
      */
-    addOptions: AddOptions_F<E, P, Pc, Tc, types.NOmit<Mo, 'initials' | 'targets'>>;
+    addOptions: AddOptions_F<E, P, Pc, Tc, Mo>;
 }
 /**
  * Retrieves all entry actions from a node.
  */
-export declare const getEntries: (node?: NodeConfigWithInitials | undefined) => import("../actions/index.js").ActionConfig[];
+export declare const getEntries: (node?: NodeConfig | undefined) => import("../actions/index.js").ActionConfig[];
 /**
  * Retrieves all exit actions from a node.
  */
-export declare const getExits: (node?: NodeConfigWithInitials | undefined) => import("../actions/index.js").ActionConfig[];
+export declare const getExits: (node?: NodeConfig | undefined) => import("../actions/index.js").ActionConfig[];
 export type { Machine };
-export type CreateMachine_F = <const C extends Config = Config, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<C, EventM, P, Pc, Tc>>(config: C, types: {
+export type CreateMachine_F = <const C2 extends NoExtraKeysConfigDef<ConfigDef> = NoExtraKeysConfigDef<ConfigDef>, const C extends Config & TransformConfigDef<C2> = Config & TransformConfigDef<C2>, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<C, EventM, P, Pc, Tc>>(config: C & {
+    __tsSchema?: NoExtraKeysConfigDef<C2>;
+}, types: {
     pContext: Pc;
     context: Tc;
     eventsMap: EventM;
     promiseesMap: P;
-}, values: Pick<Mo, 'initials' | 'targets'>) => Machine<C, Pc, Tc, EventM, P>;
+}) => Machine<C, Pc, Tc, EventM, P, Mo>;
 /**
  * Creates a new instance of {@linkcode Machine} with the provided configuration and types.
  *

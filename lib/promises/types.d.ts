@@ -1,7 +1,7 @@
 import type { ActionConfig, FromActionConfig } from '../actions/index.js';
 import type { EventsMap, PromiseeMap, ToEvents } from '../events/index.js';
 import type { ExtractActionsFromTransition, ExtractGuardKeysFromDelayed, GetEventKeysFromDelayed, SingleOrArrayT, Transition, TransitionConfigMapA } from '../transitions/index.js';
-import type { FnMap, FnR, SingleOrArrayL } from '../types/index.js';
+import type { FnMap, FnR, SingleOrArrayL } from '#types';
 import type { types } from '@bemedev/types';
 /**
  * A function type that represents a promise function with map.
@@ -22,7 +22,7 @@ export type PromiseFunction<E extends EventsMap = EventsMap, P extends PromiseeM
  * @template : {@linkcode EventsMap} [E] - The events map.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map.
  * @template Pc - The context type, defaults to `any`.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The primitive object type, defaults to `types.PrimitiveObject`.
+ * @template : {@linkcode types} [Tc] - The primitive object type, defaults to `types.PrimitiveObject`.
  *
  * @see {@linkcode FnR} for more details.
  * @see {@linkcode Promise}
@@ -33,23 +33,23 @@ export type PromiseFunction2<E extends EventsMap = EventsMap, P extends Promisee
  *
  * @see {@linkcode TransitionConfigMapA} for the type of transition configurations.
  * @see {@linkcode ActionConfig} for the type of action configurations.
- * @see {@linkcode types.NOmit}
- * @see {@linkcode types.Require}
+ * @see {@linkcode types}
+ * @see {@linkcode types}
  */
-export type FinallyConfig = TransitionConfigMapA extends infer F extends TransitionConfigMapA ? (F | ActionConfig) | readonly [...types.Require<F, 'guards'>[], F | ActionConfig] : never;
+export type FinallyConfig<Paths extends string = string> = TransitionConfigMapA<Paths> extends infer F extends TransitionConfigMapA<Paths> ? (F | ActionConfig) | readonly [...types.Require<F, 'guards'>[], F | ActionConfig] : never;
 /**
  * Represents a promisee configuration.
  *
  * @see {@linkcode SingleOrArrayT} for the type of then and catch.
  * @see {@linkcode FinallyConfig} for the type of finally.
  */
-export type PromiseeConfig = {
+export type PromiseeConfig<Paths extends string = string> = {
     readonly src: string;
     readonly max?: string;
     readonly description?: string;
-    readonly then: SingleOrArrayT;
-    readonly catch: SingleOrArrayT;
-    readonly finally?: FinallyConfig;
+    readonly then: SingleOrArrayT<Paths>;
+    readonly catch: SingleOrArrayT<Paths>;
+    readonly finally?: FinallyConfig<Paths>;
 };
 export type GetEventKeysFromPromisee<T extends PromiseeConfig> = GetEventKeysFromDelayed<Pick<T, 'then' | 'catch'>>;
 /**
