@@ -2,7 +2,7 @@ import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { type StateValue } from '#states';
 import { typings } from '#utils';
-import { typings as _typings, castings, type types } from '@bemedev/types';
+import { castings, type types } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 
 beforeAll(() => {
@@ -19,69 +19,51 @@ describe('REAL LIFE TESTS', () => {
     const machine = createMachine(
       {
         __tsSchema: {
-          initial: _typings.commons.union('idle', 'parallel', 'compound'),
+          initial: ['idle', 'parallel', 'compound'],
           states: {
             idle: {
-              targets: _typings.commons.union('/parallel', '/compound'),
+              targets: ['/parallel', '/compound'],
             },
             compound: {
-              initial: _typings.commons.union('idle'),
-              targets: _typings.commons.union('/parallel', '/idle'),
+              initial: ['idle'],
+              targets: ['/parallel', '/idle'],
               states: {
                 idle: {
-                  targets: _typings.commons.union(
-                    '/compound/next',
-                    '/idle',
-                  ),
+                  targets: ['/compound/next', '/idle'],
                 },
                 next: {
-                  targets: _typings.commons.union(
-                    '/compound/idle',
-                    '/parallel',
-                  ),
+                  targets: ['/compound/idle', '/parallel'],
                 },
               },
             },
             parallel: {
-              targets: _typings.commons.union('/compound/next', '/idle'),
+              targets: ['/compound/next', '/idle'],
               states: {
                 atomic: {
-                  initial: _typings.commons.union('idle', 'next'),
-                  targets: _typings.commons.union('/parallel', '/idle'),
+                  initial: ['idle', 'next'],
+                  targets: ['/parallel', '/idle'],
                   states: {
                     idle: {
-                      targets: _typings.commons.union(
-                        '/parallel/atomic/next',
-                        '/idle',
-                      ),
+                      targets: ['/parallel/atomic/next', '/idle'],
                     },
                     next: {
-                      targets: _typings.commons.union(
-                        '/parallel/atomic/idle',
-                        '/idle',
-                      ),
+                      targets: ['/parallel/atomic/idle', '/idle'],
                     },
                   },
                 },
                 compound: {
-                  initial: 'idle',
-                  targets: _typings.commons.union(
-                    '/compound/next',
-                    '/idle',
-                  ),
+                  initial: ['idle'],
+                  targets: ['/compound/next', '/idle'],
                   states: {
                     idle: {
-                      targets: _typings.commons.union(
-                        '/parallel/compound/next',
-                        '/idle',
-                      ),
+                      targets: ['/parallel/compound/next', '/idle'],
                     },
                     next: {
-                      targets: _typings.commons.union(
+                      targets: [
                         '/parallel/compound/idle',
                         '/compound/idle',
                         '/idle',
-                      ),
+                      ],
                     },
                   },
                 },

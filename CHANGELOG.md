@@ -11,6 +11,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[0.9.10] - 2025/08/14** => _20:50_
+
+</summary>
+
+- Improve ConfigDef
+- Upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[0.9.8] - 2025/08/14** => _01:00_
 
 </summary>
