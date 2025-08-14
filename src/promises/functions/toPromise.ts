@@ -16,7 +16,7 @@ type ToPromise_F = <
   events: E,
   promisees: P,
   src: PromiseeConfig,
-  promises?: types.NOmit<SimpleMachineOptions<E, P, Pc, TC>, 'initials'>,
+  promises?: SimpleMachineOptions<E, P, Pc, TC>,
 ) => Promisee<E, P, Pc, TC>;
 
 /**
@@ -47,11 +47,15 @@ export const toPromise: ToPromise_F = (
 
   const then = toArray
     .typed(promise.then)
-    .map(config => toTransition(events, promisees, config, options));
+    .map(config =>
+      toTransition(events, promisees, config as any, options),
+    );
 
   const _catch = toArray
     .typed(promise.catch)
-    .map(config => toTransition(events, promisees, config, options));
+    .map(config =>
+      toTransition(events, promisees, config as any, options),
+    );
 
   const _finally = toArray.typed(promise.finally).map(config => {
     const check1 = typeof config === 'object' && 'actions' in config;

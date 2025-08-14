@@ -1,5 +1,5 @@
-import type { NodeConfigWithInitials, StateValue } from '../types';
-export type NodeToValue_F = (body: NodeConfigWithInitials) => StateValue;
+import type { NodeConfig, StateValue } from '../types';
+export type NodeToValue_F = (body: NodeConfig) => StateValue;
 /**
  * Converts a state machine config into a StateValue.
  *

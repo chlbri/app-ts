@@ -9,12 +9,9 @@ import type {
   ExtractDelaysFromActivity,
   ExtractGuardsFromActivity,
   FlatMapN,
-  GetTargetsFromMap,
+  NodeConfig,
   NodeConfigCompound,
-  NodeConfigCompoundWithInitials,
   NodeConfigParallel,
-  NodeConfigParallelWithInitials,
-  NodesConfig,
 } from '#states';
 import type {
   ExtractActionKeysFromTransitions,
@@ -46,16 +43,6 @@ import type { EVENTS_FULL } from './constants';
 export type ConfigNode = NodeConfigCompound | NodeConfigParallel;
 
 /**
- * Type representing the main node config  with initials.
- *
- * @see {@linkcode NodeConfigCompoundWithInitials} for compound nodes with initials.
- * @see {@linkcode NodeConfigParallelWithInitials} for parallel nodes with initials.
- */
-export type ConfigNodeWithInitials =
-  | NodeConfigCompoundWithInitials
-  | NodeConfigParallelWithInitials;
-
-/**
  * Type representing a describer for a child service.
  *
  * @see {@linkcode Describer} for more details.
@@ -74,6 +61,31 @@ export type Config = ConfigNode & {
   readonly strict?: boolean;
 };
 
+export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
+  [K in Exclude<keyof T, keyof ConfigDef>]: never;
+} & {
+  states?: Record<string, NoExtraKeysConfigDef<ConfigDef>>;
+};
+
+export type ConfigDef = {
+  readonly targets?: string;
+  readonly initial?: string;
+  readonly states?: RecordS<ConfigDef>;
+};
+
+export type TransformConfigDef<T extends ConfigDef> = TransitionsConfig<
+  Exclude<T['targets'], undefined>
+> & {
+  readonly initial?: T['initial'];
+} & {
+  states?: {
+    [Key in keyof T['states']]: T['states'][Key] extends infer TK extends
+      ConfigDef
+      ? TransformConfigDef<TK>
+      : never;
+  };
+};
+
 /**
  * Retreieves all initlal states from a flat map of nodes.
  *
@@ -87,7 +99,7 @@ export type Config = ConfigNode & {
 export type GetInititalsFromFlat<Flat extends FlatMapN = FlatMapN> =
   types.SubType<
     Flat,
-    { type?: 'compound'; states: NodesConfig }
+    { type?: 'compound'; states: RecordS<NodeConfig> }
   > extends infer Sub
     ? {
         [key in keyof Sub]: keyof ('states' extends keyof Sub[key]
@@ -313,20 +325,17 @@ export type GetEventsFromConfig<C extends Config> = GetEventsFromFlat<
   FlatMapN<C>
 >;
 
-export type GetTargetsFrom<C extends Config> = GetTargetsFromMap<
-  FlatMapN<C>
->;
 /**
  * Get all events from a machine.
  *
- * @template : {@linkcode KeyU}<'preConfig'> [T] - type of the machine
+ * @template : {@linkcode KeyU}<'config'> [T] - type of the machine
  *
  * @returns A type representing all events from the machine.
  *
  * @see {@linkcode ConfigFrom} for extracting the config from the machine.
  * @see {@linkcode GetEventsFromConfig} for extracting events from the machine.
  */
-export type GetEventsFromMachine<T extends KeyU<'preConfig'>> =
+export type GetEventsFromMachine<T extends KeyU<'config'>> =
   GetEventsFromConfig<ConfigFrom<T>>;
 
 /**
@@ -357,14 +366,14 @@ export type GetPromiseeSrcFromConfig<C extends Config> =
 /**
  * Get all promises from a machine.
  *
- * @template : {@linkcode KeyU}<'preConfig'> [T] - type of the machine
+ * @template : {@linkcode KeyU}<'config'> [T] - type of the machine
  *
  * @returns A type representing all promises from the machine.
  *
  * @see {@linkcode ConfigFrom} for extracting the config from the machine.
  * @see {@linkcode GetPromiseeSrcFromConfig} for extracting promises from the machine.
  */
-export type GetPromiseeSrcFromMachine<T extends KeyU<'preConfig'>> =
+export type GetPromiseeSrcFromMachine<T extends KeyU<'config'>> =
   GetPromiseeSrcFromConfig<ConfigFrom<T>>;
 
 /**
@@ -408,7 +417,7 @@ type HeritageMap<U extends types.Ru, Tc extends types.Ru> =
 type SubNev = { contexts?: never };
 
 // #region Sub Events Helpers
-type SubEventsKeysFrom<T extends KeyU<'preConfig' | 'context'>> =
+type SubEventsKeysFrom<T extends KeyU<'config' | 'context'>> =
   | keyof GetEventsFromMachine<T>
   | (GetPromiseeSrcFromMachine<T> extends infer K extends string
       ? `${K}::${'then' | 'catch'}`
@@ -427,7 +436,7 @@ type SubEventsKeys<E extends EventsMap, P extends PromiseeMap> =
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template Pc - type of the private context
- * @template : {@linkcode KeyU}<'preConfig' | 'context'> [U] - type of the pre-config and context keys
+ * @template : {@linkcode KeyU}<'config' | 'context'> [U] - type of the pre-config and context keys
  *
  * @see {@linkcode SingleOrArrayL} for single or array types.
  * @see {@linkcode SubEventsKeysFrom} for extracting sub-events keys from the pre-config and context keys.
@@ -443,7 +452,7 @@ export type SubscriberType<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  U extends KeyU<'preConfig' | 'context'> = KeyU<'preConfig' | 'context'>,
+  U extends KeyU<'config' | 'context'> = KeyU<'config' | 'context'>,
 > = {
   events:
     | SingleOrArrayL<
@@ -480,7 +489,7 @@ export type SubscriberType<
  * @template : {@linkcode EventsMap} [E] - type of the events map
  * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template Pc - type of the private context
- * @template : {@linkcode KeyU}<'preConfig' | 'context' | 'pContext'> [T] - type of the pre-config, context, and private context keys
+ * @template : {@linkcode KeyU}<'config' | 'context' | 'pContext'> [T] - type of the pre-config, context, and private context keys
  *
  * @see {@linkcode SubscriberType} for the type of subscribers to the child service.
  * @see {@linkcode PrivateContextFrom} for extracting private context from the pre-config keys.
@@ -492,8 +501,8 @@ export type ChildS<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
-    'preConfig' | 'context' | 'pContext'
+  T extends KeyU<'config' | 'context' | 'pContext'> = KeyU<
+    'config' | 'context' | 'pContext'
   >,
 > = {
   machine: T;
@@ -511,7 +520,7 @@ export type ChildS<
  * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
  * @template Pc - type of the private context
  * @template : {@linkcode types.PrimitiveObject} [Tc] - type of the context
- * @template : {@linkcode KeyU}<'preConfig' | 'context' | 'pContext'> [T] - type of the pre-config, context, and private context keys
+ * @template : {@linkcode KeyU}<'config' | 'context' | 'pContext'> [T] - type of the pre-config, context, and private context keys
  *
  * @see {@linkcode SubscriberType} for the type of subscribers to the child service.
  * @see {@linkcode PrivateContextFrom} for extracting private context from the pre-config keys.
@@ -525,8 +534,8 @@ export type ChildS2<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
-  T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<
-    'preConfig' | 'context' | 'pContext'
+  T extends KeyU<'config' | 'context' | 'pContext'> = KeyU<
+    'config' | 'context' | 'pContext'
   >,
 > = {
   machine: T;
@@ -611,20 +620,12 @@ export type MachineOptions<
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
   Flat extends FlatMapN<C> = FlatMapN<C>,
 > = {
-  initials: GetInititalsFromFlat<Flat>;
   actions?: Partial<GetActionsFromFlat<Flat, E, P, Pc, Tc>>;
   predicates?: Partial<GetGuardsFromFlat<Flat, E, P, Pc, Tc>>;
   promises?: Partial<GetSrcFromFlat<Flat, E, P, Pc, Tc>>;
   delays?: Partial<GetDelaysFromFlat<Flat, E, P, Pc, Tc>>;
   machines?: Partial<GetMachinesFromConfig<C, E, P, Pc>>;
-} & (GetTargetsFromMap<Flat> extends infer G
-  ? types.NotUndefined<
-      types.NotAllowedNamesLow<G, undefined>
-    > extends never
-    ? Partial<{ targets: G }>
-    : { targets: G }
-  : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    { targets?: {} });
+};
 
 /**
  * Getting the options from a machine.
@@ -646,12 +647,12 @@ export type MoF<T extends KeyU<'options'>> = MachineOptionsFrom<T>;
 /**
  * Getting config from a machine.
  *
- * @template : {@linkcode KeyU}<'preConfig'> [T] - type of the machine pre-config
+ * @template : {@linkcode KeyU}<'config'> [T] - type of the machine pre-config
  *
  * @see {@linkcode Config} for the structure of the machine config.
  */
-export type ConfigFrom<T extends KeyU<'preConfig'>> = Extract<
-  T['preConfig'],
+export type ConfigFrom<T extends KeyU<'config'>> = Extract<
+  T['config'],
   Config
 >;
 
@@ -903,13 +904,11 @@ export type SimpleMachineOptions<
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
-  initials: RecordS<string>;
   actions?: Partial<RecordS<Action<E, P, Pc, Tc>>>;
   predicates?: Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
   promises?: Partial<RecordS<PromiseFunction<E, P, Pc, Tc>>>;
   delays?: Partial<RecordS<Delay<E, P, Pc, Tc>>>;
   machines?: Partial<RecordS<any>>;
-  targets?: Partial<RecordS<string>>;
 };
 
 /**
@@ -923,16 +922,10 @@ export type SimpleMachineOptions<
  */
 export type SimpleMachineOptions2 = Partial<
   Record<
-    | 'actions'
-    | 'predicates'
-    | 'promises'
-    | 'delays'
-    | 'machines'
-    | 'targets',
+    'actions' | 'predicates' | 'promises' | 'delays' | 'machines',
     any
   >
-> &
-  Record<'initials', any>;
+>;
 
 /**
  * Type representing a function that returns a {@linkcode FnMap} of promise.

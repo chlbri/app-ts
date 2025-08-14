@@ -17,28 +17,22 @@ describe('Interpreter integration ofr activities coverage', () => {
   const useWaiter = createFakeWaiter.withDefaultDelay(vi, DELAY);
   const machine = createMachine(
     {
+      initial: 'state1',
       states: {
         state1: {
           activities: { DELAY: 'activity1' },
           on: {
-            NEXT: {},
+            NEXT: '/state2',
           },
         },
         state2: {
           on: {
-            NEXT: {},
+            NEXT: '/state1',
           },
         },
       },
     },
     { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
-    {
-      initials: { '/': 'state1' },
-      targets: {
-        '/state1.on.NEXT': '/state2',
-        '/state2.on.NEXT': '/state1',
-      },
-    },
   );
 
   describe('#01 => delay is not defined', () => {
@@ -211,28 +205,22 @@ describe('Interpreter integration ofr activities coverage', () => {
     const activity2 = vi.fn().mockReturnValue(defaultC);
     const machine = createMachine(
       {
+        initial: 'state1',
         states: {
           state1: {
             activities: { DELAY: 'activity2' },
             on: {
-              NEXT: {},
+              NEXT: { target: '/state2' },
             },
           },
           state2: {
             on: {
-              NEXT: {},
+              NEXT: '/state1',
             },
           },
         },
       },
       { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
-      {
-        initials: { '/': 'state1' },
-        targets: {
-          '/state1.on.NEXT': '/state2',
-          '/state2.on.NEXT': '/state1',
-        },
-      },
     );
 
     machine.addOptions(() => ({

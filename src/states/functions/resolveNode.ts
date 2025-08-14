@@ -6,7 +6,7 @@ import { toTransition } from '#transitions';
 import { toArray } from '@bemedev/basifun';
 import { identify } from '@bemedev/basifun/objects/identify';
 import { castings, type types } from '@bemedev/types';
-import type { Node, NodeConfigWithInitials } from '../types';
+import type { Node, NodeConfig } from '../types';
 import { stateType } from './stateType';
 
 export type ResolveNode_F = <
@@ -17,8 +17,8 @@ export type ResolveNode_F = <
 >(
   events: E,
   promisees: P,
-  config: NodeConfigWithInitials,
-  options?: types.NOmit<SimpleMachineOptions<E, P, Pc, Tc>, 'initials'>,
+  config: NodeConfig,
+  options?: SimpleMachineOptions<E, P, Pc, Tc>,
 ) => Node<E, P, Pc, Tc>;
 
 /**

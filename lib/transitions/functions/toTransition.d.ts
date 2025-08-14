@@ -2,9 +2,7 @@ import type { EventsMap, PromiseeMap } from '../../events/index.js';
 import type { SimpleMachineOptions2 } from '../../machine/index.js';
 import type { Transition, TransitionConfig } from '../index.js';
 import type { types } from '@bemedev/types';
-export type ToTransition_F = <E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, config: TransitionConfig & {
-    target?: string;
-}, options?: Pick<SimpleMachineOptions2, 'actions' | 'predicates'>) => Transition<E, P, Pc, Tc>;
+export type ToTransition_F = <E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, config: TransitionConfig, options?: Pick<SimpleMachineOptions2, 'actions' | 'predicates'>) => Transition<E, P, Pc, Tc>;
 /**
  * Converts a transition configuration to a structured transition object with all functions.
  *

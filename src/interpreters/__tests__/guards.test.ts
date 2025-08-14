@@ -13,20 +13,18 @@ describe('Interpret for guards', () => {
   describe('#00 => isDefinedS coverage', () => {
     const machine = createMachine(
       {
+        initial: 'state1',
         states: {
           state1: {
             always: {
               guards: 'guard1',
+              target: '/state2',
             },
           },
           state2: {},
         },
       },
       defaultT,
-      {
-        initials: { '/': 'state1' },
-        targets: { '/state1.always': '/state2' },
-      },
     );
 
     machine.addOptions(({ isDefined }) => ({
@@ -48,15 +46,17 @@ describe('Interpret for guards', () => {
   describe('#01 => string', () => {
     const machine = createMachine(
       {
+        initial: 'state1',
         states: {
           state1: {
             always: {
               guards: 'guard1',
+              target: '/state2',
             },
           },
           state2: {
             on: {
-              NEXT: {},
+              NEXT: '/state1',
             },
           },
         },
@@ -67,13 +67,6 @@ describe('Interpret for guards', () => {
           NEXT: {},
         },
         promiseesMap: {},
-      },
-      {
-        initials: { '/': 'state1' },
-        targets: {
-          '/state1.always': '/state2',
-          '/state2.on.NEXT': '/state1',
-        },
       },
     );
 
@@ -135,15 +128,17 @@ describe('Interpret for guards', () => {
   describe('#02 => describer', () => {
     const machine = createMachine(
       {
+        initial: 'state1',
         states: {
           state1: {
             always: {
               guards: { name: 'guard1', description: 'Just a guard' },
+              target: '/state2',
             },
           },
           state2: {
             on: {
-              NEXT: {},
+              NEXT: '/state1',
             },
           },
         },
@@ -154,13 +149,6 @@ describe('Interpret for guards', () => {
           NEXT: {},
         },
         promiseesMap: {},
-      },
-      {
-        initials: { '/': 'state1' },
-        targets: {
-          '/state1.always': '/state2',
-          '/state2.on.NEXT': '/state1',
-        },
       },
     );
 
@@ -222,6 +210,7 @@ describe('Interpret for guards', () => {
   describe('#03 => And/Or', () => {
     const machine = createMachine(
       {
+        initial: 'state1',
         states: {
           state1: {
             always: {
@@ -235,6 +224,7 @@ describe('Interpret for guards', () => {
                   ],
                 },
               ],
+              target: '/state2',
             },
           },
           state2: {},
@@ -248,10 +238,6 @@ describe('Interpret for guards', () => {
         pContext: {
           data: typings.strings.type,
         },
-      },
-      {
-        initials: { '/': 'state1' },
-        targets: { '/state1.always': '/state2' },
       },
     );
 

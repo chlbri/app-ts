@@ -1,4 +1,3 @@
-import { defaultI } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
@@ -8,6 +7,7 @@ describe('Coverage of interpretr #2', () => {
   describe('#01 => Cov select and pSelect for primitive units', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             entry: 'inc',
@@ -17,6 +17,7 @@ describe('Coverage of interpretr #2', () => {
               NEXT: {
                 description: 'Next',
                 actions: ['inc', 'incPrivate'],
+                target: '/final',
               },
             },
           },
@@ -32,12 +33,6 @@ describe('Coverage of interpretr #2', () => {
         context: 'number',
         pContext: 'number',
       }),
-      {
-        ...defaultI,
-        targets: {
-          '/idle.on.NEXT': '/final',
-        },
-      },
     ).provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context', ({ context }) => context + 1),

@@ -1,8 +1,8 @@
 import type { ActionConfig, ActionResult, ActionResultFn } from '../actions/index.js';
 import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '../events/index.js';
 import type { DefinedValue } from '../guards/index.js';
-import type { NodeConfigWithInitials, StateValue } from '../states/index.js';
-import type { FnMap, FnR, KeyU } from '../types/index.js';
+import type { NodeConfig, StateValue } from '../states/index.js';
+import type { FnMap, FnR, KeyU } from '#types';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
 import type { ChildS, Config, ContextFrom, EventsMapFrom, PrivateContextFrom, SimpleMachineOptions2, SubscriberType } from './types';
@@ -28,7 +28,7 @@ export type Elements<C extends Config = Config, E extends EventsMap = EventsMap,
     promises?: Mo['promises'];
     machines?: Mo['machines'];
 };
-export type GetIO_F = (key: 'exit' | 'entry', node?: NodeConfigWithInitials) => ActionConfig[];
+export type GetIO_F = (key: 'exit' | 'entry', node?: NodeConfig) => ActionConfig[];
 /**
  * Simple representation of a machine with meaningful properties.
  *
@@ -45,10 +45,8 @@ export type GetIO_F = (key: 'exit' | 'entry', node?: NodeConfigWithInitials) => 
  */
 export interface AnyMachine<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> {
     options: any;
-    preConfig: Config;
-    preflat: Record<string, any>;
-    postConfig: NodeConfigWithInitials;
-    initials: any;
+    config: Config;
+    flat: Record<string, any>;
     context: Tc;
     pContext: Pc;
     eventsMap: E;
@@ -59,13 +57,12 @@ export interface AnyMachine<E extends EventsMap = EventsMap, P extends PromiseeM
     delays: any;
     promises: any;
     machines: any;
-    postflat: NodeConfigWithInitials;
     renew: any;
-    initialConfig: NodeConfigWithInitials;
+    initialConfig: NodeConfig;
     initialValue: StateValue;
     isInitial: types.Fn<[string], boolean>;
-    retrieveParentFromInitial: types.Fn<[string], NodeConfigWithInitials>;
-    toNode: types.Fn<[StateValue], NodeConfigWithInitials>;
+    retrieveParentFromInitial: types.Fn<[string], NodeConfig>;
+    toNode: types.Fn<[StateValue], NodeConfig>;
 }
 export type AssignAction_F<E extends EventsMap, P extends PromiseeMap, Pc, Tc extends types.PrimitiveObject> = <D = Decompose<{
     pContext: Pc;
@@ -84,7 +81,7 @@ export type SendAction_F<E extends EventsMap = EventsMap, P extends PromiseeMap 
 }>) => ActionResultFn<E, P, Pc, Tc>;
 export type ValueCheckerGuard_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (path: DefinedValue<Pc, Tc>, ...values: any[]) => FnR<E, P, Pc, Tc, boolean>;
 export type DefineGuard_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject> = (path: DefinedValue<Pc, Tc>) => FnR<E, P, Pc, Tc, boolean>;
-export type ChildProvider_F<E extends EventsMap, P extends PromiseeMap, Pc = any> = <const T extends KeyU<'preConfig' | 'context' | 'pContext'> = KeyU<'pContext' | 'context' | 'preConfig'>>(machine: T, initials: {
+export type ChildProvider_F<E extends EventsMap, P extends PromiseeMap, Pc = any> = <const T extends KeyU<'config' | 'context' | 'pContext'> = KeyU<'pContext' | 'context' | 'config'>>(machine: T, initials: {
     pContext: PrivateContextFrom<T>;
     context: ContextFrom<T>;
 }, ...subscribers: SubscriberType<E, P, Pc, T>[]) => ChildS<E, P, Pc, T>;
@@ -93,7 +90,7 @@ export type DebounceAction_F<E extends EventsMap = EventsMap, P extends Promisee
     ms?: number;
     id: string;
 }) => ActionResultFn<E, P, Pc, Tc>;
-export type AddOptionsParam_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends types.NOmit<SimpleMachineOptions2, 'initials'> = types.NOmit<SimpleMachineOptions2, 'initials'>> = (option: {
+export type AddOptionsParam_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends SimpleMachineOptions2 = SimpleMachineOptions2> = (option: {
     isDefined: DefineGuard_F<E, P, Pc, Tc>;
     isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
     isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
@@ -115,7 +112,7 @@ export type AddOptionsParam_F<E extends EventsMap = EventsMap, P extends Promise
     resumeTimer: TimeAction_F<E, P, Pc, Tc>;
     stopTimer: TimeAction_F<E, P, Pc, Tc>;
 }) => Mo | undefined;
-export type AddOptions_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends types.NOmit<SimpleMachineOptions2, 'initials'> = types.NOmit<SimpleMachineOptions2, 'initials'>> = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => void;
+export type AddOptions_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, Mo extends SimpleMachineOptions2 = SimpleMachineOptions2> = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => void;
 /**
  * Represents a scheduled action with its data and execution time.
  *

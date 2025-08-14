@@ -1,15 +1,10 @@
 import type { Action, ActionConfig, FromActionConfig } from '#actions';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
+import type { Transitions, TransitionsConfig } from '#transitions';
 import type {
-  GetEventKeysFromTransitions,
-  Transitions,
-  TransitionsConfig,
-} from '#transitions';
-import type {
-  GetChildren,
-  GetParents,
   Identitfy,
+  RecordS,
   ReduceArray,
   SingleOrArrayL,
   SingleOrArrayR,
@@ -18,24 +13,7 @@ import type { types } from '@bemedev/types';
 
 export type StateType = 'atomic' | 'compound' | 'parallel';
 
-export type NodeConfig =
-  | NodeConfigAtomic
-  | NodeConfigCompound
-  | NodeConfigParallel;
-
-export type NodeConfigWithInitials =
-  | NodeConfigAtomic
-  | NodeConfigCompoundWithInitials
-  | NodeConfigParallelWithInitials;
-
 export type SNC = NodeConfig;
-
-export type NodesConfig = Record<string, NodeConfig>;
-
-export type NodesConfigWithInitials = Record<
-  string,
-  NodeConfigWithInitials
->;
 
 export type ActivityMap =
   | {
@@ -84,46 +62,57 @@ export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T
     : never
   : never;
 
-export type CommonNodeConfig = {
+export type CommonNodeConfig<Paths extends string = string> = {
   readonly description?: string;
   readonly entry?: SingleOrArrayR<ActionConfig>;
   readonly exit?: SingleOrArrayR<ActionConfig>;
   readonly tags?: SingleOrArrayR<string>;
   readonly activities?: ActivityConfig;
-};
+} & TransitionsConfig<Paths>;
 
-export type NodeConfigAtomic = TransitionsConfig &
-  CommonNodeConfig & {
+export type NodeConfig<
+  Paths extends string = string,
+  I extends string = string,
+> = CommonNodeConfig<Paths> &
+  (
+    | {
+        readonly type?: 'atomic';
+        readonly initial?: never;
+        readonly states?: never;
+      }
+    | {
+        readonly type?: 'compound';
+        readonly initial: I;
+        readonly states: RecordS<NodeConfig>;
+      }
+    | {
+        readonly type: 'parallel';
+        readonly initial?: never;
+        readonly states: RecordS<NodeConfig>;
+      }
+  );
+
+export type NodeConfigAtomic<Paths extends string = string> =
+  CommonNodeConfig<Paths> & {
     readonly type?: 'atomic';
     readonly initial?: never;
     readonly states?: never;
   };
 
-export type NodeConfigCompound = TransitionsConfig &
-  CommonNodeConfig & {
-    readonly type?: 'compound';
-    readonly initial?: never;
-    readonly states: NodesConfig;
-  };
+export type NodeConfigCompound<
+  Paths extends string = string,
+  I extends string = string,
+> = CommonNodeConfig<Paths> & {
+  readonly type?: 'compound';
+  readonly initial: I;
+  readonly states: RecordS<NodeConfig>;
+};
 
-export type NodeConfigCompoundWithInitials = TransitionsConfig &
-  CommonNodeConfig & {
-    readonly initial: string;
-    readonly type?: 'compound';
-    readonly states: NodesConfigWithInitials;
-  };
-
-export type NodeConfigParallel = TransitionsConfig &
-  CommonNodeConfig & {
-    readonly type: 'parallel';
-    readonly states: NodesConfig;
-  };
-
-export type NodeConfigParallelWithInitials = TransitionsConfig &
-  CommonNodeConfig & {
+export type NodeConfigParallel<Paths extends string = string> =
+  CommonNodeConfig<Paths> & {
     readonly type: 'parallel';
     readonly initial?: never;
-    readonly states: NodesConfigWithInitials;
+    readonly states: RecordS<NodeConfig>;
   };
 
 export type StateValue = string | StateValueMap;
@@ -145,8 +134,9 @@ type FlatMapNodeConfig<
         : Omit<T['states'][key], 'states'>;
     } & {
       [key in keyof T['states']]: T['states'][key] extends infer S extends
-        | NodeConfigParallel
-        | NodeConfigCompound
+        NodeConfig & {
+          states: RecordS<NodeConfig>;
+        }
         ? FlatMapNodeConfig<
             S,
             withChildren,
@@ -171,29 +161,6 @@ type AlwaysEnd = `${string}.always` | `${string}.always.[${number}]`;
 export type EndWithAlways<T extends types.Keys> = Extract<T, AlwaysEnd>;
 
 export type EndwA<T extends types.Keys> = EndWithAlways<T>;
-
-export type _GetTargetsFromMap<T extends FlatMapN> = {
-  [key in keyof T & string]: T[key] extends infer TK
-    ? GetEventKeysFromTransitions<TK> extends infer GE extends string
-      ? {
-          [key2 in `${key}.${GE}`]:
-            | keyof T
-            | GetParents<key>
-            | `./${GetChildren<keyof T & string, key>}`;
-        }
-      : never
-    : never;
-}[keyof T & string];
-
-type __GetTargetsFromMap<T extends FlatMapN> = types.UnionToIntersection<
-  _GetTargetsFromMap<T>
->;
-
-export type GetTargetsFromMap<T extends FlatMapN> =
-  __GetTargetsFromMap<T> extends infer GEP
-    ? Partial<Omit<GEP, EndwA<keyof GEP>>> &
-        Required<Pick<GEP, EndwA<keyof GEP>>>
-    : never;
 
 export type Node<
   E extends EventsMap = EventsMap,

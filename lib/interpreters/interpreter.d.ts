@@ -3,7 +3,7 @@ import { type EventArg, type EventArgT, type EventsMap, type PromiseeMap, type T
 import { type GuardConfig } from '../guards/index.js';
 import { type Machine } from '../machine/machine.js';
 import { ChildS, type AnyMachine, type ChildS2, type Config, type ConfigFrom, type ContextFrom, type EventsMapFrom, type GetEventsFromConfig, type MachineConfig, type MachineOptions, type MachineOptionsFrom, type PrivateContextFrom, type PromiseesMapFrom, type SimpleMachineOptions2 } from '../machine/index.js';
-import { Node, type NodeConfigWithInitials, type StateValue } from '../states/index.js';
+import { Node, type NodeConfig, type StateValue } from '../states/index.js';
 import { type Interval2 } from '@bemedev/interval2';
 import { type types } from '@bemedev/types';
 import type { _Send_F, AddSubscriber_F, AnyInterpreter, CreateInterval2_F, Interpreter_F, Mode, Selector_F, State, WorkingStatus } from './interpreter.types';
@@ -134,7 +134,7 @@ export declare class Interpreter<const C extends Config = Config, Pc = any, cons
     /**
      * The public accessor of initial {@linkcode NodeConfigWithInitials} of the inner {@linkcode Machine}.
      */
-    get initialConfig(): NodeConfigWithInitials;
+    get initialConfig(): NodeConfig;
     /**
      * The public accessor of initial {@linkcode StateValue} of the inner {@linkcode Machine}.
      */
@@ -142,7 +142,7 @@ export declare class Interpreter<const C extends Config = Config, Pc = any, cons
     /**
      * The public accessor of current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
      */
-    get config(): NodeConfigWithInitials;
+    get config(): NodeConfig;
     /**
      * Create a new {@linkcode Interpreter} instance with the same initial configuration as this instance.
      */
@@ -224,7 +224,7 @@ export declare class Interpreter<const C extends Config = Config, Pc = any, cons
     /**
      * Add options to the inner {@linkcode Machine} of this {@linkcode Interpreter} service.
      */
-    get addOptions(): import("../machine/index.js").AddOptions_F<E, P, Pc, Tc, types.NOmit<Mo, "targets" | "initials">>;
+    get addOptions(): import("../machine/index.js").AddOptions_F<E, P, Pc, Tc, Mo>;
     get state(): Readonly<State<Tc, ToEvents<E, P>>>;
     subscribe: AddSubscriber_F<E, P, Tc>;
     /**
@@ -294,14 +294,14 @@ export declare class Interpreter<const C extends Config = Config, Pc = any, cons
      *
      * //
      */
-    protected proposedNextConfig: (target: string) => NodeConfigWithInitials;
-    toActionFn: (action: ActionConfig) => import("../types/index.js").FnR<E, P, Pc, Tc, {
+    protected proposedNextConfig: (target: string) => NodeConfig;
+    toActionFn: (action: ActionConfig) => import("#types").FnR<E, P, Pc, Tc, {
         pContext?: (Pc extends types.Fn ? Pc : Pc extends object ? types.DeepPartial<Pc> : Pc) | undefined;
         context?: (Tc extends types.Fn ? Tc : Tc extends object ? types.DeepPartial<Tc> : Tc) | undefined;
     }> | undefined;
     toPredicateFn: (guard: GuardConfig) => import("../guards/index.js").PredicateS2<E, P, Pc, Tc> | undefined;
     toPromiseSrcFn: (src: string) => import("../promises/index.js").PromiseFunction2<E, P, Pc, Tc> | undefined;
-    toDelayFn: (delay: string) => import("../types/index.js").FnR<E, P, Pc, Tc, number> | undefined;
+    toDelayFn: (delay: string) => import("#types").FnR<E, P, Pc, Tc, number> | undefined;
     toMachine: (machine: MachineConfig) => (ChildS<E, P, Tc> & {
         id: string;
     }) | undefined;

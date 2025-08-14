@@ -64,7 +64,6 @@ import {
   resolveNode,
   type ActivityConfig,
   type NodeConfig,
-  type NodeConfigWithInitials,
   type StateValue,
 } from '#states';
 import type {
@@ -176,12 +175,12 @@ export class Interpreter<
   /**
    * The current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
    */
-  #config: NodeConfigWithInitials;
+  #config: NodeConfig;
 
   /**
    * The {@linkcode RecordS}<{@linkcode NodeConfigWithInitials}> flat representation of all possible config states of this {@linkcode Interpreter} service.
    */
-  #flat!: RecordS<NodeConfigWithInitials>;
+  #flat!: RecordS<NodeConfig>;
 
   /**
    * The current {@linkcode StateValue}> of this {@linkcode Interpreter} service.
@@ -216,7 +215,7 @@ export class Interpreter<
   /**
    * The initial {@linkcode NodeConfigWithInitials} of the inner {@linkcode Machine}.
    */
-  readonly #initialConfig: NodeConfigWithInitials;
+  readonly #initialConfig: NodeConfig;
 
   /**
    * The initial {@linkcode Pc} private context of this {@linkcode Interpreter} service.
@@ -287,7 +286,7 @@ export class Interpreter<
    * @see {@linkcode isDefined} for filtering out undefined machines.
    */
   get #childrenMachines() {
-    const _machines = toArray.typed(this.#machine.preConfig.machines);
+    const _machines = toArray.typed(this.#machine.config.machines);
     return _machines.map(this.toMachine).filter(isDefined);
   }
 
@@ -480,7 +479,7 @@ export class Interpreter<
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
-  #resolveNode = (config: NodeConfigWithInitials) => {
+  #resolveNode = (config: NodeConfig) => {
     const options = this.#machine.options;
     const events = this.#machine.eventsMap;
     const promisees = this.#machine.promiseesMap;
@@ -797,11 +796,11 @@ export class Interpreter<
   #performForceSendAction = (forceSend?: EventArg<E>) => {
     if (!forceSend) return;
 
-    const values = Object.values(this.#machine.preflat);
+    const values = Object.values(this.#machine.flat);
     values.forEach(({ on }) => {
       const type = eventToType(forceSend);
       const transitions = toArray.typed(on?.[type]);
-      this.#performTransitions(...transitions);
+      this.#performTransitions(...(transitions as any));
     });
   };
 
@@ -1050,6 +1049,13 @@ export class Interpreter<
   protected _cachedIntervals: Interval2[] = [];
 
   #performTransition: PerformTransition_F = transition => {
+    const check = typeof transition == 'string';
+    if (check) {
+      const { diffEntries, diffExits } = this.#diffNext(transition);
+      this.#performActions(...toArray.typed(diffExits));
+      this.#performActions(...toArray.typed(diffEntries));
+      return transition;
+    }
     const { guards, actions, target } = transition;
     const { diffEntries, diffExits } = this.#diffNext(target);
 
@@ -1133,7 +1139,9 @@ export class Interpreter<
               type === 'then' ? then : _catch,
             );
 
-            const target = this.#performTransitions(...transitions);
+            const target = this.#performTransitions(
+              ...(transitions as any),
+            );
 
             this.#performFinally(_finally);
 
@@ -1166,6 +1174,7 @@ export class Interpreter<
     );
 
     const check5 = promises.length < 1;
+
     if (check5) return;
 
     const promise = anyPromises(from, ...promises);
@@ -1205,7 +1214,8 @@ export class Interpreter<
       const _promise = async () => {
         await sleep(delay);
 
-        const func = () => this.#performTransitions(...transitions);
+        const func = () =>
+          this.#performTransitions(...(transitions as any));
 
         if (this.#cannotPerform(from)) return false;
 
@@ -1350,6 +1360,7 @@ export class Interpreter<
         });
       }
     });
+
 
     return entries;
   }
@@ -1636,7 +1647,7 @@ export class Interpreter<
       const trs = on?.[type];
       if (trs) {
         const transitions = toArray.typed(trs);
-        flat.push([from, transitions]);
+        flat.push([from, transitions as any]);
       }
     });
 

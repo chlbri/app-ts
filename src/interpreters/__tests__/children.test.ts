@@ -3,7 +3,7 @@ import { createMachine } from '#machine';
 import { EVENTS_FULL } from '#machines';
 import { typings } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { defaultC, defaultI, defaultT } from './fixtures';
+import { defaultC, defaultT } from './fixtures';
 
 describe('Integration testing for interpret, Children', () => {
   beforeAll(() => {
@@ -12,6 +12,7 @@ describe('Integration testing for interpret, Children', () => {
 
   const child = createMachine(
     {
+      initial: 'idle',
       states: {
         idle: {
           activities: { DELAY: 'inc' },
@@ -19,7 +20,6 @@ describe('Integration testing for interpret, Children', () => {
       },
     },
     { ...defaultT, context: typings.numbers.type },
-    defaultI,
   ).provideOptions(({ assign }) => ({
     actions: {
       inc: assign('context', ({ context }) => context + 1),
@@ -30,13 +30,13 @@ describe('Integration testing for interpret, Children', () => {
   describe('#01 => context are same', () => {
     const parent = createMachine(
       {
+        initial: 'idle',
         machines: 'child',
         states: {
           idle: {},
         },
       },
       { ...defaultT, pContext: typings.numbers.type },
-      defaultI,
     ).provideOptions(({ createChild }) => ({
       machines: {
         child: createChild(
@@ -83,12 +83,13 @@ describe('Integration testing for interpret, Children', () => {
   describe('#02 => context of child, and the type correspond to a subtype of privateContext of parent', () => {
     const parent = createMachine(
       {
+        initial: 'idle',
         machines: 'child',
         states: {
           idle: {},
           working: {
             on: {
-              NEXT: {},
+              NEXT: '/idle',
             },
           },
         },
@@ -97,12 +98,6 @@ describe('Integration testing for interpret, Children', () => {
         ...defaultT,
         pContext: { iterator: typings.numbers.type },
         eventsMap: { NEXT: {} },
-      },
-      {
-        ...defaultI,
-        targets: {
-          '/working.on.NEXT': '/idle',
-        },
       },
     ).provideOptions(({ createChild }) => ({
       machines: {

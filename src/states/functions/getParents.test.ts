@@ -1,4 +1,4 @@
-import { getParents } from '../getParents';
+import { getParents } from './getParents';
 
 describe('getParents', () => {
   test('should return correct parents for top level state', () => {

@@ -14,10 +14,6 @@ export const machine22 = createMachine(
     pContext: machine2.pContext,
     promiseesMap: machine2.promiseesMap,
   },
-  {
-    initials: machine2.initials,
-    targets: machine2.targets,
-  },
 );
 
 machine22.addOptions(toFunction<any>(machine2.options));

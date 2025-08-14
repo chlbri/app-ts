@@ -28,17 +28,14 @@ import {
   isAtomic,
   isCompound,
   nodeToValue,
-  recomposeConfig,
   valueToNode,
   type FlatMapN,
   type NodeConfig,
-  type NodeConfigWithInitials,
   type StateValue,
 } from '#states';
-import { type RecordS } from '#types';
-import { merge, reduceFnMap, resolve } from '#utils';
+import { merge, reduceFnMap } from '#utils';
 import { partialCall, toArray } from '@bemedev/basifun';
-import { decompose, recompose, type Decompose } from '@bemedev/decompose';
+import { decompose, type Decompose } from '@bemedev/decompose';
 import { castings, typings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import {
@@ -58,10 +55,13 @@ import type {
 } from './machine.types';
 import type {
   Config,
+  ConfigDef,
   GetEventsFromConfig,
   GetPromiseeSrcFromConfig,
   MachineOptions,
+  NoExtraKeysConfigDef,
   SimpleMachineOptions2,
+  TransformConfigDef,
 } from './types';
 
 /**
@@ -105,6 +105,10 @@ class Machine<
   #flat: FlatMapN<C, true>;
 
   #decomposed: Decompose<C, { sep: '.'; start: false; object: 'both' }>;
+
+  get decomposed() {
+    return this.#decomposed;
+  }
 
   /**
    * The map of events for this {@linkcode Machine}.
@@ -438,8 +442,6 @@ class Machine<
   /**
    * Initials {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
    */
-  #initials!: Mo['initials'];
-  #targets!: Mo['targets'];
 
   /**
    * Context for this {@linkcode Machine}.
@@ -456,26 +458,12 @@ class Machine<
    */
   #pContext!: Pc;
 
-  /**
-   * Config of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
-   *
-   * @see {@linkcode NodeConfigWithInitials}
-   */
-  #postConfig!: NodeConfigWithInitials;
-
-  /**
-   * Flat representation of the {@linkcode NodeConfigWithInitials} of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
-   *
-   * @see {@linkcode RecordS}
-   */
-  #postflat!: RecordS<NodeConfigWithInitials>;
-
   #initialKeys: string[] = [];
 
   /**
    * The initial node config of this {@linkcode Machine}.
    */
-  #initialConfig!: NodeConfigWithInitials;
+  #initialConfig: NodeConfig;
   // #endregion
 
   /**
@@ -485,7 +473,7 @@ class Machine<
    *
    * @remarks
    * This constructor initializes the machine with the provided configuration.
-   * It flattens the configuration and prepares it for further operations ({@linkcode preflat}).
+   * It flattens the configuration and prepares it for further operations ({@linkcode flat}).
    */
   constructor(config: C) {
     this.#config = config;
@@ -493,7 +481,9 @@ class Machine<
       start: false,
       object: 'both',
     }) as Decompose<C, { sep: '.'; start: false; object: 'both' }>;
-    this.#flat = flatMap<C, true>(config);
+    this.#flat = flatMap(config, true);
+    this.#initialConfig = initialConfig(this.#config);
+    this.#getInitialKeys();
   }
 
   /**
@@ -502,7 +492,7 @@ class Machine<
    * @see {@linkcode Config}
    * @see {@linkcode C}
    */
-  get preConfig() {
+  get config() {
     return this.#config;
   }
 
@@ -513,28 +503,8 @@ class Machine<
    * @see {@linkcode Config}
    * @see {@linkcode C}
    */
-  get preflat() {
+  get flat() {
     return this.#flat;
-  }
-
-  /**
-   * The public accessor of Config of this {@linkcode Machine} after setting all initials {@linkcode StateValue}s.
-   *
-   * @see {@linkcode NodeConfigWithInitials}
-   */
-  get postConfig() {
-    return this.#postConfig!;
-  }
-
-  /**
-   * Public accessor of initial {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
-   */
-  get initials() {
-    return this.#initials;
-  }
-
-  get targets() {
-    return this.#targets;
   }
 
   /**
@@ -578,64 +548,10 @@ class Machine<
     return this.#machines;
   }
 
-  get postflat() {
-    return this.#postflat;
-  }
-
   // #region Providers
 
-  #addValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
-    this.#initials = values.initials;
-    this.#targets = values.targets;
-
-    if (this.#targets) {
-      const entriesT = Object.entries(this.#targets).map(
-        ([key, target]) => {
-          const key1 = key
-            .slice(1)
-            .replace(new RegExp(DEFAULT_DELIMITER, 'g'), '.states.');
-          const _key = `states.${key1}.target`;
-          return [_key, target] as const;
-        },
-      );
-
-      const decomposed: any = structuredClone(this.#decomposed);
-
-      entriesT.forEach(([key, _target]) => {
-        const from = key
-          .split(DEFAULT_DELIMITER)
-          .slice(0, -1)
-          .join(DEFAULT_DELIMITER);
-
-        const target = resolve(from, _target as string);
-
-        decomposed[key] = target;
-      });
-
-      const recomposed = recompose(decomposed);
-
-      this.#flat = (flatMap as any)(recomposed, true) as FlatMapN<C, true>;
-    }
-
-    const entries = Object.entries(this.#initials);
-    const flat: any = structuredClone(this.#flat);
-    entries.forEach(([key, initial]) => {
-      flat[key] = { ...flat[key], initial };
-    });
-
-    this.#postConfig = recomposeConfig(flat);
-    this.#initialConfig = initialConfig(this.#postConfig);
-
-    this.#getInitialKeys();
-
-    return this.#postConfig;
-  };
-
   #getInitialKeys = () => {
-    const postConfig = this.#postConfig as NodeConfig;
-    this.#postflat = flatMap(postConfig, true) as any;
-
-    const entries = Object.entries(this.#postflat);
+    const entries = Object.entries(this.#flat);
     entries.forEach(([key, { initial }]) => {
       const check1 = initial !== undefined;
       if (check1) {
@@ -649,8 +565,9 @@ class Machine<
     return this.#initialKeys.includes(target);
   };
 
-  retrieveParentFromInitial = (target: string): NodeConfigWithInitials => {
+  retrieveParentFromInitial = (target: string): NodeConfig => {
     const check1 = this.isInitial(target);
+    const flat: any = this.#flat;
     if (check1) {
       const parent = target.substring(
         0,
@@ -659,19 +576,9 @@ class Machine<
       const check2 = this.isInitial(parent);
 
       if (check2) return this.retrieveParentFromInitial.bind(this)(parent);
-      return this.#postflat[parent];
+      return flat[parent];
     }
-    return this.#postflat[target];
-  };
-
-  /**
-   * @deprecated
-   * @remarks used internally
-   */
-  _provideValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
-    const out = this.#renew();
-    out.#addValues(values);
-    return out;
+    return flat[target];
   };
 
   #addActions = (actions?: Mo['actions']) =>
@@ -803,10 +710,7 @@ class Machine<
    */
   get renew() {
     const out = this.#renew();
-    out.#addValues({
-      initials: this.#initials,
-      targets: this.#targets,
-    });
+
     return out;
   }
 
@@ -819,7 +723,6 @@ class Machine<
 
     const out = new Machine<C, T, Tc, E, P>(config);
 
-    out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#context = context;
     out.#pContext = pContext;
     out.#eventsMap = events;
@@ -841,7 +744,6 @@ class Machine<
 
     const out = new Machine<C, Pc, T, E, P>(config);
 
-    out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
@@ -862,7 +764,6 @@ class Machine<
 
     const out = new Machine<C, Pc, Tc, T, P>(config);
 
-    out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = map;
@@ -880,7 +781,6 @@ class Machine<
 
     const out = new Machine<C, Pc, Tc, E, T>(config);
 
-    out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
@@ -898,7 +798,7 @@ class Machine<
    * @see {@linkcode valueToNode}
    */
   valueToConfig = (from: StateValue) => {
-    return valueToNode(this.#postConfig, from);
+    return valueToNode(this.#config, from);
   };
 
   /**
@@ -928,7 +828,6 @@ class Machine<
     const delays = this.#delays;
     const promises = this.#promises;
     const machines = this.#machines;
-    const initials = this.#initials;
 
     const out = castings.commons<Mo>({
       predicates,
@@ -936,7 +835,6 @@ class Machine<
       delays,
       promises,
       machines,
-      initials,
     });
 
     return out;
@@ -1075,13 +973,7 @@ class Machine<
    * @param option a function that provides options for the machine.
    * Options can include actions, predicates, delays, promises, and child machines.
    */
-  addOptions: AddOptions_F<
-    E,
-    P,
-    Pc,
-    Tc,
-    types.NOmit<Mo, 'initials' | 'targets'>
-  > = func => {
+  addOptions: AddOptions_F<E, P, Pc, Tc, Mo> = func => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
@@ -1196,7 +1088,10 @@ export const getExits = partialCall(getIO, 'exit');
 export type { Machine };
 
 export type CreateMachine_F = <
-  const C extends Config = Config,
+  const C2 extends
+    NoExtraKeysConfigDef<ConfigDef> = NoExtraKeysConfigDef<ConfigDef>,
+  const C extends Config & TransformConfigDef<C2> = Config &
+    TransformConfigDef<C2>,
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
@@ -1209,10 +1104,9 @@ export type CreateMachine_F = <
     Tc
   >,
 >(
-  config: C,
+  config: C & { __tsSchema?: NoExtraKeysConfigDef<C2> },
   types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
-  values: Pick<Mo, 'initials' | 'targets'>,
-) => Machine<C, Pc, Tc, EventM, P>;
+) => Machine<C, Pc, Tc, EventM, P, Mo>;
 
 /**
  * Creates a new instance of {@linkcode Machine} with the provided configuration and types.
@@ -1232,14 +1126,12 @@ export type CreateMachine_F = <
 export const createMachine: CreateMachine_F = (
   config,
   { eventsMap, pContext, context, promiseesMap },
-  values,
 ) => {
-  const out = new Machine(config)
-    ._provideValues(values)
+  const out = new Machine(config as Config)
     ._provideEvents(eventsMap)
     ._providePrivateContext(pContext)
     ._provideContext(context)
     ._providePromisees(promiseesMap);
 
-  return out;
+  return out as any;
 };

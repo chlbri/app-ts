@@ -11,7 +11,6 @@ import {
   constructSend,
   constructValue,
   defaultC,
-  defaultI,
   defaultT,
   fakeWaiter,
 } from '../interpreters/__tests__/fixtures';
@@ -167,346 +166,351 @@ describe('machine coverage', () => {
 
       // #endregion
 
-      test('#00 => Start the machine', () => {
-        service.start();
-      });
-
-      test(...useWaiter(6, 1));
-
-      describe('#02 => Check the service', () => {
-        test(...useState('idle', 1));
-        test(...useIterator(6, 2));
-        test(...useIteratorC(6, 3));
-        describe(...useConsole(4));
-      });
-
-      test(...useSend('NEXT', 3));
-
-      describe('#05 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'idle',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(6, 2));
-        test(...useIteratorC(6, 3));
-
-        describe(...useConsole(4, 'NEXT time, you will see!!'));
-      });
-
-      test(...useWaiter(6, 5));
-
-      describe('#06 => Check the service', () => {
-        test(...useIterator(18, 1));
-        test(...useIteratorC(12, 2));
-        describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
-      });
-
-      test('#07 => pause', service.pause.bind(service));
-
-      describe('#08 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'idle',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(18, 2));
-        test(...useIteratorC(12, 3));
-
-        describe(...useConsole(4));
-      });
-
-      test(...useWaiter(6, 9));
-
-      describe('#10 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'idle',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(18, 2));
-        test(...useIteratorC(12, 3));
-
-        describe(...useConsole(4));
-      });
-
-      test('#11 => resume', service.resume.bind(service));
-
-      test(...useWaiter(12, 12));
-
-      describe('#13 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'idle',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(42, 2));
-        test(...useIteratorC(24, 3));
-
-        describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
-      });
-
-      test(...useWrite('', 14));
-
-      describe('#15 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'input',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(42, 2));
-        test(...useIteratorC(24, 3));
-        test(...useInput('', 4));
-        describe(...useConsole(5, ['WRITE with', ':', '""']));
-      });
-
-      test(...useWaiter(12, 16));
-
-      describe('#17 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'input',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(66, 2));
-        test(...useIteratorC(36, 3));
-        test(...useInput('', 4));
-
-        describe(
-          ...useConsole(
-            5,
-            ...Array(24)
-              .fill(0)
-              .map((_, index) => {
-                const isEven = index % 2 === 0;
-                return isEven ? 'sendPanelToUser' : 'Input, please !!';
-              }),
-          ),
-        );
-      });
-
-      test(...useWrite(INPUT, 18));
-
-      describe('#19 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'idle',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(66, 2));
-        test(...useIteratorC(36, 3));
-        test(...useInput('', 4));
-        describe(
-          ...useConsole(
-            5,
-
-            ['WRITE with', ':', `"${INPUT}"`],
-          ),
-        );
-      });
-
-      test(...useWaiter(12, 20));
-
-      describe('#21 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'idle',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(90, 2));
-        test(...useIteratorC(48, 3));
-        test(...useInput('', 4));
-        describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
-      });
-
-      test(
-        '#22 => Close the subscriber',
-        subscriber.close.bind(subscriber),
-      );
-
-      test(...useWrite(INPUT, 23));
-
-      describe('#24 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'input',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(90, 2));
-        test(...useIteratorC(48, 3));
-        test(...useInput(INPUT, 4));
-        describe(...useConsole(5));
-      });
-
-      test(...useWaiter(6, 25));
-
-      describe('#26 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'input',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(102, 2));
-        test(...useIteratorC(54, 3));
-        test(...useInput(INPUT, 4));
-        describe(...useData(5));
-        describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
-      });
-
-      test(...useSend('FETCH', 27));
-
-      describe('#28 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'input',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(102, 2));
-        test(...useIteratorC(54, 3));
-        test(...useInput(INPUT, 4));
-        describe(...useData(5, ...FAKES));
-        describe(...useConsole(6));
-      });
-
-      test('#29 => Await the fetch', () => fakeWaiter());
-
-      describe('#30 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'input',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(102, 2));
-        test(...useIteratorC(54, 3));
-        test(...useInput(INPUT, 4));
-        describe(...useData(5, ...FAKES));
-        describe(...useConsole(5));
-      });
-
-      test(...useWaiter(6, 31));
-
-      describe('#32 => Check the service', () => {
-        test(
-          ...useState(
-            {
-              working: {
-                fetch: 'idle',
-                ui: 'input',
-              },
-            },
-            1,
-          ),
-        );
-
-        test(...useIterator(114, 2));
-        test(...useIteratorC(60, 3));
-        test(...useInput(INPUT, 4));
-        describe(...useData(5, ...FAKES));
-        describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
-      });
-
-      describe('#33 => Close the service', async () => {
-        test('#01 => Pause the service', service.pause.bind(service));
-
-        describe('#02 => Calls of log', () => {
-          test('#01 => Length of calls of log is the same of length of strings', () => {
-            expect(log).toBeCalledTimes(strings.length);
-          });
-
-          test('#02 => Log is called "78" times', () => {
-            expect(log).toBeCalledTimes(69);
-          });
+      describe('TESTS', () => {
+        test('#00 => Start the machine', () => {
+          service.start();
         });
 
-        test('#03 => Log the time of all tests', () => {
-          console.timeEnd(TEXT);
+        test(...useWaiter(6, 1));
+
+        describe('#02 => Check the service', () => {
+          test(...useState('idle', 1));
+          test(...useIterator(6, 2));
+          test(...useIteratorC(6, 3));
+          describe(...useConsole(4));
         });
 
-        test('#04 => dispose', service[Symbol.asyncDispose].bind(service));
+        test(...useSend('NEXT', 3));
+
+        describe('#05 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'idle',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(6, 2));
+          test(...useIteratorC(6, 3));
+
+          describe(...useConsole(4, 'NEXT time, you will see!!'));
+        });
+
+        test(...useWaiter(6, 5));
+
+        describe('#06 => Check the service', () => {
+          test(...useIterator(18, 1));
+          test(...useIteratorC(12, 2));
+          describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
+        });
+
+        test('#07 => pause', service.pause.bind(service));
+
+        describe('#08 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'idle',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(18, 2));
+          test(...useIteratorC(12, 3));
+
+          describe(...useConsole(4));
+        });
+
+        test(...useWaiter(6, 9));
+
+        describe('#10 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'idle',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(18, 2));
+          test(...useIteratorC(12, 3));
+
+          describe(...useConsole(4));
+        });
+
+        test('#11 => resume', service.resume.bind(service));
+
+        test(...useWaiter(12, 12));
+
+        describe('#13 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'idle',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(42, 2));
+          test(...useIteratorC(24, 3));
+
+          describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
+        });
+
+        test(...useWrite('', 14));
+
+        describe('#15 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'input',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(42, 2));
+          test(...useIteratorC(24, 3));
+          test(...useInput('', 4));
+          describe(...useConsole(5, ['WRITE with', ':', '""']));
+        });
+
+        test(...useWaiter(12, 16));
+
+        describe('#17 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'input',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(66, 2));
+          test(...useIteratorC(36, 3));
+          test(...useInput('', 4));
+
+          describe(
+            ...useConsole(
+              5,
+              ...Array(24)
+                .fill(0)
+                .map((_, index) => {
+                  const isEven = index % 2 === 0;
+                  return isEven ? 'sendPanelToUser' : 'Input, please !!';
+                }),
+            ),
+          );
+        });
+
+        test(...useWrite(INPUT, 18));
+
+        describe('#19 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'idle',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(66, 2));
+          test(...useIteratorC(36, 3));
+          test(...useInput('', 4));
+          describe(
+            ...useConsole(
+              5,
+
+              ['WRITE with', ':', `"${INPUT}"`],
+            ),
+          );
+        });
+
+        test(...useWaiter(12, 20));
+
+        describe('#21 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'idle',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(90, 2));
+          test(...useIteratorC(48, 3));
+          test(...useInput('', 4));
+          describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
+        });
+
+        test(
+          '#22 => Close the subscriber',
+          subscriber.close.bind(subscriber),
+        );
+
+        test(...useWrite(INPUT, 23));
+
+        describe('#24 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'input',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(90, 2));
+          test(...useIteratorC(48, 3));
+          test(...useInput(INPUT, 4));
+          describe(...useConsole(5));
+        });
+
+        test(...useWaiter(6, 25));
+
+        describe('#26 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'input',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(102, 2));
+          test(...useIteratorC(54, 3));
+          test(...useInput(INPUT, 4));
+          describe(...useData(5));
+          describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
+        });
+
+        test(...useSend('FETCH', 27));
+
+        describe('#28 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'input',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(102, 2));
+          test(...useIteratorC(54, 3));
+          test(...useInput(INPUT, 4));
+          describe(...useData(5, ...FAKES));
+          describe(...useConsole(6));
+        });
+
+        test('#29 => Await the fetch', () => fakeWaiter());
+
+        describe('#30 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'input',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(102, 2));
+          test(...useIteratorC(54, 3));
+          test(...useInput(INPUT, 4));
+          describe(...useData(5, ...FAKES));
+          describe(...useConsole(5));
+        });
+
+        test(...useWaiter(6, 31));
+
+        describe('#32 => Check the service', () => {
+          test(
+            ...useState(
+              {
+                working: {
+                  fetch: 'idle',
+                  ui: 'input',
+                },
+              },
+              1,
+            ),
+          );
+
+          test(...useIterator(114, 2));
+          test(...useIteratorC(60, 3));
+          test(...useInput(INPUT, 4));
+          describe(...useData(5, ...FAKES));
+          describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
+        });
+
+        describe('#33 => Close the service', async () => {
+          test('#01 => Pause the service', service.pause.bind(service));
+
+          describe('#02 => Calls of log', () => {
+            test('#01 => Length of calls of log is the same of length of strings', () => {
+              expect(log).toBeCalledTimes(strings.length);
+            });
+
+            test('#02 => Log is called "78" times', () => {
+              expect(log).toBeCalledTimes(69);
+            });
+          });
+
+          test('#03 => Log the time of all tests', () => {
+            console.timeEnd(TEXT);
+          });
+
+          test(
+            '#04 => dispose',
+            service[Symbol.asyncDispose].bind(service),
+          );
+        });
       });
     });
   });
@@ -541,289 +545,7 @@ describe('machine coverage', () => {
   });
 
   describe('#03 => Getters', () => {
-    test('#01 => preflat', () => {
-      const expected = {
-        '/': {
-          machines: 'machine1',
-          states: {
-            idle: {
-              activities: {
-                DELAY: 'inc',
-              },
-              on: {
-                NEXT: {
-                  target: '/working',
-                },
-              },
-            },
-            working: {
-              type: 'parallel',
-              activities: {
-                DELAY2: 'inc2',
-              },
-              on: {
-                FINISH: { target: '/final' },
-              },
-              states: {
-                fetch: {
-                  states: {
-                    idle: {
-                      activities: {
-                        DELAY: 'sendPanelToUser',
-                      },
-                      on: {
-                        FETCH: {
-                          guards: 'isInputNotEmpty',
-                          target: '/working/fetch/fetch',
-                        },
-                      },
-                    },
-                    fetch: {
-                      promises: {
-                        src: 'fetch',
-                        then: {
-                          actions: {
-                            name: 'insertData',
-                            description: 'Database insert',
-                          },
-                          target: '/working/fetch/idle',
-                        },
-                        catch: { target: '/working/fetch/idle' },
-                      },
-                    },
-                  },
-                },
-                ui: {
-                  states: {
-                    idle: {
-                      on: {
-                        WRITE: {
-                          actions: 'write',
-                          target: '/working/ui/input',
-                        },
-                      },
-                    },
-                    input: {
-                      activities: {
-                        DELAY: {
-                          guards: 'isInputEmpty',
-                          actions: 'askUsertoInput',
-                        },
-                      },
-                      on: {
-                        WRITE: [
-                          {
-                            guards: 'isInputNotEmpty',
-                            actions: 'write',
-                            target: '/working/ui/idle',
-                          },
-                          { target: '/working/ui/idle' },
-                        ],
-                      },
-                    },
-                    final: {},
-                  },
-                },
-              },
-            },
-            final: {},
-          },
-        },
-        '/idle': {
-          activities: {
-            DELAY: 'inc',
-          },
-          on: {
-            NEXT: { target: '/working' },
-          },
-        },
-        '/working': {
-          type: 'parallel',
-          activities: {
-            DELAY2: 'inc2',
-          },
-          on: {
-            FINISH: { target: '/final' },
-          },
-          states: {
-            fetch: {
-              states: {
-                idle: {
-                  activities: {
-                    DELAY: 'sendPanelToUser',
-                  },
-                  on: {
-                    FETCH: {
-                      guards: 'isInputNotEmpty',
-                      target: '/working/fetch/fetch',
-                    },
-                  },
-                },
-                fetch: {
-                  promises: {
-                    src: 'fetch',
-                    then: {
-                      actions: {
-                        name: 'insertData',
-                        description: 'Database insert',
-                      },
-                      target: '/working/fetch/idle',
-                    },
-                    catch: { target: '/working/fetch/idle' },
-                  },
-                },
-              },
-            },
-            ui: {
-              states: {
-                idle: {
-                  on: {
-                    WRITE: {
-                      actions: 'write',
-                      target: '/working/ui/input',
-                    },
-                  },
-                },
-                input: {
-                  activities: {
-                    DELAY: {
-                      guards: 'isInputEmpty',
-                      actions: 'askUsertoInput',
-                    },
-                  },
-                  on: {
-                    WRITE: [
-                      {
-                        guards: 'isInputNotEmpty',
-                        actions: 'write',
-                        target: '/working/ui/idle',
-                      },
-                      { target: '/working/ui/idle' },
-                    ],
-                  },
-                },
-                final: {},
-              },
-            },
-          },
-        },
-        '/working/fetch': {
-          states: {
-            idle: {
-              activities: {
-                DELAY: 'sendPanelToUser',
-              },
-              on: {
-                FETCH: {
-                  guards: 'isInputNotEmpty',
-                  target: '/working/fetch/fetch',
-                },
-              },
-            },
-            fetch: {
-              promises: {
-                src: 'fetch',
-                then: {
-                  actions: {
-                    name: 'insertData',
-                    description: 'Database insert',
-                  },
-                  target: '/working/fetch/idle',
-                },
-                catch: { target: '/working/fetch/idle' },
-              },
-            },
-          },
-        },
-        '/working/fetch/idle': {
-          activities: {
-            DELAY: 'sendPanelToUser',
-          },
-          on: {
-            FETCH: {
-              guards: 'isInputNotEmpty',
-              target: '/working/fetch/fetch',
-            },
-          },
-        },
-        '/working/fetch/fetch': {
-          promises: {
-            src: 'fetch',
-            then: {
-              actions: {
-                name: 'insertData',
-                description: 'Database insert',
-              },
-              target: '/working/fetch/idle',
-            },
-            catch: { target: '/working/fetch/idle' },
-          },
-        },
-        '/working/ui': {
-          states: {
-            idle: {
-              on: {
-                WRITE: {
-                  actions: 'write',
-                  target: '/working/ui/input',
-                },
-              },
-            },
-            input: {
-              activities: {
-                DELAY: {
-                  guards: 'isInputEmpty',
-                  actions: 'askUsertoInput',
-                },
-              },
-              on: {
-                WRITE: [
-                  {
-                    guards: 'isInputNotEmpty',
-                    actions: 'write',
-                    target: '/working/ui/idle',
-                  },
-                  { target: '/working/ui/idle' },
-                ],
-              },
-            },
-            final: {},
-          },
-        },
-        '/working/ui/idle': {
-          on: {
-            WRITE: {
-              actions: 'write',
-              target: '/working/ui/input',
-            },
-          },
-        },
-        '/working/ui/input': {
-          activities: {
-            DELAY: {
-              guards: 'isInputEmpty',
-              actions: 'askUsertoInput',
-            },
-          },
-          on: {
-            WRITE: [
-              {
-                guards: 'isInputNotEmpty',
-                actions: 'write',
-                target: '/working/ui/idle',
-              },
-              { target: '/working/ui/idle' },
-            ],
-          },
-        },
-        '/working/ui/final': {},
-        '/final': {},
-      };
-
-      expect(machine2.preflat).toEqual(expected);
-    });
-
-    test('#02 => postConfig', () => {
+    test('#01 => config', () => {
       const expected = {
         machines: 'machine1',
         initial: 'idle',
@@ -833,7 +555,7 @@ describe('machine coverage', () => {
               DELAY: 'inc',
             },
             on: {
-              NEXT: { target: '/working' },
+              NEXT: '/working',
             },
           },
           working: {
@@ -842,7 +564,7 @@ describe('machine coverage', () => {
               DELAY2: 'inc2',
             },
             on: {
-              FINISH: { target: '/final' },
+              FINISH: '/final',
             },
             states: {
               fetch: {
@@ -868,7 +590,7 @@ describe('machine coverage', () => {
                         },
                         target: '/working/fetch/idle',
                       },
-                      catch: { target: '/working/fetch/idle' },
+                      catch: '/working/fetch/idle',
                     },
                   },
                 },
@@ -898,7 +620,7 @@ describe('machine coverage', () => {
                           actions: 'write',
                           target: '/working/ui/idle',
                         },
-                        { target: '/working/ui/idle' },
+                        '/working/ui/idle',
                       ],
                     },
                   },
@@ -912,10 +634,10 @@ describe('machine coverage', () => {
         },
       };
 
-      expect(machine2.postConfig).toStrictEqual(expected);
+      expect(machine2.config).toStrictEqual(expected);
     });
 
-    test('#03 => postflat', () => {
+    test('#02 => flat', () => {
       const expected = {
         '/': {
           machines: 'machine1',
@@ -926,7 +648,7 @@ describe('machine coverage', () => {
                 DELAY: 'inc',
               },
               on: {
-                NEXT: { target: '/working' },
+                NEXT: '/working',
               },
             },
             working: {
@@ -935,7 +657,7 @@ describe('machine coverage', () => {
                 DELAY2: 'inc2',
               },
               on: {
-                FINISH: { target: '/final' },
+                FINISH: '/final',
               },
               states: {
                 fetch: {
@@ -961,7 +683,7 @@ describe('machine coverage', () => {
                           },
                           target: '/working/fetch/idle',
                         },
-                        catch: { target: '/working/fetch/idle' },
+                        catch: '/working/fetch/idle',
                       },
                     },
                   },
@@ -991,7 +713,7 @@ describe('machine coverage', () => {
                             actions: 'write',
                             target: '/working/ui/idle',
                           },
-                          { target: '/working/ui/idle' },
+                          '/working/ui/idle',
                         ],
                       },
                     },
@@ -1009,7 +731,7 @@ describe('machine coverage', () => {
             DELAY: 'inc',
           },
           on: {
-            NEXT: { target: '/working' },
+            NEXT: '/working',
           },
         },
         '/working': {
@@ -1018,7 +740,7 @@ describe('machine coverage', () => {
             DELAY2: 'inc2',
           },
           on: {
-            FINISH: { target: '/final' },
+            FINISH: '/final',
           },
           states: {
             fetch: {
@@ -1044,7 +766,7 @@ describe('machine coverage', () => {
                       },
                       target: '/working/fetch/idle',
                     },
-                    catch: { target: '/working/fetch/idle' },
+                    catch: '/working/fetch/idle',
                   },
                 },
               },
@@ -1074,7 +796,7 @@ describe('machine coverage', () => {
                         actions: 'write',
                         target: '/working/ui/idle',
                       },
-                      { target: '/working/ui/idle' },
+                      '/working/ui/idle',
                     ],
                   },
                 },
@@ -1107,7 +829,7 @@ describe('machine coverage', () => {
                   },
                   target: '/working/fetch/idle',
                 },
-                catch: { target: '/working/fetch/idle' },
+                catch: '/working/fetch/idle',
               },
             },
           },
@@ -1134,7 +856,7 @@ describe('machine coverage', () => {
               },
               target: '/working/fetch/idle',
             },
-            catch: { target: '/working/fetch/idle' },
+            catch: '/working/fetch/idle',
           },
         },
         '/working/ui': {
@@ -1161,7 +883,7 @@ describe('machine coverage', () => {
                     actions: 'write',
                     target: '/working/ui/idle',
                   },
-                  { target: '/working/ui/idle' },
+                  '/working/ui/idle',
                 ],
               },
             },
@@ -1191,7 +913,7 @@ describe('machine coverage', () => {
                 actions: 'write',
                 target: '/working/ui/idle',
               },
-              { target: '/working/ui/idle' },
+              '/working/ui/idle',
             ],
           },
         },
@@ -1199,10 +921,10 @@ describe('machine coverage', () => {
         '/final': {},
       };
 
-      expect(machine2.postflat).toStrictEqual(expected);
+      expect(machine2.flat).toStrictEqual(expected);
     });
 
-    test('#04 => initialValue', () => {
+    test('#03 => initialValue', () => {
       expect(machine2.initialValue).toStrictEqual('idle');
     });
   });
@@ -1210,18 +932,22 @@ describe('machine coverage', () => {
   describe('#04 = > coverage retrieve initial', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             on: {
-              NEXT: {},
+              NEXT: '/state1',
             },
           },
           state1: {
             activities: { DELAY: 'inc' },
+            initial: 'state11',
             states: {
               state11: {
+                initial: 'state111',
                 states: {
                   state111: {
+                    initial: 'state1111',
                     states: {
                       state1111: {},
                     },
@@ -1234,17 +960,6 @@ describe('machine coverage', () => {
         },
       },
       { ...defaultT, eventsMap: { NEXT: {} } },
-      {
-        initials: {
-          '/': 'idle',
-          '/state1': 'state11',
-          '/state1/state11': 'state111',
-          '/state1/state11/state111': 'state1111',
-        },
-        targets: {
-          '/idle.on.NEXT': '/state1',
-        },
-      },
     );
 
     const service = interpret(machine, defaultC);
@@ -1309,7 +1024,7 @@ describe('machine coverage', () => {
           {
             invite: 'For /idle',
             expected: {
-              on: { NEXT: { target: '/state1' } },
+              on: { NEXT: '/state1' },
             },
             parameters: '/idle',
           },
@@ -1368,12 +1083,13 @@ describe('machine coverage', () => {
     const machineT = createMachine(
       {
         machines: idM,
+        initial: 'idle',
         states: {
           idle: {},
         },
       },
       defaultT,
-      defaultI,
+      // defaultI,
     );
 
     const service = interpret(machineT, defaultC);

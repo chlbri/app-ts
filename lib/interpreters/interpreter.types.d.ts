@@ -4,9 +4,9 @@ import type { AllEvent, EventArg, EventsMap, PromiseeMap, ToEvents, ToEventsR } 
 import type { GuardConfig, PredicateS, PredicateS2 } from '../guards/index.js';
 import type { AnyMachine, ChildS, ContextFrom, PrivateContextFrom } from '../machine/index.js';
 import type { PromiseeConfig, PromiseeResult, PromiseFunction, PromiseFunction2 } from '../promises/index.js';
-import type { ActivityConfig, Node, NodeConfigWithInitials, StateValue } from '../states/index.js';
+import type { ActivityConfig, Node, NodeConfig, StateValue } from '../states/index.js';
 import type { AlwaysConfig, DelayedTransitions, TransitionConfig } from '../transitions/index.js';
-import type { FnR } from '../types/index.js';
+import type { FnR } from '#types';
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
@@ -55,12 +55,10 @@ export type Contexts<Pc = any, Tc extends types.PrimitiveObject = types.Primitiv
     pContext?: Pc;
     context?: Tc;
 };
-export type PerformTransition_F = (transition: TransitionConfig & {
-    target?: string;
-}) => string | false;
+export type PerformTransition_F = (transition: TransitionConfig) => string | false;
 export type PerformTransitions_F = (...transitions: TransitionConfig[]) => string | false;
 export type SleepContexts_F = <Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(ms?: number) => Promise<ActionResult<Pc, Tc>>;
-export type _Send_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap> = (event: ToEventsR<E, P>) => NodeConfigWithInitials | undefined;
+export type _Send_F<E extends EventsMap = EventsMap, P extends PromiseeMap = PromiseeMap> = (event: ToEventsR<E, P>) => NodeConfig | undefined;
 export type State<Tc extends types.PrimitiveObject = types.PrimitiveObject, E extends AllEvent = AllEvent> = {
     context: Tc;
     status: WorkingStatus;
@@ -103,9 +101,9 @@ export interface AnyInterpreter<E extends EventsMap = EventsMap, P extends Promi
     node: Node<E, P, Pc, Tc>;
     makeStrict: () => void;
     status: WorkingStatus;
-    initialConfig: NodeConfigWithInitials;
+    initialConfig: NodeConfig;
     initialValue: StateValue;
-    config: NodeConfigWithInitials;
+    config: NodeConfig;
     renew: any;
     value: StateValue;
     context: any;

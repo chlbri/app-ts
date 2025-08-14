@@ -1,4 +1,4 @@
-import { defaultI, fakeWaiter } from '#fixtures';
+import { fakeWaiter } from '#fixtures';
 import { DELAY } from '#fixturesData';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
@@ -14,6 +14,7 @@ describe('Covers all inner actions', () => {
   describe('#01 => Performs activities on events', () => {
     const machine101 = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             activities: {
@@ -38,7 +39,6 @@ describe('Covers all inner actions', () => {
           iterator: 'number',
         },
       }),
-      defaultI,
     ).provideOptions(
       ({ assign, pauseActivity, resumeActivity, stopActivity }) => ({
         actions: {
@@ -139,6 +139,7 @@ describe('Covers all inner actions', () => {
   describe('#02 => Performs activities on events', () => {
     const machine101 = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             entry: 'inc',
@@ -146,11 +147,11 @@ describe('Covers all inner actions', () => {
               PAUSE: { actions: 'pause' },
               RESUME: { actions: 'resume' },
               STOP: { actions: 'stop' },
-              NEXT: {},
+              NEXT: '/next',
             },
           },
           next: {
-            always: {},
+            always: '/idle',
           },
         },
       },
@@ -169,13 +170,6 @@ describe('Covers all inner actions', () => {
           iterator: 'number',
         },
       }),
-      {
-        ...defaultI,
-        targets: {
-          '/idle.on.NEXT': '/next',
-          '/next.always': '/idle',
-        },
-      },
     ).provideOptions(
       ({ assign, pauseTimer, resumeTimer, stopTimer, debounce }) => ({
         actions: {
@@ -329,18 +323,19 @@ describe('Covers all inner actions', () => {
     const machine101 = createMachine(
       {
         entry: 'init',
+        initial: 'idle',
         states: {
           idle: {
             on: {
               DECREMENT: { actions: 'dec' },
               INCREMENT: { actions: 'inc' },
               REDECREMENT: { actions: 'sendDec' },
-              NEXT: {},
+              NEXT: '/next',
             },
           },
           next: {
             on: {
-              NEXT: {},
+              NEXT: '/idle',
               'INCREMENT.FORCE': { actions: 'forceSendInc' },
               DECREMENT: { actions: 'sendDec' },
               INCREMENT: { actions: ['inc', 'inc'] },
@@ -364,13 +359,6 @@ describe('Covers all inner actions', () => {
           iterator: 'number',
         }),
       }),
-      {
-        ...defaultI,
-        targets: {
-          '/idle.on.NEXT': '/next',
-          '/next.on.NEXT': '/idle',
-        },
-      },
     ).provideOptions(({ assign, forceSend, resend }) => ({
       actions: {
         inc: assign(
@@ -454,18 +442,19 @@ describe('Covers all inner actions', () => {
     const machine101 = createMachine(
       {
         entry: 'init',
+        initial: 'idle',
         states: {
           idle: {
             on: {
               DECREMENT: { actions: 'dec' },
               INCREMENT: { actions: 'inc' },
               REDECREMENT: { actions: 'sendDec' },
-              NEXT: {},
+              NEXT: '/next',
             },
           },
           next: {
             on: {
-              NEXT: {},
+              NEXT: '/idle',
               'INCREMENT.FORCE': { actions: 'forceSendInc' },
               REDECREMENT: { actions: 'sendDec' },
             },
@@ -488,13 +477,6 @@ describe('Covers all inner actions', () => {
           iterator: 'number',
         }),
       }),
-      {
-        ...defaultI,
-        targets: {
-          '/idle.on.NEXT': '/next',
-          '/next.on.NEXT': '/idle',
-        },
-      },
     ).provideOptions(({ assign, forceSend, resend }) => ({
       actions: {
         inc: assign('context.iterator', ({ context: { iterator } }) => {

@@ -9,7 +9,7 @@ export type NextStateValue_F = <T extends StateValue>(from: T, target?: string |
  *
  * @see {@linkcode NextStateValue_F} for more type details of this function.
  * @see {@linkcode isStringEmpty} for checking if a string is empty
- * @see {@linkcode isDefined} for checking if a value is defined
+ * @see {@linkcode castings} for checking if a value is defined
  * @see {@linkcode isString} for checking if a value is a string
  * @see {@linkcode decompose} for decomposing objects into key-value pairs
  * @see {@linkcode recompose} for recomposing key-value pairs into an object

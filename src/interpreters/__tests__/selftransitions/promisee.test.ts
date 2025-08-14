@@ -7,7 +7,6 @@ import {
   constructSend,
   constructValue,
   defaultC,
-  defaultI,
   defaultT,
 } from '../fixtures';
 
@@ -18,15 +17,17 @@ describe('promisee', () => {
   beforeAll(() => {
     vi.useFakeTimers();
   });
+
   describe('#01 => Promise is not defined', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             promises: {
               src: 'notDefined',
-              then: {},
-              catch: {},
+              then: '/active',
+              catch: '/active',
               description: 'notDefined',
             },
           },
@@ -34,13 +35,6 @@ describe('promisee', () => {
         },
       },
       defaultT,
-      {
-        ...defaultI,
-        targets: {
-          '/idle.promises.then': '/active',
-          '/idle.promises.catch': '/active',
-        },
-      },
     );
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
@@ -56,12 +50,13 @@ describe('promisee', () => {
   describe('#02 => Promise rejects', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             promises: {
               src: 'rejectPromise',
-              then: {},
-              catch: {},
+              then: '/active',
+              catch: '/inactive',
             },
           },
           active: {},
@@ -69,13 +64,6 @@ describe('promisee', () => {
         },
       },
       defaultT,
-      {
-        ...defaultI,
-        targets: {
-          '/idle.promises.then': '/active',
-          '/idle.promises.catch': '/inactive',
-        },
-      },
     );
 
     machine.addOptions(() => ({
@@ -97,12 +85,13 @@ describe('promisee', () => {
   describe('#03 => Promise resolves', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             promises: {
               src: 'resolvePromise',
-              then: {},
-              catch: {},
+              then: '/active',
+              catch: '/inactive',
             },
           },
           active: {},
@@ -110,13 +99,6 @@ describe('promisee', () => {
         },
       },
       defaultT,
-      {
-        ...defaultI,
-        targets: {
-          '/idle.promises.then': '/active',
-          '/idle.promises.catch': '/inactive',
-        },
-      },
     );
 
     machine.addOptions(() => ({
@@ -138,15 +120,16 @@ describe('promisee', () => {
   describe('#04 => cannotPerform', () => {
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             promises: {
               src: 'rejectPromise',
-              then: {},
-              catch: {},
+              then: '/active',
+              catch: '/inactive',
             },
             on: {
-              NEXT: {},
+              NEXT: '/active2',
             },
           },
           active: {},
@@ -155,14 +138,6 @@ describe('promisee', () => {
         },
       },
       { ...defaultT, eventsMap: { NEXT: {} } },
-      {
-        ...defaultI,
-        targets: {
-          '/idle.promises.then': '/active',
-          '/idle.promises.catch': '/inactive',
-          '/idle.on.NEXT': '/active2',
-        },
-      },
     );
 
     machine.addOptions(() => ({
@@ -193,12 +168,13 @@ describe('promisee', () => {
     // #region config
     const machine = createMachine(
       {
+        initial: 'idle',
         states: {
           idle: {
             promises: {
               src: 'rejectPromise',
-              then: {},
-              catch: {},
+              then: '/active',
+              catch: '/inactive',
               max: 'DELAY',
             },
           },
@@ -207,13 +183,6 @@ describe('promisee', () => {
         },
       },
       defaultT,
-      {
-        ...defaultI,
-        targets: {
-          '/idle.promises.then': '/active',
-          '/idle.promises.catch': '/inactive',
-        },
-      },
     );
 
     machine.addOptions(() => ({
@@ -297,12 +266,13 @@ describe('promisee', () => {
       const actionVi = vi.fn();
       const machine = createMachine(
         {
+          initial: 'idle',
           states: {
             idle: {
               promises: {
                 src: 'rejectPromise',
-                then: {},
-                catch: {},
+                then: '/active',
+                catch: '/active',
                 finally: 'finalAction',
               },
             },
@@ -310,13 +280,6 @@ describe('promisee', () => {
           },
         },
         defaultT,
-        {
-          ...defaultI,
-          targets: {
-            '/idle.promises.then': '/active',
-            '/idle.promises.catch': '/active',
-          },
-        },
       );
 
       machine.addOptions(() => ({
@@ -354,12 +317,13 @@ describe('promisee', () => {
     describe('#02 => Transition finally', () => {
       const machine = createMachine(
         {
+          initial: 'idle',
           states: {
             idle: {
               promises: {
                 src: 'rejectPromise',
-                then: {},
-                catch: {},
+                then: '/active',
+                catch: '/active',
                 finally: { actions: 'finalAction', guards: 'guard' },
               },
             },
@@ -367,13 +331,6 @@ describe('promisee', () => {
           },
         },
         defaultT,
-        {
-          ...defaultI,
-          targets: {
-            '/idle.promises.then': '/active',
-            '/idle.promises.catch': '/active',
-          },
-        },
       );
 
       const actionVi = vi.fn();

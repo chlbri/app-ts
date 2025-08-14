@@ -1,5 +1,5 @@
 import type { EventsMap, PromiseeMap } from '../events/index.js';
-import type { FnMap } from '../types/index.js';
+import type { FnMap } from '#types';
 import type { types } from '@bemedev/types';
 /**
  * Delay type definition.

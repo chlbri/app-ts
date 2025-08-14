@@ -2,23 +2,28 @@ import { createConfig } from '#machines';
 import type { FlatMapN } from '#states';
 
 const config = createConfig({
+  initial: 'atomic',
   states: {
     atomic: {},
     compound: {
+      initial: 'state1',
       states: {
         state1: {},
         state2: {},
       },
     },
     parallel: {
+      type: 'parallel',
       states: {
         atomic: {
+          initial: 'state1',
           states: {
             state1: {},
             state2: {},
           },
         },
         compound: {
+          initial: 'state1',
           states: {
             state1: {},
             state2: {},

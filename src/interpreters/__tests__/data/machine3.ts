@@ -4,10 +4,13 @@ import { typings } from '#utils';
 
 export const config3 = createConfig({
   description: 'cdd',
+  initial: 'state1',
   states: {
     state1: {
+      initial: 'state11',
       states: {
         state11: {
+          initial: 'state111',
           states: {
             state111: {},
           },
@@ -23,32 +26,26 @@ export const config3 = createConfig({
     state2: {
       after: {
         DELAY: { actions: ['dodo1', 'doré'] },
-        DELAY2: {
-          /* target: '/state2' */
-        },
+        DELAY2: '/state2',
         DELAY3: { actions: 'dodo2' },
       },
       on: {
         EVENT: { actions: ['dodo3', 'doré1'] },
-        EVENT2: {
-          /* target: '/state4'  */
-        },
+        EVENT2: '/',
         EVENT3: { actions: 'dodo5' },
       },
       always: [
         {
           actions: 'dodo6',
           guards: 'guard2',
-          // target: '/state3',
+          target: '/state1/state11',
         },
         {
           actions: ['dodo7', 'doré3', 'doré1'],
           guards: 'guard2',
-          // target: '/state3',
+          target: '/state1/state12',
         },
-        {
-          /* target: '/state1'  */
-        },
+        '/state1/state11',
       ],
       promises: [
         {
@@ -56,9 +53,7 @@ export const config3 = createConfig({
           then: { actions: 'action1' },
           catch: [
             { guards: 'ert', actions: 'action14' },
-            {
-              /* target: '/state1' */
-            },
+            '/state1/state12',
           ],
           finally: [
             {
@@ -80,9 +75,7 @@ export const config3 = createConfig({
           ],
           catch: [
             { guards: 'ert', actions: 'action15' },
-            {
-              /* target:'/state1' */
-            },
+            '/state1/state12',
           ],
           finally: [
             {
@@ -110,22 +103,6 @@ export const machine3 = createMachine(
     pContext: { data: 'string' },
     context: { age: 'number' },
   }),
-  {
-    initials: {
-      '/': 'state1',
-      '/state1': 'state11',
-      '/state1/state11': 'state111',
-    },
-    targets: {
-      '/state2.after.DELAY2': '/state2',
-      '/state2.on.EVENT2': '/',
-      '/state2.always.[0]': '/state1/state11',
-      '/state2.always.[1]': '/state1/state12',
-      '/state2.always.[2]': '/state1/state11',
-      '/state2.promises.[0].catch.[1]': '/state1/state12',
-      '/state2.promises.[1].catch.[1]': '/state1/state12',
-    },
-  },
 );
 
 export type Machine3 = typeof machine3;

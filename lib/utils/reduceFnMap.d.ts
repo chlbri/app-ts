@@ -1,5 +1,5 @@
 import type { EventsMap, PromiseeMap, ToEventsR } from '../events/index.js';
-import { type FnMap, type FnMapR, type FnR, type FnReduced } from '../types/index.js';
+import { type FnMap, type FnMapR, type FnR, type FnReduced } from '#types';
 import type { types } from '@bemedev/types';
 type ToEventMap_F = <E extends EventsMap, P extends PromiseeMap = PromiseeMap>(events: E, promisees: P) => ToEventsR<E, P>;
 export declare const toEventsMap: ToEventMap_F;

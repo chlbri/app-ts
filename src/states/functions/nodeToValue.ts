@@ -1,8 +1,8 @@
 import { castings } from '@bemedev/types';
-import type { NodeConfigWithInitials, StateValue } from '../types';
+import type { NodeConfig, StateValue } from '../types';
 import { isAtomic, isCompound } from './checks';
 
-export type NodeToValue_F = (body: NodeConfigWithInitials) => StateValue;
+export type NodeToValue_F = (body: NodeConfig) => StateValue;
 
 /**
  * Converts a state machine config into a StateValue.

@@ -3,17 +3,17 @@ import { isString } from '#types';
 import { replaceAll } from '#utils';
 import { decomposeSV, type StateValue } from '@bemedev/decompose';
 
-import type { NodeConfig, NodeConfigWithInitials } from '../types';
+import type { NodeConfig } from '../types';
 import { flatMap } from './flatMap';
 import { getChildren } from './getChildren';
 import { getParents } from './getParents';
 import { recomposeConfig } from './recompose';
 
 export type ValueToNode_F = <T extends StateValue>(
-  body: NodeConfigWithInitials,
+  body: NodeConfig,
   from: T,
   initial?: boolean,
-) => NodeConfigWithInitials;
+) => NodeConfig;
 
 /**
  * Converts a state value to a node configuration based on the provided body and from value.

@@ -1,5 +1,5 @@
 import type { EventsMap, PromiseeMap } from '../events/index.js';
-import type { Describer, FnMap, FnR, FromDescriber } from '../types/index.js';
+import type { Describer, FnMap, FnR, FromDescriber } from '#types';
 import type { types } from '@bemedev/types';
 /**
  * JSON configuration for an action.
