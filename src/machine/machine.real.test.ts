@@ -19,7 +19,7 @@ describe('REAL LIFE TESTS', () => {
     const machine = createMachine(
       {
         __tsSchema: {
-          initial: ['idle', 'parallel', 'compound'],
+          initial: [],
           states: {
             idle: {
               targets: ['/parallel', '/compound'],

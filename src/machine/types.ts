@@ -73,10 +73,13 @@ export type ConfigDef = {
 };
 
 export type TransformConfigDef<T extends ConfigDef> = TransitionsConfig<
-  Exclude<T['targets'], undefined>[number]
+  [] extends Exclude<T['targets'], undefined>
+    ? string
+    : Exclude<T['targets'], undefined>[number]
 > & {
-  readonly initial?: Exclude<T['initial'], undefined>[number];
-} & {
+  readonly initial?: [] extends Exclude<T['initial'], undefined>
+    ? string
+    : Exclude<T['initial'], undefined>[number];
   states?: {
     [Key in keyof T['states']]: T['states'][Key] extends infer TK extends
       ConfigDef
