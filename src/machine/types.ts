@@ -5,6 +5,7 @@ import type { PredicateS } from '#guards';
 import type { PromiseFunction } from '#promises';
 import type {
   ActivityConfig,
+  BaseConfig,
   ExtractActionsFromActivity,
   ExtractDelaysFromActivity,
   ExtractGuardsFromActivity,
@@ -64,7 +65,12 @@ export type Config = ConfigNode & {
 export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
   [K in Exclude<keyof T, keyof ConfigDef>]: never;
 } & {
-  states?: Record<string, NoExtraKeysConfigDef<ConfigDef>>;
+  states?: {
+    [K in keyof T['states']]: T['states'][K] extends infer TK extends
+      ConfigDef
+      ? NoExtraKeysConfigDef<TK>
+      : never;
+  };
 };
 
 export type ConfigDef = {
@@ -76,7 +82,12 @@ export type ConfigDef = {
 export type NoExtraKeysConfigNode<T extends NodeConfig> = T & {
   [K in Exclude<keyof T, keyof NodeConfig>]: never;
 } & {
-  states?: Record<string, NoExtraKeysConfigNode<NodeConfig>>;
+  states?: {
+    [K in keyof T['states']]: T['states'][K] extends infer TK extends
+      NodeConfig
+      ? NoExtraKeysConfigNode<TK>
+      : never;
+  };
 };
 
 export type NoExtraKeysConfig<T extends Config> = T & {
@@ -85,21 +96,22 @@ export type NoExtraKeysConfig<T extends Config> = T & {
   states?: Record<string, NoExtraKeysConfigNode<NodeConfig>>;
 };
 
-export type TransformConfigDef<T extends ConfigDef> = TransitionsConfig<
-  [] extends Exclude<T['targets'], undefined>
-    ? string
-    : Exclude<T['targets'], undefined>[number]
-> & {
-  readonly initial?: [] extends Exclude<T['initial'], undefined>
-    ? string
-    : Exclude<T['initial'], undefined>[number];
-  readonly states?: {
-    [Key in keyof T['states']]: T['states'][Key] extends infer TK extends
-      ConfigDef
-      ? TransformConfigDef<TK>
-      : never;
+export type TransformConfigDef<T extends ConfigDef> = BaseConfig &
+  TransitionsConfig<
+    [] extends Exclude<T['targets'], undefined>
+      ? string
+      : Exclude<T['targets'], undefined>[number]
+  > & {
+    readonly initial?: [] extends Exclude<T['initial'], undefined>
+      ? string
+      : Exclude<T['initial'], undefined>[number];
+    readonly states?: {
+      [Key in keyof T['states']]: T['states'][Key] extends infer TK extends
+        ConfigDef
+        ? TransformConfigDef<TK>
+        : never;
+    };
   };
-};
 
 /**
  * Type representing all action keys from a flat map of nodes.

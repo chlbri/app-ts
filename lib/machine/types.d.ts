@@ -3,7 +3,7 @@ import type { Delay } from '../delays/index.js';
 import type { EventsMap, PromiseeDef, PromiseeMap } from '../events/index.js';
 import type { PredicateS } from '../guards/index.js';
 import type { PromiseFunction } from '../promises/index.js';
-import type { ActivityConfig, ExtractActionsFromActivity, ExtractDelaysFromActivity, ExtractGuardsFromActivity, FlatMapN, NodeConfig, NodeConfigCompound, NodeConfigParallel } from '../states/index.js';
+import type { ActivityConfig, BaseConfig, ExtractActionsFromActivity, ExtractDelaysFromActivity, ExtractGuardsFromActivity, FlatMapN, NodeConfig, NodeConfigCompound, NodeConfigParallel } from '../states/index.js';
 import type { ExtractActionKeysFromTransitions, ExtractDelayKeysFromTransitions, ExtractGuardKeysFromTransitions, ExtractSrcFromTransitions, TransitionsConfig } from '../transitions/index.js';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
@@ -36,7 +36,9 @@ export type Config = ConfigNode & {
 export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
     [K in Exclude<keyof T, keyof ConfigDef>]: never;
 } & {
-    states?: Record<string, NoExtraKeysConfigDef<ConfigDef>>;
+    states?: {
+        [K in keyof T['states']]: T['states'][K] extends infer TK extends ConfigDef ? NoExtraKeysConfigDef<TK> : never;
+    };
 };
 export type ConfigDef = {
     readonly targets?: ReadonlyArray<string>;
@@ -46,14 +48,16 @@ export type ConfigDef = {
 export type NoExtraKeysConfigNode<T extends NodeConfig> = T & {
     [K in Exclude<keyof T, keyof NodeConfig>]: never;
 } & {
-    states?: Record<string, NoExtraKeysConfigNode<NodeConfig>>;
+    states?: {
+        [K in keyof T['states']]: T['states'][K] extends infer TK extends NodeConfig ? NoExtraKeysConfigNode<TK> : never;
+    };
 };
 export type NoExtraKeysConfig<T extends Config> = T & {
     [K in Exclude<keyof T, keyof Config | '__tsSchema'>]: never;
 } & {
     states?: Record<string, NoExtraKeysConfigNode<NodeConfig>>;
 };
-export type TransformConfigDef<T extends ConfigDef> = TransitionsConfig<[
+export type TransformConfigDef<T extends ConfigDef> = BaseConfig & TransitionsConfig<[
 ] extends Exclude<T['targets'], undefined> ? string : Exclude<T['targets'], undefined>[number]> & {
     readonly initial?: [] extends Exclude<T['initial'], undefined> ? string : Exclude<T['initial'], undefined>[number];
     readonly states?: {

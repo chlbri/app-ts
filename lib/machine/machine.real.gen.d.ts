@@ -1,5 +1,5 @@
 export declare const __tsSchema: {
-    readonly initial: readonly [];
+    readonly initial: readonly ["idle", "compound", "parallel"];
     readonly states: {
         readonly idle: {
             readonly targets: readonly ["/parallel", "/compound"];

@@ -1,5 +1,5 @@
 export const __tsSchema = {
-  initial: [],
+  initial: ['idle', 'compound', 'parallel'],
   states: {
     idle: {
       targets: ['/parallel', '/compound'],

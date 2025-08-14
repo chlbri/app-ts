@@ -62,13 +62,16 @@ export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T
     : never
   : never;
 
-export type CommonNodeConfig<Paths extends string = string> = {
+export type BaseConfig = {
   readonly description?: string;
   readonly entry?: SingleOrArrayR<ActionConfig>;
   readonly exit?: SingleOrArrayR<ActionConfig>;
   readonly tags?: SingleOrArrayR<string>;
   readonly activities?: ActivityConfig;
-} & TransitionsConfig<Paths>;
+};
+
+export type CommonNodeConfig<Paths extends string = string> = BaseConfig &
+  TransitionsConfig<Paths>;
 
 export type NodeConfig<
   Paths extends string = string,

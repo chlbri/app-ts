@@ -29,13 +29,14 @@ export type ExtractGuardsFromActivity<T extends {
     [key in keyof TA]: GuardsFromActivity<TA[key]>;
 }[keyof TA] : never;
 export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T ? T['activities'] extends infer TA extends ActivityConfig ? TA extends any ? keyof TA : never : never : never;
-export type CommonNodeConfig<Paths extends string = string> = {
+export type BaseConfig = {
     readonly description?: string;
     readonly entry?: SingleOrArrayR<ActionConfig>;
     readonly exit?: SingleOrArrayR<ActionConfig>;
     readonly tags?: SingleOrArrayR<string>;
     readonly activities?: ActivityConfig;
-} & TransitionsConfig<Paths>;
+};
+export type CommonNodeConfig<Paths extends string = string> = BaseConfig & TransitionsConfig<Paths>;
 export type NodeConfig<Paths extends string = string, I extends string = string> = CommonNodeConfig<Paths> & ({
     readonly type?: 'atomic';
     readonly initial?: never;
