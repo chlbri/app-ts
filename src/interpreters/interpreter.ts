@@ -1361,7 +1361,6 @@ export class Interpreter<
       }
     });
 
-
     return entries;
   }
 
