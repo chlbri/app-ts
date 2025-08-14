@@ -59,6 +59,7 @@ import type {
   GetEventsFromConfig,
   GetPromiseeSrcFromConfig,
   MachineOptions,
+  NoExtraKeysConfig,
   NoExtraKeysConfigDef,
   SimpleMachineOptions2,
   TransformConfigDef,
@@ -1104,7 +1105,7 @@ export type CreateMachine_F = <
     Tc
   >,
 >(
-  config: C & { __tsSchema?: NoExtraKeysConfigDef<C2> },
+  config: NoExtraKeysConfig<C & { __tsSchema?: NoExtraKeysConfigDef<C2> }>,
   types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
 ) => Machine<C, Pc, Tc, EventM, P, Mo>;
 

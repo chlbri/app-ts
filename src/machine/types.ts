@@ -9,6 +9,7 @@ import type {
   ExtractDelaysFromActivity,
   ExtractGuardsFromActivity,
   FlatMapN,
+  NodeConfig,
   NodeConfigCompound,
   NodeConfigParallel,
 } from '#states';
@@ -67,9 +68,21 @@ export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
 };
 
 export type ConfigDef = {
-  readonly targets?: string[];
-  readonly initial?: string[];
+  readonly targets?: ReadonlyArray<string>;
+  readonly initial?: ReadonlyArray<string>;
   readonly states?: RecordS<ConfigDef>;
+};
+
+export type NoExtraKeysConfigNode<T extends NodeConfig> = T & {
+  [K in Exclude<keyof T, keyof NodeConfig>]: never;
+} & {
+  states?: Record<string, NoExtraKeysConfigNode<NodeConfig>>;
+};
+
+export type NoExtraKeysConfig<T extends Config> = T & {
+  [K in Exclude<keyof T, keyof Config | '__tsSchema'>]: never;
+} & {
+  states?: Record<string, NoExtraKeysConfigNode<NodeConfig>>;
 };
 
 export type TransformConfigDef<T extends ConfigDef> = TransitionsConfig<
