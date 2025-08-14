@@ -4,6 +4,7 @@ import { type StateValue } from '#states';
 import { typings } from '#utils';
 import { castings, type types } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
+import { __tsSchema } from './machine.real.gen';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -18,59 +19,7 @@ describe('REAL LIFE TESTS', () => {
 
     const machine = createMachine(
       {
-        __tsSchema: {
-          initial: [],
-          states: {
-            idle: {
-              targets: ['/parallel', '/compound'],
-            },
-            compound: {
-              initial: ['idle'],
-              targets: ['/parallel', '/idle'],
-              states: {
-                idle: {
-                  targets: ['/compound/next', '/idle'],
-                },
-                next: {
-                  targets: ['/compound/idle', '/parallel'],
-                },
-              },
-            },
-            parallel: {
-              targets: ['/compound/next', '/idle'],
-              states: {
-                atomic: {
-                  initial: ['idle', 'next'],
-                  targets: ['/parallel', '/idle'],
-                  states: {
-                    idle: {
-                      targets: ['/parallel/atomic/next', '/idle'],
-                    },
-                    next: {
-                      targets: ['/parallel/atomic/idle', '/idle'],
-                    },
-                  },
-                },
-                compound: {
-                  initial: ['idle'],
-                  targets: ['/compound/next', '/idle'],
-                  states: {
-                    idle: {
-                      targets: ['/parallel/compound/next', '/idle'],
-                    },
-                    next: {
-                      targets: [
-                        '/parallel/compound/idle',
-                        '/compound/idle',
-                        '/idle',
-                      ],
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
+        __tsSchema,
         initial: 'idle',
         ...actions,
         states: {

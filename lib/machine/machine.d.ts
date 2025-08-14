@@ -8,7 +8,7 @@ import { type FlatMapN, type NodeConfig, type StateValue } from '../states/index
 import { type Decompose } from '@bemedev/decompose';
 import { type types } from '@bemedev/types';
 import type { AddOptions_F, AnyMachine } from './machine.types';
-import type { Config, ConfigDef, GetEventsFromConfig, GetPromiseeSrcFromConfig, MachineOptions, NoExtraKeysConfigDef, SimpleMachineOptions2, TransformConfigDef } from './types';
+import type { Config, ConfigDef, GetEventsFromConfig, GetPromiseeSrcFromConfig, MachineOptions, NoExtraKeysConfig, NoExtraKeysConfigDef, SimpleMachineOptions2, TransformConfigDef } from './types';
 /**
  * A class representing a state machine.
  * It provides methods to manage states, actions, predicates, delays, promises, and machines.
@@ -379,9 +379,9 @@ export declare const getEntries: (node?: NodeConfig | undefined) => import("../a
  */
 export declare const getExits: (node?: NodeConfig | undefined) => import("../actions/index.js").ActionConfig[];
 export type { Machine };
-export type CreateMachine_F = <const C2 extends NoExtraKeysConfigDef<ConfigDef> = NoExtraKeysConfigDef<ConfigDef>, const C extends Config & TransformConfigDef<C2> = Config & TransformConfigDef<C2>, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<C, EventM, P, Pc, Tc>>(config: C & {
+export type CreateMachine_F = <const C2 extends NoExtraKeysConfigDef<ConfigDef> = NoExtraKeysConfigDef<ConfigDef>, const C extends Config & TransformConfigDef<C2> = Config & TransformConfigDef<C2>, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<C, EventM, P, Pc, Tc>>(config: NoExtraKeysConfig<C & {
     __tsSchema?: NoExtraKeysConfigDef<C2>;
-}, types: {
+}>, types: {
     pContext: Pc;
     context: Tc;
     eventsMap: EventM;
