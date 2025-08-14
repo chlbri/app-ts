@@ -1175,7 +1175,6 @@ export class Interpreter<
 
     const check5 = promises.length < 1;
 
-    console.warn('len', promises.length);
     if (check5) return;
 
     const promise = anyPromises(from, ...promises);
@@ -1362,7 +1361,6 @@ export class Interpreter<
       }
     });
 
-    console.warn('promises', '=>', entries);
 
     return entries;
   }

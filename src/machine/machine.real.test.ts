@@ -1313,7 +1313,6 @@ describe('REAL LIFE TESTS', () => {
       });
       test(...useWaiter(11, 1));
       test('#12 => Should update first field', () => {
-        console.warn('service.fields', '=>', service.state.context.fields);
         expect(service.state.context.fields?.[0]).toEqual({
           label: 'Name',
           type: 'text',
