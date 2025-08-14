@@ -9,7 +9,6 @@ import type {
   ExtractDelaysFromActivity,
   ExtractGuardsFromActivity,
   FlatMapN,
-  NodeConfig,
   NodeConfigCompound,
   NodeConfigParallel,
 } from '#states';
@@ -68,16 +67,19 @@ export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
 };
 
 export type ConfigDef = {
-  readonly targets?: string;
-  readonly initial?: string;
+  readonly targets?: string[];
+  readonly initial?: string[];
   readonly states?: RecordS<ConfigDef>;
 };
 
 export type TransformConfigDef<T extends ConfigDef> = TransitionsConfig<
-  Exclude<T['targets'], undefined>
+  [] extends Exclude<T['targets'], undefined>
+    ? string
+    : Exclude<T['targets'], undefined>[number]
 > & {
-  readonly initial?: T['initial'];
-} & {
+  readonly initial?: [] extends Exclude<T['initial'], undefined>
+    ? string
+    : Exclude<T['initial'], undefined>[number];
   states?: {
     [Key in keyof T['states']]: T['states'][Key] extends infer TK extends
       ConfigDef
@@ -85,37 +87,6 @@ export type TransformConfigDef<T extends ConfigDef> = TransitionsConfig<
       : never;
   };
 };
-
-/**
- * Retreieves all initlal states from a flat map of nodes.
- *
- * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes
- * @returns A type representing the initials of the flat map.
- *
- * @see {@linkcode FlatMapN} for more details on the flat map structure.
- * @see {@linkcode NodesConfig} for the structure of nodes configuration.
- * @see {@linkcode types.SubType} for extracting subtypes from a type.
- */
-export type GetInititalsFromFlat<Flat extends FlatMapN = FlatMapN> =
-  types.SubType<
-    Flat,
-    { type?: 'compound'; states: RecordS<NodeConfig> }
-  > extends infer Sub
-    ? {
-        [key in keyof Sub]: keyof ('states' extends keyof Sub[key]
-          ? Sub[key]['states']
-          : never);
-      }
-    : never;
-
-/**
- * Type representing the initials of a state machine config.
- * @template : {@linkcode Config} [C] - type of the machine config
- * @returns A type representing the initials of the machine config.
- */
-export type InitialsFromConfig<C extends Config> = GetInititalsFromFlat<
-  FlatMapN<C>
->;
 
 /**
  * Type representing all action keys from a flat map of nodes.
