@@ -1,13 +1,13 @@
 import type { EventsMap, PromiseeMap, ToEventsR } from '#events';
+import type { types } from '@bemedev/types';
+import { castings } from '@bemedev/types';
 import {
   isFunction,
   type FnMap,
   type FnMapR,
   type FnR,
   type FnReduced,
-} from '#types';
-import type { types } from '@bemedev/types';
-import { castings } from '@bemedev/types';
+} from '~types';
 import { nothing } from './nothing';
 
 type ToEventMap_F = <

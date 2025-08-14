@@ -2,9 +2,9 @@ import type { ActionConfig, ActionResult, ActionResultFn } from '../actions/inde
 import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '../events/index.js';
 import type { DefinedValue } from '../guards/index.js';
 import type { NodeConfig, StateValue } from '../states/index.js';
-import type { FnMap, FnR, KeyU } from '#types';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
+import type { FnMap, FnR, KeyU } from '../types/index.js';
 import type { ChildS, Config, ContextFrom, EventsMapFrom, PrivateContextFrom, SimpleMachineOptions2, SubscriberType } from './types';
 /**
  * Types for all meaningful elements of the machine.

@@ -1,7 +1,7 @@
 import type { ActionConfig } from '#actions';
 import type { EventsMap, PromiseeMap } from '#events';
-import { isDescriber } from '#types';
 import type { types } from '@bemedev/types';
+import { isDescriber } from '~types';
 import type { ChildS, MachineMap } from '../types';
 
 export type ToMachine_F = <

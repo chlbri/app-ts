@@ -1,9 +1,9 @@
 import type { ActionConfig, FromActionConfig } from '../actions/index.js';
 import type { GUARD_TYPE } from '../constants/index.js';
 import type { EventsMap, PromiseeMap } from '../events/index.js';
-import type { FnMap, FnR, RecordS, ReduceArray } from '#types';
 import type { KeysMatching } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
+import type { FnMap, FnR, RecordS, ReduceArray } from '../types/index.js';
 type gType = typeof GUARD_TYPE;
 type and = gType['and'];
 type or = gType['or'];

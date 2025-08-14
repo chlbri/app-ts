@@ -6,11 +6,11 @@ import type { AnyMachine, ChildS, ContextFrom, PrivateContextFrom } from '../mac
 import type { PromiseeConfig, PromiseeResult, PromiseFunction, PromiseFunction2 } from '../promises/index.js';
 import type { ActivityConfig, Node, NodeConfig, StateValue } from '../states/index.js';
 import type { AlwaysConfig, DelayedTransitions, TransitionConfig } from '../transitions/index.js';
-import type { FnR } from '#types';
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { types } from '@bemedev/types';
+import type { FnR } from '../types/index.js';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
 export type WorkingStatus = 'idle' | 'starting' | 'started' | 'paused' | 'working' | 'sending' | 'stopped' | 'busy';

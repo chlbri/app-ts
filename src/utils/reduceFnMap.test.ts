@@ -4,8 +4,8 @@ import {
   type EventsMap,
   type PromiseeMap,
 } from '#events';
-import type { FnMap, FnMapR } from '#types';
 import { typings } from '@bemedev/types';
+import type { FnMap, FnMapR } from '~types';
 import {
   reduceFnMap,
   reduceFnMapReduced,

@@ -20,6 +20,8 @@ import type {
   ExtractSrcFromTransitions,
   TransitionsConfig,
 } from '#transitions';
+import type { Decompose } from '@bemedev/decompose';
+import type { types } from '@bemedev/types';
 import type {
   Describer,
   FnMap,
@@ -29,9 +31,7 @@ import type {
   ReduceArray,
   SingleOrArrayL,
   TrueObject,
-} from '#types';
-import type { Decompose } from '@bemedev/decompose';
-import type { types } from '@bemedev/types';
+} from '~types';
 import type { EVENTS_FULL } from './constants';
 
 /**

@@ -1,6 +1,6 @@
 import type { machine1, machine2 } from '#fixturesData';
-import type { SingleOrArrayL } from '#types';
 import type { types } from '@bemedev/types';
+import type { SingleOrArrayL } from '~types';
 import type { EVENTS_FULL } from './constants';
 import type {
   ContextFrom,

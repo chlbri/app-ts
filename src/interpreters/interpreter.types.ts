@@ -37,11 +37,11 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '#transitions';
-import type { FnR } from '#types';
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { types } from '@bemedev/types';
+import type { FnR } from '~types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
 

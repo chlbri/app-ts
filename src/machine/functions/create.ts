@@ -6,8 +6,8 @@ import type {
   PrivateContextFrom,
   SubscriberType,
 } from '#machines';
-import type { KeyU } from '#types';
 import { castings } from '@bemedev/types';
+import type { KeyU } from '~types';
 
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
 

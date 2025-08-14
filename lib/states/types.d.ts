@@ -2,8 +2,8 @@ import type { Action, ActionConfig, FromActionConfig } from '../actions/index.js
 import type { EventsMap, PromiseeMap } from '../events/index.js';
 import type { FromGuard, GuardConfig } from '../guards/index.js';
 import type { Transitions, TransitionsConfig } from '../transitions/index.js';
-import type { Identitfy, RecordS, ReduceArray, SingleOrArrayL, SingleOrArrayR } from '#types';
 import type { types } from '@bemedev/types';
+import type { Identitfy, RecordS, ReduceArray, SingleOrArrayL, SingleOrArrayR } from '../types/index.js';
 export type StateType = 'atomic' | 'compound' | 'parallel';
 export type SNC = NodeConfig;
 export type ActivityMap = {

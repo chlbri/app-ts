@@ -1,7 +1,7 @@
 import type { Contexts } from '#interpreters';
-import type { Describer, Describer2 } from '#types';
 import type { types } from '@bemedev/types';
 import { deepmerge } from 'deepmerge-ts';
+import type { Describer, Describer2 } from '~types';
 
 export const reduceRemainings = <
   Pc = any,

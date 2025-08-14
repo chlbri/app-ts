@@ -10,14 +10,14 @@ import type {
   Promisee,
   PromiseeConfig,
 } from '#promises';
+import type { types } from '@bemedev/types';
+import type { NotUndefined } from '@bemedev/types/lib/types/commons.types';
 import type {
   Identitfy,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
-} from '#types';
-import type { types } from '@bemedev/types';
-import type { NotUndefined } from '@bemedev/types/lib/types/commons.types';
+} from '~types';
 
 /**
  * Represents the simpliest configuration map for a transition.

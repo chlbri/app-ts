@@ -1,8 +1,8 @@
 import type { ActionResultFn } from '../../actions/index.js';
 import type { EventsMap, PromiseeMap } from '../../events/index.js';
-import { type FnMap } from '#types';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
+import { type FnMap } from '../../types/index.js';
 export type ExpandFnMap = <Pc, Tc = types.PrimitiveObject, D = Decompose<{
     pContext: Pc;
     context: Tc;

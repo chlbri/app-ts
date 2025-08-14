@@ -2,14 +2,14 @@ import type { Action, ActionConfig, FromActionConfig } from '#actions';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
 import type { Transitions, TransitionsConfig } from '#transitions';
+import type { types } from '@bemedev/types';
 import type {
   Identitfy,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
   SingleOrArrayR,
-} from '#types';
-import type { types } from '@bemedev/types';
+} from '~types';
 
 export type StateType = 'atomic' | 'compound' | 'parallel';
 

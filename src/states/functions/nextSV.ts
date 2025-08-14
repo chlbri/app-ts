@@ -1,5 +1,4 @@
 import { DEFAULT_DELIMITER } from '#constants';
-import { isString } from '#types';
 import {
   deleteFirst,
   isStringEmpty,
@@ -8,6 +7,7 @@ import {
 } from '#utils';
 import { decompose, decomposeKeys, recompose } from '@bemedev/decompose';
 import { castings } from '@bemedev/types';
+import { isString } from '~types';
 import type { StateValue } from '../types';
 
 export type NextStateValue_F = <T extends StateValue>(

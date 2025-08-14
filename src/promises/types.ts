@@ -8,8 +8,8 @@ import type {
   Transition,
   TransitionConfigMapA,
 } from '#transitions';
-import type { FnMap, FnR, SingleOrArrayL } from '#types';
 import type { types } from '@bemedev/types';
+import type { FnMap, FnR, SingleOrArrayL } from '~types';
 
 /**
  * A function type that represents a promise function with map.

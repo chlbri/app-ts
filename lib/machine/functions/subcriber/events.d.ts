@@ -1,4 +1,4 @@
-import type { RecordS } from '#types';
+import type { RecordS } from '../../../types/index.js';
 import { EVENTS_FULL } from '../../constants';
 export type ReduceEvents_F = (events: (RecordS<string | string[]> | string)[] | typeof EVENTS_FULL, firstEvent: string, ...toChecks: string[]) => boolean;
 /**
