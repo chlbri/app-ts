@@ -18,7 +18,7 @@ export type ResolveNode_F = <
   events: E,
   promisees: P,
   config: NodeConfig,
-  options?: types.NOmit<SimpleMachineOptions<E, P, Pc, Tc>, 'initials'>,
+  options?: SimpleMachineOptions<E, P, Pc, Tc>,
 ) => Node<E, P, Pc, Tc>;
 
 /**

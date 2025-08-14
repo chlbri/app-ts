@@ -5,7 +5,7 @@ import type { RecordS } from '#types';
  * @param flat of type {@linkcode RecordS}<{@linkcode NodeConfig}>, a flat record of NodeConfig.
  * @returns An array of event names.
  *
- * @see {@linkcode isDefined} for the utility function to check if a value is defined.
+ * @see {@linkcode castings} for the utility function to check if a value is defined.
  */
 export declare const possibleEvents: (flat: RecordS<NodeConfig>) => string[];
 //# sourceMappingURL=possibleEvents.d.ts.map

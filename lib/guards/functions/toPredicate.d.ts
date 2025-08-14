@@ -2,7 +2,7 @@ import type { EventsMap, PromiseeMap, ToEvents } from '../../events/index.js';
 import type { GuardConfig } from '../index.js';
 import type { StateExtended } from '../../interpreters/index.js';
 import { type GuardDefUnion } from '@bemedev/boolean-recursive';
-import type { types } from '@bemedev/types';
+import { type types } from '@bemedev/types';
 import type { PredicateMap, PredicateS2 } from '../types';
 export type _ToPredicateF = <E extends EventsMap, P extends PromiseeMap = PromiseeMap, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject>(events: E, promisees: P, guard: GuardConfig, predicates?: PredicateMap<E, P, Pc, Tc>) => {
     func?: GuardDefUnion<[StateExtended<Pc, Tc, ToEvents<E, P>>]> | undefined;
@@ -27,7 +27,7 @@ export type ToPredicate_F = <E extends EventsMap, P extends PromiseeMap = Promis
  * @see {@linkcode reduceFnMap}
  * @see {@linkcode isDescriber}
  * @see {@linkcode isString}
- * @see {@linkcode isDefined}
+ * @see {@linkcode castings}
  * @see {@linkcode GUARD_TYPE}
  * @see {@linkcode recursive}
  */

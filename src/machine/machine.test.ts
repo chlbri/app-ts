@@ -960,17 +960,6 @@ describe('machine coverage', () => {
         },
       },
       { ...defaultT, eventsMap: { NEXT: {} } },
-      // {
-      //   initials: {
-      //     '/': 'idle',
-      //     '/state1': 'state11',
-      //     '/state1/state11': 'state111',
-      //     '/state1/state11/state111': 'state1111',
-      //   },
-      //   targets: {
-      //     '/idle.on.NEXT': '/state1',
-      //   },
-      // },
     );
 
     const service = interpret(machine, defaultC);

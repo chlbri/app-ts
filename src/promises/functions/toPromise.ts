@@ -16,7 +16,7 @@ type ToPromise_F = <
   events: E,
   promisees: P,
   src: PromiseeConfig,
-  promises?: types.NOmit<SimpleMachineOptions<E, P, Pc, TC>, 'initials'>,
+  promises?: SimpleMachineOptions<E, P, Pc, TC>,
 ) => Promisee<E, P, Pc, TC>;
 
 /**

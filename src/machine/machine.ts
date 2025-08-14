@@ -550,53 +550,6 @@ class Machine<
 
   // #region Providers
 
-  // #addValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
-  //   this.#initials = values.initials;
-  //   this.#targets = values.targets;
-
-  //   if (this.#targets) {
-  //     const entriesT = Object.entries(this.#targets).map(
-  //       ([key, target]) => {
-  //         const key1 = key
-  //           .slice(1)
-  //           .replace(new RegExp(DEFAULT_DELIMITER, 'g'), '.states.');
-  //         const _key = `states.${key1}.target`;
-  //         return [_key, target] as const;
-  //       },
-  //     );
-
-  //     const decomposed: any = structuredClone(this.#decomposed);
-
-  //     entriesT.forEach(([key, _target]) => {
-  //       const from = key
-  //         .split(DEFAULT_DELIMITER)
-  //         .slice(0, -1)
-  //         .join(DEFAULT_DELIMITER);
-
-  //       const target = resolve(from, _target as string);
-
-  //       decomposed[key] = target;
-  //     });
-
-  //     const recomposed = recompose(decomposed);
-
-  //     this.#flat = (flatMap as any)(recomposed, true) as FlatMapN<C, true>;
-  //   }
-
-  //   const entries = Object.entries(this.#initials);
-  //   const flat: any = structuredClone(this.#flat);
-  //   entries.forEach(([key, initial]) => {
-  //     flat[key] = { ...flat[key], initial };
-  //   });
-
-  //   this.#postConfig = recomposeConfig(flat);
-  //   this.#initialConfig = initialConfig(this.#postConfig);
-
-  //   this.#getInitialKeys();
-
-  //   return this.#postConfig;
-  // };
-
   #getInitialKeys = () => {
     const entries = Object.entries(this.#flat);
     entries.forEach(([key, { initial }]) => {
@@ -627,16 +580,6 @@ class Machine<
     }
     return flat[target];
   };
-
-  // /**
-  //  * @deprecated
-  //  * @remarks used internally
-  //  */
-  // _provideValues = (values: Pick<Mo, 'initials' | 'targets'>) => {
-  //   const out = this.#renew();
-  //   out.#addValues(values);
-  //   return out;
-  // };
 
   #addActions = (actions?: Mo['actions']) =>
     (this.#actions = merge(this.#actions, actions));
@@ -767,10 +710,7 @@ class Machine<
    */
   get renew() {
     const out = this.#renew();
-    // out.#addValues({
-    //   initials: this.#initials,
-    //   targets: this.#targets,
-    // });
+
     return out;
   }
 
@@ -783,7 +723,6 @@ class Machine<
 
     const out = new Machine<C, T, Tc, E, P>(config);
 
-    // out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#context = context;
     out.#pContext = pContext;
     out.#eventsMap = events;
@@ -805,7 +744,6 @@ class Machine<
 
     const out = new Machine<C, Pc, T, E, P>(config);
 
-    // out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
@@ -826,7 +764,6 @@ class Machine<
 
     const out = new Machine<C, Pc, Tc, T, P>(config);
 
-    // out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = map;
@@ -844,7 +781,6 @@ class Machine<
 
     const out = new Machine<C, Pc, Tc, E, T>(config);
 
-    // out.#addValues({ initials: this.#initials, targets: this.#targets });
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;

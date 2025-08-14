@@ -4,9 +4,8 @@ import type { GuardConfig } from '#guards';
 import type { StateExtended } from '#interpreters';
 import { isDescriber, isString } from '#types';
 import { reduceFnMap } from '#utils';
-import { isDefined } from '@bemedev/basifun';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
-import type { types } from '@bemedev/types';
+import { castings, type types } from '@bemedev/types';
 import type { PredicateMap, PredicateS2 } from '../types';
 
 export type _ToPredicateF = <
@@ -77,7 +76,7 @@ const _toPredicate: _ToPredicateF = (
         return true;
       })
       .map(({ func }) => func)
-      .filter(isDefined);
+      .filter(castings.commons.isDefined);
   };
 
   if (GUARD_TYPE.and in guard) {
@@ -110,7 +109,7 @@ const _toPredicate: _ToPredicateF = (
  * @see {@linkcode reduceFnMap}
  * @see {@linkcode isDescriber}
  * @see {@linkcode isString}
- * @see {@linkcode isDefined}
+ * @see {@linkcode castings}
  * @see {@linkcode GUARD_TYPE}
  * @see {@linkcode recursive}
  */

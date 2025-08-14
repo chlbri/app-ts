@@ -6,7 +6,6 @@ import {
   recomposeSV,
   replaceAll,
 } from '#utils';
-import { isDefined } from '@bemedev/basifun';
 import { decompose, decomposeKeys, recompose } from '@bemedev/decompose';
 import { castings } from '@bemedev/types';
 import type { StateValue } from '../types';
@@ -25,7 +24,7 @@ export type NextStateValue_F = <T extends StateValue>(
  *
  * @see {@linkcode NextStateValue_F} for more type details of this function.
  * @see {@linkcode isStringEmpty} for checking if a string is empty
- * @see {@linkcode isDefined} for checking if a value is defined
+ * @see {@linkcode castings} for checking if a value is defined
  * @see {@linkcode isString} for checking if a value is a string
  * @see {@linkcode decompose} for decomposing objects into key-value pairs
  * @see {@linkcode recompose} for recomposing key-value pairs into an object
@@ -39,7 +38,7 @@ export const nextSV: NextStateValue_F = (from, target) => {
   const isFromEmpty = isStringEmpty(from);
   if (isFromEmpty) return {};
 
-  const isTargetDefined = isDefined(target);
+  const isTargetDefined = castings.commons.isDefined(target);
   if (!isTargetDefined) return from;
 
   const targetIsEmpty = isStringEmpty(target);

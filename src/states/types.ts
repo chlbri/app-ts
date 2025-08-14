@@ -1,14 +1,8 @@
 import type { Action, ActionConfig, FromActionConfig } from '#actions';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
+import type { Transitions, TransitionsConfig } from '#transitions';
 import type {
-  GetEventKeysFromTransitions,
-  Transitions,
-  TransitionsConfig,
-} from '#transitions';
-import type {
-  GetChildren,
-  GetParents,
   Identitfy,
   RecordS,
   ReduceArray,
@@ -167,29 +161,6 @@ type AlwaysEnd = `${string}.always` | `${string}.always.[${number}]`;
 export type EndWithAlways<T extends types.Keys> = Extract<T, AlwaysEnd>;
 
 export type EndwA<T extends types.Keys> = EndWithAlways<T>;
-
-export type _GetTargetsFromMap<T extends FlatMapN> = {
-  [key in keyof T & string]: T[key] extends infer TK
-    ? GetEventKeysFromTransitions<TK> extends infer GE extends string
-      ? {
-          [key2 in `${key}.${GE}`]:
-            | keyof T
-            | GetParents<key>
-            | `./${GetChildren<keyof T & string, key>}`;
-        }
-      : never
-    : never;
-}[keyof T & string];
-
-type __GetTargetsFromMap<T extends FlatMapN> = types.UnionToIntersection<
-  _GetTargetsFromMap<T>
->;
-
-export type GetTargetsFromMap<T extends FlatMapN> =
-  __GetTargetsFromMap<T> extends infer GEP
-    ? Partial<Omit<GEP, EndwA<keyof GEP>>> &
-        Required<Pick<GEP, EndwA<keyof GEP>>>
-    : never;
 
 export type Node<
   E extends EventsMap = EventsMap,
