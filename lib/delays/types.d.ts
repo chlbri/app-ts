@@ -1,6 +1,6 @@
 import type { EventsMap, PromiseeMap } from '../events/index.js';
-import type { FnMap } from '#types';
 import type { types } from '@bemedev/types';
+import type { FnMap } from '../types/index.js';
 /**
  * Delay type definition.
  * The function takes in a context object and returns a delay in milliseconds.

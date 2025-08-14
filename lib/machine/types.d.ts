@@ -5,9 +5,9 @@ import type { PredicateS } from '../guards/index.js';
 import type { PromiseFunction } from '../promises/index.js';
 import type { ActivityConfig, ExtractActionsFromActivity, ExtractDelaysFromActivity, ExtractGuardsFromActivity, FlatMapN, NodeConfig, NodeConfigCompound, NodeConfigParallel } from '../states/index.js';
 import type { ExtractActionKeysFromTransitions, ExtractDelayKeysFromTransitions, ExtractGuardKeysFromTransitions, ExtractSrcFromTransitions, TransitionsConfig } from '../transitions/index.js';
-import type { Describer, FnMap, FnMap2, KeyU, RecordS, ReduceArray, SingleOrArrayL, TrueObject } from '#types';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
+import type { Describer, FnMap, FnMap2, KeyU, RecordS, ReduceArray, SingleOrArrayL, TrueObject } from '../types/index.js';
 import type { EVENTS_FULL } from './constants';
 /**
  * Type representing the main JSON config.

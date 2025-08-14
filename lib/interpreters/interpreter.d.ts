@@ -295,13 +295,13 @@ export declare class Interpreter<const C extends Config = Config, Pc = any, cons
      * //
      */
     protected proposedNextConfig: (target: string) => NodeConfig;
-    toActionFn: (action: ActionConfig) => import("#types").FnR<E, P, Pc, Tc, {
+    toActionFn: (action: ActionConfig) => import("../types/index.js").FnR<E, P, Pc, Tc, {
         pContext?: (Pc extends types.Fn ? Pc : Pc extends object ? types.DeepPartial<Pc> : Pc) | undefined;
         context?: (Tc extends types.Fn ? Tc : Tc extends object ? types.DeepPartial<Tc> : Tc) | undefined;
     }> | undefined;
     toPredicateFn: (guard: GuardConfig) => import("../guards/index.js").PredicateS2<E, P, Pc, Tc> | undefined;
     toPromiseSrcFn: (src: string) => import("../promises/index.js").PromiseFunction2<E, P, Pc, Tc> | undefined;
-    toDelayFn: (delay: string) => import("#types").FnR<E, P, Pc, Tc, number> | undefined;
+    toDelayFn: (delay: string) => import("../types/index.js").FnR<E, P, Pc, Tc, number> | undefined;
     toMachine: (machine: MachineConfig) => (ChildS<E, P, Tc> & {
         id: string;
     }) | undefined;

@@ -1,5 +1,5 @@
-import type { ChangeProperties, KeyStrings, ValuesOf } from '#types';
 import type { types } from '@bemedev/types';
+import type { ChangeProperties, KeyStrings, ValuesOf } from '~types';
 
 export type ExtractLargeKeys<T> = string extends T
   ? never

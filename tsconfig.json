@@ -27,7 +27,7 @@
     "declarationMap": true,
     "baseUrl": ".",
     "paths": {
-      "#types": ["src/types/index.ts"],
+      "~types": ["src/types/index.ts"],
       "#fixtures": ["src/interpreters/__tests__/fixtures.ts"],
       "#fixturesData": ["src/interpreters/__tests__/data/index.ts"],
       "#utils": ["src/utils/index.ts"],

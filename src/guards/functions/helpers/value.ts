@@ -1,7 +1,7 @@
 import type { EventsMap, PromiseeMap } from '#events';
 import { getByKey } from '#machines';
-import type { FnR } from '#types';
 import type { types } from '@bemedev/types';
+import type { FnR } from '~types';
 import type { DefinedValue } from '../../types';
 
 export type IsValueS_F = <

@@ -71,7 +71,6 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '#transitions';
-import { isDescriber, type RecordS } from '#types';
 import {
   IS_TEST,
   isStringEmpty,
@@ -100,6 +99,7 @@ import sleep from '@bemedev/sleep';
 import { castings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
+import { isDescriber, type RecordS } from '~types';
 import type {
   _Send_F,
   AddSubscriber_F,

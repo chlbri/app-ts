@@ -1,8 +1,8 @@
 import type { ActionConfig, FromActionConfig } from '../actions/index.js';
 import type { EventsMap, PromiseeMap, ToEvents } from '../events/index.js';
 import type { ExtractActionsFromTransition, ExtractGuardKeysFromDelayed, GetEventKeysFromDelayed, SingleOrArrayT, Transition, TransitionConfigMapA } from '../transitions/index.js';
-import type { FnMap, FnR, SingleOrArrayL } from '#types';
 import type { types } from '@bemedev/types';
+import type { FnMap, FnR, SingleOrArrayL } from '../types/index.js';
 /**
  * A function type that represents a promise function with map.
  *

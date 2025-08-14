@@ -1,6 +1,6 @@
 import type { EventsMap, PromiseeMap } from '../../events/index.js';
 import type { ChildS, Config, ContextFrom, PrivateContextFrom, SubscriberType } from '../index.js';
-import type { KeyU } from '#types';
+import type { KeyU } from '../../types/index.js';
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
 /**
  * Creates a machine configuration.

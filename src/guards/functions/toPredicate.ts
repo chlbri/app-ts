@@ -2,10 +2,10 @@ import { GUARD_TYPE } from '#constants';
 import type { EventsMap, PromiseeMap, ToEvents } from '#events';
 import type { GuardConfig } from '#guards';
 import type { StateExtended } from '#interpreters';
-import { isDescriber, isString } from '#types';
 import { reduceFnMap } from '#utils';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
 import { castings, type types } from '@bemedev/types';
+import { isDescriber, isString } from '~types';
 import type { PredicateMap, PredicateS2 } from '../types';
 
 export type _ToPredicateF = <

@@ -1,6 +1,6 @@
 import type { NodeConfig } from '#states';
-import type { RecordS } from '#types';
 import { castings } from '@bemedev/types';
+import type { RecordS } from '~types';
 
 /**
  * Returns a list of all possible events from a flat record of NodeConfig.

@@ -2,9 +2,9 @@ import type { Action, ActionConfig, FromActionConfig } from '../actions/index.js
 import type { EventsMap, PromiseeMap } from '../events/index.js';
 import type { FromGuard, GuardConfig, Predicate } from '../guards/index.js';
 import type { ExtractActionsFromPromisee, ExtractGuardsFromPromise, ExtractMaxFromPromisee, ExtractSrcFromPromisee, GetEventKeysFromPromisee, Promisee, PromiseeConfig } from '../promises/index.js';
-import type { Identitfy, RecordS, ReduceArray, SingleOrArrayL } from '#types';
 import type { types } from '@bemedev/types';
 import type { NotUndefined } from '@bemedev/types/lib/types/commons.types';
+import type { Identitfy, RecordS, ReduceArray, SingleOrArrayL } from '../types/index.js';
 /**
  * Represents the simpliest configuration map for a transition.
  * Used as Helper

@@ -1,5 +1,5 @@
 import type { NodeConfig } from '../../states/index.js';
-import type { RecordS } from '#types';
+import type { RecordS } from '../../types/index.js';
 /**
  * Returns a list of all possible events from a flat record of NodeConfig.
  * @param flat of type {@linkcode RecordS}<{@linkcode NodeConfig}>, a flat record of NodeConfig.
