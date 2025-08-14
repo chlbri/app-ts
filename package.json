@@ -63,7 +63,6 @@
     "rollup": "rollup -c",
     "test": "pnpm run build && pnpm run test:coverage --no-coverage",
     "test:coverage": "vitest run",
-    "test:machine": "vitest run ./src/machine/**/*.ts",
     "test:no-type": "pnpm run test:coverage -c \"vitest.config.notype.ts\" --no-coverage",
     "test:only": "pnpm run test:coverage --no-coverage",
     "test:type": "pnpm run test:coverage -c \"vitest.config.type.ts\" --no-coverage",
