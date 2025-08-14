@@ -28,6 +28,7 @@ describe('REAL LIFE TESTS', () => {
             on: {
               NEXT: '/parallel',
             },
+            description: 'First state',
           },
           compound: {
             ...actions,

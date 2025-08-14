@@ -6,7 +6,13 @@ export default defineConfig.bemedev({
     '**/*.example.ts',
     '**/experimental.ts',
     '**/src/types/**/*.ts',
+    '**/*.gen.ts',
     '**/src/.vitest.ts',
   ],
-  excludesTS: ['**/src/.vitest.ts'],
+  excludesTS: [
+    '**/src/.vitest.ts',
+    '**/*.gen.ts',
+    '**/*.example.ts',
+    '**/experimental.ts',
+  ],
 });

@@ -379,7 +379,7 @@ export declare const getEntries: (node?: NodeConfig | undefined) => import("../a
  */
 export declare const getExits: (node?: NodeConfig | undefined) => import("../actions/index.js").ActionConfig[];
 export type { Machine };
-export type CreateMachine_F = <const C2 extends NoExtraKeysConfigDef<ConfigDef> = NoExtraKeysConfigDef<ConfigDef>, const C extends Config & TransformConfigDef<C2> = Config & TransformConfigDef<C2>, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<C, EventM, P, Pc, Tc>>(config: NoExtraKeysConfig<C & {
+export type CreateMachine_F = <const C2 extends ConfigDef = ConfigDef, const C extends Config & TransformConfigDef<C2> = Config & TransformConfigDef<C2>, Pc = any, Tc extends types.PrimitiveObject = types.PrimitiveObject, EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>, P extends PromiseeMap = GetPromiseeSrcFromConfig<C>, Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<C, EventM, P, Pc, Tc>>(config: NoExtraKeysConfig<C & {
     __tsSchema?: NoExtraKeysConfigDef<C2>;
 }>, types: {
     pContext: Pc;
