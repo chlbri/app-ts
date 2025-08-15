@@ -63,6 +63,10 @@ View changelog
 
 <br/>
 
+## NB
+
+**_Don't use version 0.9.17, it doesn't exports anything_**
+
 ## Contributing
 
 Contributions are welcome! Please read our contribution guide for details.

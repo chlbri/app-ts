@@ -47,6 +47,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Build
+        run: pnpm run build
+
       - uses: JS-DevTools/npm-publish@v3
         id: publish
         name: Publish
