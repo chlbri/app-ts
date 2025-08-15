@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "0.9.15",
+  "version": "0.9.16",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -71,7 +71,7 @@
     "upgrade": "pnpm upgrade --latest"
   },
   "devDependencies": {
-    "@bemedev/build-tests": "^0.1.1",
+    "@bemedev/build-tests": "^0.1.2",
     "@bemedev/fsf": "^0.8.0",
     "@bemedev/rollup-config": "^0.1.8",
     "@bemedev/vitest-alias": "^0.0.3",
@@ -80,7 +80,7 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.33.0",
     "@types/clone-deep": "^4.0.4",
-    "@types/node": "^24.2.1",
+    "@types/node": "^24.3.0",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "@vitest/coverage-v8": "^3.2.4",
