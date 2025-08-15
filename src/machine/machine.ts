@@ -1089,7 +1089,8 @@ export const getExits = partialCall(getIO, 'exit');
 export type { Machine };
 
 export type CreateMachine_F = <
-  const C2 extends ConfigDef = ConfigDef,
+  const C2 extends
+    NoExtraKeysConfigDef<ConfigDef> = NoExtraKeysConfigDef<ConfigDef>,
   const C extends Config & TransformConfigDef<C2> = Config &
     TransformConfigDef<C2>,
   Pc = any,
@@ -1104,7 +1105,7 @@ export type CreateMachine_F = <
     Tc
   >,
 >(
-  config: NoExtraKeysConfig<C & { __tsSchema?: NoExtraKeysConfigDef<C2> }>,
+  config: NoExtraKeysConfig<C & { __tsSchema?: C2 }>,
   types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
 ) => Machine<C, Pc, Tc, EventM, P, Mo>;
 
