@@ -5,8 +5,6 @@ export default defineConfig.bemedev({
   ignoresJS: [
     '**/*.example.ts',
     '**/experimental.ts',
-    '**/src/types/**/*.ts',
-    '**/*.gen.ts',
     '**/src/.vitest.ts',
   ],
   excludesTS: [

@@ -1,1 +1,0 @@
-{"version":3,"file":"constants.cjs","sources":["../../src/machine/constants.ts"],"sourcesContent":["export const EVENTS_FULL = 'machine$$full';\n"],"names":[],"mappings":";;AAAO,MAAM,WAAW,GAAG;;;;"}
