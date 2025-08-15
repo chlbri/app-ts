@@ -1,5 +1,0 @@
-export * from './errors';
-export * from './numbers';
-export * from './objects';
-export * from './strings';
-//# sourceMappingURL=index.d.ts.map
