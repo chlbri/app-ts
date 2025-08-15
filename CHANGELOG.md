@@ -11,6 +11,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[0.9.14] - 2025/08/15** => _00:00_
+
+</summary>
+
+- Improve createMachine typings
+- Upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[0.9.13] - 2025/08/14** => _23:15_
 
 </summary>
