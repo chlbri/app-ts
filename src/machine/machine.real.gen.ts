@@ -1,53 +1,52 @@
-export const __tsSchema = {
-  initial: ['idle', 'compound', 'parallel'],
+export const __tsSchema = {} as {
+  initial: 'idle' | 'compound' | 'parallel';
   states: {
     idle: {
-      targets: ['/parallel', '/compound'],
-    },
+      targets: '/parallel' | '/compound';
+    };
     compound: {
-      initial: ['idle'],
-      targets: ['/parallel', '/idle'],
+      initial: 'idle';
+      targets: '/parallel' | '/idle';
       states: {
         idle: {
-          targets: ['/compound/next', '/idle'],
-        },
+          targets: '/compound/next' | '/idle';
+        };
         next: {
-          targets: ['/compound/idle', '/parallel'],
-        },
-      },
-    },
+          targets: '/compound/idle' | '/parallel';
+        };
+      };
+    };
     parallel: {
-      targets: ['/compound/next', '/idle'],
+      targets: '/compound/next' | '/idle';
       states: {
         atomic: {
-          initial: ['idle', 'next'],
-          targets: ['/parallel', '/idle'],
+          initial: 'idle' | 'next';
+          targets: '/parallel' | '/idle';
           states: {
             idle: {
-              targets: ['/parallel/atomic/next', '/idle'],
-            },
+              targets: '/parallel/atomic/next' | '/idle';
+            };
             next: {
-              targets: ['/parallel/atomic/idle', '/idle'],
-            },
-          },
-        },
+              targets: '/parallel/atomic/idle' | '/idle';
+            };
+          };
+        };
         compound: {
-          initial: ['idle'],
-          targets: ['/compound/next', '/idle'],
+          initial: 'idle';
+          targets: '/compound/next' | '/idle';
           states: {
             idle: {
-              targets: ['/parallel/compound/next', '/idle'],
-            },
+              targets: '/parallel/compound/next' | '/idle';
+            };
             next: {
-              targets: [
-                '/parallel/compound/idle',
-                '/compound/idle',
-                '/idle',
-              ],
-            },
-          },
-        },
-      },
-    },
-  },
-} as const;
+              targets:
+                | '/parallel/compound/idle'
+                | '/compound/idle'
+                | '/idle';
+            };
+          };
+        };
+      };
+    };
+  };
+};
