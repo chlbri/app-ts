@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "0.9.18",
+  "version": "0.9.19",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -52,7 +52,7 @@
     "lint:watch": "onchange --await-write-finish 1500 -d 10000 -v \"**/*.ts\" -- pnpm run lint",
     "build:watch": "onchange --await-write-finish 1500 -d 10000 -v \"**/*.ts\" -- pnpm run build",
     "p-q": "pretty-quick",
-    "posttest": "pnpm run prettier && pnpm run p-q",
+    "posttest": "pnpm run prettier",
     "prepare": "husky",
     "prepublishOnly": "",
     "prettier": "prettier --write \"src/**/*.{ts,tsx}\" --log-level silent",

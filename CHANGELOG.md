@@ -11,11 +11,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[0.9.19] - 2025/08/16** => _17:40_
+
+</summary>
+
+- Improve createMachine typings
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[0.9.18] - 2025/08/15** => _23:25_
 
 </summary>
 
 - Fix publishing ci
+- Upgrade deps
 - <u>Test coverage **_100%_**</u>
 
 </details>
