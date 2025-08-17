@@ -74,11 +74,10 @@ export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
 };
 
 export type ConfigDef = {
-  readonly targets?: ReadonlyArray<string>;
-  readonly initial?: ReadonlyArray<string>;
+  readonly targets: string;
+  readonly initial?: string;
   readonly states?: RecordS<ConfigDef>;
 };
-
 export type NoExtraKeysConfigNode<T extends NodeConfig> = T & {
   [K in Exclude<keyof T, keyof NodeConfig>]: never;
 } & {
@@ -89,22 +88,14 @@ export type NoExtraKeysConfigNode<T extends NodeConfig> = T & {
       : never;
   };
 };
-
 export type NoExtraKeysConfig<T extends Config> = T & {
   [K in Exclude<keyof T, keyof Config | '__tsSchema'>]: never;
 } & {
   states?: Record<string, NoExtraKeysConfigNode<NodeConfig>>;
 };
-
 export type TransformConfigDef<T extends ConfigDef> = BaseConfig &
-  TransitionsConfig<
-    [] extends Exclude<T['targets'], undefined>
-      ? string
-      : Exclude<T['targets'], undefined>[number]
-  > & {
-    readonly initial?: [] extends Exclude<T['initial'], undefined>
-      ? string
-      : Exclude<T['initial'], undefined>[number];
+  TransitionsConfig<T['targets']> & {
+    readonly initial?: T['initial'];
     readonly states?: {
       [Key in keyof T['states']]: T['states'][Key] extends infer TK extends
         ConfigDef
