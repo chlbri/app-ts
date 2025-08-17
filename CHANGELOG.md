@@ -11,6 +11,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[0.9.21] - 2025/08/17** => _23:25_
+
+</summary>
+
+- Rewind to 0.9.19, better tyêscript usage
+- Upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[0.9.20] - 2025/08/16** => _18:00_
 
 </summary>
