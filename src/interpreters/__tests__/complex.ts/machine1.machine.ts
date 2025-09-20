@@ -275,8 +275,6 @@ export const machine = createMachine(
     },
   },
   delays: {
-    // TODO: Fix withTimeout inside lib @bemedev/app-ts
     MAX_MUTATE: 1000,
   },
- 
 }));
