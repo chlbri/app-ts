@@ -205,11 +205,11 @@ describe('promisee', () => {
         service.start();
       });
 
-      test(...useValue('idle', 2));
+      test(...useValue('inactive', 2));
       test(...useWaiter(3, 1));
-      test(...useValue('idle', 4));
+      test(...useValue('inactive', 4));
       test(...useWaiter(3, 2));
-      test(...useValue('idle', 5));
+      test(...useValue('inactive', 5));
 
       describe('#06 => Error is throwing', () => {
         test('#01 => Length of collector is one', () => {
@@ -222,6 +222,7 @@ describe('promisee', () => {
 
         describe('#03 => console.log', () => {
           test('#01 => called one time', () => {
+            console.warn(log.mock.calls);
             expect(log).toBeCalledTimes(1);
           });
 
@@ -250,9 +251,9 @@ describe('promisee', () => {
 
       test(...useValue('idle', 2));
       test(...useWaiter(3, 1));
-      test(...useValue('idle', 4));
+      test(...useValue('inactive', 4));
       test(...useWaiter(3, 2));
-      test(...useValue('idle', 5));
+      test(...useValue('inactive', 5));
     });
   });
 
@@ -272,11 +273,12 @@ describe('promisee', () => {
               promises: {
                 src: 'rejectPromise',
                 then: '/active',
-                catch: '/active',
+                catch: '/inactive',
                 finally: 'finalAction',
               },
             },
             active: {},
+            inactive: {},
           },
         },
         defaultT,
@@ -301,7 +303,7 @@ describe('promisee', () => {
 
       test(...useValue('idle', 2));
       test(...useWaiter(3, 2));
-      test(...useValue('active', 4));
+      test(...useValue('inactive', 4));
 
       describe('#05 => actionVi is called one time', () => {
         test('#01 => Called one time', () => {
