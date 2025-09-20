@@ -67,6 +67,7 @@ export const nextSV: NextStateValue_F = (from, target) => {
   const decomposed = castings.commons.any(
     decompose(castings.objects.trueObject.forceCast(from), {
       start: false,
+      object: 'key',
     }),
   );
 

@@ -167,7 +167,7 @@ export type Collected0<
 > = {
   after?: TimeoutPromise<string | false>;
 
-  promisee?: TimeoutPromise<PromiseeResult<E, P> | undefined>;
+  promisee?: () => Promise<(PromiseeResult<E, P> | undefined)[]>;
   always?: () => string | false;
 };
 
@@ -184,7 +184,7 @@ export type PerformPromisee_F<
 > = (
   from: string,
   ...promisees: PromiseeConfig[]
-) => TimeoutPromise<PromiseeResult<E, P> | undefined> | undefined;
+) => (() => Promise<(PromiseeResult<E, P> | undefined)[]>) | undefined;
 
 export type Contexts<
   Pc = any,

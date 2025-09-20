@@ -487,6 +487,14 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       service.send({ type: 'NEXT', payload: {} });
 
       expect(mockFn).toHaveBeenCalled();
+      const sameStatus = {
+        context: { iterator: 3 },
+        event: 'machine$$init',
+        status: 'idle',
+        value: 'idle',
+      } as const;
+
+      expect(subscriber.equals(sameStatus, sameStatus)).toBe(true);
 
       service.stop();
     });

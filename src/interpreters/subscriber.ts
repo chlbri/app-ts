@@ -42,6 +42,10 @@ class SubscriberClass<
     return this._id;
   }
 
+  get equals() {
+    return this.#equals;
+  }
+
   /**
    * Creates an instance of SubscriberMapClass.
    * @param eventsMap - {@linkcode EventsMap} [E] - The events map.

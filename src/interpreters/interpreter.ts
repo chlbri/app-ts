@@ -429,7 +429,8 @@ export class Interpreter<
   #performStates = (parts?: Partial<State<Tc, ToEvents<E, P>>>) => {
     this.#previousState = cloneDeep(this.#state);
     this.#state = { ...this.#state, ...parts };
-    this.#flush();
+    const check = !equal(this.#previousState, this.#state);
+    if (check) this.#flush();
   };
 
   /**
@@ -438,7 +439,6 @@ export class Interpreter<
   protected _performConfig = () => {
     const value = nodeToValue(this.#config);
     this.#value = value;
-    this.#performStates({ value });
 
     this.#node = this.#resolveNode(this.#config);
 
@@ -454,13 +454,18 @@ export class Interpreter<
    * @param target, the target to perform the config for.
    */
   #performConfig = (target?: string | true) => {
-    if (target === true) return this._performConfig();
+    if (target === true) {
+      this._performConfig();
+      const value = this.#value;
+      return this.#performStates({ value });
+    }
 
     if (target) {
       this.#config = this.proposedNextConfig(target);
       const tags = this.#config.tags;
-      this.#performStates({ tags });
-      return this._performConfig();
+      this._performConfig();
+      const value = this.#value;
+      return this.#performStates({ tags, value });
     }
   };
 
@@ -598,10 +603,10 @@ export class Interpreter<
    */
 
   get select(): Selector_F<Tc> {
-    const check = castings.commons.primitive.is(this.#context);
+    const check = castings.commons.primitive.is(this.#state.context);
     if (check) return undefined as any;
-    const out: any = (path: string) => getByKey(this.#context, path);
-    return out as any;
+    const out: any = (path: string) => getByKey(this.#state.context, path);
+    return out;
   }
 
   /**
@@ -730,10 +735,7 @@ export class Interpreter<
 
       const currentValue = this.#value;
       check = !equal(previousValue, currentValue);
-
-      if (check) {
-        this.#flush();
-      }
+      if (check) this.#flush();
 
       const duration = Date.now() - startTime;
       const check2 = duration > TIME_TO_RINIT_SELF_COUNTER;
@@ -944,6 +946,7 @@ export class Interpreter<
   #flushMapSubscribers = () => {
     this.#subscribers.forEach(f => {
       const callback = () => f.fn(this.#previousState, this.#state);
+
       this.#schedule(callback);
     });
   };
@@ -953,8 +956,6 @@ export class Interpreter<
     const context = merge(this.#context, result?.context);
     this.#context = context;
     this.#performStates({ context });
-
-    this.#flush();
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
@@ -1120,7 +1121,7 @@ export class Interpreter<
   #performPromisee: PerformPromisee_F<E, P> = (from, ...promisees) => {
     type PR = PromiseeResult<E, P>;
 
-    const promises: TimeoutPromise<PR | undefined>[] = [];
+    const promises: (() => Promise<PR | undefined>)[] = [];
 
     promisees.forEach(
       ({ src, then, catch: _catch, finally: _finally, max: maxS }) => {
@@ -1152,10 +1153,7 @@ export class Interpreter<
           return out();
         };
 
-        const _promise = () =>
-          this.#performPromiseSrc(promiseF)
-            .then(partialCall(handlePromise, 'then'))
-            .catch(partialCall(handlePromise, 'catch'));
+        const _promise = () => this.#performPromiseSrc(promiseF);
 
         const MAX_POMS = [DEFAULT_MAX_TIME_PROMISE];
 
@@ -1163,13 +1161,20 @@ export class Interpreter<
         if (check3) {
           const delayF = this.toDelayFn(maxS);
           const check4 = !isDefined(delayF);
-          if (check4) return this.#throwing();
+          if (check4) {
+            const promise = async () =>
+              Promise.resolve().then(partialCall(handlePromise, 'catch'));
+            return promises.push(promise);
+          }
           const max = this.#performDelay(delayF);
           MAX_POMS.push(max);
         }
 
-        const promise = withTimeout.safe(_promise, from, ...MAX_POMS);
-        promises.push(promise);
+        const promise = () =>
+          withTimeout(_promise, from, ...MAX_POMS)()
+            .then(partialCall(handlePromise, 'then'))
+            .catch(partialCall(handlePromise, 'catch'));
+        return promises.push(promise);
       },
     );
 
@@ -1177,7 +1182,7 @@ export class Interpreter<
 
     if (check5) return;
 
-    const promise = anyPromises(from, ...promises);
+    const promise = () => Promise.all(promises.map(p => p()));
     return promise;
   };
 
@@ -1307,7 +1312,9 @@ export class Interpreter<
   }
 
   get #currentActivities() {
-    const collected = this.#collectedActivities;
+    const collected = this.#collectedActivities.filter(([from]) =>
+      this.#isInsideValue(from),
+    );
     const check = collected.length < 1;
     if (check) return;
 
@@ -1375,7 +1382,10 @@ export class Interpreter<
   };
 
   get #collectedSelfTransitions() {
-    const entries = Array.from(this.#collectedSelfTransitions0);
+    const entries = Array.from(this.#collectedSelfTransitions0).filter(
+      ([from]) => this.#isInsideValue(from),
+    );
+
     const out = entries.map(([from, { after, always, promisee }]) => {
       const promise = async () => {
         if (always) {
@@ -1400,18 +1410,25 @@ export class Interpreter<
                   this.#schedule(cb);
                 }
               })
-              .catch(this._addWarning);
+              .catch(() =>
+                this._addWarning(
+                  `${from}::after - No transitions reached!`,
+                ),
+              );
           };
           promises.push(withTimeout(_after, 'after'));
         }
 
         if (promisee) {
           const _promisee = async () => {
-            return promisee().then(transition => {
-              const target = transition?.target;
-              if (target !== false) {
-                const cb = () => this.#performConfig(target);
-                this.#schedule(cb);
+            return promisee().then(transitions => {
+              for (const transition of transitions) {
+                if (!transition) continue;
+                const target = transition.target;
+                if (target !== false) {
+                  const cb = () => this.#performConfig(target);
+                  this.#schedule(cb);
+                }
               }
             });
           };
@@ -1437,9 +1454,7 @@ export class Interpreter<
     await Promise.all(this.#collectedSelfTransitions.map(f => f()));
     const state2 = structuredClone(this.#state);
     const check = !equal(state1, state2);
-    if (check) {
-      this.#flush();
-    }
+    if (check) this.#flush();
 
     this.#makeWork();
   };
@@ -2135,7 +2150,7 @@ export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   MachineOptionsFrom<M>
 >;
 
-export const _interpret: any = (machine: any, args: any) => {
+const _interpret: any = (machine: any, args: any) => {
   const { context, pContext, mode, exact } = args ?? {};
   const out = new (Interpreter as any)(machine, mode, exact);
 
