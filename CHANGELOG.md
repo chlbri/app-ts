@@ -11,11 +11,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.0.0] - 2025/09/20** => _18:40_
+
+</summary>
+
+- First stable release
+- Upgrade deps
+- Fix issues with multiple promises
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[0.9.21] - 2025/08/17** => _23:25_
 
 </summary>
 
-- Rewind to 0.9.19, better tyêscript usage
+- Rewind to 0.9.19, better typescript usage
 - Upgrade deps
 - <u>Test coverage **_100%_**</u>
 
