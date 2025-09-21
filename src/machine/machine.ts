@@ -38,6 +38,7 @@ import { partialCall, toArray } from '@bemedev/basifun';
 import { decompose, type Decompose } from '@bemedev/decompose';
 import { castings, typings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
+import { RINIT_STATE } from './constants';
 import {
   createChildS,
   expandFnMap,
@@ -999,6 +1000,28 @@ class Machine<
 
         return out;
       },
+      batch: (...fns) => {
+        return ({ context, pContext, ...rest }) => {
+          const state = this.#cloneState({ context, pContext, ...rest });
+
+          let out: any;
+          fns.forEach(fn => {
+            return (out = fn({
+              ...state,
+              ...merge(
+                {
+                  context,
+                  pContext,
+                },
+                out,
+              ),
+            }));
+          });
+
+          return out;
+        };
+      },
+      rinitFn: () => RINIT_STATE,
       voidAction,
       sendTo,
       debounce: (fn, { id, ms = 100 }) => {

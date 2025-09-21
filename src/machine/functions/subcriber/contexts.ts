@@ -24,8 +24,10 @@ export interface AssignByKey {
 }
 
 const _assignByKey: AssignByKey['low'] = (obj, key, value) => {
+  if (obj === null || obj === undefined) return obj;
   const out: any = obj;
-  const keys = (key as string).split('.');
+
+  const keys = key.split('.');
 
   const check1 = keys.length === 1;
   if (check1) {

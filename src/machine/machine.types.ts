@@ -5,6 +5,7 @@ import type { NodeConfig, StateValue } from '#states';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
 import type { FnMap, FnR, KeyU } from '~types';
+import type { Rinit } from './constants';
 import type {
   ChildS,
   Config,
@@ -204,6 +205,15 @@ export type DebounceAction_F<
   },
 ) => ActionResultFn<E, P, Pc, Tc>;
 
+export type BatchAction_F<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+> = <T extends ActionResultFn<E, P, Pc, Tc>>(
+  ...fns: T[]
+) => ActionResultFn<E, P, Pc, Tc>;
+
 export type AddOptionsParam_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -217,6 +227,7 @@ export type AddOptionsParam_F<
   isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
   createChild: ChildProvider_F<E, P, Pc>;
   assign: AssignAction_F<E, P, Pc, Tc>;
+  batch: BatchAction_F<E, P, Pc, Tc>;
   voidAction: VoidAction_F<E, P, Pc, Tc>;
   sendTo: SendAction_F<E, P, Pc, Tc>;
   debounce: DebounceAction_F<E, P, Pc, Tc>;
@@ -231,6 +242,7 @@ export type AddOptionsParam_F<
   pauseTimer: TimeAction_F<E, P, Pc, Tc>;
   resumeTimer: TimeAction_F<E, P, Pc, Tc>;
   stopTimer: TimeAction_F<E, P, Pc, Tc>;
+  rinitFn: () => Rinit;
 }) => Mo | undefined;
 
 export type AddOptions_F<

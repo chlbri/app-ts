@@ -1,3 +1,4 @@
+import { RINIT_STATE } from '#machines';
 import { castings, type types } from '@bemedev/types';
 import { deepmergeCustom } from 'deepmerge-ts';
 import equal from 'fast-deep-equal';
@@ -22,6 +23,19 @@ const _merge = deepmergeCustom<
   }
 >({
   mergeArrays: false,
+  mergeMaps: false,
+  mergeRecords: (values, all, options) => {
+    const last = values[values.length - 1];
+
+    /* v8 ignore next */
+    if (last === RINIT_STATE) return {};
+
+    return all.defaultMergeFunctions.mergeRecords(
+      values,
+      all as any,
+      options,
+    );
+  },
 });
 
 /**

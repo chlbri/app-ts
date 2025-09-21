@@ -11,6 +11,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.0.1] - 2025/09/21** => _01:40_
+
+</summary>
+
+- Upgrade deps
+- Add rinit function to reset context
+- Add batch action to group actions
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.0.0] - 2025/09/20** => _18:40_
 
 </summary>

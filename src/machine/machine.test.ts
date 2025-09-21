@@ -1055,7 +1055,7 @@ describe('machine coverage', () => {
           },
           {
             invite: 'For /not exits',
-            expected: undefined,
+            expected: undefined as any,
             parameters: '/not exists',
           },
         ),

@@ -1065,9 +1065,9 @@ export class Interpreter<
     );
 
     if (response) {
-      this.#performActions(...toArray<ActionConfig>(diffExits));
-      this.#performActions(...toArray<ActionConfig>(actions));
-      this.#performActions(...toArray<ActionConfig>(diffEntries));
+      this.#performActions(...toArray.typed(diffExits));
+      this.#performActions(...toArray.typed(actions));
+      this.#performActions(...toArray.typed(diffEntries));
       return target ?? false;
     }
     return false;

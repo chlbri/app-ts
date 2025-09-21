@@ -191,13 +191,13 @@ export const machine = createMachine(
       },
     },
   }),
-).provideOptions(({ assign }) => ({
+).provideOptions(({ assign, rinitFn }) => ({
   actions: {
     provideAsset: assign('context.asset', {
       START: ({ payload }) => payload.asset,
     }),
 
-    reset: assign('context.intermediaries', () => []),
+    reset: assign('context', rinitFn),
 
     addMandatoryIntermediary: assign('context.intermediaries', {
       START: ({ payload }) => [payload.mandatory],
@@ -268,10 +268,17 @@ export const machine = createMachine(
       return intermediaries.length < max;
     },
     intermediaryIsNotAdded: {
-      ADD_INTERMEDIARY: ({ context: { intermediaries = [] }, payload }) =>
-        !intermediaries.some(
-          intermediary => intermediary.id === payload.id,
-        ),
+      ADD_INTERMEDIARY: ({
+        context: { intermediaries = [] },
+        payload,
+      }) => {
+        const check =
+          payload &&
+          !intermediaries.some(
+            intermediary => intermediary.id === payload.id,
+          );
+        return check;
+      },
     },
   },
   delays: {
