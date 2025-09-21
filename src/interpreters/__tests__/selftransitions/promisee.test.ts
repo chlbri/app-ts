@@ -222,7 +222,6 @@ describe('promisee', () => {
 
         describe('#03 => console.log', () => {
           test('#01 => called one time', () => {
-            console.warn(log.mock.calls);
             expect(log).toBeCalledTimes(1);
           });
 
