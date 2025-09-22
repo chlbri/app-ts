@@ -1,0 +1,21 @@
+{
+  "$schema": "https://demotime.show/demo-time.schema.json",
+  "title": "how-to-use",
+  "description": "",
+  "version": 2,
+  "demos": [
+    {
+      "id": "demo-mfvfe0t6-s0ex",
+      "title": "Demo 1",
+      "steps": [
+        {
+          "action": "open"
+        }
+      ],
+      "icons": {
+        "start": "alert",
+        "end": "archive"
+      }
+    }
+  ]
+}

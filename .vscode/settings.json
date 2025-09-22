@@ -2,5 +2,6 @@
   "github-actions.workflows.pinned.workflows": [
     ".github/workflows/ci.yml"
   ],
-  "githubPullRequests.ignoredPullRequestBranches": ["dev"]
+  "githubPullRequests.ignoredPullRequestBranches": ["dev"],
+  "demoTime.defaultFileType": "json"
 }
