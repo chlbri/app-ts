@@ -1,9 +1,4 @@
-import {
-  reduceAction,
-  toAction,
-  type ActionConfig,
-  type ActionResult,
-} from '#actions';
+import { reduceAction, toAction, type ActionConfig } from '#actions';
 import {
   DEFAULT_DELIMITER,
   DEFAULT_MAX_SELF_TRANSITIONS,
@@ -39,6 +34,8 @@ import {
   type Config,
   type ConfigFrom,
   type ContextFrom,
+  type DirectMerge_F,
+  type EmitterConfig,
   type EventsMapFrom,
   type ExtendedActionsParams,
   type GetEventsFromConfig,
@@ -100,6 +97,7 @@ import { castings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
 import { isDescriber, type RecordS } from '~types';
+import { toEmitter } from './../machine/functions/toEmitter';
 import type {
   _Send_F,
   AddSubscriber_F,
@@ -127,6 +125,7 @@ import type {
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
 
+import type { Emitter } from 'src/emitters/types';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
@@ -286,8 +285,13 @@ export class Interpreter<
    * @see {@linkcode isDefined} for filtering out undefined machines.
    */
   get #childrenMachines() {
-    const _machines = toArray.typed(this.#machine.config.machines);
-    return _machines.map(this.toMachine).filter(isDefined);
+    const machines = toArray.typed(this.#machine.config.machines);
+    return machines.map(this.toMachine).filter(isDefined);
+  }
+
+  get #childrenEmitters() {
+    const emitters = toArray.typed(this.#machine.config.emitters);
+    return emitters.map(this.toEmitter).filter(isDefined);
   }
 
   /**
@@ -678,6 +682,7 @@ export class Interpreter<
     this.#startStatus();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#performChildMachines();
+    this.#performEmitters();
     this.#throwing();
 
     return this._next();
@@ -746,7 +751,7 @@ export class Interpreter<
   };
 
   get #cloneState(): StateExtended<Pc, Tc, ToEvents<E, P>> {
-    const pContext = structuredClone(this.#pContext);
+    const pContext = cloneDeep(this.#pContext);
 
     return structuredClone({ pContext, ...this.#state });
   }
@@ -776,7 +781,7 @@ export class Interpreter<
 
   #performSendToAction = (sentEvent?: { to: string; event: any }) => {
     if (!sentEvent) return;
-    this.#sendTo(sentEvent.to, sentEvent.event);
+    return this.#sendTo(sentEvent.to, sentEvent.event);
   };
 
   #performResendAction = (resend?: EventArg<E>) => {
@@ -951,11 +956,11 @@ export class Interpreter<
     });
   };
 
-  #mergeContexts = (result?: ActionResult<Pc, Tc>) => {
+  #mergeContexts: DirectMerge_F<Pc, Tc> = result => {
     this.#pContext = merge(this.#pContext, result?.pContext);
     const context = merge(this.#context, result?.context);
     this.#context = context;
-    this.#performStates({ context });
+    return this.#performStates({ context });
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
@@ -1339,6 +1344,9 @@ export class Interpreter<
       child.start();
     });
   };
+
+  #performEmitters = () =>
+    this.#childrenEmitters.forEach(this.#reduceEmitter);
 
   /**
    * Get all brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
@@ -1780,7 +1788,7 @@ export class Interpreter<
     const check = this.#cannotPerformEvents(_event);
     if (check) return;
 
-    this.#send(_event);
+    return this.#send(_event);
   };
 
   /**
@@ -1805,7 +1813,7 @@ export class Interpreter<
    *
    * //
    *
-   * @see {@linkcode Machine.valueToConfig} for more details.
+  //  * @see {@linkcode Machine.valueToConfig} for more details.
    *
    * //
    */
@@ -1884,6 +1892,7 @@ export class Interpreter<
   };
 
   #isInsideValue2 = (sv: StateValue, value: string) => {
+    if (value === DEFAULT_DELIMITER) return true;
     const values = decomposeSV(sv);
     const entry = value.substring(1);
     const state = replaceAll({
@@ -1976,9 +1985,21 @@ export class Interpreter<
     );
   };
 
+  toEmitter = (emitter: EmitterConfig) => {
+    const emitters = this.#machine.emitters;
+
+    return this.#returnWithWarning(
+      toEmitter<E, P, Pc, Tc>(emitter, emitters),
+      `Emitter (${reduceAction(emitter)}) is not defined`,
+    );
+  };
+
   protected interpretChild = interpret;
 
-  //TODO: Add a subscribeTo Method to subscribe to a already started service
+  subscribeFrom = (func: (send: (typeof this)['send']) => void) => {
+    return func(this.send);
+  };
+
   /**
    * Subscribes a child machine to the current machine.
    *
@@ -2017,9 +2038,27 @@ export class Interpreter<
    * @see {@linkcode castings} for type casting.
    */
   #sendTo = <T extends EventObject>(to: string, event: T) => {
-    const service = this.#childrenServices.find(({ id }) => id === to);
+    return this.#childrenServices.find(({ id }) => id === to)?.send(event);
+  };
 
-    if (service) service.send(castings.commons(event));
+  #reduceEmitter = ({
+    id,
+    emitter,
+  }: {
+    id: string;
+    emitter: Emitter<E, P, Pc, Tc>;
+  }) => {
+    const find = this.#childrenEmitters.find(f => f.id === id);
+    const args = {
+      ...this.#cloneState,
+      merge: this.#mergeContexts,
+      send: this.send,
+    };
+
+    if (find) return find.emitter(args);
+
+    this.#childrenEmitters.push({ id, emitter });
+    return emitter(args);
   };
 
   /**

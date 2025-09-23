@@ -4,6 +4,7 @@ import type { DefinedValue } from '#guards';
 import type { NodeConfig, StateValue } from '#states';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
+import type { Fn } from '@bemedev/types/lib/types/commons.types';
 import type { FnMap, FnR, KeyU } from '~types';
 import type { Rinit } from './constants';
 import type {
@@ -44,6 +45,7 @@ export type Elements<
   delays?: Mo['delays'];
   promises?: Mo['promises'];
   machines?: Mo['machines'];
+  emitters?: Mo['emitters'];
 };
 
 export type GetIO_F = (
@@ -133,6 +135,11 @@ export type VoidAction_F<
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = (fn?: FnR<E, P, Pc, Tc, void>) => ActionResultFn<E, P, Pc, Tc>;
+
+export type DirectMerge_F<
+  Pc = any,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+> = Fn<[result?: ActionResult<Pc, Tc>], void>;
 
 export type SendAction_F<
   E extends EventsMap = EventsMap,
@@ -243,6 +250,8 @@ export type AddOptionsParam_F<
   resumeTimer: TimeAction_F<E, P, Pc, Tc>;
   stopTimer: TimeAction_F<E, P, Pc, Tc>;
   rinitFn: () => Rinit;
+  // merge: DirectMerge_F<Pc, Tc>;
+  // emitter: Emitter<E, P, Pc, Tc>;
 }) => Mo | undefined;
 
 export type AddOptions_F<

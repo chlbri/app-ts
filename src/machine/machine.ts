@@ -441,6 +441,8 @@ class Machine<
 
   #machines?: Mo['machines'];
 
+  #emitters?: Mo['emitters'];
+
   /**
    * Initials {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
    */
@@ -483,7 +485,7 @@ class Machine<
       start: false,
       object: 'both',
     }) as Decompose<C, { sep: '.'; start: false; object: 'both' }>;
-    this.#flat = flatMap(config, true);
+    this.#flat = flatMap(this.#config, true);
     this.#initialConfig = initialConfig(this.#config);
     this.#getInitialKeys();
   }
@@ -550,6 +552,10 @@ class Machine<
     return this.#machines;
   }
 
+  get emitters() {
+    return this.#emitters;
+  }
+
   // #region Providers
 
   #getInitialKeys = () => {
@@ -598,6 +604,9 @@ class Machine<
   #addMachines = (machines?: Mo['machines']) =>
     (this.#machines = merge(this.#machines, machines));
 
+  #addEmitters = (emitters?: Mo['emitters']) =>
+    (this.#emitters = merge(this.#emitters, emitters));
+
   /**
    * Provides options for the machine.
    *
@@ -635,6 +644,7 @@ class Machine<
     const machines = cloneDeep(this.#machines);
     const events = cloneDeep(this.#eventsMap);
     const promisees = cloneDeep(this.#promiseesMap);
+    const emitters = cloneDeep(this.#emitters);
 
     return {
       config,
@@ -647,6 +657,7 @@ class Machine<
       machines,
       events,
       promisees,
+      emitters,
     };
   }
 
@@ -689,6 +700,7 @@ class Machine<
       machines,
       promisees,
       events,
+      emitters,
     } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, E, P, Mo>(config);
@@ -703,6 +715,7 @@ class Machine<
     out.#addDelays(delays);
     out.#addPromises(promises);
     out.#addMachines(machines);
+    out.#addEmitters(emitters);
 
     return out;
   };
@@ -895,6 +908,8 @@ class Machine<
     return isNotDefinedS<E, P, Pc, Tc>;
   }
 
+  // #merge = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {};
+
   /**
    * Function helper to create a child service for this {@linkcode Machine}.
    *
@@ -1072,6 +1087,7 @@ class Machine<
     this.#addDelays(out?.delays);
     this.#addPromises(out?.promises);
     this.#addMachines(out?.machines);
+    this.#addEmitters(out?.emitters);
   };
 }
 

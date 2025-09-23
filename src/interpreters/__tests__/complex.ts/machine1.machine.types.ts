@@ -16,8 +16,6 @@ export type Social = {
 // #region type Intermediary
 export type Intermediary = {
   id: string;
-
-  // TODO:  to define
   wallet: string;
   sacrifice?: number;
   contacts: {

@@ -1,25 +1,26 @@
-import type { ActionConfig } from '#actions';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { types } from '@bemedev/types';
+import type { Emitter, EmitterMap } from 'src/emitters/types';
 import { isDescriber } from '~types';
-import type { ChildS, MachineMap } from '../types';
+import type { EmitterConfig } from '../types';
 
-export type ToMachine_F = <
+export type ToEmitter_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
+  Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 >(
-  machine: ActionConfig,
-  machines?: MachineMap<E, P, Tc>,
-) => (ChildS<E, P, Tc> & { id: string }) | undefined;
+  emitter: EmitterConfig,
+  emitters?: EmitterMap<E, P, Pc, Tc>,
+) => { emitter: Emitter<E, P, Pc, Tc>; id: string } | undefined;
 
 /**
  * Converts a machine configuration to a machine object with an id.
  * * If the machine is a describer, it looks up the machine configuration by name.
  * * If the machine is a string, it looks up the machine configuration by that string.
  * * If the machine is not found in the provided machines map, it returns undefined.
- * @param machine of type {@linkcode ActionConfig}, the machine configuration to convert.
- * @param machines of type {@linkcode MachineMap}, the map of machines to look up the machine configuration.
+ * @param _emitter of type {@linkcode EmitterConfig}, the machine configuration to convert.
+ * @param emitters of type {@linkcode MachineMap}, the map of machines to look up the machine configuration.
  * @returns a machine object with an id, or undefined if the machine is not found.
  *
  * @see {@linkcode ChildS} for the structure of the machine object.
@@ -27,14 +28,14 @@ export type ToMachine_F = <
  * @see {@linkcode EventsMap} for the events map
  * @see {@linkcode PromiseeMap} for the promisees map
  */
-export const toMachine: ToMachine_F = (machine, machines) => {
-  if (isDescriber(machine)) {
-    const out = machines?.[machine.name];
-    if (!out) return undefined;
-    return { ...out, id: machine.name };
+export const toEmitter: ToEmitter_F = (_emitter, emitters) => {
+  if (isDescriber(_emitter)) {
+    const emitter = emitters?.[_emitter.name];
+    if (!emitter) return undefined;
+    return { emitter, id: _emitter.name };
   }
 
-  const out = machines?.[machine];
-  if (!out) return undefined;
-  return { ...out, id: machine };
+  const emitter = emitters?.[_emitter];
+  if (!emitter) return undefined;
+  return { emitter, id: _emitter };
 };

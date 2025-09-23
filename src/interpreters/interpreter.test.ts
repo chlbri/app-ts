@@ -988,7 +988,9 @@ describe('Interpreter', () => {
           initials: toFunction({ context: { iterator: 0 }, pContext: {} }),
           subscribers: {
             events: EVENTS_FULL,
-            contexts: {},
+            contexts: {
+              iterator: 'iterator',
+            },
           },
         });
       });
@@ -1001,7 +1003,7 @@ describe('Interpreter', () => {
             expect(log).toBeCalledTimes(strings.length);
           });
 
-          test('#02 => Log is called "85" times', () => {
+          test('#02 => Log is called "75" times', () => {
             expect(log).toBeCalledTimes(75);
           });
         });

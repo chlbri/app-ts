@@ -23,6 +23,7 @@ import type {
 } from '#transitions';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
+import type { Emitter } from 'src/emitters/types';
 import type {
   Describer,
   FnMap,
@@ -51,6 +52,13 @@ export type ConfigNode = NodeConfigCompound | NodeConfigParallel;
 export type MachineConfig = Describer | string;
 
 /**
+ * Type representing a describer for a emitter.
+ *
+ * @see {@linkcode Describer} for more details.
+ */
+export type EmitterConfig = Describer | string;
+
+/**
  * Type representing the main JSON node config of a state machine.
  *
  * @see {@linkcode ConfigNode} for more details.
@@ -59,6 +67,7 @@ export type MachineConfig = Describer | string;
  */
 export type Config = ConfigNode & {
   readonly machines?: SingleOrArrayL<MachineConfig>;
+  readonly emitters?: SingleOrArrayL<EmitterConfig>;
   readonly strict?: boolean;
 };
 
@@ -378,6 +387,20 @@ export type GetMachineKeysFromConfig<C extends Config> = FromActionConfig<
 >;
 
 /**
+ * Get all Emitters from a machine config.
+ *
+ * @template : {@linkcode Config} [C] - type of the machine config
+ * @returns A type representing all Emitters from the machine config.
+ *
+ * @see {@linkcode ReduceArray} for reducing arrays to a single type.
+ * @see {@linkcode FromActionConfig}.
+ * @see {@linkcode types.NotUndefined}
+ */
+export type GetEmitterKeysFromConfig<C extends Config> = FromActionConfig<
+  ReduceArray<types.NotUndefined<C['emitters']>>
+>;
+
+/**
  * Second version decomposition of a type.
  */
 export type Decompose2<T> = T extends types.Ru
@@ -571,6 +594,25 @@ export type GetMachinesFromConfig<
 > = Record<GetMachineKeysFromConfig<C>, ChildS<E, P, Pc>>;
 
 /**
+ * Type representing a record of emitters from a machine config,
+ * where each key is a machine name and the value is a {@linkcode ChildS} type.
+ *
+ * @template : {@linkcode Config} [C] - type of the machine config
+ * @template : {@linkcode EventsMap} [E] - type of the events map
+ * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template Pc - type of the private context
+ *
+ * @see {@linkcode GetMachineKeysFromConfig} for extracting machine keys from the config.
+ */
+export type GetEmittersFromConfig<
+  C extends Config,
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+> = Record<GetEmitterKeysFromConfig<C>, Emitter<E, P, Pc, Tc>>;
+
+/**
  * The big one !
  *
  * Type representing the options for a machine configuration.
@@ -612,6 +654,7 @@ export type MachineOptions<
   promises?: Partial<GetSrcFromFlat<Flat, E, P, Pc, Tc>>;
   delays?: Partial<GetDelaysFromFlat<Flat, E, P, Pc, Tc>>;
   machines?: Partial<GetMachinesFromConfig<C, E, P, Pc>>;
+  emitters?: Partial<GetEmittersFromConfig<C, E, P, Pc, Tc>>;
 };
 
 /**
@@ -909,7 +952,12 @@ export type SimpleMachineOptions<
  */
 export type SimpleMachineOptions2 = Partial<
   Record<
-    'actions' | 'predicates' | 'promises' | 'delays' | 'machines',
+    | 'actions'
+    | 'predicates'
+    | 'promises'
+    | 'delays'
+    | 'machines'
+    | 'emitters',
     any
   >
 >;
