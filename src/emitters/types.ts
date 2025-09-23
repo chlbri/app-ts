@@ -9,12 +9,16 @@ export type Emitter<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
-> = (
-  args: StateExtended<Pc, Tc, ToEvents<E, P>> & {
-    merge: DirectMerge_F<Pc, Tc>;
-    send: (event: EventArg<E>) => void;
-  },
-) => void;
+> = (args: {
+  merge: DirectMerge_F<Pc, Tc>;
+  send: (event: EventArg<E>) => void;
+  selector: <T>(
+    func: (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => T,
+  ) => () => T;
+}) => {
+  start: () => void;
+  stop: () => void;
+};
 
 export type EmitterMap<
   E extends EventsMap = EventsMap,

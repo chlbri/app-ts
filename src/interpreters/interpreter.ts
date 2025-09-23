@@ -125,7 +125,6 @@ import type {
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
 
-import type { Emitter } from 'src/emitters/types';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
@@ -291,7 +290,21 @@ export class Interpreter<
 
   get #childrenEmitters() {
     const emitters = toArray.typed(this.#machine.config.emitters);
-    return emitters.map(this.toEmitter).filter(isDefined);
+    return emitters
+      .map(this.toEmitter)
+      .filter(isDefined)
+      .map(({ id, emitter }) => {
+        const args: Parameters<typeof emitter>[0] = {
+          selector: func => {
+            return () => func(this.#cloneState);
+          },
+          merge: this.#mergeContexts,
+          send: this.send,
+        };
+
+        const instance = emitter(args);
+        return { id, instance };
+      });
   }
 
   /**
@@ -368,6 +381,7 @@ export class Interpreter<
     };
 
     this.#throwing();
+    this.#startEmitters();
   }
 
   /**
@@ -678,11 +692,11 @@ export class Interpreter<
    */
   start = () => {
     this.#throwing();
-    this.#flush();
     this.#startStatus();
+    this.#flush();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#performChildMachines();
-    this.#performEmitters();
+    // this.#performEmitters();
     this.#throwing();
 
     return this._next();
@@ -1345,8 +1359,17 @@ export class Interpreter<
     });
   };
 
-  #performEmitters = () =>
-    this.#childrenEmitters.forEach(this.#reduceEmitter);
+  #startEmitters = () => {
+    this.#childrenEmitters
+      .map(({ instance }) => instance)
+      .forEach(this.#start);
+  };
+
+  #stopEmitters = () => {
+    this.#childrenEmitters
+      .map(({ instance }) => instance)
+      .forEach(this.#stop);
+  };
 
   /**
    * Get all brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
@@ -1509,6 +1532,7 @@ export class Interpreter<
     this.#makeBusy();
     this.#subscribers.forEach(this.#close);
     this.#childrenServices.forEach(this.#pause);
+    this.#stopEmitters();
     this.#timeoutActions.forEach(this.#pause);
     this.#setStatus('paused');
   };
@@ -1520,6 +1544,7 @@ export class Interpreter<
       this.#subscribers.forEach(this.#open);
       this.#timeoutActions.forEach(this.#resume);
       this.#childrenServices.forEach(this.#resume);
+      this.#startEmitters();
       this.#makeWork();
     }
   };
@@ -2039,26 +2064,6 @@ export class Interpreter<
    */
   #sendTo = <T extends EventObject>(to: string, event: T) => {
     return this.#childrenServices.find(({ id }) => id === to)?.send(event);
-  };
-
-  #reduceEmitter = ({
-    id,
-    emitter,
-  }: {
-    id: string;
-    emitter: Emitter<E, P, Pc, Tc>;
-  }) => {
-    const find = this.#childrenEmitters.find(f => f.id === id);
-    const args = {
-      ...this.#cloneState,
-      merge: this.#mergeContexts,
-      send: this.send,
-    };
-
-    if (find) return find.emitter(args);
-
-    this.#childrenEmitters.push({ id, emitter });
-    return emitter(args);
   };
 
   /**
