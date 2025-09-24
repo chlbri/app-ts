@@ -1,9 +1,9 @@
-import { createPausable } from '#emitters';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 import { interval } from 'rxjs/internal/observable/interval';
 import { map } from 'rxjs/internal/operators/map';
 import { take } from 'rxjs/internal/operators/take';
+import { createPausable } from './pausable';
 
 export const WAITERS = {
   short: 200,

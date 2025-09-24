@@ -1,5 +1,5 @@
 import { interval, map } from 'rxjs';
-import { createPausable } from '#emitters';
+import { createPausable } from './pausable';
 
 const { start, resume, pause, stop } = createPausable(
   interval(100).pipe(map(v => v + 1)),
