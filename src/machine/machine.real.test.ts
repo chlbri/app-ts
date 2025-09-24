@@ -1,8 +1,9 @@
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
+import type { Keys, SingleOrArray } from '#bemedev/globals/types';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { type StateValue } from '#states';
 import { typings } from '#utils';
-import { castings, type types } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { __tsSchema } from './machine.real.gen';
 
@@ -129,19 +130,19 @@ describe('REAL LIFE TESTS', () => {
     const useSend = (event: SE, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-      return castings.arrays.tupleOf(invite, () => service.send(event));
+      return tupleOf(invite, () => service.send(event));
     };
 
     const useIterator = (num: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service.state.context).toBe(num);
       });
     };
 
     const useValue = (value: StateValue, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => value match`;
-      return castings.arrays.tupleOf(invite, () => {
+      return tupleOf(invite, () => {
         expect(service.state.value).toEqual(value);
       });
     };
@@ -348,19 +349,19 @@ describe('REAL LIFE TESTS', () => {
     const useSend = (event: SE, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-      return castings.arrays.tupleOf(invite, () => service.send(event));
+      return tupleOf(invite, () => service.send(event));
     };
 
     const useIterator = (num: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service.state.context).toBe(num);
       });
     };
 
     const useValue = (value: StateValue, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => values matchs`;
-      return castings.arrays.tupleOf(invite, () => {
+      return tupleOf(invite, () => {
         expect(service.state.value).toEqual(value);
       });
     };
@@ -926,7 +927,7 @@ describe('REAL LIFE TESTS', () => {
     type CSVDataDeep = string | number | (string | number)[] | CsvDataMap;
 
     interface CsvDataMap {
-      [key: types.Keys]: CSVDataDeep;
+      [key: Keys]: CSVDataDeep;
     }
 
     type Lang = 'en' | 'es' | 'fr';
@@ -1022,7 +1023,7 @@ describe('REAL LIFE TESTS', () => {
         context: typings.partial({
           lang: typings.custom<Lang>(),
           fields: [typings.custom<Field>()],
-          responses: [typings.custom<types.SingleOrArray<string>>()],
+          responses: [typings.custom<SingleOrArray<string>>()],
           states: typings.partial({
             fields: typings.custom<State>(),
             values: typings.custom<State>(),
@@ -1154,21 +1155,21 @@ describe('REAL LIFE TESTS', () => {
     const useSend = (event: SE, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-      return castings.arrays.tupleOf(invite, () => service.send(event));
+      return tupleOf(invite, () => service.send(event));
     };
 
     const useWaiter = createFakeWaiter.withDefaultDelay(vi, 500);
 
     const useLang = (lang: Lang, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Language should be ${lang}`;
-      return castings.arrays.tupleOf(invite, () => {
+      return tupleOf(invite, () => {
         expect(service.select('lang')).toEqual(lang);
       });
     };
 
     const useValue = (value: StateValue, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => value match`;
-      return castings.arrays.tupleOf(invite, () => {
+      return tupleOf(invite, () => {
         expect(service.state.value).toEqual(value);
       });
     };

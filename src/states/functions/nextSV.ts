@@ -1,3 +1,6 @@
+import _any from '#bemedev/features/common/castings/any';
+import isDefined from '#bemedev/features/common/castings/is/defined';
+import trueObject from '#bemedev/features/objects/castings/trueObject';
 import { DEFAULT_DELIMITER } from '#constants';
 import {
   deleteFirst,
@@ -6,7 +9,6 @@ import {
   replaceAll,
 } from '#utils';
 import { decompose, decomposeKeys, recompose } from '@bemedev/decompose';
-import { castings } from '@bemedev/types';
 import { isString } from '~types';
 import type { StateValue } from '../types';
 
@@ -24,7 +26,7 @@ export type NextStateValue_F = <T extends StateValue>(
  *
  * @see {@linkcode NextStateValue_F} for more type details of this function.
  * @see {@linkcode isStringEmpty} for checking if a string is empty
- * @see {@linkcode castings} for checking if a value is defined
+
  * @see {@linkcode isString} for checking if a value is a string
  * @see {@linkcode decompose} for decomposing objects into key-value pairs
  * @see {@linkcode recompose} for recomposing key-value pairs into an object
@@ -38,7 +40,7 @@ export const nextSV: NextStateValue_F = (from, target) => {
   const isFromEmpty = isStringEmpty(from);
   if (isFromEmpty) return {};
 
-  const isTargetDefined = castings.commons.isDefined(target);
+  const isTargetDefined = isDefined(target);
   if (!isTargetDefined) return from;
 
   const targetIsEmpty = isStringEmpty(target);
@@ -64,8 +66,8 @@ export const nextSV: NextStateValue_F = (from, target) => {
   const check4 = keys.length === 0;
   if (check4) return from;
 
-  const decomposed = castings.commons.any(
-    decompose(castings.objects.trueObject.forceCast(from), {
+  const decomposed = _any(
+    decompose(trueObject.forceCast(from), {
       start: false,
       object: 'key',
     }),

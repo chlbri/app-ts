@@ -1,14 +1,19 @@
 import type { Action, ActionConfig, FromActionConfig } from '#actions';
+import type {
+  Keys,
+  PrimitiveObject,
+  UnionToIntersection,
+} from '#bemedev/globals/types';
+import { EmitterConfig } from '#emitters';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
+import { MachineConfig } from '#machines';
 import type { Transitions, TransitionsConfig } from '#transitions';
-import type { types } from '@bemedev/types';
 import type {
   Identitfy,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
-  SingleOrArrayR,
 } from '~types';
 
 export type StateType = 'atomic' | 'compound' | 'parallel';
@@ -64,10 +69,12 @@ export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T
 
 export type BaseConfig = {
   readonly description?: string;
-  readonly entry?: SingleOrArrayR<ActionConfig>;
-  readonly exit?: SingleOrArrayR<ActionConfig>;
-  readonly tags?: SingleOrArrayR<string>;
+  readonly entry?: SingleOrArrayL<ActionConfig>;
+  readonly exit?: SingleOrArrayL<ActionConfig>;
+  readonly tags?: SingleOrArrayL<string>;
   readonly activities?: ActivityConfig;
+  readonly emitters?: RecordS<EmitterConfig>;
+  readonly machines?: RecordS<MachineConfig>;
 };
 
 export type CommonNodeConfig<Paths extends string = string> = BaseConfig &
@@ -154,22 +161,22 @@ type FlatMapNodeConfig<
 export type FlatMapN<
   T extends NodeConfig = NodeConfig,
   withChildren extends boolean = true,
-> = types.UnionToIntersection<FlatMapNodeConfig<T, withChildren>> & {
+> = UnionToIntersection<FlatMapNodeConfig<T, withChildren>> & {
   readonly '/': T;
 };
 // #endregion
 
 type AlwaysEnd = `${string}.always` | `${string}.always.[${number}]`;
 
-export type EndWithAlways<T extends types.Keys> = Extract<T, AlwaysEnd>;
+export type EndWithAlways<T extends Keys> = Extract<T, AlwaysEnd>;
 
-export type EndwA<T extends types.Keys> = EndWithAlways<T>;
+export type EndwA<T extends Keys> = EndWithAlways<T>;
 
 export type Node<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   id?: string;
   description?: string;

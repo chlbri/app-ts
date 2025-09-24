@@ -1,5 +1,5 @@
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { machine1, machine2 } from '#fixturesData';
-import type { types } from '@bemedev/types';
 import type { SingleOrArrayL } from '~types';
 import type { EVENTS_FULL } from './constants';
 import type {
@@ -18,10 +18,10 @@ expectTypeOf<TT2>().toEqualTypeOf<
 
 type GEFC2 = GetEventsFromMachine<typeof machine2>;
 expectTypeOf<GEFC2>().toEqualTypeOf<{
-  NEXT: types.PrimitiveObject;
-  FINISH: types.PrimitiveObject;
-  FETCH: types.PrimitiveObject;
-  WRITE: types.PrimitiveObject;
+  NEXT: PrimitiveObject;
+  FINISH: PrimitiveObject;
+  FETCH: PrimitiveObject;
+  WRITE: PrimitiveObject;
 }>();
 
 type Sub1 = SubscriberType<

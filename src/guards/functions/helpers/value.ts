@@ -1,6 +1,6 @@
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
 import { getByKey } from '#machines';
-import type { types } from '@bemedev/types';
 import type { FnR } from '~types';
 import type { DefinedValue } from '../../types';
 
@@ -8,7 +8,7 @@ export type IsValueS_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   path: DefinedValue<Pc, Tc>,
   ...values: any[]
@@ -37,7 +37,7 @@ export type IsValueS_F = <
  *
  * @see {@linkcode EventsMap} for the type of the events map.
  * @see {@linkcode PromiseeMap} for the type of the promisees map.
- * @see {@linkcode types.PrimitiveObject} for the type of the context.
+ * @see {@linkcode PrimitiveObject} for the type of the context.
  * @see {@linkcode getByKey} for retrieving values by key.
  *  @see {@linkcode t} for type checking and validation.
  *
@@ -96,7 +96,7 @@ export const isValue: IsValueS_F = (path, ...values) => {
  *
  * @see {@linkcode EventsMap} for the type of the events map.
  * @see {@linkcode PromiseeMap} for the type of the promisees map.
- * @see {@linkcode types.PrimitiveObject} for the type of the context.
+ * @see {@linkcode PrimitiveObject} for the type of the context.
  * @see {@linkcode getByKey} for retrieving values by key.
  * @see {@linkcode t} for type checking and validation.
  *

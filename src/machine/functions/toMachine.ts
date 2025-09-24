@@ -1,17 +1,16 @@
-import type { ActionConfig } from '#actions';
+import { reduceAction, type ActionConfig } from '#actions';
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
-import type { types } from '@bemedev/types';
-import { isDescriber } from '~types';
 import type { ChildS, MachineMap } from '../types';
 
 export type ToMachine_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   machine: ActionConfig,
   machines?: MachineMap<E, P, Tc>,
-) => (ChildS<E, P, Tc> & { id: string }) | undefined;
+) => ChildS<E, P, Tc> | undefined;
 
 /**
  * Converts a machine configuration to a machine object with an id.
@@ -24,18 +23,13 @@ export type ToMachine_F = <
  *
  * @see {@linkcode ChildS} for the structure of the machine object.
  * @see {@linkcode isDescriber} to check if the machine is a describer
- * @see {@linkcode types.PrimitiveObject} for the type of the context
  * @see {@linkcode EventsMap} for the events map
  * @see {@linkcode PromiseeMap} for the promisees map
  */
 export const toMachine: ToMachine_F = (machine, machines) => {
-  if (isDescriber(machine)) {
-    const out = machines?.[machine.name];
-    if (!out) return undefined;
-    return { ...out, id: machine.name };
-  }
+  const key = reduceAction(machine);
 
-  const out = machines?.[machine];
+  const out = machines?.[key];
   if (!out) return undefined;
-  return { ...out, id: machine };
+  return out;
 };

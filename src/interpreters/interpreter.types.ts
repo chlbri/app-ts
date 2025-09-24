@@ -4,6 +4,12 @@ import type {
   ActionConfig,
   ActionResult,
 } from '#actions';
+import type {
+  Equals,
+  NOmit,
+  Primitive,
+  PrimitiveObject,
+} from '#bemedev/globals/types';
 import type { Delay } from '#delays';
 import type {
   AllEvent,
@@ -40,7 +46,6 @@ import type {
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
-import type { types } from '@bemedev/types';
 import type { FnR } from '~types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
@@ -64,15 +69,13 @@ export type InterpreterOptions<
 > = {
   mode?: Mode;
   exact?: boolean;
-} & (types.Equals<P, Partial<P>> extends true
+} & (Equals<P, Partial<P>> extends true
   ? { pContext?: P }
   : { pContext: P }) &
-  (types.Equals<C, Partial<C>> extends true
-    ? { context?: C }
-    : { context: C });
+  (Equals<C, Partial<C>> extends true ? { context?: C } : { context: C });
 
 export type InterpretArgs<M extends AnyMachine> =
-  types.Equals<
+  Equals<
     InterpreterOptions<M>,
     Partial<InterpreterOptions<M>>
   > extends true
@@ -87,56 +90,56 @@ export type ToAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (action?: ActionConfig) => Action2<E, P, Pc, Tc>;
 
 export type PerformActionLater_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (action: Action2<E, P, Pc, Tc>) => ActionResult<Pc, Tc>;
 
 export type PerformAction_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (action: Action2<E, P, Pc, Tc>) => void;
 
 export type ToPredicate_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (predicate?: GuardConfig) => PredicateS2<E, P, Pc, Tc>;
 
 export type PerformPredicate_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (predicate: PredicateS2<E, P, Pc, Tc>) => boolean;
 
 export type ToDelay_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (delay?: string) => FnR<E, P, Pc, Tc, number> | undefined;
 
 export type PerformDelay_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (delay: FnR<E, P, Pc, Tc, number>) => number;
 
 export type PerformPromise_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (promise: PromiseFunction2<E, P, Pc, Tc>) => Promise<any>;
 
 export type ExecuteActivities_F = (
@@ -151,7 +154,7 @@ export type PerformAfter_F = (
 
 export type TransitionAfterResult<
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > =
   | {
       result: ActionResult<Pc, Tc>;
@@ -175,7 +178,7 @@ export type ToPromiseSrc_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (promise: string) => PromiseFunction2<E, P, Pc, Tc>;
 
 export type PerformPromisee_F<
@@ -188,7 +191,7 @@ export type PerformPromisee_F<
 
 export type Contexts<
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   pContext?: Pc;
   context?: Tc;
@@ -204,7 +207,7 @@ export type PerformTransitions_F = (
 
 export type SleepContexts_F = <
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   ms?: number,
 ) => Promise<ActionResult<Pc, Tc>>;
@@ -215,7 +218,7 @@ export type _Send_F<
 > = (event: ToEventsR<E, P>) => NodeConfig | undefined;
 
 export type State<
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   E extends AllEvent = AllEvent,
 > = {
   context: Tc;
@@ -226,7 +229,7 @@ export type State<
 };
 
 export type StateP<
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   E = any,
 > = {
   context: Tc;
@@ -238,7 +241,7 @@ export type StateP<
 
 export type StateExtended<
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   E extends AllEvent = AllEvent,
 > = {
   pContext: Pc;
@@ -246,7 +249,7 @@ export type StateExtended<
 
 export type StatePextended<
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   E = any,
 > = {
   pContext: Pc;
@@ -255,7 +258,7 @@ export type StatePextended<
 type _FnMapR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
   TT extends ToEventsR<E, P> = ToEventsR<E, P>,
 > = {
@@ -269,7 +272,7 @@ type _FnMapR<
 export type FnSubReduced<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > =
   | ((state: State<Tc, ToEvents<E, P>>) => R)
@@ -278,7 +281,7 @@ export type FnSubReduced<
 export type AddSubscriber_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (
   subscriber: FnSubReduced<E, P, Tc>,
   options?: SubscriberOptions<Tc>,
@@ -287,10 +290,10 @@ export type AddSubscriber_F<
 export type Subscribe_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (subscriber: FnSubReduced<E, P, Tc>) => SubscriberClass<E, P, Tc>;
 
-export type Selector_F<T = any> = T extends types.Primitive
+export type Selector_F<T = any> = T extends Primitive
   ? undefined
   : <
       D extends Decompose<Required<T>, { start: false; object: 'both' }>,
@@ -304,7 +307,7 @@ export interface AnyInterpreter<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > {
   mode: Mode;
   event: ToEvents<E, P>;
@@ -341,10 +344,11 @@ export interface AnyInterpreter<
   toDelayFn: (delay: string) => Delay<E, P, Pc, Tc> | undefined;
   toMachine: (machine: ActionConfig) => ChildS<E, P, Pc> | undefined;
   id?: string;
+  from?: string;
 }
 
 export type CreateInterval2_F = (
-  config: types.NOmit<IntervalParams, 'exact'>,
+  config: NOmit<IntervalParams, 'exact'>,
 ) => Interval2;
 
 export type Subcription = { unsubscribe: () => void };

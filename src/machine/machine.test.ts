@@ -1,9 +1,10 @@
+import { reduceAction } from '#actions';
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { DELAY, fakeDB, machine2 } from '#fixturesData';
 import { interpret } from '#interpreters';
 import { createMachine, getEntries } from '#machine';
 import type { StateValue } from '#states';
 import { nothing } from '#utils';
-import { castings } from '@bemedev/types';
 import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
 import path from 'path';
@@ -22,7 +23,11 @@ describe('machine coverage', () => {
 
   describe('#01 => Integration', () => {
     const TEXT = 'Activities Integration Test from perform';
-
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    beforeAll(() => {
+      console.time(TEXT);
+      log.mockClear();
+    });
     describe(TEXT, () => {
       // #region Config
 
@@ -48,12 +53,6 @@ describe('machine coverage', () => {
         },
       );
 
-      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      beforeAll(() => {
-        console.time(TEXT);
-      });
-
       type SE = Parameters<typeof service.send>[0];
 
       const INPUT = 'a';
@@ -67,13 +66,13 @@ describe('machine coverage', () => {
       const useSend = (event: SE, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-        return castings.arrays.tupleOf(invite, () => service.send(event));
+        return tupleOf(invite, () => service.send(event));
       };
 
       const useWrite = (value: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
 
-        return castings.arrays.tupleOf(invite, () =>
+        return tupleOf(invite, () =>
           service.send({ type: 'WRITE', payload: { value } }),
         );
       };
@@ -81,35 +80,33 @@ describe('machine coverage', () => {
       const useWaiter = (times: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
 
-        return castings.arrays.tupleOf(invite, () =>
-          fakeWaiter(DELAY, times),
-        );
+        return tupleOf(invite, () => fakeWaiter(DELAY, times));
       };
 
       const useState = (state: StateValue, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Current state is "${state}"`;
-        return castings.arrays.tupleOf(invite, () => {
+        return tupleOf(invite, () => {
           expect(service.state.value).toStrictEqual(state);
         });
       };
 
       const useIterator = (num: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-        return castings.arrays.tupleOf(invite, async () => {
+        return tupleOf(invite, async () => {
           expect(service.select('iterator')).toBe(num);
         });
       };
 
       const useIteratorC = (num: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => private iterator is "${num}"`;
-        return castings.arrays.tupleOf(invite, async () => {
+        return tupleOf(invite, async () => {
           expect(service._pSelect('iterator')).toBe(num);
         });
       };
 
       const useInput = (input: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
-        return castings.arrays.tupleOf(invite, async () => {
+        return tupleOf(invite, async () => {
           expect(service.context.input).toBe(input);
         });
       };
@@ -133,7 +130,7 @@ describe('machine coverage', () => {
           test(inviteStrict, strict);
         };
 
-        return castings.arrays.tupleOf(invite, func);
+        return tupleOf(invite, func);
       };
 
       const useConsole = (
@@ -160,7 +157,7 @@ describe('machine coverage', () => {
           test(inviteStrict, strict);
         };
 
-        return castings.arrays.tupleOf(invite, func);
+        return tupleOf(invite, func);
       };
       // #endregion
 
@@ -547,7 +544,7 @@ describe('machine coverage', () => {
   describe('#03 => Getters', () => {
     test('#01 => config', () => {
       const expected = {
-        machines: 'machine1',
+        machines: { machine1: 'machine1' },
         initial: 'idle',
         states: {
           idle: {
@@ -640,7 +637,7 @@ describe('machine coverage', () => {
     test('#02 => flat', () => {
       const expected = {
         '/': {
-          machines: 'machine1',
+          machines: { machine1: 'machine1' },
           initial: 'idle',
           states: {
             idle: {
@@ -1079,39 +1076,83 @@ describe('machine coverage', () => {
   });
 
   describe('#06 => machine id is not defined', () => {
-    const idM = 'machineNotDefined';
-    const machineT = createMachine(
-      {
-        machines: idM,
-        initial: 'idle',
-        states: {
-          idle: {},
+    describe('#01 => string', () => {
+      const idM = 'machineNotDefined';
+      const machineT = createMachine(
+        {
+          machines: { idM },
+          initial: 'idle',
+          states: {
+            idle: {},
+          },
         },
-      },
-      defaultT,
-      // defaultI,
-    );
+        defaultT,
+        // defaultI,
+      );
 
-    const service = interpret(machineT, defaultC);
+      const service = interpret(machineT, defaultC);
 
-    test('#00 => start', service.start.bind(service));
+      test('#00 => start', service.start.bind(service));
 
-    describe('#01 => log', () => {
-      test('#01 => errors is empty', () => {
-        const actual = service._errorsCollector;
-        expect(actual).toHaveLength(0);
-      });
-
-      describe('#02 => It has some watnings', () => {
-        test('#01 => warnings is not empty', () => {
-          const actual = service._warningsCollector;
-          expect(actual).not.toHaveLength(0);
-          expect(actual).toHaveLength(1);
+      describe('#01 => log', () => {
+        test('#01 => errors is empty', () => {
+          const actual = service._errorsCollector;
+          expect(actual).toHaveLength(0);
         });
 
-        test(`#02 => contains warning for machine : "${idM}"`, () => {
-          const expected = `Machine (${idM}) is not defined`;
-          expect(service._warningsCollector).toContain(expected);
+        describe('#02 => It has some watnings', () => {
+          test('#01 => warnings is not empty', () => {
+            const actual = service._warningsCollector;
+            expect(actual).not.toHaveLength(0);
+            expect(actual).toHaveLength(1);
+          });
+
+          test(`#02 => contains warning for machine : "${idM}"`, () => {
+            const expected = `Machine (${idM}) is not defined`;
+            expect(service._warningsCollector).toContain(expected);
+          });
+        });
+      });
+    });
+
+    describe('#01 => object', () => {
+      const idM = {
+        name: 'machineNotDefined',
+        description: 'Not defined',
+      };
+      const machineT = createMachine(
+        {
+          machines: { idM },
+          initial: 'idle',
+          states: {
+            idle: {},
+          },
+        },
+        defaultT,
+        // defaultI,
+      );
+
+      const service = interpret(machineT, defaultC);
+
+      test('#00 => start', service.start.bind(service));
+
+      describe('#01 => log', () => {
+        test('#01 => errors is empty', () => {
+          const actual = service._errorsCollector;
+          expect(actual).toHaveLength(0);
+        });
+
+        describe('#02 => It has some watnings', () => {
+          test('#01 => warnings is not empty', () => {
+            const actual = service._warningsCollector;
+            expect(actual).not.toHaveLength(0);
+            expect(actual).toHaveLength(1);
+          });
+
+          test(`#02 => contains warning for machine : "${reduceAction(idM)}"`, () => {
+            const expected = `Machine (${reduceAction(idM)}) is not defined`;
+            expect(service._warningsCollector).toContain(expected);
+          });
         });
       });
     });

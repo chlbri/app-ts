@@ -1,15 +1,14 @@
-import {
-  reduceAction,
-  toAction,
-  type ActionConfig,
-  type ActionResult,
-} from '#actions';
+import { reduceAction, toAction, type ActionConfig } from '#actions';
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
+import _any from '#bemedev/features/common/castings/any';
+import isPrimitive from '#bemedev/features/common/castings/primitive/is';
 import {
   DEFAULT_DELIMITER,
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MAX_TIME_PROMISE,
   DEFAULT_MIN_ACTIVITY_TIME,
 } from '#constants';
+
 import { toDelay } from '#delays';
 import {
   eventToType,
@@ -39,6 +38,7 @@ import {
   type Config,
   type ConfigFrom,
   type ContextFrom,
+  type DirectMerge_F,
   type EventsMapFrom,
   type ExtendedActionsParams,
   type GetEventsFromConfig,
@@ -96,7 +96,6 @@ import {
   type Timeout2,
 } from '@bemedev/interval2';
 import sleep from '@bemedev/sleep';
-import { castings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
 import { isDescriber, type RecordS } from '~types';
@@ -127,6 +126,19 @@ import type {
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
 
+import _unknown from '#bemedev/features/common/castings/_unknown';
+import type {
+  AllowedNames,
+  Fn,
+  PrimitiveObject,
+  SingleOrArray,
+} from '#bemedev/globals/types';
+import {
+  Emitter3,
+  toEmitter,
+  type Emitter2,
+  type EmitterConfig,
+} from '#emitters';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
@@ -137,8 +149,8 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
  * @template : type {@linkcode Config} [C] - The configuration type of the machine.
  * @template : [Pc] - The private context type, which can be any type.
  * @template : type {@linkcode types} [Tc] - The context type.
- * @template : type {@linkcode EventsMap} [E] - The events map type, which maps event names to their types.
- * @template : type {@linkcode PromiseeMap} [P] - The promisees map type, which maps promise names to their types.
+ * @template : type {@linkcode EventsMap} [E] - The events map type, which maps event names to their
+ * @template : type {@linkcode PromiseeMap} [P] - The promisees map type, which maps promise names to their
  * @template Mo : type {@linkcode SimpleMachineOptions2} - The machine options type, which includes various configurations for the machine. Default to {@linkcode MachineOptions}.
  *
  * @implements : {@linkcode AnyInterpreter}
@@ -156,7 +168,7 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
 export class Interpreter<
   const C extends Config = Config,
   Pc = any,
-  const Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  const Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
@@ -255,7 +267,18 @@ export class Interpreter<
   /**
    * All {@linkcode AnyInterpreter2} service subscribers of this {@linkcode Interpreter} service.
    */
-  #childrenServices: (AnyInterpreter2 & { id: string })[] = [];
+  #childrenServices: AnyInterpreter2[] = [];
+
+  #collectedEmitters: {
+    from: string;
+    id: string;
+    instance: {
+      start: () => void;
+      stop: () => void;
+      resume: () => void;
+      pause: () => void;
+    };
+  }[] = [];
 
   /**
    * Public getter of the service subscribers of this {@linkcode Interpreter} service.
@@ -278,23 +301,26 @@ export class Interpreter<
    */
   at = this.getChildAt;
 
-  /**
-   * Returns all child machines of this {@linkcode Interpreter}.
-   *
-   * @see {@linkcode toArray.typed} for converting the machines to an array.
-   * @see {@linkcode toMachine} for converting the machine config to a {@linkcode Machine}.
-   * @see {@linkcode isDefined} for filtering out undefined machines.
-   */
-  get #childrenMachines() {
-    const _machines = toArray.typed(this.#machine.config.machines);
-    return _machines.map(this.toMachine).filter(isDefined);
-  }
+  #reduceEmitter = ({ id, emitter, from }: Emitter2<E, P, Pc, Tc>) => {
+    const args: Parameters<typeof emitter>[0] = {
+      selector: func => {
+        return () => func(this.#cloneState);
+      },
+      merge: this.#mergeContexts,
+      send: this.send,
+    };
+
+    const instance = emitter(args);
+    return { id, instance, from };
+  };
 
   /**
    * The id of the current {@linkcode Interpreter} service.
    * Used for child machines identification.
    */
   id?: string;
+
+  from?: string;
 
   /**
    * The accessor of {@linkcode Mode} of this {@linkcode Interpreter} service
@@ -362,8 +388,11 @@ export class Interpreter<
       value: this.#value,
       tags: this.#config.tags,
     };
+    this.#collectEmitters();
+    this.#collectServices();
 
     this.#throwing();
+    this.#startEmitters();
   }
 
   /**
@@ -442,11 +471,9 @@ export class Interpreter<
 
     this.#node = this.#resolveNode(this.#config);
 
-    const configForFlat = castings.commons.unknown<NodeConfig>(
-      this.#config,
-    );
+    const configForFlat = _unknown<NodeConfig>(this.#config);
 
-    this.#flat = castings.commons.any(flatMap(configForFlat));
+    this.#flat = _any(flatMap(configForFlat));
   };
 
   /**
@@ -603,7 +630,7 @@ export class Interpreter<
    */
 
   get select(): Selector_F<Tc> {
-    const check = castings.commons.primitive.is(this.#state.context);
+    const check = isPrimitive(this.#state.context);
     if (check) return undefined as any;
     const out: any = (path: string) => getByKey(this.#state.context, path);
     return out;
@@ -624,7 +651,7 @@ export class Interpreter<
   get _pSelect(): Selector_F<Pc> {
     if (IS_TEST) {
       const pContext = this.#pContext;
-      const check = castings.commons.primitive.is(pContext);
+      const check = isPrimitive(pContext);
       if (check) return undefined as any;
       if (pContext) {
         const out: any = (path: string) => getByKey(pContext, path);
@@ -674,10 +701,11 @@ export class Interpreter<
    */
   start = () => {
     this.#throwing();
-    this.#flush();
     this.#startStatus();
+    this.#flush();
     this.#scheduler.initialize(this.#startInitialEntries);
-    this.#performChildMachines();
+    this.#currentServices.forEach(this.#start);
+    // this.#performEmitters();
     this.#throwing();
 
     return this._next();
@@ -713,6 +741,12 @@ export class Interpreter<
     this.#selfTransitionsCounter++;
     this.#pauseAllActivities();
     this.#performActivities();
+    this.#pauseEmitters(({ from }) => !this.#isInsideValue(from));
+    this.#childrenServices
+      .filter(({ from }) => !from || !this.#isInsideValue(from))
+      .forEach(this.#pause);
+    this.#currentServices.forEach(this.#resume);
+    this.#resumeEmitters();
     await this.#performSelfTransitions();
   };
 
@@ -746,7 +780,7 @@ export class Interpreter<
   };
 
   get #cloneState(): StateExtended<Pc, Tc, ToEvents<E, P>> {
-    const pContext = structuredClone(this.#pContext);
+    const pContext = cloneDeep(this.#pContext);
 
     return structuredClone({ pContext, ...this.#state });
   }
@@ -776,7 +810,7 @@ export class Interpreter<
 
   #performSendToAction = (sentEvent?: { to: string; event: any }) => {
     if (!sentEvent) return;
-    this.#sendTo(sentEvent.to, sentEvent.event);
+    return this.#sendTo(sentEvent.to, sentEvent.event);
   };
 
   #performResendAction = (resend?: EventArg<E>) => {
@@ -894,13 +928,6 @@ export class Interpreter<
     } else throw error;
   }
 
-  // get #contexts() {
-  //   return castings.commons<ActionResult<Pc, Tc>>({
-  //     pContext: cloneDeep(this.#pContext),
-  //     context: structuredClone(this.#context),
-  //   });
-  // }
-
   #performActions = (...actions: ActionConfig[]) => {
     actions
       .map(this.toActionFn)
@@ -951,11 +978,11 @@ export class Interpreter<
     });
   };
 
-  #mergeContexts = (result?: ActionResult<Pc, Tc>) => {
+  #mergeContexts: DirectMerge_F<Pc, Tc> = result => {
     this.#pContext = merge(this.#pContext, result?.pContext);
     const context = merge(this.#context, result?.context);
     this.#context = context;
-    this.#performStates({ context });
+    return this.#performStates({ context });
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
@@ -1134,7 +1161,7 @@ export class Interpreter<
               type: `${src}::${type}`,
               payload,
             };
-            this.#changeEvent(castings.commons.any(event));
+            this.#changeEvent(_any(event));
 
             const transitions = toArray.typed(
               type === 'then' ? then : _catch,
@@ -1311,6 +1338,90 @@ export class Interpreter<
     return entries;
   }
 
+  #collectServices = () => {
+    const entriesFlat = Object.entries(this.#machine.flat);
+    const entries: [
+      from: string,
+      ...machines: { id: string; machine: MachineConfig }[],
+    ][] = [];
+
+    entriesFlat.forEach(([from, node]) => {
+      const _machines = node.machines;
+      if (_machines) {
+        const machines = Object.entries(_machines).map(([id, machine]) => {
+          return { id, machine };
+        });
+        entries.push([from, ...machines]);
+      }
+    });
+
+    entries
+      .map(([from, ...machines]) => {
+        return machines.map(emitter => ({ ...emitter, from }));
+      })
+      .flat()
+      .map(({ id, machine, from }) => {
+        return { id, machine: this.toMachine(machine), from };
+      })
+      .filter(
+        (({ machine }) => !!machine) as (value: any) => value is {
+          id: string;
+          machine: ChildS<E, P, Pc>;
+          from: string;
+        },
+      )
+      .forEach(({ id, machine, from }) => {
+        this.#reduceChild<any>(machine, id, from);
+      });
+  };
+
+  get #currentServices() {
+    return this.#childrenServices.filter(
+      ({ from }) => !from || this.#isInsideValue(from),
+    );
+  }
+
+  #collectEmitters() {
+    const entriesFlat = Object.entries(this.#machine.flat);
+    const entries: [
+      from: string,
+      ...machines: { id: string; emitter: EmitterConfig }[],
+    ][] = [];
+
+    entriesFlat.forEach(([from, node]) => {
+      const _emitters = node.emitters;
+      if (_emitters) {
+        const emitters = Object.entries(_emitters).map(([id, emitter]) => {
+          return { id, emitter };
+        });
+        entries.push([from, ...emitters]);
+      }
+    });
+
+    const entries2 = entries
+      .map(([from, ...emitters]) => {
+        return emitters.map(emitter => ({ ...emitter, from }));
+      })
+      .flat()
+      .map(({ id, emitter, from }) => {
+        return { id, emitter: this.toEmitter(emitter), from };
+      })
+      .filter(
+        (({ emitter }) => !!emitter) as (
+          value: any,
+        ) => value is Emitter2<E, P, Pc, Tc>,
+      )
+      .map(this.#reduceEmitter);
+
+    return this.#collectedEmitters.push(...entries2);
+  }
+
+  get #currentEmitters() {
+    return this.#collectedEmitters.filter(({ from }) =>
+      this.#isInsideValue(from),
+    );
+  }
+
   get #currentActivities() {
     const collected = this.#collectedActivities.filter(([from]) =>
       this.#isInsideValue(from),
@@ -1330,14 +1441,43 @@ export class Interpreter<
     return this.#currentActivities?.forEach(this.#start);
   };
 
-  #performChildMachines = () => {
-    this.#childrenMachines.forEach(({ id, ...child }) => {
-      this.#reduceChild(castings.commons.any(child), id);
-    });
+  #startEmitters = () => {
+    this.#currentEmitters
+      .filter(({ id }) => !this.#startedEmitterIDs.has(id))
+      .forEach(({ instance, id }) => {
+        instance.start();
+        this.#startedEmitterIDs.add(id);
+      });
+  };
 
-    this.#childrenServices.forEach(child => {
-      child.start();
-    });
+  #resumeEmitters = () => {
+    this.#currentEmitters
+      .filter(({ id }) => !this.#startedEmitterIDs.has(id))
+      .forEach(({ instance, id }) => {
+        instance.resume();
+        this.#startedEmitterIDs.add(id);
+      });
+  };
+
+  #startedEmitterIDs: Set<string> = new Set();
+
+  #stopEmitters = () => {
+    this.#collectedEmitters
+      .filter(({ id }) => this.#startedEmitterIDs.has(id))
+      .forEach(({ instance, id }) => {
+        instance.stop();
+        this.#startedEmitterIDs.delete(id);
+      });
+  };
+
+  #pauseEmitters = (filter: (value: Emitter3) => boolean = () => true) => {
+    this.#collectedEmitters
+      .filter(({ id }) => this.#startedEmitterIDs.has(id))
+      .filter(filter)
+      .forEach(({ instance, id }) => {
+        instance.pause();
+        this.#startedEmitterIDs.delete(id);
+      });
   };
 
   /**
@@ -1473,9 +1613,9 @@ export class Interpreter<
    * @returns a function that calls the method on the value.
    *
    * @see {@linkcode AllowedNames} for more information about allowed names.
-   * @see {@linkcode Fn} for more information about function types.
+   * @see {@linkcode Fn} for more information about function
    */
-  #mapperFn = <T>(key: types.AllowedNames<T, types.Fn>) => {
+  #mapperFn = <T>(key: AllowedNames<T, Fn>) => {
     return (value: T) => {
       const fn = (value as any)[key];
       this.#schedule(fn);
@@ -1501,6 +1641,7 @@ export class Interpreter<
     this.#makeBusy();
     this.#subscribers.forEach(this.#close);
     this.#childrenServices.forEach(this.#pause);
+    this.#pauseEmitters();
     this.#timeoutActions.forEach(this.#pause);
     this.#setStatus('paused');
   };
@@ -1511,7 +1652,8 @@ export class Interpreter<
       this.#makeBusy();
       this.#subscribers.forEach(this.#open);
       this.#timeoutActions.forEach(this.#resume);
-      this.#childrenServices.forEach(this.#resume);
+      this.#currentServices.forEach(this.#resume);
+      this.#resumeEmitters();
       this.#makeWork();
     }
   };
@@ -1523,6 +1665,7 @@ export class Interpreter<
     this.#childrenServices.forEach(this.#stop);
     this._cachedIntervals.forEach(this.#dispose);
     this.#timeoutActions.forEach(this.#stop);
+    this.#stopEmitters();
     this.#scheduler.stop();
     this.#setStatus('stopped');
   };
@@ -1780,7 +1923,7 @@ export class Interpreter<
     const check = this.#cannotPerformEvents(_event);
     if (check) return;
 
-    this.#send(_event);
+    return this.#send(_event);
   };
 
   /**
@@ -1805,7 +1948,7 @@ export class Interpreter<
    *
    * //
    *
-   * @see {@linkcode Machine.valueToConfig} for more details.
+  //  * @see {@linkcode Machine.valueToConfig} for more details.
    *
    * //
    */
@@ -1830,10 +1973,8 @@ export class Interpreter<
       return { sv: this.#value, diffEntries: [], diffExits: [] };
     }
 
-    const next = castings.commons.unknown<NodeConfig>(
-      initialConfig(
-        castings.commons.unknown(this.proposedNextConfig(target)),
-      ),
+    const next = _unknown<NodeConfig>(
+      initialConfig(_unknown(this.proposedNextConfig(target))),
     );
     const flatNext = flatMap(next);
 
@@ -1884,6 +2025,7 @@ export class Interpreter<
   };
 
   #isInsideValue2 = (sv: StateValue, value: string) => {
+    if (value === DEFAULT_DELIMITER) return true;
     const values = decomposeSV(sv);
     const entry = value.substring(1);
     const state = replaceAll({
@@ -1976,9 +2118,21 @@ export class Interpreter<
     );
   };
 
+  toEmitter = (emitter: EmitterConfig) => {
+    const emitters = this.#machine.emitters;
+
+    return this.#returnWithWarning(
+      toEmitter<E, P, Pc, Tc>(emitter, emitters),
+      `Emitter (${reduceAction(emitter)}) is not defined`,
+    );
+  };
+
   protected interpretChild = interpret;
 
-  //TODO: Add a subscribeTo Method to subscribe to a already started service
+  subscribeFrom = (func: (send: (typeof this)['send']) => void) => {
+    return func(this.send);
+  };
+
   /**
    * Subscribes a child machine to the current machine.
    *
@@ -1987,7 +2141,7 @@ export class Interpreter<
    * @returns a {@linkcode SubscriberClass} result of the child machine subscription.
    *
    */
-  subscribeMachine = <T extends AnyMachine = AnyMachine>(
+  addChild = <T extends AnyMachine = AnyMachine>(
     id: string,
     { initials: _initials, ...rest }: ChildS2<E, P, Pc, Tc, T>,
   ) => {
@@ -1999,7 +2153,7 @@ export class Interpreter<
 
     const initials = reduced(this.#cloneState);
 
-    const child = castings.commons<ChildS<E, P, Pc, T>>({
+    const child = _unknown<ChildS<E, P, Pc, T>>({
       initials,
       ...rest,
     });
@@ -2014,12 +2168,9 @@ export class Interpreter<
    * @param : the {@linkcode EventObject} event to send to the child service.
    *
    * @see {@linkcode send} for sending events to the current service.
-   * @see {@linkcode castings} for type casting.
    */
   #sendTo = <T extends EventObject>(to: string, event: T) => {
-    const service = this.#childrenServices.find(({ id }) => id === to);
-
-    if (service) service.send(castings.commons(event));
+    return this.#childrenServices.find(({ id }) => id === to)?.send(event);
   };
 
   /**
@@ -2032,15 +2183,17 @@ export class Interpreter<
   #reduceChild = <T extends AnyMachine = AnyMachine>(
     { subscribers, machine, initials }: ChildS<E, P, Pc, T>,
     id: string,
+    from?: string,
   ) => {
-    let service = castings.commons<InterpreterFrom<T>>(
+    let service = _unknown<InterpreterFrom<T>>(
       this.#childrenServices.find(f => f.id === id),
     );
 
     if (!service) {
       service = this.interpretChild(machine, initials);
       service.id = id;
-      this.#childrenServices.push(castings.commons(service));
+      service.from = from;
+      this.#childrenServices.push(service);
     }
 
     const subscriber = service.subscribe(
@@ -2051,24 +2204,19 @@ export class Interpreter<
         _subscribers.forEach(({ contexts, events }) => {
           const type2 = eventToType(service.#event);
 
-          const checkEvents = reduceEvents(
-            castings.commons.any(events),
-            type,
-            type2,
-          );
+          const checkEvents = reduceEvents(_any(events), type, type2);
 
           const checkContexts = !isDefined(contexts);
           if (checkEvents) {
             if (checkContexts) {
-              const pContext = castings.commons.any(service.#context);
+              const pContext = _any(service.#context);
               const callback = () => this.#mergeContexts({ pContext });
               this.#schedule(callback);
             } else {
-              type _Contexts = types.SingleOrArray<
+              type _Contexts = SingleOrArray<
                 string | Record<string, string | string[]>
               >;
-              const _contexts =
-                castings.commons.unknown<_Contexts>(contexts);
+              const _contexts = _unknown<_Contexts>(contexts);
               const paths = toArray.typed(_contexts);
 
               paths.forEach(path => {
@@ -2080,7 +2228,7 @@ export class Interpreter<
                   const entries = Object.entries(path).map(
                     ([key, value]) => {
                       const paths = toArray.typed(value);
-                      return castings.arrays.tupleOf(key, paths);
+                      return tupleOf(key, paths);
                     },
                   );
 

@@ -1,8 +1,8 @@
+import _any from '#bemedev/features/common/castings/any';
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap, ToEvents } from '#events';
 import { nothing, toEventsMap } from '#utils';
 import type { TimerState } from '@bemedev/interval2';
-import type { types } from '@bemedev/types';
-import { castings } from '@bemedev/types';
 import equal from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
 import { isFunction } from '../types/primitives';
@@ -14,14 +14,14 @@ import type { FnSubReduced, State } from './interpreter.types';
  *
  * @template : {@linkcode EventsMap} [E] - Type of the events map
  * @template : {@linkcode PromiseeMap} [P] - Type of the promisees map
- * @template : {@linkcode types.PrimitiveObject} [Tc] - Type of the context
+ * @template : {@linkcode PrimitiveObject} [Tc] - Type of the context
  * @template : [R] - Type of the return value
  *
  */
 class SubscriberClass<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > {
   #subscriber: FnSubReduced<E, P, Tc, void>;
 
@@ -82,7 +82,7 @@ class SubscriberClass<
   get #reduceFn() {
     const sub = this.#subscriber;
     const check1 = isFunction(sub);
-    if (check1) return castings.commons.any(sub);
+    if (check1) return _any(sub);
 
     const map = toEventsMap(this.#eventsMap, this.#promiseesMap);
     const keys = Object.keys(map);
@@ -90,20 +90,20 @@ class SubscriberClass<
     return ({ event, ...rest }: State<Tc, ToEvents<E, P>>) => {
       const check5 = typeof event === 'string';
       const _else = sub.else ?? nothing;
-      if (check5) return castings.commons.any(_else({ event, ...rest }));
+      if (check5) return _any(_else({ event, ...rest }));
 
       const { type, payload } = event;
 
       for (const key of keys) {
         const check2 = type === key;
-        const func = castings.commons.any(sub)[key];
+        const func = _any(sub)[key];
         const check3 = !!func;
 
         const check4 = check2 && check3;
         if (check4) return func({ payload, ...rest });
       }
 
-      return castings.commons.any(_else({ event, ...rest }));
+      return _any(_else({ event, ...rest }));
     };
   }
 
@@ -153,7 +153,7 @@ class SubscriberClass<
 export type { SubscriberClass };
 
 export type SubscriberOptions<
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   id?: string;
   equals?: (a: State<Tc>, b: State<Tc>) => boolean;
@@ -162,7 +162,7 @@ export type SubscriberOptions<
 type CreateSubscriber_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   eventsMap: E,
   promiseesMap: P,

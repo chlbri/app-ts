@@ -1,5 +1,6 @@
+import _any from '#bemedev/features/common/castings/any';
+import type { DeepPartial } from '#bemedev/globals/types';
 import { RINIT_STATE } from '#machines';
-import { castings, type types } from '@bemedev/types';
 import { deepmergeCustom } from 'deepmerge-ts';
 import equal from 'fast-deep-equal';
 
@@ -47,16 +48,15 @@ const _merge = deepmergeCustom<
  * @see {@linkcode equal} for deep equality check
  * @see {@linkcode types} for partial type definition
  * @see {@linkcode NoInfer} for type inference utility
- * @see {@linkcode castings} for casting utilities
  */
 export const merge = <T = any>(
   value: T,
-  ...mergers: (types.DeepPartial<NoInfer<T>> | NoInfer<T> | undefined)[]
+  ...mergers: (DeepPartial<NoInfer<T>> | NoInfer<T> | undefined)[]
 ): T => {
   // #region Check performance
   const check1 = mergers.every(merger => equal(merger, value));
   if (check1) return value;
   // #endregion
 
-  return castings.commons.any(_merge(value, ...mergers));
+  return _any(_merge(value, ...mergers));
 };

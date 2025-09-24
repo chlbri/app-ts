@@ -1,4 +1,4 @@
-import type { types } from '@bemedev/types';
+import type { UnionToIntersection } from '#bemedev/globals/types';
 import type { STR } from './types';
 
 const action = {
@@ -70,7 +70,7 @@ const produceErrors = <const T extends STR[]>(...types: T) => {
       : never
     : never;
 
-  return out as types.UnionToIntersection<Out>;
+  return out as UnionToIntersection<Out>;
 };
 
 /**

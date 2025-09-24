@@ -1,4 +1,13 @@
 import type { Action } from '#actions';
+import _any from '#bemedev/features/common/castings/any';
+import commonT from '#bemedev/features/common/typings';
+import extract from '#bemedev/features/common/typings/extract';
+import byKey from '#bemedev/features/objects/typings/byKey';
+import keysOf from '#bemedev/features/objects/typings/keysOf';
+import type {
+  AllowedNames,
+  PrimitiveObject,
+} from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
 import type { Delay } from '#delays';
 import {
@@ -36,7 +45,8 @@ import {
 import { merge, reduceFnMap } from '#utils';
 import { partialCall, toArray } from '@bemedev/basifun';
 import { decompose, type Decompose } from '@bemedev/decompose';
-import { castings, typings, type types } from '@bemedev/types';
+
+import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
 import { RINIT_STATE } from './constants';
 import {
@@ -58,6 +68,7 @@ import type {
   Config,
   ConfigDef,
   GetEventsFromConfig,
+  GetMachineKeysFromFlat,
   GetPromiseeSrcFromConfig,
   MachineOptions,
   NoExtraKeysConfig,
@@ -72,7 +83,7 @@ import type {
  *
  * @template : {@linkcode Config} [C] - The configuration type of the machine.
  * @template Pc : The private context type of the machine.
- * @template : {@linkcode types.PrimitiveObject} [Pc] - The context type of the machine.
+ * @template : {@linkcode PrimitiveObject} [Pc] - The context type of the machine.
  * @template : {@linkcode GetEventsFromConfig}<{@linkcode C}> [E] - The events map type derived from the configuration.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map type derived from the configuration. Defaults to {@linkcode GetPromiseeSrcFromConfig}<{@linkcode C}>.
  * @template : {@linkcode SimpleMachineOptions2} [Mo] - The options type for the machine, which includes actions, predicates, delays, promises, and machines. Defaults to {@linkcode MachineOptions}<[{@linkcode C} , {@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} ]>.
@@ -83,7 +94,7 @@ import type {
 class Machine<
   const C extends Config = Config,
   const Pc = any,
-  const Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
@@ -159,7 +170,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __events() {
-    return typings.commons<ToEvents<E, P>>();
+    return _unknown<ToEvents<E, P>>();
   }
 
   /**
@@ -173,11 +184,11 @@ class Machine<
    * @see {@linkcode PromiseeMap}
    * @see {@linkcode P}
    * @see {@linkcode Pc}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __actionFn() {
-    return typings.commons<Action<E, P, Pc, Tc>>();
+    return _unknown<Action<E, P, Pc, Tc>>();
   }
 
   /**
@@ -201,11 +212,11 @@ class Machine<
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
    * @see {@linkcode Pc}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __actionParams() {
-    return typings.commons<{ pContext: Pc; context: Tc; map: E }>();
+    return _unknown<{ pContext: Pc; context: Tc; map: E }>();
   }
 
   /**
@@ -218,12 +229,12 @@ class Machine<
    * @see {@linkcode StateExtended}
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __stateExtended() {
-    return typings.commons<StateExtended<Pc, Tc, ToEvents<E, P>>>();
+    return _unknown<StateExtended<Pc, Tc, ToEvents<E, P>>>();
   }
 
   /**
@@ -236,12 +247,12 @@ class Machine<
    * @see {@linkcode State}
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __state() {
-    return typings.commons<State<Tc, ToEventsR<E, P>>>();
+    return _unknown<State<Tc, ToEventsR<E, P>>>();
   }
 
   /**
@@ -254,12 +265,12 @@ class Machine<
    * @see {@linkcode StateP}
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __stateP() {
-    return typings.commons<StateP<Tc, ToEventsR<E, P>['payload']>>();
+    return _unknown<StateP<Tc, ToEventsR<E, P>['payload']>>();
   }
 
   /**
@@ -272,28 +283,23 @@ class Machine<
    * @see {@linkcode StatePextended}
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __statePextended() {
-    return typings.commons<
-      StatePextended<Pc, Tc, ToEventsR<E, P>['payload']>
-    >();
+    return _unknown<StatePextended<Pc, Tc, ToEventsR<E, P>['payload']>>();
   }
 
   #typingsByKey = <
-    K extends types.AllowedNames<
-      AnyMachine<E, P, Pc, Tc>,
-      object | undefined
-    >,
+    K extends AllowedNames<AnyMachine<E, P, Pc, Tc>, object | undefined>,
   >(
     key: K,
   ) => {
-    const _this = typings.objects.dynamic(this);
-    const out1 = typings.objects.byKey(_this, key);
-    const out2 = typings.commons.extract(out1, typings.objects.type);
-    const out3 = typings.objects.keysOf.union(out2);
+    const _this = commonT.dynamic(this);
+    const out1 = byKey(_this, key);
+    const out2 = extract(out1, {} as object);
+    const out3 = keysOf.union(out2);
 
     return out3;
   };
@@ -322,11 +328,11 @@ class Machine<
    * @see {@linkcode PromiseeMap}
    * @see {@linkcode P}
    * @see {@linkcode Pc}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __predictate() {
-    return typings.commons<PredicateS<E, P, Pc, Tc>>();
+    return _unknown<PredicateS<E, P, Pc, Tc>>();
   }
 
   /**
@@ -353,11 +359,11 @@ class Machine<
    * @see {@linkcode PromiseeMap}
    * @see {@linkcode P}
    * @see {@linkcode Pc}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __delay() {
-    return typings.commons<Delay<E, P, Pc, Tc>>();
+    return _unknown<Delay<E, P, Pc, Tc>>();
   }
 
   /**
@@ -369,11 +375,11 @@ class Machine<
    *
    * @see {@linkcode DefinedValue}
    * @see {@linkcode Pc}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __definedValue() {
-    return typings.commons<DefinedValue<Pc, Tc>>();
+    return _unknown<DefinedValue<Pc, Tc>>();
   }
 
   /**
@@ -400,11 +406,11 @@ class Machine<
    * @see {@linkcode PromiseeMap}
    * @see {@linkcode P}
    * @see {@linkcode Pc}
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __promise() {
-    return typings.commons<PromiseFunction<E, P, Pc, Tc>>();
+    return _unknown<PromiseFunction<E, P, Pc, Tc>>();
   }
 
   /**
@@ -415,7 +421,9 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __childKey() {
-    return this.#typingsByKey('machines');
+    return undefined as unknown as GetMachineKeysFromFlat<
+      typeof this.flat
+    >;
   }
 
   /**
@@ -426,7 +434,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __machine() {
-    return typings.commons<this>();
+    return _unknown<this>();
   }
   // #endregion
 
@@ -441,6 +449,8 @@ class Machine<
 
   #machines?: Mo['machines'];
 
+  #emitters?: Mo['emitters'];
+
   /**
    * Initials {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
    */
@@ -448,7 +458,7 @@ class Machine<
   /**
    * Context for this {@linkcode Machine}.
    *
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   #context!: Tc;
@@ -483,7 +493,7 @@ class Machine<
       start: false,
       object: 'both',
     }) as Decompose<C, { sep: '.'; start: false; object: 'both' }>;
-    this.#flat = flatMap(config, true);
+    this.#flat = flatMap(this.#config, true);
     this.#initialConfig = initialConfig(this.#config);
     this.#getInitialKeys();
   }
@@ -512,7 +522,7 @@ class Machine<
   /**
    * The accessor of context for this {@linkcode Machine}.
    *
-   * @see {@linkcode types.PrimitiveObject}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get context() {
@@ -548,6 +558,10 @@ class Machine<
 
   get machines() {
     return this.#machines;
+  }
+
+  get emitters() {
+    return this.#emitters;
   }
 
   // #region Providers
@@ -598,6 +612,9 @@ class Machine<
   #addMachines = (machines?: Mo['machines']) =>
     (this.#machines = merge(this.#machines, machines));
 
+  #addEmitters = (emitters?: Mo['emitters']) =>
+    (this.#emitters = merge(this.#emitters, emitters));
+
   /**
    * Provides options for the machine.
    *
@@ -622,7 +639,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * @see {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   * @see {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
   get #elements(): Elements<C, E, P, Pc, Tc, Mo> {
     const config = structuredClone(this.#config);
@@ -635,6 +652,7 @@ class Machine<
     const machines = cloneDeep(this.#machines);
     const events = cloneDeep(this.#eventsMap);
     const promisees = cloneDeep(this.#promiseesMap);
+    const emitters = cloneDeep(this.#emitters);
 
     return {
       config,
@@ -647,6 +665,7 @@ class Machine<
       machines,
       events,
       promisees,
+      emitters,
     };
   }
 
@@ -661,7 +680,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
 
   /**
@@ -689,6 +708,7 @@ class Machine<
       machines,
       promisees,
       events,
+      emitters,
     } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, E, P, Mo>(config);
@@ -703,6 +723,7 @@ class Machine<
     out.#addDelays(delays);
     out.#addPromises(promises);
     out.#addMachines(machines);
+    out.#addEmitters(emitters);
 
     return out;
   };
@@ -741,7 +762,7 @@ class Machine<
    * @deprecated
    * @remarks used internally
    */
-  _provideContext = <T extends types.PrimitiveObject>(context: T) => {
+  _provideContext = <T extends PrimitiveObject>(context: T) => {
     const { pContext, config, events, promisees } = this.#elements;
 
     const out = new Machine<C, Pc, T, E, P>(config);
@@ -831,7 +852,7 @@ class Machine<
     const promises = this.#promises;
     const machines = this.#machines;
 
-    const out = castings.commons<Mo>({
+    const out = _unknown<Mo>({
       predicates,
       actions,
       delays,
@@ -849,7 +870,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isValue}
    */
@@ -862,7 +883,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isNotValue}
    */
@@ -875,7 +896,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isDefinedS}
    */
@@ -887,13 +908,15 @@ class Machine<
    * Function helper to check if a value is undefined or null
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isDefinedS}
    */
   get #isNotDefined() {
     return isNotDefinedS<E, P, Pc, Tc>;
   }
+
+  // #merge = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {};
 
   /**
    * Function helper to create a child service for this {@linkcode Machine}.
@@ -916,7 +939,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode reduceFnMap}
    */
@@ -932,7 +955,7 @@ class Machine<
 
         const sentEvent = { to, event };
 
-        return castings.commons.any({ context, pContext, sentEvent });
+        return _any({ context, pContext, sentEvent });
       };
     };
   };
@@ -944,7 +967,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types.PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode VoidAction_F}
    */
@@ -954,14 +977,14 @@ class Machine<
         const state = this.#cloneState({ context, pContext, ...rest });
         fn(state);
       }
-      return castings.commons.any({ context, pContext });
+      return _any({ context, pContext });
     };
   };
 
   #timeAction = (name: string): TimeAction_F<E, P, Pc, Tc> => {
     return id =>
       ({ context, pContext }) => {
-        return castings.commons.any({ context, pContext, [name]: id });
+        return _any({ context, pContext, [name]: id });
       };
   };
 
@@ -991,10 +1014,10 @@ class Machine<
       isNotDefined,
       createChild,
       assign: (key, fn) => {
-        const out = castings.commons.any(expandFnMap)(
+        const out = _any(expandFnMap)(
           this.#eventsMap,
           this.#promiseesMap,
-          castings.commons.any(key),
+          _any(key),
           fn,
         );
 
@@ -1031,7 +1054,7 @@ class Machine<
 
           const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
 
-          return castings.commons.any({
+          return _any({
             context,
             pContext,
             scheduled,
@@ -1041,7 +1064,7 @@ class Machine<
 
       resend: resend => {
         return ({ context, pContext }) => {
-          return castings.commons.any({
+          return _any({
             context,
             pContext,
             resend,
@@ -1051,7 +1074,7 @@ class Machine<
 
       forceSend: forceSend => {
         return ({ context, pContext }) => {
-          return castings.commons.any({
+          return _any({
             context,
             pContext,
             forceSend,
@@ -1072,6 +1095,7 @@ class Machine<
     this.#addDelays(out?.delays);
     this.#addPromises(out?.promises);
     this.#addMachines(out?.machines);
+    this.#addEmitters(out?.emitters);
   };
 }
 
@@ -1117,7 +1141,7 @@ export type CreateMachine_F = <
   const C extends Config & TransformConfigDef<C2> = Config &
     TransformConfigDef<C2>,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
   Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<
@@ -1133,7 +1157,7 @@ export type CreateMachine_F = <
 ) => Machine<C, Pc, Tc, EventM, P, Mo>;
 
 /**
- * Creates a new instance of {@linkcode Machine} with the provided configuration and types.
+ * Creates a new instance of {@linkcode Machine} with the provided configuration and
  *
  * @param config The configuration for the machine.
  * @param types An object containing the types for the machine:
@@ -1143,7 +1167,7 @@ export type CreateMachine_F = <
  * - `promiseesMap`: The promisees map type derived from the configuration.
  *
  * @param initials The initials {@linkcode StateValue} for all compound node configs for the {@linkcode Machine}, derived from the configuration.
- * @returns A new instance of {@linkcode Machine} with the provided configuration and types.
+ * @returns A new instance of {@linkcode Machine} with the provided configuration and
  *
  * @see {@linkcode CreateMachine_F}
  */

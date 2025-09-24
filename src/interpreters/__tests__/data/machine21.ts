@@ -95,7 +95,7 @@ export const config21 = createConfig({
 
 export const machine21 = createMachine(
   {
-    machines: 'machine1',
+    machines: { machine1: 'machine1' },
     ...config21,
   },
   typings({
@@ -121,14 +121,7 @@ export const machine21 = createMachine(
     },
   }),
 ).provideOptions(
-  ({
-    isNotValue,
-    isValue,
-    createChild,
-    assign,
-    voidAction,
-    sendTo: sender,
-  }) => ({
+  ({ isNotValue, isValue, createChild, assign, voidAction, sendTo }) => ({
     actions: {
       inc: assign(
         'context.iterator',
@@ -149,7 +142,7 @@ export const machine21 = createMachine(
           return data;
         },
       }),
-      send: sender(machine1)(() => ({ to: 'machine1', event: 'NEXT' })),
+      send: sendTo(machine1)(() => ({ to: 'machine1', event: 'NEXT' })),
     },
     predicates: {
       isInputEmpty: isValue('context.input', ''),

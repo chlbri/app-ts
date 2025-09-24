@@ -1,6 +1,6 @@
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
 import { reduceFnMap } from '#utils';
-import type { types } from '@bemedev/types';
 import type { FnR } from '~types';
 import type { DelayMap } from '../types';
 
@@ -8,7 +8,7 @@ export type ToDelay_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
   promisees: P,

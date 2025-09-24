@@ -1,11 +1,11 @@
-import type { types } from '@bemedev/types';
+import type { Fn } from '#bemedev/globals/types';
 
 /**
  * A callback function type that takes no arguments and returns void.
  *
  * @see {@linkcode Fn} for more details.
  */
-type Cb = types.Fn<[], void>;
+type Cb = Fn<[], void>;
 
 /**
  * Represents the status of the scheduler.

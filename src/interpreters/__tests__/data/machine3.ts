@@ -88,7 +88,9 @@ export const config3 = createConfig({
       ],
     },
   },
-  machines: { description: 'A beautiful machine', name: 'machine1' },
+  machines: {
+    machine1: { description: 'A beautiful machine', name: 'machine1' },
+  },
 });
 
 export const machine3 = createMachine(

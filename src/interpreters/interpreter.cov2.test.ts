@@ -1,7 +1,7 @@
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
-import { castings } from '@bemedev/types';
 
 describe('Coverage of interpretr #2', () => {
   describe('#01 => Cov select and pSelect for primitive units', () => {
@@ -51,12 +51,12 @@ describe('Coverage of interpretr #2', () => {
     const useSend = (event: SE, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-      return castings.arrays.tupleOf(invite, () => service.send(event));
+      return tupleOf(invite, () => service.send(event));
     };
 
     const useIterator = (num: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service.select).toBeUndefined();
         expect(service.state.context).toBe(num);
       });
@@ -64,7 +64,7 @@ describe('Coverage of interpretr #2', () => {
 
     const usePIterator = (num: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => pIterator is "${num}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service._pSelect).toBeUndefined();
         expect(service._pContext).toBe(num);
       });

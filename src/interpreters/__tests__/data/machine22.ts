@@ -5,7 +5,9 @@ import { config2, machine2 } from './machine2';
 // #region machine2
 export const machine22 = createMachine(
   {
-    machines: { name: 'machine1', description: 'A beautiful machine' },
+    machines: {
+      machine1: { name: 'machine1', description: 'A beautiful machine' },
+    },
     ...config2,
   },
   {

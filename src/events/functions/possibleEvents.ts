@@ -1,5 +1,5 @@
+import isDefined from '#bemedev/features/common/castings/is/defined';
 import type { NodeConfig } from '#states';
-import { castings } from '@bemedev/types';
 import type { RecordS } from '~types';
 
 /**
@@ -15,7 +15,7 @@ export const possibleEvents = (flat: RecordS<NodeConfig>) => {
   const values = Object.values(flat);
   values.forEach(value => {
     const on = value.on;
-    const check = castings.commons.isDefined(on);
+    const check = isDefined(on);
 
     if (check) {
       events.push(...Object.keys(on));

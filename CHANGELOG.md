@@ -11,6 +11,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.0.2] - 2025/09/24** => _16:45_
+
+</summary>
+
+- Upgrade deps
+- Add subscribable support (e.g. rxjs)
+- Possibility to add machines inside nested nodes (inner node machines not
+  tested yet)
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.0.1] - 2025/09/21** => _01:40_
 
 </summary>
