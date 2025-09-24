@@ -1354,8 +1354,6 @@ export class Interpreter<
       }
     });
 
-    console.warn('entries', entries);
-
     entries
       .map(([from, ...machines]) => {
         return machines.map(emitter => ({ ...emitter, from }));
