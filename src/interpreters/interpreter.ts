@@ -95,7 +95,7 @@ import sleep from '@bemedev/sleep';
 import { castings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
-import { Describer2, isDescriber, type RecordS } from '~types';
+import { isDescriber, type RecordS } from '~types';
 import type {
   _Send_F,
   AddSubscriber_F,
@@ -734,6 +734,10 @@ export class Interpreter<
     this.#pauseAllActivities();
     this.#performActivities();
     this.#pauseEmitters(({ from }) => !this.#isInsideValue(from));
+    this.#childrenServices
+      .filter(({ from }) => !from || !this.#isInsideValue(from))
+      .forEach(this.#pause);
+    this.#childrenServices.forEach(this.#resume);
     this.#resumeEmitters();
     await this.#performSelfTransitions();
   };
