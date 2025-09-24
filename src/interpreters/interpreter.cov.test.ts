@@ -1,9 +1,9 @@
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { fakeWaiter } from '#fixtures';
 import { DELAY } from '#fixturesData';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
-import { castings } from '@bemedev/types';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -68,20 +68,18 @@ describe('Covers all inner actions', () => {
     const useSend = (event: SE, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-      return castings.arrays.tupleOf(invite, () => service.send(event));
+      return tupleOf(invite, () => service.send(event));
     };
 
     const useWaiter = (times: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
 
-      return castings.arrays.tupleOf(invite, () =>
-        fakeWaiter(DELAY, times),
-      );
+      return tupleOf(invite, () => fakeWaiter(DELAY, times));
     };
 
     const useIterator = (iterator: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => iterator is "${iterator}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service.select('iterator')).toBe(iterator);
       });
     };
@@ -205,20 +203,18 @@ describe('Covers all inner actions', () => {
     const useSend = (event: SE, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-      return castings.arrays.tupleOf(invite, () => service.send(event));
+      return tupleOf(invite, () => service.send(event));
     };
 
     const useWaiter = (times: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
 
-      return castings.arrays.tupleOf(invite, () =>
-        fakeWaiter(DELAY, times),
-      );
+      return tupleOf(invite, () => fakeWaiter(DELAY, times));
     };
 
     const useIterator = (iterator: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => iterator is "${iterator}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service.select('iterator')).toBe(iterator);
       });
     };
@@ -384,19 +380,19 @@ describe('Covers all inner actions', () => {
     const useSend = (event: SE, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-      return castings.arrays.tupleOf(invite, () => service.send(event));
+      return tupleOf(invite, () => service.send(event));
     };
 
     const useIterator = (iterator: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => iterator is "${iterator}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service.select('iterator')).toBe(iterator);
       });
     };
 
     const useValue = (value: string, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => value is "${value}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service.value).toBe(value);
       });
     };
@@ -506,19 +502,19 @@ describe('Covers all inner actions', () => {
     const useSend = (event: SE, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-      return castings.arrays.tupleOf(invite, () => service.send(event));
+      return tupleOf(invite, () => service.send(event));
     };
 
     const useIterator = (iterator: number, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => iterator is "${iterator}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service.select('iterator')).toBe(iterator);
       });
     };
 
     const useValue = (value: string, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => value is "${value}"`;
-      return castings.arrays.tupleOf(invite, async () => {
+      return tupleOf(invite, async () => {
         expect(service.value).toBe(value);
       });
     };

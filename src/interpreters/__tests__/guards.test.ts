@@ -1,6 +1,7 @@
+import numberT from '#bemedev/features/numbers/typings';
+import stringT from '#bemedev/features/strings/typings';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { typings } from '@bemedev/types';
 import {
   constructSend,
   constructValue,
@@ -233,10 +234,10 @@ describe('Interpret for guards', () => {
       {
         ...defaultT,
         context: {
-          data: typings.numbers.type,
+          data: numberT.type,
         },
         pContext: {
-          data: typings.strings.type,
+          data: stringT.type,
         },
       },
     );

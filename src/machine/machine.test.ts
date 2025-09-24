@@ -1,10 +1,10 @@
 import { reduceAction } from '#actions';
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { DELAY, fakeDB, machine2 } from '#fixturesData';
 import { interpret } from '#interpreters';
 import { createMachine, getEntries } from '#machine';
 import type { StateValue } from '#states';
 import { nothing } from '#utils';
-import { castings } from '@bemedev/types';
 import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
 import path from 'path';
@@ -66,13 +66,13 @@ describe('machine coverage', () => {
       const useSend = (event: SE, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-        return castings.arrays.tupleOf(invite, () => service.send(event));
+        return tupleOf(invite, () => service.send(event));
       };
 
       const useWrite = (value: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
 
-        return castings.arrays.tupleOf(invite, () =>
+        return tupleOf(invite, () =>
           service.send({ type: 'WRITE', payload: { value } }),
         );
       };
@@ -80,35 +80,33 @@ describe('machine coverage', () => {
       const useWaiter = (times: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
 
-        return castings.arrays.tupleOf(invite, () =>
-          fakeWaiter(DELAY, times),
-        );
+        return tupleOf(invite, () => fakeWaiter(DELAY, times));
       };
 
       const useState = (state: StateValue, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Current state is "${state}"`;
-        return castings.arrays.tupleOf(invite, () => {
+        return tupleOf(invite, () => {
           expect(service.state.value).toStrictEqual(state);
         });
       };
 
       const useIterator = (num: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-        return castings.arrays.tupleOf(invite, async () => {
+        return tupleOf(invite, async () => {
           expect(service.select('iterator')).toBe(num);
         });
       };
 
       const useIteratorC = (num: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => private iterator is "${num}"`;
-        return castings.arrays.tupleOf(invite, async () => {
+        return tupleOf(invite, async () => {
           expect(service._pSelect('iterator')).toBe(num);
         });
       };
 
       const useInput = (input: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
-        return castings.arrays.tupleOf(invite, async () => {
+        return tupleOf(invite, async () => {
           expect(service.context.input).toBe(input);
         });
       };
@@ -132,7 +130,7 @@ describe('machine coverage', () => {
           test(inviteStrict, strict);
         };
 
-        return castings.arrays.tupleOf(invite, func);
+        return tupleOf(invite, func);
       };
 
       const useConsole = (
@@ -159,7 +157,7 @@ describe('machine coverage', () => {
           test(inviteStrict, strict);
         };
 
-        return castings.arrays.tupleOf(invite, func);
+        return tupleOf(invite, func);
       };
       // #endregion
 

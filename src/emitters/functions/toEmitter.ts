@@ -1,6 +1,6 @@
 import { reduceAction } from '#actions';
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
-import type { types } from '@bemedev/types';
 import type {
   Emitter,
   EmitterConfig,
@@ -11,7 +11,7 @@ export type ToEmitter_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   emitter: EmitterConfig,
   emitters?: EmitterMap<E, P, Pc, Tc>,

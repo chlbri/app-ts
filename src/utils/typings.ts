@@ -1,4 +1,4 @@
-import { type types } from '@bemedev/types';
+import type { AnyArray, Keys, NOmit, SoRa } from '#bemedev/globals/types';
 
 type PrimitiveS = 'string' | 'number' | 'boolean' | 'null' | 'undefined';
 
@@ -38,7 +38,7 @@ export type PartialCustom = {
 };
 
 type PrimitiveObjectMap = {
-  [key: types.Keys]: types.SoRa<_PrimitiveObject>;
+  [key: Keys]: SoRa<_PrimitiveObject>;
 };
 type _PrimitiveObject =
   | Types
@@ -68,9 +68,9 @@ export type TransformPrimitiveObject<T> = T extends Types
   : T extends Custom<infer TCustom>
     ? TCustom
     : T extends PartialCustom
-      ? Partial<TransformPrimitiveObject<types.NOmit<T, typeof PARTIAL>>>
-      : T extends types.AnyArray<any>
-        ? T[number] extends infer TKN extends types.PrimitiveObject
+      ? Partial<TransformPrimitiveObject<NOmit<T, typeof PARTIAL>>>
+      : T extends AnyArray<any>
+        ? T[number] extends infer TKN extends PrimitiveObject
           ? TransformPrimitiveObject<TKN>[]
           : never
         : {

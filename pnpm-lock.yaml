@@ -23,9 +23,6 @@ importers:
       '@bemedev/sleep':
         specifier: ^0.1.2
         version: 0.1.2
-      '@bemedev/types':
-        specifier: ^0.4.2
-        version: 0.4.2
       clone-deep:
         specifier: ^4.0.1
         version: 4.0.1

@@ -1,7 +1,7 @@
+import typings from '#bemedev/features/numbers/typings';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { EVENTS_FULL } from '#machines';
-import { typings } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { defaultC, defaultT } from './fixtures';
 
@@ -19,7 +19,7 @@ describe('Integration testing for interpret, Children', () => {
         },
       },
     },
-    { ...defaultT, context: typings.numbers.type },
+    { ...defaultT, context: typings.type },
   ).provideOptions(({ assign }) => ({
     actions: {
       inc: assign('context', ({ context }) => context + 1),
@@ -36,7 +36,7 @@ describe('Integration testing for interpret, Children', () => {
           idle: {},
         },
       },
-      { ...defaultT, pContext: typings.numbers.type },
+      { ...defaultT, pContext: typings.type },
     ).provideOptions(({ createChild }) => ({
       machines: {
         child: createChild(
@@ -96,7 +96,7 @@ describe('Integration testing for interpret, Children', () => {
       },
       {
         ...defaultT,
-        pContext: { iterator: typings.numbers.type },
+        pContext: { iterator: typings.type },
         eventsMap: { NEXT: {} },
       },
     ).provideOptions(({ createChild }) => ({

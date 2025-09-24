@@ -1,3 +1,5 @@
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import { DEFAULT_NOTHING } from '#constants';
 import type { EventArg, EventsMap, PromiseeMap } from '#events';
 import type { Interpreter } from '#interpreter';
@@ -10,8 +12,6 @@ import type {
 import type { StateValue } from '#states';
 import { IS_TEST } from '#utils';
 import sleep from '@bemedev/sleep';
-import type { types } from '@bemedev/types';
-import { castings } from '@bemedev/types';
 
 export const defaultC = { pContext: {}, context: {} } as const;
 export const defaultT = {
@@ -39,14 +39,14 @@ export const constructWaiter: ConstructWaiter_F = (DELAY = 0) => {
   return (times, index) => {
     const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
 
-    return castings.arrays.tupleOf(invite, () => fakeWaiter(DELAY, times));
+    return tupleOf(invite, () => fakeWaiter(DELAY, times));
   };
 };
 
 type ConstructValue_F = <
   const C extends Config = Config,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
@@ -60,7 +60,7 @@ export const constructValue: ConstructValue_F = service => {
     const _index = index < 10 ? '0' + index : index;
     const invite = `#${_index} => current value is :${_value}`;
 
-    return castings.arrays.tupleOf(invite, () => {
+    return tupleOf(invite, () => {
       expect(service.value).toEqual(value);
     });
   };
@@ -69,7 +69,7 @@ export const constructValue: ConstructValue_F = service => {
 type ConstructSend_F = <
   const C extends Config = Config,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
@@ -83,7 +83,7 @@ export const constructSend: ConstructSend_F = service => {
     const _index = index < 10 ? '0' + index : index;
     const invite = `#${_index}=> send ${event}`;
 
-    return castings.arrays.tupleOf(invite, () => {
+    return tupleOf(invite, () => {
       return service.send(_event);
     });
   };

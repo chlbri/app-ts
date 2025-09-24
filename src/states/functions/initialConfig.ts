@@ -1,8 +1,9 @@
-import { castings, type types } from '@bemedev/types';
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
+import type { Fn } from '#bemedev/globals/types';
 import type { NodeConfig } from '../types';
 import { isAtomic, isParallel } from './checks';
 
-export type InitialConfig_F = types.Fn<[body: NodeConfig], NodeConfig>;
+export type InitialConfig_F = Fn<[body: NodeConfig], NodeConfig>;
 
 /**
  * Returns the initial configuration of a state machine.
@@ -25,7 +26,7 @@ export const initialConfig: InitialConfig_F = body => {
     const { states: _states, ...config } = body;
     const entries1 = Object.entries(_states).map(([key, state]) => {
       const reduced = initialConfig(state);
-      return castings.arrays.tupleOf(key, reduced);
+      return tupleOf(key, reduced);
     });
 
     const states = entries1.reduce((acc, [key, value]) => {
@@ -44,7 +45,7 @@ export const initialConfig: InitialConfig_F = body => {
     const { states: _states, ...config } = body;
     const entries1 = Object.entries(_states).map(([key, state]) => {
       const reduced = initialConfig(state);
-      return castings.arrays.tupleOf(key, reduced);
+      return tupleOf(key, reduced);
     });
 
     const states = entries1.reduce((acc, [key, value]) => {

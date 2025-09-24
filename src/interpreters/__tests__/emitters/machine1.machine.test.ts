@@ -1,5 +1,5 @@
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { interpret } from '#interpreter';
-import { castings } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { machineEmitter1, WAITERS } from './machine1.machine';
 
@@ -10,14 +10,12 @@ describe('#01 => Emitter Machine1', () => {
 
   const useContext = (num: number, index: number) => {
     const invite = `#${index} => context is "${num}"`;
-    return castings.arrays.tupleOf(invite, () =>
-      expect(service.context).toBe(num),
-    );
+    return tupleOf(invite, () => expect(service.context).toBe(num));
   };
 
   const useNext = (index: number) => {
     const invite = `#${index} => send "NEXT"`;
-    return castings.arrays.tupleOf(invite, () => service.send('NEXT'));
+    return tupleOf(invite, () => service.send('NEXT'));
   };
 
   describe('TESTS', () => {

@@ -21,6 +21,7 @@ yarn add @bemedev/app-ts
 - Support for actions, guards and delays
 - Transition and event handling
 - Support for nested machines
+- Support for subscribables (e.g rxjs)
 
 <br/>
 

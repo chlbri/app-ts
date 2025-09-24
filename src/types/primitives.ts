@@ -1,6 +1,14 @@
+import type {
+  _UnionToIntersection2,
+  DeepPartial,
+  Fn,
+  NOmit,
+  NotUndefined,
+  PrimitiveObject,
+  Ru,
+  UnionToIntersection,
+} from '#bemedev/globals/types';
 import type { DEFAULT_DELIMITER } from '#constants';
-import type { types } from '@bemedev/types';
-
 import type { EventsMap, PromiseeMap, ToEvents, ToEventsR } from '#events';
 import type {
   State,
@@ -43,10 +51,10 @@ export type FromDescriber<T extends Describer> = T['name'];
 /**
  * A {@linkcode Describer} type where the description property is optional.
  */
-export type Describer2 = types.NOmit<Describer, 'description'> &
+export type Describer2 = NOmit<Describer, 'description'> &
   Partial<Pick<Describer, 'description'>>;
 
-export const isFunction = (value: unknown): value is types.Fn => {
+export const isFunction = (value: unknown): value is Fn => {
   return typeof value === 'function';
 };
 
@@ -72,7 +80,7 @@ export type NotReadonly<T> = {
 export type Define<T, U> = T extends undefined
   ? U
   : undefined extends T
-    ? types.NotUndefined<T>
+    ? NotUndefined<T>
     : T;
 
 /**
@@ -101,7 +109,7 @@ export type ChangeProperty<
   name extends keyof T,
   replace extends string,
   option extends ChangePropertyOption = 'normal',
-> = types.NOmit<T, name> &
+> = NOmit<T, name> &
   (name extends any
     ? option extends 'readonly'
       ? { +readonly [key in replace]: T[name] }
@@ -117,10 +125,10 @@ type _KeyStrings<
   AddObjectKey extends boolean = true,
   Key extends keyof T = keyof T,
 > = Key extends string
-  ? types.NotUndefined<T[Key]> extends object
+  ? NotUndefined<T[Key]> extends object
     ? {
         [key in keyof T]: (T[key] extends infer T2 extends object
-          ? types.UnionToIntersection<_KeyStrings<T2, AddObjectKey>>
+          ? UnionToIntersection<_KeyStrings<T2, AddObjectKey>>
           : never) &
           (AddObjectKey extends true
             ? { [key in HighMy]: string }
@@ -133,15 +141,13 @@ export type KeyStrings<
   T extends object,
   AddObjectKey extends boolean = true,
   Key extends keyof T = keyof T,
-> = types._UnionToIntersection2<_KeyStrings<T, AddObjectKey, Key>>;
+> = _UnionToIntersection2<_KeyStrings<T, AddObjectKey, Key>>;
 
 export type HighMy = '@my';
 
 type __ChangeProperties<
   T extends object,
-  U extends types.DeepPartial<KeyStrings<T>> = types.DeepPartial<
-    KeyStrings<T>
-  >,
+  U extends DeepPartial<KeyStrings<T>> = DeepPartial<KeyStrings<T>>,
 > = {
   [key in keyof T as key extends keyof U
     ? U[key] extends infer U1
@@ -153,7 +159,7 @@ type __ChangeProperties<
       : never
     : key]: key extends keyof U
     ? T[key] extends infer T1 extends object
-      ? Omit<U[key], HighMy> extends infer U1 extends types.DeepPartial<
+      ? Omit<U[key], HighMy> extends infer U1 extends DeepPartial<
           KeyStrings<T1, true>
         >
         ? __ChangeProperties<T1, U1>
@@ -164,9 +170,7 @@ type __ChangeProperties<
 
 type _ChangeProperties<
   T extends object,
-  U extends types.DeepPartial<KeyStrings<T>> = types.DeepPartial<
-    KeyStrings<T>
-  >,
+  U extends DeepPartial<KeyStrings<T>> = DeepPartial<KeyStrings<T>>,
   option extends Extract<
     ChangePropertyOption,
     'normal' | 'undefined'
@@ -174,7 +178,7 @@ type _ChangeProperties<
 > =
   __ChangeProperties<T, U> extends infer Tn
     ? option extends 'undefined'
-      ? types.DeepPartial<Tn>
+      ? DeepPartial<Tn>
       : Tn
     : never;
 
@@ -193,15 +197,13 @@ type _ChangeProperties<
  */
 export type ChangeProperties<
   T extends object,
-  U extends types.DeepPartial<KeyStrings<T>> = types.DeepPartial<
-    KeyStrings<T>
-  >,
+  U extends DeepPartial<KeyStrings<T>> = DeepPartial<KeyStrings<T>>,
   option extends Extract<
     ChangePropertyOption,
     'normal' | 'undefined'
   > = 'normal',
 > =
-  types.DeepPartial<KeyStrings<T>> extends U
+  DeepPartial<KeyStrings<T>> extends U
     ? T
     : _ChangeProperties<T, U, option>;
 
@@ -231,7 +233,7 @@ export type ReduceArray<T> = T extends readonly (infer U1)[]
  * @template : {@linkcode EventsMap} [E] - The events map used in the function.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the function.
  * @template Pc - The private context.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
  * @template R - The return type of the function, defaults to any.
  *
  * @see {@linkcode ToEvents} for converting events and promisees to a map.
@@ -240,7 +242,7 @@ export type FnR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => R;
 
@@ -249,7 +251,7 @@ export type FnR<
  *
  * @template : {@linkcode EventsMap} [E] - The events map used in the function.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the function.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
  * @template R - The return type of the function, defaults to any.
  *
  * @remarks This function signature is a reduced version of {@linkcode FnR} without the private context.
@@ -259,7 +261,7 @@ export type FnR<
 export type FnReduced<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > = (state: State<Tc, ToEvents<E, P>>) => R;
 
@@ -268,7 +270,7 @@ export type FnReduced<
  *
  * @template : {@linkcode EventsMap} [E] - The events map used in the function.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the function.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
  * @template R - The return type of the function, defaults to any.
  *
  * @see {@linkcode ToEvents} for converting events and promisees to a map.
@@ -278,7 +280,7 @@ export type FnReduced<
 export type FnMap2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
   TT extends ToEventsR<E, P> = ToEventsR<E, P>,
 > = {
@@ -301,7 +303,7 @@ type _FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
   TT extends ToEvents<E, P> = ToEvents<E, P>,
 > = {
@@ -315,7 +317,7 @@ type _FnMap<
 type _FnMapR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
   TT extends ToEvents<E, P> = ToEvents<E, P>,
 > = {
@@ -330,14 +332,14 @@ export type FnMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > = FnR<E, P, Pc, Tc, R> | _FnMap<E, P, Pc, Tc, R, ToEvents<E, P>>;
 
 export type FnMapR<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > = FnReduced<E, P, Tc, R> | _FnMapR<E, P, Tc, R, ToEvents<E, P>>;
 
@@ -353,8 +355,8 @@ export type RecordS<T> = Record<string, T>;
  *
  * @see {@linkcode NotUndefined}
  */
-export type ValuesOf<T> = types.NotUndefined<
-  types.NotUndefined<T>[keyof types.NotUndefined<T>]
+export type ValuesOf<T> = NotUndefined<
+  NotUndefined<T>[keyof NotUndefined<T>]
 >;
 
 /**
@@ -397,7 +399,7 @@ export type ExtractS<T> = Extract<T, string>;
  * @see {@linkcode Ru} for a utility type that represents a true object.
  * @see {@linkcode SymbolConstructor} for the symbol constructor type.
  */
-export type TrueObject = types.Ru & {
+export type TrueObject = Ru & {
   [Symbol.iterator]?: never;
   //@ts-expect-error - 'SymbolConstructor' does not exist on type 'object'
   [SymbolConstructor]?: never;

@@ -1,12 +1,12 @@
 import { reduceAction, type ActionConfig } from '#actions';
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
-import type { types } from '@bemedev/types';
 import type { ChildS, MachineMap } from '../types';
 
 export type ToMachine_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   machine: ActionConfig,
   machines?: MachineMap<E, P, Tc>,

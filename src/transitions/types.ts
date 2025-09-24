@@ -1,4 +1,11 @@
 import type { Action, ActionConfig, FromActionConfig } from '#actions';
+import type {
+  AnyArray,
+  IndexesOfArray,
+  NotUndefined,
+  PrimitiveObject,
+  Require,
+} from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { FromGuard, GuardConfig, Predicate } from '#guards';
 import type {
@@ -10,8 +17,7 @@ import type {
   Promisee,
   PromiseeConfig,
 } from '#promises';
-import type { types } from '@bemedev/types';
-import type { NotUndefined } from '@bemedev/types/lib/types/commons.types';
+
 import type {
   Identitfy,
   RecordS,
@@ -40,7 +46,7 @@ type _TransitionConfigMap<Paths extends string = string> = {
  * @see {@linkcode ActionConfig} for the structure of action configurations.
  * @see {@linkcode FromActionConfig} for converting action configurations to actions.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
- * @see {@linkcode SingleOrArrayL} for handling single or array types.
+ * @see {@linkcode SingleOrArrayL} for handling single or array
  */
 export type ExtractActionsFromTransition<
   T extends { actions: SingleOrArrayL<ActionConfig> },
@@ -58,7 +64,7 @@ export type ExtractActionsFromTransition<
  * @see {@linkcode GuardConfig} for the structure of guard configurations.
  * @see {@linkcode FromGuard} for converting guard configurations to predicates.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
- * @see {@linkcode SingleOrArrayL} for handling single or array types.
+ * @see {@linkcode SingleOrArrayL} for handling single or array
  */
 export type ExtractGuardsFromTransition<
   T extends { guards: SingleOrArrayL<GuardConfig> },
@@ -70,18 +76,22 @@ export type ExtractGuardsFromTransition<
 /**
  * A {@linkcode _TransitionConfigMap} that requires actions.
  */
-export type TransitionConfigMapA<Paths extends string = string> =
-  types.Require<_TransitionConfigMap<Paths>, 'actions'>;
+export type TransitionConfigMapA<Paths extends string = string> = Require<
+  _TransitionConfigMap<Paths>,
+  'actions'
+>;
 
 export type TransitionConfigA<Paths extends string = string> =
-  | types.Require<TransitionConfigMapA<Paths>, 'actions'>
+  | Require<TransitionConfigMapA<Paths>, 'actions'>
   | Paths;
 
-export type TransitionConfigMapF<Paths extends string = string> =
-  types.Require<_TransitionConfigMap<Paths>, 'target'>;
+export type TransitionConfigMapF<Paths extends string = string> = Require<
+  _TransitionConfigMap<Paths>,
+  'target'
+>;
 
 export type TransitionConfigF<Paths extends string = string> =
-  | types.Require<TransitionConfigMapF<Paths>, 'target'>
+  | Require<TransitionConfigMapF<Paths>, 'target'>
   | Paths;
 
 export type TransitionConfigMap<Paths extends string = string> =
@@ -113,10 +123,10 @@ export type TransitionConfig<Paths extends string = string> =
  * @see {@linkcode TransitionConfigMapF} for a version that requires a target.
  * @see {@linkcode TransitionConfigMapA} for a version that requires actions.
  * @see {@linkcode TransitionConfig} for a version that can be a string or a {@linkcode TransitionConfig}.
- * @see {@linkcode types.Require}
+ * @see {@linkcode Require}
  */
 export type ArrayTransitions<Paths extends string = string> = readonly [
-  ...types.Require<TransitionConfigMap<Paths>, 'guards'>[],
+  ...Require<TransitionConfigMap<Paths>, 'guards'>[],
   TransitionConfig<Paths>,
 ];
 
@@ -135,11 +145,11 @@ export type SingleOrArrayT<Paths extends string = string> =
  *
  * @see {@linkcode ArrayTransitions} for an array of transitions.
  * @see {@linkcode TransitionConfigF} for a single transition configuration with a target.
- * @see {@linkcode types.Require}
+ * @see {@linkcode Require}
  */
 export type AlwaysConfig<Paths extends string = string> =
   | readonly [
-      ...types.Require<TransitionConfigMapF<Paths>, 'guards'>[],
+      ...Require<TransitionConfigMapF<Paths>, 'guards'>[],
       TransitionConfigF<Paths>,
     ]
   | TransitionConfigF<Paths>;
@@ -154,8 +164,8 @@ export type DelayedTransitions<Paths extends string = string> = RecordS<
 >;
 
 export type GetEventKeysFromDelayed<T> = {
-  [key in keyof T & string]: T[key] extends types.AnyArray
-    ? `${key}.[${types.IndexesOfArray<T[key]>}]`
+  [key in keyof T & string]: T[key] extends AnyArray
+    ? `${key}.[${IndexesOfArray<T[key]>}]`
     : key;
 }[keyof T & string];
 
@@ -166,7 +176,7 @@ export type GetEventKeysFromDelayed<T> = {
  *
  * @see {@linkcode ExtractActionsFromTransition} for extracting actions from a transition configuration.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
- * @see {@linkcode SingleOrArrayL} for handling single or array types.
+ * @see {@linkcode SingleOrArrayL} for handling single or array
  * @see {@linkcode ActionConfig} for the structure of action configurations.
  *
  * @see {@linkcode ExtractGuardsFromTransition} for extracting guards from a transition configuration.
@@ -185,7 +195,7 @@ export type ExtractActionKeysFromDelayed<T> = ExtractActionsFromTransition<
  *
  * @see {@linkcode ExtractGuardsFromTransition} for extracting guards from a transition configuration.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
- * @see {@linkcode SingleOrArrayL} for handling single or array types.
+ * @see {@linkcode SingleOrArrayL} for handling single or array
  * @see {@linkcode GuardConfig} for the structure of guard configurations.
  *
  * @see {@linkcode ExtractActionsFromTransition} for extracting actions from a transition configuration.
@@ -203,7 +213,7 @@ export type ExtractGuardKeysFromDelayed<T> = ExtractGuardsFromTransition<
  * @see {@linkcode DelayedTransitions} for the structure of delayed transitions.
  * @see {@linkcode AlwaysConfig} for always transitions configuration.
  * @see {@linkcode PromiseeConfig} for promise configurations.
- * @see {@linkcode SingleOrArrayL} for handling single or array types.
+ * @see {@linkcode SingleOrArrayL} for handling single or array
  */
 
 export type TransitionsConfig<Paths extends string = string> = {
@@ -221,13 +231,13 @@ export type GetEventKeysFromTransitions<T> =
       ? `after.${GetEventKeysFromDelayed<NotUndefined<T['after']>>}`
       : never)
   | ('always' extends keyof T
-      ? T['always'] extends infer TA extends types.AnyArray
-        ? `always.[${types.IndexesOfArray<TA>}]`
+      ? T['always'] extends infer TA extends AnyArray
+        ? `always.[${IndexesOfArray<TA>}]`
         : 'always'
       : never)
   | ('promises' extends keyof T
       ? `${NotUndefined<T['promises']> extends infer TP
-          ? TP extends types.AnyArray
+          ? TP extends AnyArray
             ? `promises.${{
                 [key in keyof TP &
                   string]: `[${key}].${GetEventKeysFromPromisee<Extract<TP[key], PromiseeConfig>>}`;
@@ -245,7 +255,7 @@ export type GetEventKeysFromTransitions<T> =
  * @see {@linkcode ExtractMaxFromPromisee} for extracting the maximum delay from promises.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * @see {@linkcode Extract} for extracting specific types from a union.
- * @see {@linkcode types.NotUndefined} for ensuring the type is not undefined.
+ * @see {@linkcode NotUndefined} for ensuring the type is not undefined.
  */
 export type ExtractDelayKeysFromTransitions<T extends TransitionsConfig> =
   | ExtractMaxFromPromisee<
@@ -263,9 +273,9 @@ export type ExtractDelayKeysFromTransitions<T extends TransitionsConfig> =
  * @see {@linkcode ExtractActionsFromDelayed} for extracting actions from delayed transitions.
  * @see {@linkcode ExtractActionsFromPromisee} for extracting actions from promises.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
- * @see {@linkcode SingleOrArrayL} for handling single or array types.
+ * @see {@linkcode SingleOrArrayL} for handling single or array
  * @see {@linkcode ActionConfig} for the structure of action configurations.
- * @see {@linkcode types.NotUndefined} for ensuring the type is not undefined.
+ * @see {@linkcode NotUndefined} for ensuring the type is not undefined.
  * @see {@linkcode Extract}
  */
 export type ExtractActionKeysFromTransitions<T extends TransitionsConfig> =
@@ -278,9 +288,7 @@ export type ExtractActionKeysFromTransitions<T extends TransitionsConfig> =
           { actions: SingleOrArrayL<ActionConfig> }
         >
       >
-    | ExtractActionsFromPromisee<
-        types.NotUndefined<ReduceArray<T['promises']>>
-      >;
+    | ExtractActionsFromPromisee<NotUndefined<ReduceArray<T['promises']>>>;
 
 /**
  * Extracts guard keys from a {@linkcode TransitionsConfig}.
@@ -292,9 +300,9 @@ export type ExtractActionKeysFromTransitions<T extends TransitionsConfig> =
  * @see {@linkcode ExtractGuardKeysFromDelayed} for extracting guards from delayed transitions.
  * @see {@linkcode ExtractGuardsFromPromise} for extracting guards from promises.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
- * @see {@linkcode SingleOrArrayL} for handling single or array types.
+ * @see {@linkcode SingleOrArrayL} for handling single or array
  * @see {@linkcode GuardConfig} for the structure of guard configurations.
- * @see {@linkcode types.NotUndefined} for ensuring the type is not undefined.
+ * @see {@linkcode NotUndefined} for ensuring the type is not undefined.
  * @see {@linkcode Extract}
  */
 export type ExtractGuardKeysFromTransitions<T extends TransitionsConfig> =
@@ -306,9 +314,7 @@ export type ExtractGuardKeysFromTransitions<T extends TransitionsConfig> =
         { guards: SingleOrArrayL<GuardConfig> }
       >
     >
-  | ExtractGuardsFromPromise<
-      types.NotUndefined<ReduceArray<T['promises']>>
-    >;
+  | ExtractGuardsFromPromise<NotUndefined<ReduceArray<T['promises']>>>;
 
 /**
  * Extracts source keys from a {@linkcode TransitionsConfig}.
@@ -317,11 +323,11 @@ export type ExtractGuardKeysFromTransitions<T extends TransitionsConfig> =
  * @returns The source keys extracted from the transitions configuration.
  *
  * @see {@linkcode ExtractSrcFromPromisee} for extracting source from promises.
- * @see {@linkcode types.NotUndefined} for ensuring the type is not undefined.
+ * @see {@linkcode NotUndefined} for ensuring the type is not undefined.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * */
 export type ExtractSrcFromTransitions<T extends TransitionsConfig> =
-  ExtractSrcFromPromisee<types.NotUndefined<ReduceArray<T['promises']>>>;
+  ExtractSrcFromPromisee<NotUndefined<ReduceArray<T['promises']>>>;
 
 /**
  * Represents a transition in a state machine with full defined functions.
@@ -338,7 +344,7 @@ export type Transition<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   readonly target: string;
   readonly actions: Action<E, P, Pc, Tc>[];
@@ -353,7 +359,7 @@ export type Transition<
  * @template : {@linkcode EventsMap} [E] - The events map used in the transitions.
  * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the transitions.
  * @template : [Pc] - The private context type for the transitions.
- * @template : {@linkcode types.PrimitiveObject} [Tc] - The context for the transitions
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context for the transitions
  *
  * @see {@linkcode Transition} for the structure of a single transition.
  * @see {@linkcode Promisee} for the structure of promises in the transitions.
@@ -363,7 +369,7 @@ export type Transitions<
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   on: Identitfy<Transition<E, P, Pc, Tc>>[];
   always: Transition<E, P, Pc, Tc>[];

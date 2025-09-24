@@ -1,10 +1,11 @@
+import isDefined from '#bemedev/features/common/castings/is/defined';
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import { GUARD_TYPE } from '#constants';
 import type { EventsMap, PromiseeMap, ToEvents } from '#events';
 import type { GuardConfig } from '#guards';
 import type { StateExtended } from '#interpreters';
 import { reduceFnMap } from '#utils';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
-import { castings, type types } from '@bemedev/types';
 import { isDescriber, isString } from '~types';
 import type { PredicateMap, PredicateS2 } from '../types';
 
@@ -12,7 +13,7 @@ export type _ToPredicateF = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
   promisees: P,
@@ -29,7 +30,7 @@ export type ToPredicate_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
   promisees: P,
@@ -76,7 +77,7 @@ const _toPredicate: _ToPredicateF = (
         return true;
       })
       .map(({ func }) => func)
-      .filter(castings.commons.isDefined);
+      .filter(isDefined);
   };
 
   if (GUARD_TYPE.and in guard) {
@@ -103,7 +104,7 @@ const _toPredicate: _ToPredicateF = (
  * @returns an object containing the predicate function and any errors encountered during the conversion.
  *
  * @see {@linkcode ToEvents}
- * @see {@linkcode types.PrimitiveObject}
+ * @see {@linkcode PrimitiveObject}
  * @see {@linkcode PredicateS2}
  * @see {@linkcode GuardDefUnion}
  * @see {@linkcode reduceFnMap}

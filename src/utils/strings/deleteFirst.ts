@@ -1,10 +1,7 @@
+import type { Fn } from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
-import type { types } from '@bemedev/types';
 
-export type DeleteFirst_F = types.Fn<
-  [arg: string, toDelete?: string],
-  string
->;
+export type DeleteFirst_F = Fn<[arg: string, toDelete?: string], string>;
 
 /**
  * Deletes the first occurrence of a specified delimiter from the start of a string.

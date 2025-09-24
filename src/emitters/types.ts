@@ -1,7 +1,7 @@
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '#events';
 import type { StateExtended } from '#interpreters';
 import type { DirectMerge_F } from '#machines';
-import type { types } from '@bemedev/types';
 import type { Describer, RecordS } from '~types';
 
 export type Subscriber = {
@@ -23,7 +23,7 @@ export type Emitter<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = (args: {
   merge: DirectMerge_F<Pc, Tc>;
   send: (event: EventArg<E>) => void;
@@ -41,7 +41,7 @@ export type Emitter2<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   id: string;
   from: string;
@@ -63,5 +63,5 @@ export type EmitterMap<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 > = Partial<RecordS<Emitter<E, P, Pc, Tc>>>;

@@ -1,10 +1,12 @@
+import boolean from '#bemedev/features/booleans/typings/type';
+import numbersT from '#bemedev/features/numbers/typings';
+import stringsT from '#bemedev/features/strings/typings';
 import {
   INIT_EVENT,
   MAX_EXCEEDED_EVENT_TYPE,
   type EventsMap,
   type PromiseeMap,
 } from '#events';
-import { typings } from '@bemedev/types';
 import type { FnMap, FnMapR } from '~types';
 import {
   reduceFnMap,
@@ -17,18 +19,18 @@ describe('#01 => reducers', () => {
     test('#01.01.01 => correctly combines events and promisees', () => {
       // #region Arrange
       const events: EventsMap = {
-        EVENT1: typings.strings.type,
-        EVENT2: { data: typings.numbers.type },
+        EVENT1: stringsT.type,
+        EVENT2: { data: numbersT.type },
       };
 
       const promisees: PromiseeMap = {
         promise1: {
-          then: typings.strings.type,
-          catch: typings.strings.type,
+          then: stringsT.type,
+          catch: stringsT.type,
         },
         promise2: {
-          then: { success: typings.booleans.type },
-          catch: { error: typings.strings.type },
+          then: { success: boolean },
+          catch: { error: stringsT.type },
         },
       };
       // #endregion
@@ -39,12 +41,12 @@ describe('#01 => reducers', () => {
 
       // #region Assert
       expect(result).toEqual({
-        EVENT1: typings.strings.type,
-        EVENT2: { data: typings.numbers.type },
-        'promise1::then': typings.strings.type,
-        'promise1::catch': typings.booleans.type,
-        'promise2::then': { success: typings.booleans.type },
-        'promise2::catch': { error: typings.strings.type },
+        EVENT1: stringsT.type,
+        EVENT2: { data: numbersT.type },
+        'promise1::then': stringsT.type,
+        'promise1::catch': boolean,
+        'promise2::then': { success: boolean },
+        'promise2::catch': { error: stringsT.type },
       });
       // #endregion
     });
@@ -52,7 +54,7 @@ describe('#01 => reducers', () => {
     test('#01.01.02 => works with empty promisees object', () => {
       // Arrange
       const events: EventsMap = {
-        EVENT1: typings.strings.type,
+        EVENT1: stringsT.type,
       };
       const promisees: PromiseeMap = {};
 
@@ -92,7 +94,7 @@ describe('#01 => reducers', () => {
       test('#01.02.02 => correctly handles string type event', () => {
         // Arrange
         const events: EventsMap = {
-          EVENT1: typings.strings.type,
+          EVENT1: stringsT.type,
         };
         const promisees: PromiseeMap = {};
         const elseSpy = vi.fn().mockReturnValue('else result');
@@ -134,8 +136,8 @@ describe('#01 => reducers', () => {
       test('#01.02.03 => uses appropriate function based on event type', () => {
         // Arrange
         const events: EventsMap = {
-          EVENT1: typings.strings.type,
-          EVENT2: { data: typings.numbers.type },
+          EVENT1: stringsT.type,
+          EVENT2: { data: numbersT.type },
         };
         const promisees: PromiseeMap = {};
 
@@ -215,7 +217,7 @@ describe('#01 => reducers', () => {
       test('#01.02.04 => uses nothing as default else function', () => {
         // Arrange
         const events: EventsMap = {
-          EVENT1: typings.strings.type,
+          EVENT1: stringsT.type,
         };
         const promisees: PromiseeMap = {};
 
@@ -249,8 +251,8 @@ describe('#01 => reducers', () => {
         const events: EventsMap = {};
         const promisees: PromiseeMap = {
           promise1: {
-            then: typings.strings.type,
-            catch: typings.booleans.type,
+            then: stringsT.type,
+            catch: boolean,
           },
         };
 
@@ -336,7 +338,7 @@ describe('#01 => reducers', () => {
         test('#01.03.02 => correctly handles string type event', () => {
           // Arrange
           const events: EventsMap = {
-            EVENT1: typings.strings.type,
+            EVENT1: stringsT.type,
           };
           const promisees: PromiseeMap = {};
           const elseSpy = vi.fn().mockReturnValue('else result');
@@ -375,8 +377,8 @@ describe('#01 => reducers', () => {
         test('#01.03.03 => uses appropriate function based on event type', () => {
           // Arrange
           const events: EventsMap = {
-            EVENT1: typings.strings.type,
-            EVENT2: { data: typings.numbers.type },
+            EVENT1: stringsT.type,
+            EVENT2: { data: numbersT.type },
           };
           const promisees: PromiseeMap = {};
 
@@ -449,7 +451,7 @@ describe('#01 => reducers', () => {
         test('#01.03.04 => uses nothing as default else function', () => {
           // Arrange
           const events: EventsMap = {
-            EVENT1: typings.strings.type,
+            EVENT1: stringsT.type,
           };
           const promisees: PromiseeMap = {};
 
@@ -477,8 +479,8 @@ describe('#01 => reducers', () => {
           const events: EventsMap = {};
           const promisees: PromiseeMap = {
             promise1: {
-              then: typings.strings.type,
-              catch: typings.booleans.type,
+              then: stringsT.type,
+              catch: boolean,
             },
           };
 

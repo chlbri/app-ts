@@ -1,14 +1,14 @@
 import type { ActionConfig, ActionMap, ActionResult } from '#actions';
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
 import { reduceFnMap } from '#utils';
-import type { types } from '@bemedev/types';
 import { isDescriber, type FnR } from '~types';
 
 export type ToAction_F = <
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
   promisees: P,

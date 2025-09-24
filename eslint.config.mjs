@@ -24,6 +24,7 @@ export default [
       '**/publish_npm',
       '**/*.typegen.ts',
       '**/*.test-d.ts',
+      '**/libs/bemedev/*',
     ],
   },
   ...compat.extends(

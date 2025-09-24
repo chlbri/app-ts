@@ -1,3 +1,6 @@
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
+import _unknown from '#bemedev/features/common/castings/_unknown';
+import _any from '#bemedev/features/common/castings/any';
 import {
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MIN_ACTIVITY_TIME,
@@ -14,7 +17,6 @@ import { createMachine } from '#machine';
 import { EVENTS_FULL } from '#machines';
 import type { StateValue } from '#states';
 import { nothing, toFunction, typings } from '#utils';
-import { castings } from '@bemedev/types';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
 import { interpret, TIME_TO_RINIT_SELF_COUNTER } from './interpreter';
@@ -31,10 +33,10 @@ describe('Interpreter', () => {
   };
 
   describe('#01 => Status', () => {
-    let service = castings.commons.unknown<AnyInterpreter>(null);
+    let service = _unknown<AnyInterpreter>(null);
 
     test('#0 => Create the machine', () => {
-      service = castings.commons.any(interpret(machine3, resultC));
+      service = _any(interpret(machine3, resultC));
     });
 
     test('#1 => The machine is at "status: idle"', () => {
@@ -550,13 +552,13 @@ describe('Interpreter', () => {
       const useSend = (event: SE, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
-        return castings.arrays.tupleOf(invite, () => service.send(event));
+        return tupleOf(invite, () => service.send(event));
       };
 
       const useWrite = (value: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
 
-        return castings.arrays.tupleOf(invite, () => {
+        return tupleOf(invite, () => {
           const sendWrite = service.sender('WRITE');
           return sendWrite({ value });
         });
@@ -565,35 +567,33 @@ describe('Interpreter', () => {
       const useWaiter = (times: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
 
-        return castings.arrays.tupleOf(invite, () =>
-          fakeWaiter(DELAY, times),
-        );
+        return tupleOf(invite, () => fakeWaiter(DELAY, times));
       };
 
       const useState = (state: StateValue, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => Current state is "${state}"`;
-        return castings.arrays.tupleOf(invite, () => {
+        return tupleOf(invite, () => {
           expect(service.value).toStrictEqual(state);
         });
       };
 
       const useIterator = (num: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-        return castings.arrays.tupleOf(invite, async () => {
+        return tupleOf(invite, async () => {
           expect(service.select('iterator')).toBe(num);
         });
       };
 
       const useIteratorC = (num: number, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => private iterator is "${num}"`;
-        return castings.arrays.tupleOf(invite, async () => {
+        return tupleOf(invite, async () => {
           expect(service._pSelect('iterator')).toBe(num);
         });
       };
 
       const useInput = (input: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
-        return castings.arrays.tupleOf(invite, async () => {
+        return tupleOf(invite, async () => {
           expect(service.context.input).toBe(input);
         });
       };
@@ -617,7 +617,7 @@ describe('Interpreter', () => {
           test(inviteStrict, strict);
         };
 
-        return castings.arrays.tupleOf(invite, func);
+        return tupleOf(invite, func);
       };
 
       const useConsole = (
@@ -644,7 +644,7 @@ describe('Interpreter', () => {
           test(inviteStrict, strict);
         };
 
-        return castings.arrays.tupleOf(invite, func);
+        return tupleOf(invite, func);
       };
       // #endregion
 

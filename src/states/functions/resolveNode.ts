@@ -1,11 +1,12 @@
 import { toAction } from '#actions';
+import _any from '#bemedev/features/common/castings/any';
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { SimpleMachineOptions } from '#machines';
 import { toPromise } from '#promises';
 import { toTransition } from '#transitions';
 import { toArray } from '@bemedev/basifun';
 import { identify } from '@bemedev/basifun/objects/identify';
-import { castings, type types } from '@bemedev/types';
 import type { Node, NodeConfig } from '../types';
 import { stateType } from './stateType';
 
@@ -13,7 +14,7 @@ export type ResolveNode_F = <
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
-  Tc extends types.PrimitiveObject = types.PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
   promisees: P,
@@ -73,7 +74,7 @@ export const resolveNode: ResolveNode_F = (
     .typed(config.promises)
     .map(promise => toPromise(events, promisees, promise, options));
 
-  const out = castings.commons.any({
+  const out = _any({
     type,
     entry,
     exit,
