@@ -1,7 +1,6 @@
-import type { ActionConfig } from '#actions';
+import { reduceAction, type ActionConfig } from '#actions';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { types } from '@bemedev/types';
-import { isDescriber } from '~types';
 import type { ChildS, MachineMap } from '../types';
 
 export type ToMachine_F = <
@@ -28,13 +27,9 @@ export type ToMachine_F = <
  * @see {@linkcode PromiseeMap} for the promisees map
  */
 export const toMachine: ToMachine_F = (machine, machines) => {
-  if (isDescriber(machine)) {
-    const out = machines?.[machine.name];
-    if (!out) return undefined;
-    return out;
-  }
+  const key = reduceAction(machine);
 
-  const out = machines?.[machine];
+  const out = machines?.[key];
   if (!out) return undefined;
   return out;
 };

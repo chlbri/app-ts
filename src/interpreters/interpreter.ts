@@ -1337,15 +1337,14 @@ export class Interpreter<
     const entriesFlat = Object.entries(this.#machine.flat);
     const entries: [
       from: string,
-      ...machines: (Describer2 & { id: string })[],
+      ...machines: { id: string; machine: MachineConfig }[],
     ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
       const _machines = node.machines;
       if (_machines) {
         const machines = Object.entries(_machines).map(([id, machine]) => {
-          const name = reduceAction(machine);
-          return { id, name };
+          return { id, machine };
         });
         entries.push([from, ...machines]);
       }
@@ -1358,10 +1357,8 @@ export class Interpreter<
         return machines.map(emitter => ({ ...emitter, from }));
       })
       .flat()
-      .map(({ id, name, from }) => {
-        console.warn(`Machine ${name} created from ${from}`);
-        const machine = this.toMachine(name);
-        return { id, machine, from };
+      .map(({ id, machine, from }) => {
+        return { id, machine: this.toMachine(machine), from };
       })
       .filter(
         (({ machine }) => !!machine) as (value: any) => value is {
@@ -1385,15 +1382,14 @@ export class Interpreter<
     const entriesFlat = Object.entries(this.#machine.flat);
     const entries: [
       from: string,
-      ...machines: (Describer2 & { id: string })[],
+      ...machines: { id: string; emitter: EmitterConfig }[],
     ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
       const _emitters = node.emitters;
       if (_emitters) {
         const emitters = Object.entries(_emitters).map(([id, emitter]) => {
-          const name = reduceAction(emitter);
-          return { id, name };
+          return { id, emitter };
         });
         entries.push([from, ...emitters]);
       }
@@ -1404,9 +1400,8 @@ export class Interpreter<
         return emitters.map(emitter => ({ ...emitter, from }));
       })
       .flat()
-      .map(({ id, name, from }) => {
-        const emitter = this.toEmitter(name);
-        return { id, emitter, from };
+      .map(({ id, emitter, from }) => {
+        return { id, emitter: this.toEmitter(emitter), from };
       })
       .filter(
         (({ emitter }) => !!emitter) as (

@@ -1,3 +1,4 @@
+import { reduceAction } from '#actions';
 import { DELAY, fakeDB, machine2 } from '#fixturesData';
 import { interpret } from '#interpreters';
 import { createMachine, getEntries } from '#machine';
@@ -1077,39 +1078,83 @@ describe('machine coverage', () => {
   });
 
   describe('#06 => machine id is not defined', () => {
-    const idM = 'machineNotDefined';
-    const machineT = createMachine(
-      {
-        machines: { idM },
-        initial: 'idle',
-        states: {
-          idle: {},
+    describe('#01 => string', () => {
+      const idM = 'machineNotDefined';
+      const machineT = createMachine(
+        {
+          machines: { idM },
+          initial: 'idle',
+          states: {
+            idle: {},
+          },
         },
-      },
-      defaultT,
-      // defaultI,
-    );
+        defaultT,
+        // defaultI,
+      );
 
-    const service = interpret(machineT, defaultC);
+      const service = interpret(machineT, defaultC);
 
-    test('#00 => start', service.start.bind(service));
+      test('#00 => start', service.start.bind(service));
 
-    describe('#01 => log', () => {
-      test('#01 => errors is empty', () => {
-        const actual = service._errorsCollector;
-        expect(actual).toHaveLength(0);
-      });
-
-      describe('#02 => It has some watnings', () => {
-        test('#01 => warnings is not empty', () => {
-          const actual = service._warningsCollector;
-          expect(actual).not.toHaveLength(0);
-          expect(actual).toHaveLength(1);
+      describe('#01 => log', () => {
+        test('#01 => errors is empty', () => {
+          const actual = service._errorsCollector;
+          expect(actual).toHaveLength(0);
         });
 
-        test(`#02 => contains warning for machine : "${idM}"`, () => {
-          const expected = `Machine (${idM}) is not defined`;
-          expect(service._warningsCollector).toContain(expected);
+        describe('#02 => It has some watnings', () => {
+          test('#01 => warnings is not empty', () => {
+            const actual = service._warningsCollector;
+            expect(actual).not.toHaveLength(0);
+            expect(actual).toHaveLength(1);
+          });
+
+          test(`#02 => contains warning for machine : "${idM}"`, () => {
+            const expected = `Machine (${idM}) is not defined`;
+            expect(service._warningsCollector).toContain(expected);
+          });
+        });
+      });
+    });
+
+    describe('#01 => object', () => {
+      const idM = {
+        name: 'machineNotDefined',
+        description: 'Not defined',
+      };
+      const machineT = createMachine(
+        {
+          machines: { idM },
+          initial: 'idle',
+          states: {
+            idle: {},
+          },
+        },
+        defaultT,
+        // defaultI,
+      );
+
+      const service = interpret(machineT, defaultC);
+
+      test('#00 => start', service.start.bind(service));
+
+      describe('#01 => log', () => {
+        test('#01 => errors is empty', () => {
+          const actual = service._errorsCollector;
+          expect(actual).toHaveLength(0);
+        });
+
+        describe('#02 => It has some watnings', () => {
+          test('#01 => warnings is not empty', () => {
+            const actual = service._warningsCollector;
+            expect(actual).not.toHaveLength(0);
+            expect(actual).toHaveLength(1);
+          });
+
+          test(`#02 => contains warning for machine : "${reduceAction(idM)}"`, () => {
+            const expected = `Machine (${reduceAction(idM)}) is not defined`;
+            expect(service._warningsCollector).toContain(expected);
+          });
         });
       });
     });

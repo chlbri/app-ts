@@ -1,3 +1,4 @@
+import { reduceAction } from '#actions';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { types } from '@bemedev/types';
 import type {
@@ -5,7 +6,6 @@ import type {
   EmitterConfig,
   EmitterMap,
 } from 'src/emitters/types';
-import { isDescriber } from '~types';
 
 export type ToEmitter_F = <
   E extends EventsMap,
@@ -32,13 +32,9 @@ export type ToEmitter_F = <
  * @see {@linkcode PromiseeMap} for the promisees map
  */
 export const toEmitter: ToEmitter_F = (_emitter, emitters) => {
-  if (isDescriber(_emitter)) {
-    const emitter = emitters?.[_emitter.name];
-    if (!emitter) return undefined;
-    return emitter;
-  }
+  const key = reduceAction(_emitter);
 
-  const emitter = emitters?.[_emitter];
+  const emitter = emitters?.[key];
   if (!emitter) return undefined;
   return emitter;
 };

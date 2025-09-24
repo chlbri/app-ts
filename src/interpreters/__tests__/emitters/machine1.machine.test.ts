@@ -55,6 +55,8 @@ describe('#01 => Emitter Machine1', () => {
     test(...useNext(31));
     test(...waiter(32, 10));
     test(...useContext(125, 33));
-    test('#34 => Stop', service.stop);
+    test('#34 => Resume', service.resume);
+    test(...waiter(35, 5));
+    test('#36 => Stop', service.stop);
   });
 });
