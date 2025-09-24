@@ -737,7 +737,7 @@ export class Interpreter<
     this.#childrenServices
       .filter(({ from }) => !from || !this.#isInsideValue(from))
       .forEach(this.#pause);
-    this.#childrenServices.forEach(this.#resume);
+    this.#currentServices.forEach(this.#resume);
     this.#resumeEmitters();
     await this.#performSelfTransitions();
   };
