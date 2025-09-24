@@ -6,6 +6,8 @@ import { map } from 'rxjs/internal/operators/map';
 import { take } from 'rxjs/internal/operators/take';
 import { tap } from 'rxjs/internal/operators/tap';
 
+let sub: Subscription | undefined;
+
 export function tapWhile<T>(
   predicate: (value: T) => boolean,
   sideEffect: (value: T) => void,
@@ -29,6 +31,12 @@ export const WAITERS = {
 export const machineEmitter1 = createMachine(
   {
     initial: 'inactive',
+    emitters: {
+      interval: {
+        id: 'interval',
+        description: 'Interval emitter',
+      },
+    },
     states: {
       inactive: {
         on: {
@@ -41,12 +49,6 @@ export const machineEmitter1 = createMachine(
         },
       },
     },
-    emitters: [
-      {
-        description: 'interval emitter',
-        name: 'interval',
-      },
-    ],
   },
   typings({
     context: 'number',
@@ -58,25 +60,22 @@ export const machineEmitter1 = createMachine(
   emitters: {
     interval: ({ merge, selector }) => {
       const ctx = selector(({ context }) => context);
-      const value = selector(({ value }) => value);
       const TAKE_COUNT = 5;
 
       const out = interval(WAITERS.short).pipe(
         take(TAKE_COUNT),
-        tap(() => console.warn('status', '=>', value())),
         map(v => v + 1),
         map(v => v * 5),
       );
 
-      let sub: Subscription | undefined;
-
       return {
         start: () => {
           sub = out.subscribe(value => merge({ context: ctx() + value }));
-          return sub;
+          console.warn('start, closed =>', sub?.closed);
         },
         stop: () => {
-          return sub?.unsubscribe();
+          sub?.unsubscribe();
+          console.warn('stop, closed =>', sub?.closed);
         },
       };
     },

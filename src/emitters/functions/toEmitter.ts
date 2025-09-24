@@ -1,8 +1,11 @@
 import type { EventsMap, PromiseeMap } from '#events';
 import type { types } from '@bemedev/types';
-import type { Emitter, EmitterMap } from 'src/emitters/types';
+import type {
+  Emitter,
+  EmitterConfig,
+  EmitterMap,
+} from 'src/emitters/types';
 import { isDescriber } from '~types';
-import type { EmitterConfig } from '../types';
 
 export type ToEmitter_F = <
   E extends EventsMap,
@@ -12,7 +15,7 @@ export type ToEmitter_F = <
 >(
   emitter: EmitterConfig,
   emitters?: EmitterMap<E, P, Pc, Tc>,
-) => { emitter: Emitter<E, P, Pc, Tc>; id: string } | undefined;
+) => Emitter<E, P, Pc, Tc> | undefined;
 
 /**
  * Converts a machine configuration to a machine object with an id.
@@ -32,10 +35,10 @@ export const toEmitter: ToEmitter_F = (_emitter, emitters) => {
   if (isDescriber(_emitter)) {
     const emitter = emitters?.[_emitter.name];
     if (!emitter) return undefined;
-    return { emitter, id: _emitter.name };
+    return emitter;
   }
 
   const emitter = emitters?.[_emitter];
   if (!emitter) return undefined;
-  return { emitter, id: _emitter };
+  return emitter;
 };

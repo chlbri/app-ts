@@ -35,7 +35,6 @@ import {
   type ConfigFrom,
   type ContextFrom,
   type DirectMerge_F,
-  type EmitterConfig,
   type EventsMapFrom,
   type ExtendedActionsParams,
   type GetEventsFromConfig,
@@ -96,8 +95,7 @@ import sleep from '@bemedev/sleep';
 import { castings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
-import { isDescriber, type RecordS } from '~types';
-import { toEmitter } from './../machine/functions/toEmitter';
+import { Describer, Describer2, isDescriber, type RecordS } from '~types';
 import type {
   _Send_F,
   AddSubscriber_F,
@@ -125,6 +123,7 @@ import type {
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
 
+import { toEmitter, type Emitter2, type EmitterConfig } from '#emitters';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
@@ -255,6 +254,22 @@ export class Interpreter<
    */
   #childrenServices: (AnyInterpreter2 & { id: string })[] = [];
 
+  #collectedMachines: [
+    from: string,
+    ...machines: (types.NOmit<Describer, 'description'> &
+      Partial<Pick<Describer, 'description'>> & {
+        id: string;
+      })[],
+  ][];
+
+  #collectedEmitters!: [
+    from: string,
+    ...machines: (types.NOmit<Describer, 'description'> &
+      Partial<Pick<Describer, 'description'>> & {
+        id: string;
+      })[],
+  ][];
+
   /**
    * Public getter of the service subscribers of this {@linkcode Interpreter} service.
    */
@@ -288,24 +303,18 @@ export class Interpreter<
     return machines.map(this.toMachine).filter(isDefined);
   }
 
-  get #childrenEmitters() {
-    const emitters = toArray.typed(this.#machine.config.emitters);
-    return emitters
-      .map(this.toEmitter)
-      .filter(isDefined)
-      .map(({ id, emitter }) => {
-        const args: Parameters<typeof emitter>[0] = {
-          selector: func => {
-            return () => func(this.#cloneState);
-          },
-          merge: this.#mergeContexts,
-          send: this.send,
-        };
+  #reduceEmitter = ({ id, emitter }: Emitter2<E, P, Pc, Tc>) => {
+    const args: Parameters<typeof emitter>[0] = {
+      selector: func => {
+        return () => func(this.#cloneState);
+      },
+      merge: this.#mergeContexts,
+      send: this.send,
+    };
 
-        const instance = emitter(args);
-        return { id, instance };
-      });
-  }
+    const instance = emitter(args);
+    return { id, instance };
+  };
 
   /**
    * The id of the current {@linkcode Interpreter} service.
@@ -379,6 +388,8 @@ export class Interpreter<
       value: this.#value,
       tags: this.#config.tags,
     };
+    this.#collectMachines();
+    this.#collectEmitters();
 
     this.#throwing();
     this.#startEmitters();
@@ -1330,6 +1341,78 @@ export class Interpreter<
     return entries;
   }
 
+  #collectMachines = () => {
+    const entriesFlat = Object.entries(this.#machine.flat);
+    const entries: [
+      from: string,
+      ...machines: (Describer2 & { id: string })[],
+    ][] = [];
+
+    entriesFlat.forEach(([from, node]) => {
+      const _machines = node.machines;
+      if (_machines) {
+        const machines = Object.entries(_machines).map(
+          ([name, machine]) => {
+            return { name, ...machine };
+          },
+        );
+        entries.push([from, ...machines]);
+      }
+    });
+
+    return (this.#collectedMachines = entries);
+  };
+
+  get #currentMachines() {
+    return this.#collectedMachines
+      .filter(([from]) => this.#isInsideValue(from))
+      .map(([, ...machines]) => {
+        return machines;
+      })
+      .flat();
+  }
+
+  #collectEmitters() {
+    const entriesFlat = Object.entries(this.#machine.flat);
+    const entries: [
+      from: string,
+      ...machines: (Describer2 & { id: string })[],
+    ][] = [];
+
+    entriesFlat.forEach(([from, node]) => {
+      const _emitters = node.emitters;
+      if (_emitters) {
+        const emitters = Object.entries(_emitters).map(
+          ([name, emitter]) => {
+            return { name, ...emitter };
+          },
+        );
+        entries.push([from, ...emitters]);
+      }
+    });
+
+    return (this.#collectedEmitters = entries);
+  }
+
+  get #currentEmitters() {
+    return this.#collectedEmitters
+      .filter(([from]) => this.#isInsideValue(from))
+      .map(([, ...emitters]) => {
+        return emitters;
+      })
+      .flat()
+      .map(({ id, name }) => {
+        const emitter = this.toEmitter(name);
+        return { id, emitter };
+      })
+      .filter(
+        (({ emitter }) => !!emitter) as (
+          value: any,
+        ) => value is Emitter2<E, P, Pc, Tc>,
+      )
+      .map(this.#reduceEmitter);
+  }
+
   get #currentActivities() {
     const collected = this.#collectedActivities.filter(([from]) =>
       this.#isInsideValue(from),
@@ -1360,15 +1443,15 @@ export class Interpreter<
   };
 
   #startEmitters = () => {
-    this.#childrenEmitters
-      .map(({ instance }) => instance)
-      .forEach(this.#start);
+    this.#currentEmitters.forEach(({ instance }) => {
+      instance.start();
+    });
   };
 
   #stopEmitters = () => {
-    this.#childrenEmitters
-      .map(({ instance }) => instance)
-      .forEach(this.#stop);
+    this.#currentEmitters.forEach(({ instance }) => {
+      instance.stop();
+    });
   };
 
   /**

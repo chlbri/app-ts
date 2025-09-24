@@ -8,7 +8,6 @@ import type {
   RecordS,
   ReduceArray,
   SingleOrArrayL,
-  SingleOrArrayR,
 } from '~types';
 
 export type StateType = 'atomic' | 'compound' | 'parallel';
@@ -64,10 +63,18 @@ export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T
 
 export type BaseConfig = {
   readonly description?: string;
-  readonly entry?: SingleOrArrayR<ActionConfig>;
-  readonly exit?: SingleOrArrayR<ActionConfig>;
-  readonly tags?: SingleOrArrayR<string>;
+  readonly entry?: SingleOrArrayL<ActionConfig>;
+  readonly exit?: SingleOrArrayL<ActionConfig>;
+  readonly tags?: SingleOrArrayL<string>;
   readonly activities?: ActivityConfig;
+  readonly emitters?: RecordS<{
+    id: string;
+    description?: string;
+  }>;
+  readonly machines?: RecordS<{
+    id: string;
+    description?: string;
+  }>;
 };
 
 export type CommonNodeConfig<Paths extends string = string> = BaseConfig &
