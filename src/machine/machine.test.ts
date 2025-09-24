@@ -22,7 +22,11 @@ describe('machine coverage', () => {
 
   describe('#01 => Integration', () => {
     const TEXT = 'Activities Integration Test from perform';
-
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    beforeAll(() => {
+      console.time(TEXT);
+      log.mockClear();
+    });
     describe(TEXT, () => {
       // #region Config
 
@@ -47,12 +51,6 @@ describe('machine coverage', () => {
           },
         },
       );
-
-      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      beforeAll(() => {
-        console.time(TEXT);
-      });
 
       type SE = Parameters<typeof service.send>[0];
 
@@ -547,7 +545,7 @@ describe('machine coverage', () => {
   describe('#03 => Getters', () => {
     test('#01 => config', () => {
       const expected = {
-        machines: 'machine1',
+        machines: { machine1: 'machine1' },
         initial: 'idle',
         states: {
           idle: {
@@ -640,7 +638,7 @@ describe('machine coverage', () => {
     test('#02 => flat', () => {
       const expected = {
         '/': {
-          machines: 'machine1',
+          machines: { machine1: 'machine1' },
           initial: 'idle',
           states: {
             idle: {
@@ -1082,7 +1080,7 @@ describe('machine coverage', () => {
     const idM = 'machineNotDefined';
     const machineT = createMachine(
       {
-        machines: idM,
+        machines: { idM },
         initial: 'idle',
         states: {
           idle: {},

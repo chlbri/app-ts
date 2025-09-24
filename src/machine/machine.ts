@@ -58,6 +58,7 @@ import type {
   Config,
   ConfigDef,
   GetEventsFromConfig,
+  GetMachineKeysFromFlat,
   GetPromiseeSrcFromConfig,
   MachineOptions,
   NoExtraKeysConfig,
@@ -415,7 +416,9 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __childKey() {
-    return this.#typingsByKey('machines');
+    return undefined as unknown as GetMachineKeysFromFlat<
+      typeof this.flat
+    >;
   }
 
   /**

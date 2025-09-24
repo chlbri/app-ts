@@ -95,7 +95,7 @@ import sleep from '@bemedev/sleep';
 import { castings, type types } from '@bemedev/types';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
-import { Describer, Describer2, isDescriber, type RecordS } from '~types';
+import { Describer2, isDescriber, type RecordS } from '~types';
 import type {
   _Send_F,
   AddSubscriber_F,
@@ -123,7 +123,12 @@ import type {
 } from './interpreter.types';
 import { Scheduler } from './scheduler';
 
-import { toEmitter, type Emitter2, type EmitterConfig } from '#emitters';
+import {
+  Emitter3,
+  toEmitter,
+  type Emitter2,
+  type EmitterConfig,
+} from '#emitters';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
@@ -252,23 +257,18 @@ export class Interpreter<
   /**
    * All {@linkcode AnyInterpreter2} service subscribers of this {@linkcode Interpreter} service.
    */
-  #childrenServices: (AnyInterpreter2 & { id: string })[] = [];
+  #childrenServices: AnyInterpreter2[] = [];
 
-  #collectedMachines: [
-    from: string,
-    ...machines: (types.NOmit<Describer, 'description'> &
-      Partial<Pick<Describer, 'description'>> & {
-        id: string;
-      })[],
-  ][];
-
-  #collectedEmitters!: [
-    from: string,
-    ...machines: (types.NOmit<Describer, 'description'> &
-      Partial<Pick<Describer, 'description'>> & {
-        id: string;
-      })[],
-  ][];
+  #collectedEmitters: {
+    from: string;
+    id: string;
+    instance: {
+      start: () => void;
+      stop: () => void;
+      resume: () => void;
+      pause: () => void;
+    };
+  }[] = [];
 
   /**
    * Public getter of the service subscribers of this {@linkcode Interpreter} service.
@@ -291,18 +291,6 @@ export class Interpreter<
    */
   at = this.getChildAt;
 
-  /**
-   * Returns all child machines of this {@linkcode Interpreter}.
-   *
-   * @see {@linkcode toArray.typed} for converting the machines to an array.
-   * @see {@linkcode toMachine} for converting the machine config to a {@linkcode Machine}.
-   * @see {@linkcode isDefined} for filtering out undefined machines.
-   */
-  get #childrenMachines() {
-    const machines = toArray.typed(this.#machine.config.machines);
-    return machines.map(this.toMachine).filter(isDefined);
-  }
-
   #reduceEmitter = ({ id, emitter, from }: Emitter2<E, P, Pc, Tc>) => {
     const args: Parameters<typeof emitter>[0] = {
       selector: func => {
@@ -321,6 +309,8 @@ export class Interpreter<
    * Used for child machines identification.
    */
   id?: string;
+
+  from?: string;
 
   /**
    * The accessor of {@linkcode Mode} of this {@linkcode Interpreter} service
@@ -388,8 +378,8 @@ export class Interpreter<
       value: this.#value,
       tags: this.#config.tags,
     };
-    this.#collectMachines();
     this.#collectEmitters();
+    this.#collectServices();
 
     this.#throwing();
     this.#startEmitters();
@@ -706,7 +696,7 @@ export class Interpreter<
     this.#startStatus();
     this.#flush();
     this.#scheduler.initialize(this.#startInitialEntries);
-    this.#performChildMachines();
+    this.#currentServices.forEach(this.#start);
     // this.#performEmitters();
     this.#throwing();
 
@@ -743,8 +733,8 @@ export class Interpreter<
     this.#selfTransitionsCounter++;
     this.#pauseAllActivities();
     this.#performActivities();
-    this.#startEmitters();
-    this.#stopEmitters(({ from }) => !this.#isInsideValue(from));
+    this.#pauseEmitters(({ from }) => !this.#isInsideValue(from));
+    this.#resumeEmitters();
     await this.#performSelfTransitions();
   };
 
@@ -767,15 +757,7 @@ export class Interpreter<
 
       const currentValue = this.#value;
       check = !equal(previousValue, currentValue);
-      if (check) {
-        const current = this.#currentEmitters.filter(({ from }) => {
-          return !this.#isInsideValue2(currentValue, from);
-        });
-        current.forEach(({ instance }) => {
-          instance.stop();
-        });
-        this.#flush();
-      }
+      if (check) this.#flush();
 
       const duration = Date.now() - startTime;
       const check2 = duration > TIME_TO_RINIT_SELF_COUNTER;
@@ -1351,7 +1333,7 @@ export class Interpreter<
     return entries;
   }
 
-  #collectMachines = () => {
+  #collectServices = () => {
     const entriesFlat = Object.entries(this.#machine.flat);
     const entries: [
       from: string,
@@ -1361,25 +1343,42 @@ export class Interpreter<
     entriesFlat.forEach(([from, node]) => {
       const _machines = node.machines;
       if (_machines) {
-        const machines = Object.entries(_machines).map(
-          ([name, machine]) => {
-            return { name, ...machine };
-          },
-        );
+        const machines = Object.entries(_machines).map(([id, machine]) => {
+          const name = reduceAction(machine);
+          return { id, name };
+        });
         entries.push([from, ...machines]);
       }
     });
 
-    return (this.#collectedMachines = entries);
+    console.warn('entries', entries);
+
+    entries
+      .map(([from, ...machines]) => {
+        return machines.map(emitter => ({ ...emitter, from }));
+      })
+      .flat()
+      .map(({ id, name, from }) => {
+        console.warn(`Machine ${name} created from ${from}`);
+        const machine = this.toMachine(name);
+        return { id, machine, from };
+      })
+      .filter(
+        (({ machine }) => !!machine) as (value: any) => value is {
+          id: string;
+          machine: ChildS<E, P, Pc>;
+          from: string;
+        },
+      )
+      .forEach(({ id, machine, from }) => {
+        this.#reduceChild<any>(machine, id, from);
+      });
   };
 
-  get #currentMachines() {
-    return this.#collectedMachines
-      .filter(([from]) => this.#isInsideValue(from))
-      .map(([, ...machines]) => {
-        return machines;
-      })
-      .flat();
+  get #currentServices() {
+    return this.#childrenServices.filter(
+      ({ from }) => !from || this.#isInsideValue(from),
+    );
   }
 
   #collectEmitters() {
@@ -1392,21 +1391,15 @@ export class Interpreter<
     entriesFlat.forEach(([from, node]) => {
       const _emitters = node.emitters;
       if (_emitters) {
-        const emitters = Object.entries(_emitters).map(
-          ([name, emitter]) => {
-            return { name, ...emitter };
-          },
-        );
+        const emitters = Object.entries(_emitters).map(([id, emitter]) => {
+          const name = reduceAction(emitter);
+          return { id, name };
+        });
         entries.push([from, ...emitters]);
       }
     });
 
-    return (this.#collectedEmitters = entries);
-  }
-
-  get #currentEmitters() {
-    return this.#collectedEmitters
-      .filter(([from]) => this.#isInsideValue(from))
+    const entries2 = entries
       .map(([from, ...emitters]) => {
         return emitters.map(emitter => ({ ...emitter, from }));
       })
@@ -1421,6 +1414,14 @@ export class Interpreter<
         ) => value is Emitter2<E, P, Pc, Tc>,
       )
       .map(this.#reduceEmitter);
+
+    return this.#collectedEmitters.push(...entries2);
+  }
+
+  get #currentEmitters() {
+    return this.#collectedEmitters.filter(({ from }) =>
+      this.#isInsideValue(from),
+    );
   }
 
   get #currentActivities() {
@@ -1442,16 +1443,6 @@ export class Interpreter<
     return this.#currentActivities?.forEach(this.#start);
   };
 
-  #performChildMachines = () => {
-    this.#childrenMachines.forEach(({ id, ...child }) => {
-      this.#reduceChild(castings.commons.any(child), id);
-    });
-
-    this.#childrenServices.forEach(child => {
-      child.start();
-    });
-  };
-
   #startEmitters = () => {
     this.#currentEmitters
       .filter(({ id }) => !this.#startedEmitterIDs.has(id))
@@ -1461,31 +1452,33 @@ export class Interpreter<
       });
   };
 
+  #resumeEmitters = () => {
+    this.#currentEmitters
+      .filter(({ id }) => !this.#startedEmitterIDs.has(id))
+      .forEach(({ instance, id }) => {
+        instance.resume();
+        this.#startedEmitterIDs.add(id);
+      });
+  };
+
   #startedEmitterIDs: Set<string> = new Set();
 
-  #stopEmitters = (
-    filter: (value: Emitter2<E, P, Pc, Tc>) => boolean = () => true,
-  ) => {
+  #stopEmitters = () => {
     this.#collectedEmitters
-      .map(([from, ...emitters]) => {
-        return emitters.map(emitter => ({ ...emitter, from }));
-      })
-      .flat()
-      .map(({ id, name, from }) => {
-        const emitter = this.toEmitter(name);
-        return { id, emitter, from };
-      })
-      .filter(
-        (({ emitter }) => !!emitter) as (
-          value: any,
-        ) => value is Emitter2<E, P, Pc, Tc>,
-      )
+      .filter(({ id }) => this.#startedEmitterIDs.has(id))
+      .forEach(({ instance, id }) => {
+        instance.stop();
+        this.#startedEmitterIDs.delete(id);
+      });
+  };
+
+  #pauseEmitters = (filter: (value: Emitter3) => boolean = () => true) => {
+    this.#collectedEmitters
       .filter(({ id }) => this.#startedEmitterIDs.has(id))
       .filter(filter)
-      .map(this.#reduceEmitter)
       .forEach(({ instance, id }) => {
+        instance.pause();
         this.#startedEmitterIDs.delete(id);
-        instance.stop();
       });
   };
 
@@ -1650,7 +1643,7 @@ export class Interpreter<
     this.#makeBusy();
     this.#subscribers.forEach(this.#close);
     this.#childrenServices.forEach(this.#pause);
-    this.#stopEmitters();
+    this.#pauseEmitters();
     this.#timeoutActions.forEach(this.#pause);
     this.#setStatus('paused');
   };
@@ -1661,8 +1654,8 @@ export class Interpreter<
       this.#makeBusy();
       this.#subscribers.forEach(this.#open);
       this.#timeoutActions.forEach(this.#resume);
-      this.#childrenServices.forEach(this.#resume);
-      this.#startEmitters();
+      this.#currentServices.forEach(this.#resume);
+      this.#resumeEmitters();
       this.#makeWork();
     }
   };
@@ -1674,6 +1667,7 @@ export class Interpreter<
     this.#childrenServices.forEach(this.#stop);
     this._cachedIntervals.forEach(this.#dispose);
     this.#timeoutActions.forEach(this.#stop);
+    this.#stopEmitters();
     this.#scheduler.stop();
     this.#setStatus('stopped');
   };
@@ -2151,7 +2145,7 @@ export class Interpreter<
    * @returns a {@linkcode SubscriberClass} result of the child machine subscription.
    *
    */
-  subscribeMachine = <T extends AnyMachine = AnyMachine>(
+  addChild = <T extends AnyMachine = AnyMachine>(
     id: string,
     { initials: _initials, ...rest }: ChildS2<E, P, Pc, Tc, T>,
   ) => {
@@ -2194,6 +2188,7 @@ export class Interpreter<
   #reduceChild = <T extends AnyMachine = AnyMachine>(
     { subscribers, machine, initials }: ChildS<E, P, Pc, T>,
     id: string,
+    from?: string,
   ) => {
     let service = castings.commons<InterpreterFrom<T>>(
       this.#childrenServices.find(f => f.id === id),
@@ -2202,6 +2197,7 @@ export class Interpreter<
     if (!service) {
       service = this.interpretChild(machine, initials);
       service.id = id;
+      service.from = from;
       this.#childrenServices.push(castings.commons(service));
     }
 

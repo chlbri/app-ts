@@ -95,7 +95,7 @@ export const config21 = createConfig({
 
 export const machine21 = createMachine(
   {
-    machines: 'machine1',
+    machines: { machine1: 'machine1' },
     ...config21,
   },
   typings({

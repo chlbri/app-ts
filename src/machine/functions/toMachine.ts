@@ -11,7 +11,7 @@ export type ToMachine_F = <
 >(
   machine: ActionConfig,
   machines?: MachineMap<E, P, Tc>,
-) => (ChildS<E, P, Tc> & { id: string }) | undefined;
+) => ChildS<E, P, Tc> | undefined;
 
 /**
  * Converts a machine configuration to a machine object with an id.
@@ -31,10 +31,10 @@ export const toMachine: ToMachine_F = (machine, machines) => {
   if (isDescriber(machine)) {
     const out = machines?.[machine.name];
     if (!out) return undefined;
-    return { ...out, id: machine.name };
+    return out;
   }
 
   const out = machines?.[machine];
   if (!out) return undefined;
-  return { ...out, id: machine };
+  return out;
 };

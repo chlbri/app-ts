@@ -23,7 +23,7 @@ import type {
 } from '#transitions';
 import type { Decompose } from '@bemedev/decompose';
 import type { types } from '@bemedev/types';
-import type { Emitter } from 'src/emitters/types';
+import type { Emitter, EmitterConfig } from 'src/emitters/types';
 import type {
   Describer,
   FnMap,
@@ -59,7 +59,6 @@ export type MachineConfig = Describer | string;
  * @see {@linkcode SingleOrArrayL}
  */
 export type Config = ConfigNode & {
-  readonly machines?: SingleOrArrayL<MachineConfig>;
   readonly strict?: boolean;
 };
 
@@ -553,26 +552,22 @@ export type FnMapFrom<
   R
 >;
 
-/**
- * Type representing a record of child services from a machine config,
- * where each key is a machine name and the value is a {@linkcode ChildS} type.
- *
- * @template : {@linkcode Config} [C] - type of the machine config
- * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
- * @template Pc - type of the private context
- *
- * @see {@linkcode GetMachineKeysFromConfig} for extracting machine keys from the config.
- */
-export type GetMachinesFromConfig<
-  C extends Config,
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-> = Record<GetMachineKeysFromConfig<C>, ChildS<E, P, Pc>>;
-
 type GetEmitterKeysFromFlat<F extends RecordS<NodeConfig>> = {
-  [K in keyof F]: F[K] extends NodeConfig ? keyof F[K]['emitters'] : never;
+  [K in keyof F]: F[K] extends NodeConfig
+    ? F[K]['emitters'][keyof F[K]['emitters']] extends infer DK extends
+        EmitterConfig
+      ? FromActionConfig<DK>
+      : never
+    : never;
+}[keyof F];
+
+export type GetMachineKeysFromFlat<F extends RecordS<NodeConfig>> = {
+  [K in keyof F]: F[K] extends NodeConfig
+    ? F[K]['machines'][keyof F[K]['machines']] extends infer DK extends
+        MachineConfig
+      ? FromActionConfig<DK>
+      : never
+    : never;
 }[keyof F];
 
 /**
@@ -616,7 +611,9 @@ export type MachineOptions<
   predicates?: Partial<GetGuardsFromFlat<Flat, E, P, Pc, Tc>>;
   promises?: Partial<GetSrcFromFlat<Flat, E, P, Pc, Tc>>;
   delays?: Partial<GetDelaysFromFlat<Flat, E, P, Pc, Tc>>;
-  machines?: Partial<GetMachinesFromConfig<C, E, P, Pc>>;
+  machines?: Partial<
+    Record<GetMachineKeysFromFlat<Flat>, ChildS<E, P, Pc>>
+  >;
   emitters?: Partial<
     Record<GetEmitterKeysFromFlat<Flat>, Emitter<E, P, Pc, Tc>>
   >;

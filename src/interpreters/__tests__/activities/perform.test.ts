@@ -43,6 +43,7 @@ describe(TEXT, () => {
 
   beforeAll(() => {
     console.time(TEXT);
+    log.mockClear();
   });
 
   type SE = Parameters<typeof service.send>[0];

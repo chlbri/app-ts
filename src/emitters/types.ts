@@ -4,6 +4,14 @@ import type { DirectMerge_F } from '#machines';
 import type { types } from '@bemedev/types';
 import type { Describer, RecordS } from '~types';
 
+export type Subscriber = {
+  unsubscribe: () => void;
+};
+
+export type Subscribable = {
+  subscribe: Subscriber;
+};
+
 /**
  * Type representing a describer for a emitter.
  *
@@ -24,6 +32,8 @@ export type Emitter<
   ) => () => T;
 }) => {
   start: () => void;
+  pause: () => void;
+  resume: () => void;
   stop: () => void;
 };
 
@@ -36,6 +46,17 @@ export type Emitter2<
   id: string;
   from: string;
   emitter: Emitter<E, P, Pc, Tc>;
+};
+
+export type Emitter3 = {
+  id: string;
+  from: string;
+  instance: {
+    start: () => void;
+    pause: () => void;
+    resume: () => void;
+    stop: () => void;
+  };
 };
 
 export type EmitterMap<

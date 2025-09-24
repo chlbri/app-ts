@@ -1,6 +1,8 @@
 import type { Action, ActionConfig, FromActionConfig } from '#actions';
+import { EmitterConfig } from '#emitters';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
+import { MachineConfig } from '#machines';
 import type { Transitions, TransitionsConfig } from '#transitions';
 import type { types } from '@bemedev/types';
 import type {
@@ -67,14 +69,8 @@ export type BaseConfig = {
   readonly exit?: SingleOrArrayL<ActionConfig>;
   readonly tags?: SingleOrArrayL<string>;
   readonly activities?: ActivityConfig;
-  readonly emitters?: RecordS<{
-    id: string;
-    description?: string;
-  }>;
-  readonly machines?: RecordS<{
-    id: string;
-    description?: string;
-  }>;
+  readonly emitters?: RecordS<EmitterConfig>;
+  readonly machines?: RecordS<MachineConfig>;
 };
 
 export type CommonNodeConfig<Paths extends string = string> = BaseConfig &

@@ -31,7 +31,7 @@ describe('Integration testing for interpret, Children', () => {
     const parent = createMachine(
       {
         initial: 'idle',
-        machines: 'child',
+        machines: { child: 'child' },
         states: {
           idle: {},
         },
@@ -84,7 +84,7 @@ describe('Integration testing for interpret, Children', () => {
     const parent = createMachine(
       {
         initial: 'idle',
-        machines: 'child',
+        machines: { child: 'child' },
         states: {
           idle: {},
           working: {

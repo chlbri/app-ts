@@ -1,34 +1,29 @@
-import { interval, take, map, type Subscription } from 'rxjs';
+import { interval, map } from 'rxjs';
+import { createPausable } from '#emitters';
 
-const func = () => {
-  const int = interval(200).pipe(
-    take(5),
-    map(v => v + 1),
-    map(v => v * 5),
-  );
+const { start, resume, pause, stop } = createPausable(
+  interval(100).pipe(map(v => v + 1)),
+  value => console.log('value', '=>', value),
+);
 
-  let sub: Subscription | undefined;
-
-  const out = {
-    start: () => {
-      sub = int.subscribe(console.log);
-    },
-    stop: () => {
-      return sub?.unsubscribe();
-    },
-  };
-
-  return out;
-};
-
-const out = func();
-
-out.start();
+// Simulate start, pause, resume, and stop
+console.log('Starting...');
+setTimeout(() => {
+  console.log('Start');
+  start(); // Start the observable
+}, 100);
 
 setTimeout(() => {
-  out.stop();
+  console.log('Pause');
+  pause(); // Pause after 500 ms
 }, 500);
 
 setTimeout(() => {
-  out.start();
-}, 1500);
+  console.log('Resume');
+  resume(); // Resume after 1 second
+}, 1000);
+
+setTimeout(() => {
+  console.log('Stop');
+  stop(); // Stop after 2 seconds
+}, 2050);

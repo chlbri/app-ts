@@ -341,6 +341,7 @@ export interface AnyInterpreter<
   toDelayFn: (delay: string) => Delay<E, P, Pc, Tc> | undefined;
   toMachine: (machine: ActionConfig) => ChildS<E, P, Pc> | undefined;
   id?: string;
+  from?: string;
 }
 
 export type CreateInterval2_F = (
