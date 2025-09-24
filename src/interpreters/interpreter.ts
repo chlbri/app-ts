@@ -303,7 +303,7 @@ export class Interpreter<
     return machines.map(this.toMachine).filter(isDefined);
   }
 
-  #reduceEmitter = ({ id, emitter }: Emitter2<E, P, Pc, Tc>) => {
+  #reduceEmitter = ({ id, emitter, from }: Emitter2<E, P, Pc, Tc>) => {
     const args: Parameters<typeof emitter>[0] = {
       selector: func => {
         return () => func(this.#cloneState);
@@ -313,7 +313,7 @@ export class Interpreter<
     };
 
     const instance = emitter(args);
-    return { id, instance };
+    return { id, instance, from };
   };
 
   /**
@@ -743,6 +743,8 @@ export class Interpreter<
     this.#selfTransitionsCounter++;
     this.#pauseAllActivities();
     this.#performActivities();
+    this.#startEmitters();
+    this.#stopEmitters(({ from }) => !this.#isInsideValue(from));
     await this.#performSelfTransitions();
   };
 
@@ -765,7 +767,15 @@ export class Interpreter<
 
       const currentValue = this.#value;
       check = !equal(previousValue, currentValue);
-      if (check) this.#flush();
+      if (check) {
+        const current = this.#currentEmitters.filter(({ from }) => {
+          return !this.#isInsideValue2(currentValue, from);
+        });
+        current.forEach(({ instance }) => {
+          instance.stop();
+        });
+        this.#flush();
+      }
 
       const duration = Date.now() - startTime;
       const check2 = duration > TIME_TO_RINIT_SELF_COUNTER;
@@ -1397,13 +1407,13 @@ export class Interpreter<
   get #currentEmitters() {
     return this.#collectedEmitters
       .filter(([from]) => this.#isInsideValue(from))
-      .map(([, ...emitters]) => {
-        return emitters;
+      .map(([from, ...emitters]) => {
+        return emitters.map(emitter => ({ ...emitter, from }));
       })
       .flat()
-      .map(({ id, name }) => {
+      .map(({ id, name, from }) => {
         const emitter = this.toEmitter(name);
-        return { id, emitter };
+        return { id, emitter, from };
       })
       .filter(
         (({ emitter }) => !!emitter) as (
@@ -1443,15 +1453,40 @@ export class Interpreter<
   };
 
   #startEmitters = () => {
-    this.#currentEmitters.forEach(({ instance }) => {
-      instance.start();
-    });
+    this.#currentEmitters
+      .filter(({ id }) => !this.#startedEmitterIDs.has(id))
+      .forEach(({ instance, id }) => {
+        instance.start();
+        this.#startedEmitterIDs.add(id);
+      });
   };
 
-  #stopEmitters = () => {
-    this.#currentEmitters.forEach(({ instance }) => {
-      instance.stop();
-    });
+  #startedEmitterIDs: Set<string> = new Set();
+
+  #stopEmitters = (
+    filter: (value: Emitter2<E, P, Pc, Tc>) => boolean = () => true,
+  ) => {
+    this.#collectedEmitters
+      .map(([from, ...emitters]) => {
+        return emitters.map(emitter => ({ ...emitter, from }));
+      })
+      .flat()
+      .map(({ id, name, from }) => {
+        const emitter = this.toEmitter(name);
+        return { id, emitter, from };
+      })
+      .filter(
+        (({ emitter }) => !!emitter) as (
+          value: any,
+        ) => value is Emitter2<E, P, Pc, Tc>,
+      )
+      .filter(({ id }) => this.#startedEmitterIDs.has(id))
+      .filter(filter)
+      .map(this.#reduceEmitter)
+      .forEach(({ instance, id }) => {
+        this.#startedEmitterIDs.delete(id);
+        instance.stop();
+      });
   };
 
   /**

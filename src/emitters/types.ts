@@ -34,6 +34,7 @@ export type Emitter2<
   Tc extends types.PrimitiveObject = types.PrimitiveObject,
 > = {
   id: string;
+  from: string;
   emitter: Emitter<E, P, Pc, Tc>;
 };
 
