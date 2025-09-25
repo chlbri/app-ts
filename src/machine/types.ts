@@ -9,6 +9,7 @@ import type {
   SubType,
 } from '#bemedev/globals/types';
 import type { Delay } from '#delays';
+import type { Emitter, EmitterConfig } from '#emitters';
 import type { EventsMap, PromiseeDef, PromiseeMap } from '#events';
 import type { PredicateS } from '#guards';
 import type { PromiseFunction } from '#promises';
@@ -31,7 +32,6 @@ import type {
   TransitionsConfig,
 } from '#transitions';
 import type { Decompose } from '@bemedev/decompose';
-import type { Emitter, EmitterConfig } from 'src/emitters/types';
 import type {
   Describer,
   FnMap,

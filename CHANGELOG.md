@@ -11,6 +11,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.0.4] - 2025/09/24** => _23:59_
+
+</summary>
+
+- Fix absolute imports for rollup
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.0.3] - 2025/09/24** => _16:45_
 
 </summary>
