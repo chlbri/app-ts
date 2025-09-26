@@ -6,6 +6,7 @@ import tsconfig from '../tsconfig.json';
 
 type Inline = NotUndefined<ViteUserConfig['test']>;
 type Plugins = ViteUserConfig['plugins'];
+// from other
 
 const plugins = [
   aliasTs(tsconfig as any),
