@@ -70,7 +70,8 @@ jobs:
           message:
             'chore(admin): Execute monthly admin maintenance scripts'
           author_name: '@chlbri'
-          author_email: 'bri_lvi@icloud.com'
+          author_email: bri_lvi@icloud.com
+          commit: --signoff
           add: '.'
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -78,7 +79,7 @@ jobs:
     name: Cleanup Artifacts
     runs-on: ubuntu-latest
     needs: [admin-update, commit-changes]
-    if: always() && needs.admin-update.outputs.changes-detected == 'true'
+    if: needs.admin-update.outputs.changes-detected == 'true'
     permissions:
       actions: write
       contents: read
