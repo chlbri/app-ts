@@ -79,7 +79,6 @@ jobs:
           author_name: '@chlbri'
           author_email: 'bri_lvi@icloud.com'
           add: '.'
-          default_author: Charles-Lévi BRI
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup:
