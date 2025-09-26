@@ -71,96 +71,16 @@ jobs:
           name: updated-workspace
           path: .
 
-      - name: Commit changes via GitHub API
-        uses: actions/github-script@v7
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
         with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            
-            // Get current commit SHA
-            const { data: ref } = await github.rest.git.getRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'heads/main'
-            });
-            
-            const currentCommitSha = ref.object.sha;
-            
-            // Get current tree
-            const { data: currentCommit } = await github.rest.git.getCommit({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              commit_sha: currentCommitSha
-            });
-            
-            // Create blobs for changed files
-            const { execSync } = require('child_process');
-            const changedFiles = execSync('git diff --name-only HEAD', { encoding: 'utf8' }).trim().split('\n').filter(f => f);
-            
-            const tree = [];
-            
-            for (const file of changedFiles) {
-              if (fs.existsSync(file)) {
-                const content = fs.readFileSync(file, 'utf8');
-                const { data: blob } = await github.rest.git.createBlob({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  content: content,
-                  encoding: 'utf-8'
-                });
-                
-                tree.push({
-                  path: file,
-                  mode: '100644',
-                  type: 'blob',
-                  sha: blob.sha
-                });
-              }
-            }
-            
-            if (tree.length === 0) {
-              console.log('No files to commit');
-              return;
-            }
-            
-            // Create new tree
-            const { data: newTree } = await github.rest.git.createTree({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tree: tree,
-              base_tree: currentCommit.tree.sha
-            });
-            
-            // Create commit
-            const commitMessage = `chore(admin): Execute monthly admin maintenance scripts
-
-            Exécute automatiquement les scripts de maintenance administrative mensuels pour maintenir la qualité et la cohérence du projet. Cette tâche automatisée permet de s'assurer que tous les fichiers de configuration et de documentation sont à jour selon les standards définis.
-
-            chlbri: bri_lvi@icloud.com`;
-
-            const { data: newCommit } = await github.rest.git.createCommit({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              message: commitMessage,
-              tree: newTree.sha,
-              parents: [currentCommitSha],
-              author: {
-                name: 'github-actions[bot]',
-                email: '41898282+github-actions[bot]@users.noreply.github.com'
-              }
-            });
-            
-            // Update reference
-            await github.rest.git.updateRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'heads/main',
-              sha: newCommit.sha,
-              force: false
-            });
-            
-            console.log(`Commit created: ${newCommit.sha}`);
+          message:
+            'chore(admin): Execute monthly admin maintenance scripts'
+          author_name: '@chlbri'
+          author_email: 'bri_lvi@icloud.com'
+          add: '.'
+          default_author: Charles-Lévi BRI
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup:
     name: Cleanup Artifacts
