@@ -56,7 +56,7 @@ jobs:
     name: Commit Changes
     runs-on: ubuntu-latest
     needs: admin-update
-    if: needs.admin-update.outputs.changes-detected == 'true'
+    # if: needs.admin-update.outputs.changes-detected == 'true'
 
     steps:
       - name: Checkout repository
