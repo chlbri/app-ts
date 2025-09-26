@@ -45,11 +45,15 @@ jobs:
             !.git
           retention-days: 1
 
-  commit-changes:
-    name: Commit Changes
+  bump-version:
+    name: Bump Package Version
     runs-on: ubuntu-latest
     needs: admin-update
     if: needs.admin-update.outputs.changes-detected == 'true'
+    permissions:
+      contents: write
+    outputs:
+      new-version: ${{ steps.bump-version.outputs.newTag }}
 
     steps:
       - name: Checkout repository
@@ -64,21 +68,71 @@ jobs:
           name: updated-workspace
           path: .
 
-      - name: Commit and push changes
+      - name: Automated Version Bump
+        uses: phips28/gh-action-bump-version@master
+        id: bump-version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          version-type: 'patch'
+          patch-wording:
+            'chore :,docs :,refactor :,perf :,test :,revert :,fix :'
+          rc-wording: 'hotfix :,rc :,ci :,style :'
+          minor-wording: 'feat :'
+          major-wording: 'BREAKING CHANGE,MAJOR'
+          skip-commit: 'true'
+          skip-tag: 'true'
+          skip-push: 'true'
+
+      - name: Upload updated workspace with version
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated-workspace-with-version
+          path: |
+            .
+            !node_modules
+            !.git
+          retention-days: 1
+
+  commit-changes:
+    name: Commit Changes
+    runs-on: ubuntu-latest
+    needs: [admin-update, bump-version]
+    if: needs.admin-update.outputs.changes-detected == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Download workspace with version
+        uses: actions/download-artifact@v4
+        with:
+          name: updated-workspace-with-version
+          path: .
+
+      - name: Commit changes with version bump
         uses: EndBug/add-and-commit@v9
         with:
-          message:
-            'chore(admin): Execute monthly admin maintenance scripts'
+          message: |
+            chore(admin): Execute monthly admin maintenance scripts and bump version
+
+            Exécute automatiquement les scripts de maintenance administrative mensuels et met à jour la version du package. Cette maintenance inclut la mise à jour des configurations, le nettoyage des fichiers et l'optimisation des performances.
+
+            chlbri: bri_lvi@icloud.com
           author_name: '@chlbri'
           author_email: bri_lvi@icloud.com
           commit: --signoff
           add: '.'
+          tag: 'v${{ needs.bump-version.outputs.new-version }}'
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup:
     name: Cleanup Artifacts
     runs-on: ubuntu-latest
-    needs: [admin-update, commit-changes]
+    needs: [admin-update, bump-version, commit-changes]
     if: needs.admin-update.outputs.changes-detected == 'true'
     permissions:
       actions: write
@@ -98,7 +152,7 @@ jobs:
               });
 
               for (const artifact of artifacts.data.artifacts) {
-                if (artifact.name === 'updated-workspace') {
+                if (artifact.name === 'updated-workspace' || artifact.name === 'updated-workspace-with-version') {
                   console.log(`Deleting artifact: ${artifact.name} (ID: ${artifact.id})`);
                   await github.rest.actions.deleteArtifact({
                     owner: context.repo.owner,
