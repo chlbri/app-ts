@@ -28,11 +28,8 @@ jobs:
       - name: Check for changes
         id: check-changes
         run: |
-          if git diff --quiet && git diff --cached --quiet; then
-            echo "changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "changes=true" >> $GITHUB_OUTPUT
-          fi
+          echo "changes=true" >> $GITHUB_OUTPUT
+        
 
       - name: Upload workspace
         if: steps.check-changes.outputs.changes == 'true'
