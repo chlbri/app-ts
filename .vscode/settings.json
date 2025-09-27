@@ -1,6 +1,7 @@
 {
   "github-actions.workflows.pinned.workflows": [
-    ".github/workflows/ci.yml"
+    ".github/workflows/ci.yml",
+    ".github/workflows/publish-NPM.yml"
   ],
   "githubPullRequests.ignoredPullRequestBranches": ["dev"],
   "demoTime.defaultFileType": "json"
