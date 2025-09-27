@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -91,7 +91,7 @@
     "onchange": "^7.1.0",
     "prettier": "^3.6.2",
     "pretty-quick": "^4.2.2",
-    "rollup": "^4.52.2",
+    "rollup": "^4.52.3",
     "rxjs": "^7.8.2",
     "tslib": "^2.8.1",
     "tsx": "^4.20.6",
