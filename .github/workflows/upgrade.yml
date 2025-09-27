@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   # Cron chaque premier du mois à 9h UTC
   schedule:
-    - cron: '0 9 1 * *'
+    - cron: '0 4 1 * *'
 
 jobs:
   admin-update:
