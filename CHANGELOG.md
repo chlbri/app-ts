@@ -11,6 +11,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.1.0] - 2025/09/29** => _12:42_
+
+</summary>
+
+- Void action is now a map
+- <u>Test coverage **_99%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.0.4] - 2025/09/24** => _23:59_
 
 </summary>

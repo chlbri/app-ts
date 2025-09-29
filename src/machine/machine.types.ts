@@ -134,7 +134,7 @@ export type VoidAction_F<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (fn?: FnR<E, P, Pc, Tc, void>) => ActionResultFn<E, P, Pc, Tc>;
+> = (fn?: FnMap<E, P, Pc, Tc, void>) => ActionResultFn<E, P, Pc, Tc>;
 
 export type DirectMerge_F<
   Pc = any,

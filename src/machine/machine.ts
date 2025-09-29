@@ -950,7 +950,11 @@ class Machine<
     return fn => {
       const fn2 = reduceFnMap(this.eventsMap, this.promiseesMap, fn);
       return ({ context, pContext, ...rest }) => {
-        const state = this.#cloneState({ context, pContext, ...rest });
+        const state = this.#cloneStateExtended({
+          context,
+          pContext,
+          ...rest,
+        });
         const { event, to } = fn2(state);
 
         const sentEvent = { to, event };
@@ -974,8 +978,13 @@ class Machine<
   #voidAction: VoidAction_F<E, P, Pc, Tc> = fn => {
     return ({ context, pContext, ...rest }) => {
       if (fn) {
-        const state = this.#cloneState({ context, pContext, ...rest });
-        fn(state);
+        const _fn = reduceFnMap(this.#eventsMap, this.#promiseesMap, fn);
+        const state = this.#cloneStateExtended({
+          context,
+          pContext,
+          ...rest,
+        });
+        _fn(state);
       }
       return _any({ context, pContext });
     };
@@ -988,7 +997,7 @@ class Machine<
       };
   };
 
-  #cloneState = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {
+  #cloneStateExtended = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {
     return structuredClone(state);
   };
 
@@ -1025,7 +1034,11 @@ class Machine<
       },
       batch: (...fns) => {
         return ({ context, pContext, ...rest }) => {
-          const state = this.#cloneState({ context, pContext, ...rest });
+          const state = this.#cloneStateExtended({
+            context,
+            pContext,
+            ...rest,
+          });
 
           let out: any;
           fns.forEach(fn => {
@@ -1049,7 +1062,11 @@ class Machine<
       sendTo,
       debounce: (fn, { id, ms = 100 }) => {
         return ({ context, pContext, ...rest }) => {
-          const state = this.#cloneState({ context, pContext, ...rest });
+          const state = this.#cloneStateExtended({
+            context,
+            pContext,
+            ...rest,
+          });
           const data = fn(state);
 
           const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
