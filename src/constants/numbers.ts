@@ -1,7 +1,8 @@
 /**
  * The default maximum number of milliseconds to wait for a promise to resolve.
+ * One hour.
  */
-export const DEFAULT_MAX_TIME_PROMISE = 100_000;
+export const DEFAULT_MAX_TIME_PROMISE = 3_600_000;
 
 /**
  * The default minimum number of milliseconds to wait for an activity to complete.

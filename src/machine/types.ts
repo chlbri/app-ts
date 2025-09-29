@@ -68,6 +68,7 @@ export type MachineConfig = Describer | string;
  */
 export type Config = ConfigNode & {
   readonly strict?: boolean;
+  readonly __longRuns?: boolean;
 };
 
 export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {

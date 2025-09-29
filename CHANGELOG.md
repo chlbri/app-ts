@@ -11,6 +11,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.1.1] - 2025/09/29** => _13:52_
+
+</summary>
+
+- Augment max time promise to 1 hour
+- Add \_\_longRuns flag to machine config, to perform long-running promises
+- <u>Test coverage **_99%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.1.0] - 2025/09/29** => _12:42_
 
 </summary>
@@ -24,6 +44,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <details>
 <summary>
+
+<br/>
 
 ## **[1.0.4] - 2025/09/24** => _23:59_
 
@@ -39,6 +61,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+<br/>
+
 ## **[1.0.3] - 2025/09/24** => _16:45_
 
 </summary>
@@ -52,6 +76,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <details>
 <summary>
+
+<br/>
 
 ## **[1.0.2] - 2025/09/24** => _16:45_
 
