@@ -1533,8 +1533,8 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-  strip-literal@3.0.0:
-    resolution: {integrity: sha512-TcccoMhJOM3OebGhSBEmp3UZ2SfDMZUEBdRA/9ynfLi8yYajyWX3JiXArcJt4Umh4vISpspkQIY8ZZoCqjbviA==}
+  strip-literal@3.1.0:
+    resolution: {integrity: sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==}
 
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
@@ -2223,7 +2223,7 @@ snapshots:
     dependencies:
       '@vitest/utils': 3.2.4
       pathe: 2.0.3
-      strip-literal: 3.0.0
+      strip-literal: 3.1.0
 
   '@vitest/snapshot@3.2.4':
     dependencies:
@@ -3081,7 +3081,7 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  strip-literal@3.0.0:
+  strip-literal@3.1.0:
     dependencies:
       js-tokens: 9.0.1
 
