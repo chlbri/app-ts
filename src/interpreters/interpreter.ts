@@ -1182,7 +1182,9 @@ export class Interpreter<
 
         const _promise = () => this.#performPromiseSrc(promiseF);
 
-        const MAX_POMS = [DEFAULT_MAX_TIME_PROMISE];
+        const MAX_POMS = this.#machine.longRuns
+          ? []
+          : [DEFAULT_MAX_TIME_PROMISE];
 
         const check3 = isDefined(maxS);
         if (check3) {

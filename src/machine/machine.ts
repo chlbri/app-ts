@@ -496,7 +496,10 @@ class Machine<
     this.#flat = flatMap(this.#config, true);
     this.#initialConfig = initialConfig(this.#config);
     this.#getInitialKeys();
+    this.longRuns = this.#config.__longRuns === true;
   }
+
+  readonly longRuns: boolean;
 
   /**
    * The accessor configuration of the machine for this {@linkcode Machine}.
