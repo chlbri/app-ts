@@ -5,7 +5,7 @@ import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
 
-// #region machine2
+// #region machine22
 
 export const config2 = createConfig({
   initial: 'idle',

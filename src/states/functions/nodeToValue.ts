@@ -1,8 +1,9 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
-import type { NodeConfig, StateValue } from '../types';
+import type { ConfigNode } from '#machines';
+import type { StateValue } from '../types';
 import { isAtomic, isCompound } from './checks';
 
-export type NodeToValue_F = (body: NodeConfig) => StateValue;
+export type NodeToValue_F = (body: ConfigNode) => StateValue;
 
 /**
  * Converts a state machine config into a StateValue.
@@ -14,12 +15,8 @@ export type NodeToValue_F = (body: NodeConfig) => StateValue;
  * @see {@linkcode NodeToValue_F} for more details
  * @see {@linkcode isAtomic} for checking atomic states
  * @see {@linkcode isCompound} for checking compound states
- * @see {@linkcode t} for type utilities
  */
 export const nodeToValue: NodeToValue_F = body => {
-  const check1 = isAtomic(body);
-  if (check1) return {};
-
   const entries = Object.entries(body.states);
 
   const check2 = isCompound(body);
@@ -42,9 +39,18 @@ export const nodeToValue: NodeToValue_F = body => {
     }
   }
 
-  const entries2 = entries.map(([key, value]) =>
-    tupleOf(key, nodeToValue(value)),
-  );
+  const entries2 = entries.map(([key, body]) => {
+    const __id = body.initial;
+    if (__id) {
+      const initial = body.states[__id];
+      if (initial) {
+        const check3 = isAtomic(initial);
+        if (check3) return tupleOf(key, __id);
+        return tupleOf(key, { [__id]: nodeToValue(initial) });
+      }
+    }
+    return tupleOf(key, nodeToValue(body as any));
+  });
 
   const out = entries2.reduce((acc, [key, value]) => {
     acc[key] = value;

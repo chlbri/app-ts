@@ -19,7 +19,7 @@ const plugins = [
       '**/*.fixtures.ts',
       '**/experimental.ts',
       '**/fixtures.ts',
-      '**/libs/bemedev/**/constants.ts',
+      '**/libs/bemedev/**/*',
       '**/fixture.ts',
       '**/*.fixture.ts',
     ],
