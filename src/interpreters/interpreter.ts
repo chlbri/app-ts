@@ -392,7 +392,6 @@ export class Interpreter<
     this.#collectServices();
 
     this.#throwing();
-    this.#startEmitters();
   }
 
   /**
@@ -466,7 +465,7 @@ export class Interpreter<
    * Performs computations, after transitioning to the next target, to update the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service
    */
   protected _performConfig = () => {
-    const value = nodeToValue(this.#config);
+    const value = nodeToValue(this.#config as any);
     this.#value = value;
 
     this.#node = this.#resolveNode(this.#config);
@@ -488,7 +487,7 @@ export class Interpreter<
     }
 
     if (target) {
-      this.#config = this.proposedNextConfig(target);
+      this.#config = initialConfig(this.proposedNextConfig(target));
       const tags = this.#config.tags;
       this._performConfig();
       const value = this.#value;
@@ -699,9 +698,10 @@ export class Interpreter<
   /**
    * Start this {@linkcode Interpreter} service.
    */
-  start = () => {
+  start = async () => {
     this.#throwing();
     this.#startStatus();
+    this.#startEmitters();
     this.#flush();
     this.#scheduler.initialize(this.#startInitialEntries);
     this.#currentServices.forEach(this.#start);
@@ -741,12 +741,28 @@ export class Interpreter<
     this.#selfTransitionsCounter++;
     this.#pauseAllActivities();
     this.#performActivities();
-    this.#pauseEmitters(({ from }) => !this.#isInsideValue(from));
+
+    this.#pauseEmitters(({ from }) => {
+      return !this.#isInsideValue(from);
+    });
+
     this.#childrenServices
-      .filter(({ from }) => !from || !this.#isInsideValue(from))
+      .filter(({ from }) => {
+        return !from || !this.#isInsideValue(from);
+      })
       .forEach(this.#pause);
+
     this.#currentServices.forEach(this.#resume);
+    this.#currentServices.forEach(this.#start);
+    this.#startEmitters();
     this.#resumeEmitters();
+
+    this.#abortablePromisees
+      .filter(({ from }) => {
+        return !this.#isInsideValue(from);
+      })
+      .forEach(({ abort }) => abort());
+
     await this.#performSelfTransitions();
   };
 
@@ -1145,6 +1161,10 @@ export class Interpreter<
     return this.#status === 'sending';
   }
 
+  get longRuns() {
+    return this.#machine.longRuns;
+  }
+
   #performPromisee: PerformPromisee_F<E, P> = (from, ...promisees) => {
     type PR = PromiseeResult<E, P>;
 
@@ -1199,10 +1219,17 @@ export class Interpreter<
           MAX_POMS.push(max);
         }
 
-        const promise = () =>
-          withTimeout(_promise, from, ...MAX_POMS)()
+        const promise = () => {
+          const wT = withTimeout(_promise, from, ...MAX_POMS);
+          this.#abortablePromisees.push({
+            from,
+            abort: () => wT.abort(),
+          });
+
+          return wT()
             .then(partialCall(handlePromise, 'then'))
             .catch(partialCall(handlePromise, 'catch'));
+        };
         return promises.push(promise);
       },
     );
@@ -1214,6 +1241,8 @@ export class Interpreter<
     const promise = () => Promise.all(promises.map(p => p()));
     return promise;
   };
+
+  #abortablePromisees: { abort: () => void; from: string }[] = [];
 
   /**
    * Checks if sent events cannot be performed.
@@ -1419,9 +1448,9 @@ export class Interpreter<
   }
 
   get #currentEmitters() {
-    return this.#collectedEmitters.filter(({ from }) =>
-      this.#isInsideValue(from),
-    );
+    return this.#collectedEmitters.filter(({ from }) => {
+      return this.#isInsideValue(from);
+    });
   }
 
   get #currentActivities() {
@@ -1465,7 +1494,7 @@ export class Interpreter<
 
   #stopEmitters = () => {
     this.#collectedEmitters
-      .filter(({ id }) => this.#startedEmitterIDs.has(id))
+      // .filter(({ id }) => this.#startedEmitterIDs.has(id))
       .forEach(({ instance, id }) => {
         instance.stop();
         this.#startedEmitterIDs.delete(id);
@@ -1640,10 +1669,12 @@ export class Interpreter<
 
   pause = () => {
     this.#pauseAllActivities();
+    this.#abortablePromisees.forEach(({ abort }) => abort());
     this.#makeBusy();
     this.#subscribers.forEach(this.#close);
     this.#childrenServices.forEach(this.#pause);
     this.#pauseEmitters();
+
     this.#timeoutActions.forEach(this.#pause);
     this.#setStatus('paused');
   };
@@ -2130,10 +2161,6 @@ export class Interpreter<
   };
 
   protected interpretChild = interpret;
-
-  subscribeFrom = (func: (send: (typeof this)['send']) => void) => {
-    return func(this.send);
-  };
 
   /**
    * Subscribes a child machine to the current machine.

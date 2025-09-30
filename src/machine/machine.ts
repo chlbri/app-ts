@@ -840,7 +840,7 @@ class Machine<
    * @see {@linkcode nodeToValue}
    */
   get initialValue() {
-    return nodeToValue(this.#initialConfig);
+    return nodeToValue(this.#initialConfig as any);
   }
 
   /**

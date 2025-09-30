@@ -36,6 +36,52 @@ export const machineEmitter1 = createMachine(
       NEXT: 'primitive',
     },
   }),
+);
+
+export const machineEmitter2 = machineEmitter1.provideOptions(() => ({
+  emitters: {
+    interval: ({ merge, selector }) => {
+      const ctx = selector(({ context }) => context);
+      const TAKE_COUNT = 5;
+
+      return createPausable(
+        interval(WAITERS.short).pipe(
+          take(TAKE_COUNT),
+          map(v => v + 1),
+          map(v => v * 5),
+        ),
+        value => merge({ context: ctx() + value }),
+      );
+    },
+  },
+}));
+
+export const machineEmitter3 = createMachine(
+  {
+    initial: 'inactive',
+
+    states: {
+      inactive: {
+        on: {
+          NEXT: '/active',
+        },
+      },
+      active: {
+        on: {
+          NEXT: '/inactive',
+        },
+        emitters: {
+          interval1: 'interval',
+        },
+      },
+    },
+  },
+  typings({
+    context: 'number',
+    eventsMap: {
+      NEXT: 'primitive',
+    },
+  }),
 ).provideOptions(() => ({
   emitters: {
     interval: ({ merge, selector }) => {

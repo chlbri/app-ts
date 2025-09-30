@@ -11,6 +11,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.2.0] - 2025/09/30** => _7:25_
+
+</summary>
+
+- Export longRuns from interpreter
+- Add tests for longRuns
+- Test longRuns in machines.children.test
+- Test children machines
+- Test children emitters
+- Upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.1.1] - 2025/09/29** => _13:52_
 
 </summary>
