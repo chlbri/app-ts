@@ -1,3 +1,9 @@
 export * from '#interpreters';
 export * from '#machines';
-export { typings } from '#utils';
+export {
+  typings,
+  deepEqual,
+  decompose,
+  decomposeSV,
+  recompose,
+} from '#utils';
