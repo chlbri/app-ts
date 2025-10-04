@@ -1,5 +1,6 @@
 export { decompose, decomposeSV, recompose } from '@bemedev/decompose';
-export { default as deepEqual } from 'fast-deep-equal';
+
+import equal from 'fast-deep-equal';
 export * from './environment';
 export * from './merge';
 export * from './nothing';
@@ -9,3 +10,5 @@ export * from './resolve';
 export * from './strings';
 export * from './toFunction';
 export { typings } from './typings';
+
+export const deepEqual = <T>(a: T, b: T) => equal(a, b);

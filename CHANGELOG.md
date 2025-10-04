@@ -11,6 +11,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.2.1] - 2025/10/04** => _16:00_
+
+</summary>
+
+- Add export of '@bemdev/decompose' functions
+- Fix deepEqual export
+- Upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.2.0] - 2025/09/30** => _7:25_
 
 </summary>
