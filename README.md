@@ -22,10 +22,13 @@ yarn add @bemedev/app-ts
 - Transition and event handling
 - Support for nested machines
 - Support for subscribables (e.g rxjs)
+- Comprehensive typings utilities with Valibot-like API
 
 <br/>
 
 ## Usage
+
+### Basic Machine
 
 ```typescript
 import { createMachine } from '@bemedev/app-ts';
@@ -46,6 +49,134 @@ const machine = createMachine({
   },
 });
 ```
+
+### Typings Utilities
+
+The library provides powerful typing utilities inspired by Valibot for
+defining complex types:
+
+```typescript
+import { typings, inferT } from '@bemedev/app-ts';
+
+// Literals
+const status = typings.litterals('idle', 'pending', 'success', 'error');
+type Status = inferT<typeof status>; // 'idle' | 'pending' | 'success' | 'error'
+
+// Union types
+const value = typings.union('string', 'number', 'boolean');
+type Value = inferT<typeof value>; // string | number | boolean
+
+// Arrays
+const tags = typings.array('string');
+type Tags = inferT<typeof tags>; // string[]
+
+// Tuples
+const coordinates = typings.tuple('number', 'number');
+type Coordinates = inferT<typeof coordinates>; // [number, number]
+
+// Objects
+const user = typings.any({
+  name: 'string',
+  age: 'number',
+  email: typings.maybe('string'), // optional field
+});
+type User = inferT<typeof user>; // { name: string; age: number; email?: string }
+
+// Records
+const config = typings.record('string'); // Record<string, string>
+const namedConfig = typings.record('number', 'width', 'height'); // { width: number; height: number }
+
+// Intersection types
+const person = typings.intersection(
+  { name: 'string', age: 'number' },
+  { email: 'string', phone: 'string' },
+);
+type Person = inferT<typeof person>; // { name: string; age: number; email: string; phone: string }
+
+// Discriminated unions
+const shape = typings.discriminatedUnion(
+  'type',
+  { type: typings.litterals('circle'), radius: 'number' },
+  {
+    type: typings.litterals('rectangle'),
+    width: 'number',
+    height: 'number',
+  },
+);
+
+// Partial objects
+const optionalUser = typings.partial({
+  name: 'string',
+  age: 'number',
+});
+type OptionalUser = inferT<typeof optionalUser>; // { name?: string; age?: number }
+
+// Custom types
+const customType = typings.custom<MyCustomType>();
+
+// Single or Array (SoA)
+const singleOrMany = typings.soa('string');
+type SingleOrMany = inferT<typeof singleOrMany>; // string | string[]
+
+// StateValue type helper
+const stateValue = typings.sv;
+type MyStateValue = inferT<typeof stateValue>; // StateValue
+```
+
+### Using Typings with Machines
+
+```typescript
+import { createMachine, typings } from '@bemedev/app-ts';
+
+const machine = createMachine(
+  {
+    initial: 'idle',
+    states: {
+      idle: {
+        on: { FETCH: 'loading' },
+      },
+      loading: {
+        on: { SUCCESS: 'success', ERROR: 'error' },
+      },
+      success: {},
+      error: {},
+    },
+  },
+  typings({
+    eventsMap: {
+      FETCH: 'primitive',
+      SUCCESS: { data: typings.array('string') },
+      ERROR: { message: 'string' },
+    },
+    context: {
+      items: typings.array('string'),
+      error: typings.maybe('string'),
+    },
+  }),
+);
+```
+
+<br/>
+
+## API Reference
+
+### Typings Utilities
+
+- **`typings.litterals(...values)`** - Create literal types
+- **`typings.union(...types)`** - Create union types
+- **`typings.array(type)`** - Create array types
+- **`typings.tuple(...types)`** - Create tuple types
+- **`typings.any(schema)`** - Create object schemas
+- **`typings.record(type, ...keys?)`** - Create record types
+- **`typings.intersection(...types)`** - Create intersection types
+- **`typings.discriminatedUnion(key, ...types)`** - Create discriminated
+  unions
+- **`typings.maybe(type)`** - Create optional/undefined types
+- **`typings.partial(schema)`** - Make all properties optional
+- **`typings.custom<T>()`** - Use custom TypeScript types
+- **`typings.soa(type)`** - Single or Array type
+- **`typings.sv`** - StateValue type helper
+- **`inferT<T>`** - Infer TypeScript type from typing schema
 
 <br/>
 

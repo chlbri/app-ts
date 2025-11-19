@@ -1,9 +1,10 @@
 import { createMachine } from '#machine';
 import { typings } from '#utils';
+import type { inferT } from 'src/utils/typings';
 import { SCHEMAS } from './machine1.machine.gen';
-import type { Asset, Intermediary } from './machine1.machine.types';
+import { asset, intermediary } from './machine1.machine.typings';
 
-export const BLOCK_IMMO_INTERMEDIARY: Intermediary = {
+export const BLOCK_IMMO_INTERMEDIARY: inferT<typeof intermediary> = {
   id: 'block-immo-001',
   wallet: '0xblockimmo123456',
   personality: 'company',
@@ -157,15 +158,15 @@ export const machine = createMachine(
   typings({
     eventsMap: {
       START: typings.partial({
-        asset: typings.custom<Asset>(),
-        mandatory: typings.custom<Intermediary>(),
+        asset,
+        mandatory: intermediary,
       }),
-      ADD_INTERMEDIARY: typings.custom<Intermediary>(),
+      ADD_INTERMEDIARY: intermediary,
       RESET: 'primitive',
     },
     context: typings.partial({
-      asset: typings.custom<Asset>(),
-      intermediaries: [typings.custom<Intermediary>()],
+      asset,
+      intermediaries: [intermediary],
       internetStatus: 'boolean',
       errors: typings.partial({
         noAsset: 'string',
@@ -182,11 +183,11 @@ export const machine = createMachine(
         catch: 'boolean',
       },
       getIntermediaries: {
-        then: [typings.custom<Intermediary>()],
+        then: [intermediary],
         catch: [],
       },
       addIntermediary: {
-        then: typings.custom<Intermediary>(),
+        then: intermediary,
         catch: 'undefined',
       },
     },

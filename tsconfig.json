@@ -1,14 +1,8 @@
 {
-  "include": [
-    "src/**/*",
-    "src/.vitest.ts"
-  ],
+  "include": ["src/**/*", "src/.vitest.ts"],
   "compilerOptions": {
     "module": "esnext",
-    "lib": [
-      "dom",
-      "esnext"
-    ],
+    "lib": ["dom", "esnext"],
     "importHelpers": true,
     "target": "ESNext",
     "declaration": true,
@@ -23,9 +17,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "moduleResolution": "Bundler",
-    "types": [
-      "vitest/globals"
-    ],
+    "types": ["vitest/globals", "node"],
     "jsx": "react",
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -35,66 +27,26 @@
     "declarationMap": true,
     "baseUrl": ".",
     "paths": {
-      "~types": [
-        "src/types/index.ts"
-      ],
-      "#fixtures": [
-        "src/interpreters/__tests__/fixtures.ts"
-      ],
-      "#fixturesData": [
-        "src/interpreters/__tests__/data/index.ts"
-      ],
-      "#utils": [
-        "src/utils/index.ts"
-      ],
-      "#constants": [
-        "src/constants/index.ts"
-      ],
-      "#promises": [
-        "src/promises/index.ts"
-      ],
-      "#children": [
-        "src/children/index.ts"
-      ],
-      "#delays": [
-        "src/delays/index.ts"
-      ],
-      "#states": [
-        "src/states/index.ts"
-      ],
-      "#interpreters": [
-        "src/interpreters/index.ts"
-      ],
-      "#interpreter": [
-        "src/interpreters/interpreter.ts"
-      ],
-      "#guards": [
-        "src/guards/index.ts"
-      ],
-      "#actions": [
-        "src/actions/index.ts"
-      ],
-      "#events": [
-        "src/events/index.ts"
-      ],
-      "#transitions": [
-        "src/transitions/index.ts"
-      ],
-      "#emitters": [
-        "src/emitters/index.ts"
-      ],
-      "#machine": [
-        "src/machine/machine.ts"
-      ],
-      "#machines": [
-        "src/machine/index.ts"
-      ],
-      "#config": [
-        "src/config/index.ts"
-      ],
-      "#bemedev/*": [
-        "src/libs/bemedev/*"
-      ]
+      "~types": ["src/types/index.ts"],
+      "#fixtures": ["src/interpreters/__tests__/fixtures.ts"],
+      "#fixturesData": ["src/interpreters/__tests__/data/index.ts"],
+      "#utils": ["src/utils/index.ts"],
+      "#constants": ["src/constants/index.ts"],
+      "#promises": ["src/promises/index.ts"],
+      "#children": ["src/children/index.ts"],
+      "#delays": ["src/delays/index.ts"],
+      "#states": ["src/states/index.ts"],
+      "#interpreters": ["src/interpreters/index.ts"],
+      "#interpreter": ["src/interpreters/interpreter.ts"],
+      "#guards": ["src/guards/index.ts"],
+      "#actions": ["src/actions/index.ts"],
+      "#events": ["src/events/index.ts"],
+      "#transitions": ["src/transitions/index.ts"],
+      "#emitters": ["src/emitters/index.ts"],
+      "#machine": ["src/machine/machine.ts"],
+      "#machines": ["src/machine/index.ts"],
+      "#config": ["src/config/index.ts"],
+      "#bemedev/*": ["src/libs/bemedev/*"]
     }
   }
 }

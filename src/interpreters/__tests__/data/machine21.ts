@@ -102,13 +102,13 @@ export const machine21 = createMachine(
     eventsMap: {
       NEXT: 'primitive',
       FETCH: 'primitive',
-      WRITE: { value: typings.custom('') },
+      WRITE: { value: typings.litterals('') },
       SEND: 'primitive',
     },
     context: {
       iterator: 'number',
       input: 'string',
-      data: [typings.custom<string>()],
+      data: ['string'],
     },
     pContext: {
       iterator: 'number',

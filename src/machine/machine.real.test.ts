@@ -1,11 +1,12 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
-import type { Keys, SingleOrArray } from '#bemedev/globals/types';
+import type { Keys } from '#bemedev/globals/types';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { type StateValue } from '#states';
 import { typings } from '#utils';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { __tsSchema } from './machine.real.gen';
+import type { inferT } from 'src/utils/typings';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -920,46 +921,57 @@ describe('REAL LIFE TESTS', () => {
   });
 
   describe('#03 => Real life testing #2', () => {
-    type State = 'registration' | 'registered' | 'idle';
+    const state = typings.litterals('registration', 'registered', 'idle');
+    // type State = 'registration' | 'registered' | 'idle';
 
-    type CSVData = Record<string, string | number>;
+    const csvData = typings.record(typings.union('string', 'number'));
 
-    type CSVDataDeep = string | number | (string | number)[] | CsvDataMap;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const deep = typings.union(
+      'string',
+      'number',
+      typings.array(typings.union('string', 'number')),
+    );
 
+    type CSVDataDeep = inferT<typeof deep> | CsvDataMap;
     interface CsvDataMap {
       [key: Keys]: CSVDataDeep;
     }
+    const csvDataDeep = typings.custom<CSVDataDeep>();
 
-    type Lang = 'en' | 'es' | 'fr';
+    const lang = typings.litterals('en', 'es', 'fr');
 
-    type FieldType =
-      | 'number'
-      | 'date'
-      | 'conditional'
-      | 'text'
-      | 'select'
-      | 'checkbox'
-      | 'color'
-      | 'email'
-      | 'time'
-      | 'url'
-      | 'tel'
-      | 'datetime-local'
-      | 'image'
-      | 'file'
-      | 'week';
+    const fieldType = typings.litterals(
+      'number',
+      'date',
+      'conditional',
+      'text',
+      'select',
+      'checkbox',
+      'color',
+      'email',
+      'time',
+      'url',
+      'tel',
+      'datetime-local',
+      'image',
+      'file',
+      'week',
+    );
 
-    type Field = {
-      label: string;
-      type?: FieldType;
-      options?: string[];
-      data?: {
-        data: CSVData[];
-        headers: string[];
-        merged: CSVDataDeep;
-        name: string;
-      };
-    };
+    const field = typings.any({
+      label: 'string',
+      type: fieldType,
+      options: typings.maybe(['string']),
+      data: typings.maybe(
+        typings.partial({
+          data: [csvData],
+          headers: ['string'],
+          merged: csvDataDeep,
+          name: 'string',
+        }),
+      ),
+    });
 
     const mainMachine = createMachine(
       {
@@ -1021,30 +1033,30 @@ describe('REAL LIFE TESTS', () => {
       },
       typings({
         context: typings.partial({
-          lang: typings.custom<Lang>(),
-          fields: [typings.custom<Field>()],
-          responses: [typings.custom<SingleOrArray<string>>()],
+          lang,
+          fields: [field],
+          responses: typings.soa('string'),
           states: typings.partial({
-            fields: typings.custom<State>(),
-            values: typings.custom<State>(),
+            fields: state,
+            values: state,
           }),
-          values: typings.custom<Record<string, string>>(),
+          values: typings.record('string'),
         }),
         eventsMap: {
-          CHANGE_LANG: { lang: typings.custom<Lang>() },
+          CHANGE_LANG: { lang },
           REMOVE: { index: 'number' },
           ADD: 'primitive',
           UPDATE: {
             index: 'number',
-            value: typings.partial(typings.custom<Field>()),
+            value: typings.partial(field),
           },
           'UPDATE:NOW': {
             index: 'number',
-            value: typings.custom<Field>(),
+            value: field,
           },
           'FIELDS:REGISTER': 'primitive',
           'FIELDS:MODIFY': 'primitive',
-          'VALUES:REGISTER': typings.custom<Record<string, string>>(),
+          'VALUES:REGISTER': typings.record('string'),
           'VALUES:MODIFY': 'primitive',
         },
       }),
@@ -1133,7 +1145,9 @@ describe('REAL LIFE TESTS', () => {
          * @returns
          */
         prepare: assign('context', () => {
-          const current = { label: '', type: 'text' } as Field;
+          const current = { label: '', type: 'text' } as inferT<
+            typeof field
+          >;
 
           return {
             fields: [structuredClone(current)],
@@ -1160,14 +1174,14 @@ describe('REAL LIFE TESTS', () => {
 
     const useWaiter = createFakeWaiter.withDefaultDelay(vi, 500);
 
-    const useLang = (lang: Lang, index: number) => {
-      const invite = `#${index < 10 ? '0' + index : index} => Language should be ${lang}`;
+    const useLang = (_lang: inferT<typeof lang>, index: number) => {
+      const invite = `#${index < 10 ? '0' + index : index} => Language should be ${_lang}`;
       return tupleOf(invite, () => {
-        expect(service.select('lang')).toEqual(lang);
+        expect(service.select('lang')).toEqual(_lang);
       });
     };
 
-    const useValue = (value: StateValue, index: number) => {
+    const useValue = (value: inferT<typeof typings.sv>, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => value match`;
       return tupleOf(invite, () => {
         expect(service.state.value).toEqual(value);

@@ -11,6 +11,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.3.0] - 2025/11/19** => _14:20_
+
+</summary>
+
+- Add comprehensive typings utilities: `litterals`, `union`, `array`,
+  `tuple`, `discriminatedUnion`, `intersection`, `soa`, `sv`
+- Add `inferT` type helper for better type inference
+- Export `PrimitiveObject` type
+- Improve `transformPrimitiveObject` to handle maybe, and array custom
+  types
+- Enhance type system with better undefined handling
+- Add symbol primitive type support
+- Improve nodeToValue function for better state value resolution
+- Add comprehensive test coverage for new typings features
+- Upgrade deps
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.2.2] - 2025/10/04** => _16:00_
 
 </summary>
