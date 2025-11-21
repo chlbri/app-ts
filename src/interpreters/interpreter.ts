@@ -71,13 +71,7 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '#transitions';
-import {
-  IS_TEST,
-  isStringEmpty,
-  merge,
-  reduceFnMap,
-  replaceAll,
-} from '#utils';
+import { IS_TEST, isStringEmpty, reduceFnMap, replaceAll } from '#utils';
 import {
   anyPromises,
   asyncfy,
@@ -995,8 +989,8 @@ export class Interpreter<
   };
 
   #mergeContexts: DirectMerge_F<Pc, Tc> = result => {
-    this.#pContext = merge(this.#pContext, result?.pContext);
-    const context = merge(this.#context, result?.context);
+    this.#pContext = (result?.pContext as any) ?? this.#pContext;
+    const context = (result?.context as any) ?? this.#context;
     this.#context = context;
     return this.#performStates({ context });
   };
