@@ -35,9 +35,7 @@ const commonTest = {
   logHeapUsage: true,
   coverage: {
     enabled: true,
-    extension: 'ts',
     reportsDirectory: '.coverage',
-    all: true,
     provider: 'v8',
   },
   environment: 'node',
