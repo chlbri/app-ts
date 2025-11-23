@@ -482,8 +482,8 @@ describe(TEXT, () => {
       });
     });
 
-    test('#03 => Length of calls of dumbFn is "218"', () => {
-      expect(dumbFn).toBeCalledTimes(107);
+    test('#03 => Length of calls of dumbFn is "141"', () => {
+      expect(dumbFn).toBeCalledTimes(141);
       unsubscribe.unsubscribe();
     });
 

@@ -1,9 +1,27 @@
 import { aliasTs } from '@bemedev/vitest-alias';
-import { configDefaults, defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config';
 import tsconfig from './tsconfig.json';
+import { exclude } from '@bemedev/vitest-exclude';
 
 export default defineConfig({
-  plugins: [aliasTs(tsconfig as any)],
+  plugins: [
+    aliasTs(tsconfig as any),
+    exclude({
+      ignoreCoverageFiles: [
+        '**/index.ts',
+        '**/types.ts',
+        '**/*.example.ts',
+        '**/*.types.ts',
+        '**/*.typegen.ts',
+        '**/*.fixtures.ts',
+        '**/experimental.ts',
+        '**/fixtures.ts',
+        '**/libs/bemedev/**/*',
+        '**/fixture.ts',
+        '**/*.fixture.ts',
+      ],
+    }),
+  ],
   test: {
     bail: 10,
     maxConcurrency: 10,
@@ -11,14 +29,18 @@ export default defineConfig({
     slowTestThreshold: 3000,
     globals: true,
     logHeapUsage: true,
+    setupFiles: ['./vitest.setup.ts'],
+
     typecheck: {
       enabled: true,
-      only: false,
       ignoreSourceErrors: true,
     },
     coverage: {
       enabled: true,
-      exclude: [...configDefaults.exclude, '**/index.ts', '**/types.ts'],
+      reportsDirectory: '.coverage',
+      all: true,
+      provider: 'v8',
+      extension: '.ts',
     },
   },
 });

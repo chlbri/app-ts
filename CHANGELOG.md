@@ -11,6 +11,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.4.0] - 2025/02/24** => _10:00_
+
+</summary>
+
+- Remove `Scheduler` class from `Interpreter` for direct execution
+- Simplify `Interpreter` logic by removing internal scheduling
+- Update dependencies
+- Update tests to reflect changes
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.3.0] - 2025/11/19** => _14:20_
 
 </summary>

@@ -102,7 +102,7 @@ export const machine21 = createMachine(
     eventsMap: {
       NEXT: 'primitive',
       FETCH: 'primitive',
-      WRITE: { value: typings.litterals('') },
+      WRITE: { value: 'string' },
       SEND: 'primitive',
     },
     context: {

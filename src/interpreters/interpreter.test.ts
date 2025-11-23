@@ -112,10 +112,6 @@ describe('Interpreter', () => {
       });
     });
 
-    test('#03 => Cannot use scheduler before starting', () => {
-      expect(service.scheduleds).toBe(0);
-    });
-
     describe('#04 => nodes', () => {
       const node = {
         after: [],
