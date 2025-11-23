@@ -118,7 +118,6 @@ import type {
   StateExtended,
   WorkingStatus,
 } from './interpreter.types';
-import { Scheduler } from './scheduler';
 
 import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
@@ -244,11 +243,6 @@ export class Interpreter<
   #context!: Tc;
 
   /**
-   * The {@linkcode Scheduler} of this {@linkcode Interpreter} service.
-   */
-  #scheduler: Scheduler;
-
-  /**
    * The previous {@linkcode State} of this {@linkcode Interpreter} service.
    */
   #previousState!: State<Tc>;
@@ -343,20 +337,6 @@ export class Interpreter<
   }
 
   /**
-   * The number of operations scheduled by the inner
-   * //
-   *
-   * {@linkcode Scheduler.performeds} of this {@linkcode Interpreter} service.
-   *
-   * //
-   *
-   * @see {@linkcode Scheduler}
-   */
-  get scheduleds() {
-    return this.#scheduler.performeds;
-  }
-
-  /**
    * Where everything is initialized
    * @param machine, the {@linkcode Machine} to interpret.
    * @param mode, the {@linkcode Mode} of the interpreter, default is 'strict'.
@@ -374,7 +354,6 @@ export class Interpreter<
     this.#mode = mode;
     this.#exact = exact;
     this.#performConfig(true);
-    this.#scheduler = new Scheduler();
     this.#state = this.#previousState = {
       status: this.#status,
       context: this.#context,
@@ -697,7 +676,7 @@ export class Interpreter<
     this.#startStatus();
     this.#startEmitters();
     this.#flush();
-    this.#scheduler.initialize(this.#startInitialEntries);
+    this.#startInitialEntries();
     this.#currentServices.forEach(this.#start);
     // this.#performEmitters();
     this.#throwing();
@@ -708,20 +687,10 @@ export class Interpreter<
   /**
    * Pause the collection of all currents {@linkcode Interval2} intervals, related to current {@linkcode ActivityConfig}s of this {@linkcode Interpreter} service.
    *
-   * @see {@linkcode Scheduler} for more information about scheduling.
    */
   #pauseAllActivities = () => {
     this._cachedIntervals.forEach(this.#pause);
   };
-
-  /**
-   * Schedule all activities of the current {@linkcode Node} of this {@linkcode Interpreter} service.
-   *
-   * @see {@linkcode Scheduler} for more information about scheduling.
-   */
-  get #schedule() {
-    return this.#scheduler.schedule;
-  }
 
   /**
    * Used to track number of self transitions
@@ -803,17 +772,12 @@ export class Interpreter<
   #performScheduledAction = (scheduled?: ScheduledData<Pc, Tc>) => {
     if (!scheduled) return;
     const { data, ms: timeout, id } = scheduled;
-
-    const callback = () => {
-      const cb = () => this.#mergeContexts(data);
-      this.#schedule(cb);
-    };
+    const callback = () => this.#mergeContexts(data);
 
     this.#timeoutActions.filter(f => f.id === id).forEach(this.#dispose);
-
     this.#timeoutActions = this.#timeoutActions.filter(f => f.id !== id);
-
     const timer = createTimeout({ callback, timeout, id });
+
     this.#timeoutActions.push(timer);
     timer.start();
   };
@@ -981,11 +945,9 @@ export class Interpreter<
   };
 
   #flushMapSubscribers = () => {
-    this.#subscribers.forEach(f => {
-      const callback = () => f.fn(this.#previousState, this.#state);
-
-      this.#schedule(callback);
-    });
+    this.#subscribers.forEach(({ fn }) =>
+      fn(this.#previousState, this.#state),
+    );
   };
 
   #mergeContexts: DirectMerge_F<Pc, Tc> = result => {
@@ -1028,27 +990,24 @@ export class Interpreter<
       const activities = toArray.typed(_activity);
 
       const callback = () => {
-        const cb = () => {
-          for (const activity of activities) {
-            const check2 = typeof activity === 'string';
-            const check3 = isDescriber(activity);
-            const check4 = check2 || check3;
+        for (const activity of activities) {
+          const check2 = typeof activity === 'string';
+          const check3 = isDescriber(activity);
+          const check4 = check2 || check3;
 
-            if (check4) {
-              this.#performActions(activity);
-              continue;
-            }
-
-            const check5 = this.#performPredicates(
-              ...toArray.typed(activity.guards),
-            );
-            if (check5) {
-              const actions = toArray.typed(activity.actions);
-              this.#performActions(...actions);
-            }
+          if (check4) {
+            this.#performActions(activity);
+            continue;
           }
-        };
-        this.#schedule(cb);
+
+          const check5 = this.#performPredicates(
+            ...toArray.typed(activity.guards),
+          );
+          if (check5) {
+            const actions = toArray.typed(activity.actions);
+            this.#performActions(...actions);
+          }
+        }
       };
       const promise = this.createInterval({
         callback,
@@ -1555,12 +1514,7 @@ export class Interpreter<
       const promise = async () => {
         if (always) {
           const target = always();
-          if (target !== false) {
-            const cb = () => {
-              this.#performConfig(target);
-            };
-            return this.#schedule(cb);
-          }
+          if (target !== false) return this.#performConfig(target);
         }
 
         const promises: TimeoutPromise<void>[] = [];
@@ -1568,12 +1522,8 @@ export class Interpreter<
           const _after = async () => {
             await after()
               .then(transition => {
-                if (transition !== false) {
-                  const cb = () => {
-                    this.#performConfig(transition);
-                  };
-                  this.#schedule(cb);
-                }
+                if (transition !== false)
+                  return this.#performConfig(transition);
               })
               .catch(() =>
                 this._addWarning(
@@ -1591,8 +1541,7 @@ export class Interpreter<
                 if (!transition) continue;
                 const target = transition.target;
                 if (target !== false) {
-                  const cb = () => this.#performConfig(target);
-                  this.#schedule(cb);
+                  this.#performConfig(target);
                 }
               }
             });
@@ -1627,8 +1576,7 @@ export class Interpreter<
   #startInitialEntries = () => {
     const actions = getEntries(this.#initialConfig);
     if (actions.length < 1) return;
-    const cb = () => this.#performActions(...actions);
-    this.#schedule(cb);
+    this.#performActions(...actions);
   };
 
   /**
@@ -1641,10 +1589,7 @@ export class Interpreter<
    * @see {@linkcode Fn} for more information about function
    */
   #mapperFn = <T>(key: AllowedNames<T, Fn>) => {
-    return (value: T) => {
-      const fn = (value as any)[key];
-      this.#schedule(fn);
-    };
+    return (value: T) => (value as any)[key]();
   };
 
   #pause = this.#mapperFn('pause');
@@ -1693,7 +1638,6 @@ export class Interpreter<
     this._cachedIntervals.forEach(this.#dispose);
     this.#timeoutActions.forEach(this.#stop);
     this.#stopEmitters();
-    this.#scheduler.stop();
     this.#setStatus('stopped');
   };
 
@@ -2233,8 +2177,7 @@ export class Interpreter<
           if (checkEvents) {
             if (checkContexts) {
               const pContext = _any(service.#context);
-              const callback = () => this.#mergeContexts({ pContext });
-              this.#schedule(callback);
+              this.#mergeContexts({ pContext });
             } else {
               type _Contexts = SingleOrArray<
                 string | Record<string, string | string[]>
@@ -2244,9 +2187,7 @@ export class Interpreter<
 
               paths.forEach(path => {
                 if (typeof path === 'string') {
-                  const callback = () =>
-                    assignByKey(this.#pContext, path, service.#context);
-                  this.#schedule(callback);
+                  assignByKey(this.#pContext, path, service.#context);
                 } else {
                   const entries = Object.entries(path).map(
                     ([key, value]) => {
@@ -2262,9 +2203,7 @@ export class Interpreter<
                         getByKey(service.#context, pathChild),
                       );
 
-                      const callback = () =>
-                        this.#mergeContexts({ pContext });
-                      this.#schedule(callback);
+                      this.#mergeContexts({ pContext });
                     });
                   });
                 }
