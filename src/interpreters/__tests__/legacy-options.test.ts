@@ -3,7 +3,7 @@ import { createMachine } from '#machine';
 import { typings } from '#utils';
 
 describe('Legacy Options Access', () => {
-  test('should access previous actions via _legacy', () => {
+  test('#01 => should access previous actions via _legacy', () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -38,12 +38,12 @@ describe('Legacy Options Access', () => {
 
     // Second call to addOptions - access previous action via _legacy
     machine.addOptions(({ _legacy, batch }) => {
-      const previousIncrement = _legacy.actions?.increment;
-      expect(previousIncrement).toBeDefined();
+      const prev = _legacy.actions?.increment;
+      expect(prev).toBeDefined();
 
       return {
         actions: {
-          doubleIncrement: batch(previousIncrement!, previousIncrement!),
+          doubleIncrement: batch(prev, prev),
         },
       };
     });
@@ -60,7 +60,60 @@ describe('Legacy Options Access', () => {
     expect(service.state.context).toBe(3);
   });
 
-  test('should access previous predicates via _legacy', () => {
+  test('#02 => should access previous actions via _legacy, replace the same action', () => {
+    const machine = createMachine(
+      {
+        initial: 'idle',
+        states: {
+          idle: {
+            on: {
+              NEXT: {
+                actions: 'increment',
+              },
+            },
+          },
+        },
+      },
+      typings({
+        eventsMap: {
+          NEXT: 'primitive',
+        },
+        context: 'number',
+      }),
+    );
+
+    // First call to addOptions - define increment
+    machine.addOptions(({ assign }) => ({
+      actions: {
+        increment: assign('context', ({ context }) => context + 1),
+      },
+    }));
+
+    // Second call to addOptions - access previous action via _legacy
+    machine.addOptions(({ _legacy, batch }) => {
+      const prev = _legacy.actions?.increment;
+      expect(prev).toBeDefined();
+
+      return {
+        actions: {
+          increment: batch(prev, prev),
+        },
+      };
+    });
+
+    const service = interpret(machine, { context: 0 });
+
+    service.start();
+    expect(service.state.context).toBe(0);
+
+    service.send('NEXT');
+    expect(service.state.context).toBe(2);
+
+    service.send('NEXT');
+    expect(service.state.context).toBe(4);
+  });
+
+  test('#03 =>should access previous predicates via _legacy', () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -119,7 +172,7 @@ describe('Legacy Options Access', () => {
     expect(service.state.value).toBe('positive');
   });
 
-  test('should work with provideOptions', () => {
+  test('#04 => should work with provideOptions', () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -173,7 +226,7 @@ describe('Legacy Options Access', () => {
     expect(service.state.context).toBe(6);
   });
 
-  test('_legacy should be immutable', () => {
+  test('#05 => _legacy should be immutable', () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -203,7 +256,7 @@ describe('Legacy Options Access', () => {
     });
   });
 
-  test('should handle multiple calls with cumulative legacy', () => {
+  test('#06 => should handle multiple calls with cumulative legacy', () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -272,8 +325,8 @@ describe('Legacy Options Access', () => {
     expect(service.state.context).toBe(111);
   });
 
-  describe('Service (Interpreter) addOptions', () => {
-    test('should access previous actions via _legacy on service.addOptions', () => {
+  describe('#07 => Service (Interpreter) addOptions', () => {
+    test('#01 => should access previous actions via _legacy on service.addOptions', () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -283,8 +336,8 @@ describe('Legacy Options Access', () => {
                 NEXT: {
                   actions: 'increment',
                 },
-                DOUBLE: {
-                  actions: 'doubleIncrement',
+                TRIPLE: {
+                  actions: 'tripleIncrement',
                 },
               },
             },
@@ -293,7 +346,7 @@ describe('Legacy Options Access', () => {
         typings({
           eventsMap: {
             NEXT: 'primitive',
-            DOUBLE: 'primitive',
+            TRIPLE: 'primitive',
           },
           context: 'number',
         }),
@@ -310,12 +363,13 @@ describe('Legacy Options Access', () => {
 
       // Second call to service.addOptions - access previous action via _legacy
       service.addOptions(({ _legacy, batch }) => {
-        const previousIncrement = _legacy.actions?.increment;
-        expect(previousIncrement).toBeDefined();
+        const prev = _legacy.actions?.increment;
+        expect(prev).toBeDefined();
+        const params = Array(3).fill(prev);
 
         return {
           actions: {
-            doubleIncrement: batch(previousIncrement!, previousIncrement!),
+            tripleIncrement: batch(...params),
           },
         };
       });
@@ -326,11 +380,80 @@ describe('Legacy Options Access', () => {
       service.send('NEXT');
       expect(service.state.context).toBe(1);
 
-      service.send('DOUBLE');
-      expect(service.state.context).toBe(3);
+      service.send('TRIPLE');
+      expect(service.state.context).toBe(4);
     });
 
-    test('should access previous predicates via _legacy on service.addOptions', () => {
+    test('#02 => should access previous actions via _legacy on service.addOptions, changes the same action', () => {
+      const machine = createMachine(
+        {
+          initial: 'idle',
+          states: {
+            idle: {
+              on: {
+                NEXT: {
+                  actions: 'increment',
+                },
+              },
+            },
+          },
+        },
+        typings({
+          eventsMap: {
+            NEXT: 'primitive',
+          },
+          context: 'number',
+        }),
+      );
+
+      const service = interpret(machine, { context: 0 });
+
+      // First call to service.addOptions - define increment
+      service.addOptions(({ assign }) => ({
+        actions: {
+          increment: assign('context', ({ context }) => context + 1),
+        },
+      }));
+
+      service.start();
+      expect(service.state.context).toBe(0);
+
+      service.send('NEXT');
+      expect(service.state.context).toBe(1);
+
+      // Second call to service.addOptions - access previous action via _legacy
+      service.addOptions(({ _legacy, batch }) => {
+        const prev = _legacy.actions?.increment;
+        expect(prev).toBeDefined();
+        const params = Array(2).fill(prev);
+
+        return {
+          actions: {
+            increment: batch(...params),
+          },
+        };
+      });
+
+      service.send('NEXT');
+      expect(service.state.context).toBe(3);
+
+      // Third call to service.addOptions - access previous action via _legacy
+      service.addOptions(({ _legacy, batch }) => {
+        const prev = _legacy.actions?.increment;
+        expect(prev).toBeDefined();
+
+        return {
+          actions: {
+            increment: batch(prev, prev, prev),
+          },
+        };
+      });
+
+      service.send('NEXT');
+      expect(service.state.context).toBe(9);
+    });
+
+    test('#03 => should access previous predicates via _legacy on service.addOptions', () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -389,7 +512,7 @@ describe('Legacy Options Access', () => {
       expect(service.state.value).toBe('positive');
     });
 
-    test('should handle cumulative legacy on service.addOptions', () => {
+    test('#04 => should handle cumulative legacy on service.addOptions', () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -442,8 +565,8 @@ describe('Legacy Options Access', () => {
     });
   });
 
-  describe('Service (Interpreter) provideOptions', () => {
-    test('should access previous actions via _legacy on service.provideOptions', () => {
+  describe('#08 => Service (Interpreter) provideOptions', () => {
+    test('#01 => should access previous actions via _legacy on service.provideOptions', () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -500,7 +623,7 @@ describe('Legacy Options Access', () => {
       expect(service3.state.context).toBe(8);
     });
 
-    test('should return new service instance with provideOptions', () => {
+    test('#02 => should return new service instance with provideOptions', () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -543,7 +666,7 @@ describe('Legacy Options Access', () => {
       expect(service2.state.context).toBe(1);
     });
 
-    test('should chain provideOptions with cumulative legacy', () => {
+    test('#03 => should chain provideOptions with cumulative legacy', () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -610,7 +733,7 @@ describe('Legacy Options Access', () => {
       expect(service4.state.context).toBe(111);
     });
 
-    test('should preserve context and pContext across provideOptions', () => {
+    test('#04 => should preserve context and pContext across provideOptions', () => {
       const machine = createMachine(
         {
           initial: 'idle',

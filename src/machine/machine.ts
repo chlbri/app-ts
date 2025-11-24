@@ -1054,18 +1054,20 @@ class Machine<
           });
 
           let out: any;
-          fns.forEach(fn => {
-            return (out = fn({
-              ...state,
-              ...merge(
-                {
-                  context,
-                  pContext,
-                },
-                out,
-              ),
-            }));
-          });
+          fns
+            .filter(f => !!f)
+            .forEach(fn => {
+              return (out = fn({
+                ...state,
+                ...merge(
+                  {
+                    context,
+                    pContext,
+                  },
+                  out,
+                ),
+              }));
+            });
 
           return out;
         };
