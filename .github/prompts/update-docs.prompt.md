@@ -43,7 +43,19 @@ Order: Breaking changes → Features → Fixes → Docs → Refactor → Depende
    - API changes
    - New examples needed
 
-4. **Commit**:
+**STOP HERE - DO NOT COMMIT**
+
+User will commit manually.
+
+## Format
+
+- Date: DD/MM/YYYY (European format)
+- Time: HH:MM (24h format)
+- English commit messages
+- French allowed in CHANGELOG details
+- Actions: Add, Fix, Remove, Update, Enhance, Refactor
+
+## Commit Message Format (for reference only)
 
 ```
 docs: update documentation for version X.Y.Z
@@ -52,10 +64,3 @@ Update CHANGELOG.md with version X.Y.Z changes
 
 @chlbri:bri_lvi@icloud.com
 ```
-
-## Format
-
-- Date: DD/MM/YYYY (European)
-- English commit messages
-- French allowed in CHANGELOG details
-- Actions: Add, Fix, Remove, Update, Enhance, Refactor

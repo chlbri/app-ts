@@ -1,9 +1,8 @@
 import type {
-  AllowedNamesLow,
   AnyArray,
   Keys,
   NOmit,
-  NotAllowedNamesLow,
+  Ru,
   SoA,
   SoRa,
 } from '#bemedev/globals/types';
@@ -16,7 +15,6 @@ type PrimitiveS =
   | 'null'
   | 'undefined'
   | 'symbol';
-
 type TransformPrimitiveS<T extends PrimitiveS> = T extends 'string'
   ? string
   : T extends 'number'
@@ -116,7 +114,7 @@ type __TransformPrimitiveObject<T> = T extends Types
     : T extends AnyArray<PrimitiveObject>
       ? ReduceTuple2<T>
       : T extends ArrayCustom<infer A>
-        ? __TransformPrimitiveObject<A>[]
+        ? TransformPrimitiveObject<A>[]
         : T extends PartialCustom
           ? Partial<__TransformPrimitiveObject<NOmit<T, typeof PARTIAL>>>
           : T extends Maybe<infer TMaybe>
@@ -137,25 +135,26 @@ type ReduceTupleU<T extends AnyArray> = T extends [
       : number extends T['length']
         ? T
         : Undefiny<T[number]>[];
+type HasUndefined<T> = undefined extends T ? true : false;
+type UndefinyObject<T extends object> = {
+  [K in keyof T as HasUndefined<T[K]> extends true ? never : K]: Undefiny<
+    T[K]
+  >;
+} & {
+  [K in keyof T as HasUndefined<T[K]> extends true ? K : never]?: Undefiny<
+    Exclude<T[K], undefined>
+  >;
+} extends infer F
+  ? {
+      [K in keyof F]: F[K];
+    }
+  : never;
 
 type Undefiny<T> = T extends AnyArray
   ? ReduceTupleU<T>
-  : T extends object
-    ? {
-        [K in keyof T as K extends NotAllowedNamesLow<T, undefined>
-          ? K
-          : never]: Undefiny<T[K]>;
-      } & {
-        [K in keyof T as K extends AllowedNamesLow<T, undefined>
-          ? K
-          : never]?: Undefiny<T[K]>;
-      } extends infer F
-      ? {
-          [K in keyof F]: F[K];
-        }
-      : never
+  : T extends Ru
+    ? UndefinyObject<T>
     : T;
-
 export type TransformPrimitiveObject<T> = Undefiny<
   __TransformPrimitiveObject<T>
 >;
