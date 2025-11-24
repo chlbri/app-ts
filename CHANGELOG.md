@@ -11,6 +11,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.4.1] - 2025/02/24** => _11:00_
+
+</summary>
+
+- Enhance README documentation with comprehensive examples
+- Add detailed API reference for Machine and Interpreter
+- Add examples for advanced features: actions, guards, delays, promises
+- Add documentation for nested machines and activities
+- Add subscriber patterns and state management examples
+- Update dependencies
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.4.0] - 2025/02/24** => _10:00_
 
 </summary>

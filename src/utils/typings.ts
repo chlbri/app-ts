@@ -160,7 +160,7 @@ export type TransformPrimitiveObject<T> = Undefiny<
   __TransformPrimitiveObject<T>
 >;
 
-export const transformPrimitiveObject = <const T extends PrimitiveObject>(
+export const transformPrimitiveObject = <T extends PrimitiveObject>(
   obj: T,
 ): TransformPrimitiveObject<T> => {
   const _obj = obj as any;
@@ -235,7 +235,7 @@ typings.record = <const K extends Keys[], V extends PrimitiveObject>(
   return object as Record<K[number] extends never ? Keys : K[number], V>;
 };
 
-typings.any = <const T extends PrimitiveObject>(value: T) => value;
+typings.any = <T extends PrimitiveObject>(value: T) => value;
 
 typings.maybe = <T extends __PrimitiveObject | __PrimitiveObject[]>(
   value?: T,
@@ -249,7 +249,7 @@ typings.litterals = <const T extends (string | number | boolean)[]>(
 ) => values[0] as unknown as Custom<T[number]>;
 
 typings.union = <
-  const T extends [PrimitiveObject, PrimitiveObject, ...PrimitiveObject[]],
+  T extends [PrimitiveObject, PrimitiveObject, ...PrimitiveObject[]],
 >(
   ...values: T
 ) => {
@@ -260,7 +260,7 @@ typings.array = <T extends __PrimitiveObject | Maybe>(value: T) =>
   ({ [ARRAY]: value }) as ArrayCustom<T>;
 
 typings.tuple = <
-  const T extends [
+  T extends [
     __PrimitiveObject | Maybe | ArrayCustom,
     ...(__PrimitiveObject | Maybe | ArrayCustom)[],
   ],
@@ -273,11 +273,7 @@ type Discriminated<K extends Keys> = PrimitiveObjectMap &
 
 typings.discriminatedUnion = <
   const K extends Keys,
-  const T extends [
-    Discriminated<K>,
-    Discriminated<K>,
-    ...Discriminated<K>[],
-  ],
+  T extends [Discriminated<K>, Discriminated<K>, ...Discriminated<K>[]],
 >(
   _key: K,
   ...values: T
@@ -300,7 +296,7 @@ export type IntersectionCustom<T extends PrimitiveObjectMap[]> =
     : never;
 
 typings.intersection = <
-  const T extends [
+  T extends [
     PrimitiveObjectMap,
     PrimitiveObjectMap,
     ...PrimitiveObjectMap[],

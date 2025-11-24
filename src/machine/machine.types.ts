@@ -109,10 +109,9 @@ export type AssignAction_F<
     { object: 'both'; start: false; sep: '.' }
   >,
   K extends keyof D = keyof D,
-  R = D[K],
 >(
   key: K,
-  fn: FnMap<E, P, Pc, Tc, R>,
+  fn: FnMap<E, P, Pc, Tc, D[K]>,
 ) => ActionResultFn<E, P, Pc, Tc>;
 
 export type ResendAction_F<

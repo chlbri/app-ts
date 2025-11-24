@@ -5,8 +5,8 @@ import { createMachine } from '#machine';
 import { type StateValue } from '#states';
 import { typings } from '#utils';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { __tsSchema } from './machine.real.gen';
 import type { inferT } from 'src/utils/typings';
+import { __tsSchema } from './machine.real.gen';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -1089,7 +1089,7 @@ describe('REAL LIFE TESTS', () => {
               context: { fields },
               payload: { index, value },
             }) => {
-              if (!fields) return;
+              if (!fields) return fields;
               fields[index] = { ...fields[index], ...value };
               return fields;
             },
@@ -1102,7 +1102,7 @@ describe('REAL LIFE TESTS', () => {
             context: { fields },
             payload: { index, value },
           }) => {
-            if (!fields) return;
+            if (!fields) return fields;
             fields[index] = value;
             return fields;
           },
@@ -1111,21 +1111,24 @@ describe('REAL LIFE TESTS', () => {
         // #region Fields
         'fields.register': assign(
           'context.states.fields',
-          () => 'registration',
+          () => 'registration' as const,
         ),
 
         'fields.register.finish': debounce(
-          assign('context.states.fields', () => 'registered'),
+          assign('context.states.fields', () => 'registered' as const),
           { ms: 500, id: 'register-fields-finish' },
         ),
 
-        'fields.modify': assign('context.states.fields', () => 'idle'),
+        'fields.modify': assign(
+          'context.states.fields',
+          () => 'idle' as const,
+        ),
         // #endregion
 
         // #region Values
         'values.start.register': assign(
           'context.states.values',
-          () => 'registration',
+          () => 'registration' as const,
         ),
 
         'values.register': assign('context.values', {
@@ -1133,11 +1136,14 @@ describe('REAL LIFE TESTS', () => {
         }),
 
         'values.register.finish': debounce(
-          assign('context.states.values', () => 'registered'),
+          assign('context.states.values', () => 'registered' as const),
           { ms: 500, id: 'register-values-finish' },
         ),
 
-        'values.modify': assign('context.states.values', () => 'idle'),
+        'values.modify': assign(
+          'context.states.values',
+          () => 'idle' as const,
+        ),
         // #endregion
 
         /**
@@ -1151,10 +1157,10 @@ describe('REAL LIFE TESTS', () => {
 
           return {
             fields: [structuredClone(current)],
-            lang: 'en',
+            lang: 'en' as const,
             states: {
-              fields: 'idle',
-              values: 'idle',
+              fields: 'idle' as const,
+              values: 'idle' as const,
             },
           };
         }),
