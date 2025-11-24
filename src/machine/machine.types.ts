@@ -247,8 +247,20 @@ export type AddOptionsParam_F<
   stopActivity: TimeAction_F<E, P, Pc, Tc>;
   pauseTimer: TimeAction_F<E, P, Pc, Tc>;
   resumeTimer: TimeAction_F<E, P, Pc, Tc>;
-  stopTimer: TimeAction_F<E, P, Pc, Tc>;
+  stopTimer: TimeAction_F<E, P, Tc>;
   rinitFn: () => Rinit;
+  /**
+   * Access to previously defined options from previous addOptions or provideOptions calls.
+   * Provides actions, predicates, emitters, machines, promises, and delays.
+   */
+  _legacy: Readonly<{
+    actions?: Mo['actions'];
+    predicates?: Mo['predicates'];
+    delays?: Mo['delays'];
+    promises?: Mo['promises'];
+    machines?: Mo['machines'];
+    emitters?: Mo['emitters'];
+  }>;
   // merge: DirectMerge_F<Pc, Tc>;
   // emitter: Emitter<E, P, Pc, Tc>;
 }) => Mo | undefined;

@@ -1019,12 +1019,22 @@ class Machine<
     const voidAction = this.#voidAction;
     const sendTo = this.#sendTo;
 
+    const _legacy = Object.freeze({
+      actions: cloneDeep(this.#actions),
+      predicates: cloneDeep(this.#predicates),
+      delays: cloneDeep(this.#delays),
+      promises: cloneDeep(this.#promises),
+      machines: cloneDeep(this.#machines),
+      emitters: cloneDeep(this.#emitters),
+    });
+
     const out = func({
       isValue,
       isNotValue,
       isDefined,
       isNotDefined,
       createChild,
+      _legacy,
       assign: (key, fn) => {
         const out = _any(expandFnMap)(
           this.#eventsMap,
