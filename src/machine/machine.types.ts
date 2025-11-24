@@ -247,7 +247,7 @@ export type AddOptionsParam_F<
   stopActivity: TimeAction_F<E, P, Pc, Tc>;
   pauseTimer: TimeAction_F<E, P, Pc, Tc>;
   resumeTimer: TimeAction_F<E, P, Pc, Tc>;
-  stopTimer: TimeAction_F<E, P, Tc>;
+  stopTimer: TimeAction_F<E, P, Pc, Tc>;
   rinitFn: () => Rinit;
   /**
    * Access to previously defined options from previous addOptions or provideOptions calls.

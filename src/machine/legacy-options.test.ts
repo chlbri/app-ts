@@ -43,10 +43,7 @@ describe('Legacy Options Access', () => {
 
       return {
         actions: {
-          doubleIncrement: batch(
-            previousIncrement!,
-            previousIncrement!,
-          ),
+          doubleIncrement: batch(previousIncrement!, previousIncrement!),
         },
       };
     });
@@ -95,7 +92,7 @@ describe('Legacy Options Access', () => {
     );
 
     // First call - define isPositive
-    machine.addOptions(({ isDefined }) => ({
+    machine.addOptions(() => ({
       predicates: {
         isPositive: ({ context }) => context > 0,
       },
