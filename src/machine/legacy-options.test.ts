@@ -271,4 +271,381 @@ describe('Legacy Options Access', () => {
     service.send('THIRD');
     expect(service.state.context).toBe(111);
   });
+
+  describe('Service (Interpreter) addOptions', () => {
+    test('should access previous actions via _legacy on service.addOptions', () => {
+      const machine = createMachine(
+        {
+          initial: 'idle',
+          states: {
+            idle: {
+              on: {
+                NEXT: {
+                  actions: 'increment',
+                },
+                DOUBLE: {
+                  actions: 'doubleIncrement',
+                },
+              },
+            },
+          },
+        },
+        typings({
+          eventsMap: {
+            NEXT: 'primitive',
+            DOUBLE: 'primitive',
+          },
+          context: 'number',
+        }),
+      );
+
+      const service = interpret(machine, { context: 0 });
+
+      // First call to service.addOptions - define increment
+      service.addOptions(({ assign }) => ({
+        actions: {
+          increment: assign('context', ({ context }) => context + 1),
+        },
+      }));
+
+      // Second call to service.addOptions - access previous action via _legacy
+      service.addOptions(({ _legacy, batch }) => {
+        const previousIncrement = _legacy.actions?.increment;
+        expect(previousIncrement).toBeDefined();
+
+        return {
+          actions: {
+            doubleIncrement: batch(previousIncrement!, previousIncrement!),
+          },
+        };
+      });
+
+      service.start();
+      expect(service.state.context).toBe(0);
+
+      service.send('NEXT');
+      expect(service.state.context).toBe(1);
+
+      service.send('DOUBLE');
+      expect(service.state.context).toBe(3);
+    });
+
+    test('should access previous predicates via _legacy on service.addOptions', () => {
+      const machine = createMachine(
+        {
+          initial: 'idle',
+          states: {
+            idle: {
+              on: {
+                CHECK: [
+                  {
+                    guards: 'isPositive',
+                    target: '/positive',
+                  },
+                  {
+                    guards: 'isNegative',
+                    target: '/negative',
+                  },
+                ],
+              },
+            },
+            positive: {},
+            negative: {},
+          },
+        },
+        typings({
+          eventsMap: {
+            CHECK: 'primitive',
+          },
+          context: 'number',
+        }),
+      );
+
+      const service = interpret(machine, { context: 5 });
+
+      // First call - define isPositive
+      service.addOptions(() => ({
+        predicates: {
+          isPositive: ({ context }) => context > 0,
+        },
+      }));
+
+      // Second call - access and extend with isNegative using _legacy
+      service.addOptions(({ _legacy }) => {
+        const previousPredicates = _legacy.predicates;
+        expect(previousPredicates?.isPositive).toBeDefined();
+
+        return {
+          predicates: {
+            isNegative: ({ context }) => context < 0,
+          },
+        };
+      });
+
+      service.start();
+      expect(service.state.value).toBe('idle');
+
+      service.send('CHECK');
+      expect(service.state.value).toBe('positive');
+    });
+
+    test('should handle cumulative legacy on service.addOptions', () => {
+      const machine = createMachine(
+        {
+          initial: 'idle',
+          states: {
+            idle: {
+              on: {
+                FIRST: { actions: 'first' },
+                SECOND: { actions: 'second' },
+              },
+            },
+          },
+        },
+        typings({
+          eventsMap: {
+            FIRST: 'primitive',
+            SECOND: 'primitive',
+          },
+          context: 'number',
+        }),
+      );
+
+      const service = interpret(machine, { context: 0 });
+
+      // First call
+      service.addOptions(({ assign }) => ({
+        actions: {
+          first: assign('context', ({ context }) => context + 5),
+        },
+      }));
+
+      // Second call - should see first
+      service.addOptions(({ _legacy, assign }) => {
+        expect(_legacy.actions?.first).toBeDefined();
+        expect(_legacy.actions?.second).toBeUndefined();
+
+        return {
+          actions: {
+            second: assign('context', ({ context }) => context + 20),
+          },
+        };
+      });
+
+      service.start();
+
+      service.send('FIRST');
+      expect(service.state.context).toBe(5);
+
+      service.send('SECOND');
+      expect(service.state.context).toBe(25);
+    });
+  });
+
+  describe('Service (Interpreter) provideOptions', () => {
+    test('should access previous actions via _legacy on service.provideOptions', () => {
+      const machine = createMachine(
+        {
+          initial: 'idle',
+          states: {
+            idle: {
+              on: {
+                ADD: {
+                  actions: 'add',
+                },
+                MULTIPLY: {
+                  actions: 'multiply',
+                },
+              },
+            },
+          },
+        },
+        typings({
+          eventsMap: {
+            ADD: 'primitive',
+            MULTIPLY: 'primitive',
+          },
+          context: 'number',
+        }),
+      );
+
+      const service1 = interpret(machine, { context: 1 });
+
+      // First provideOptions - define add
+      const service2 = service1.provideOptions(({ assign }) => ({
+        actions: {
+          add: assign('context', ({ context }) => context + 3),
+        },
+      }));
+
+      // Second provideOptions - access previous action via _legacy
+      const service3 = service2.provideOptions(({ _legacy, assign }) => {
+        const previousAdd = _legacy.actions?.add;
+        expect(previousAdd).toBeDefined();
+
+        return {
+          actions: {
+            multiply: assign('context', ({ context }) => context * 2),
+          },
+        };
+      });
+
+      service3.start();
+      expect(service3.state.context).toBe(1);
+
+      service3.send('ADD');
+      expect(service3.state.context).toBe(4);
+
+      service3.send('MULTIPLY');
+      expect(service3.state.context).toBe(8);
+    });
+
+    test('should return new service instance with provideOptions', () => {
+      const machine = createMachine(
+        {
+          initial: 'idle',
+          states: {
+            idle: {
+              on: {
+                INCREMENT: {
+                  actions: 'increment',
+                },
+              },
+            },
+          },
+        },
+        typings({
+          eventsMap: {
+            INCREMENT: 'primitive',
+          },
+          context: 'number',
+        }),
+      );
+
+      const service1 = interpret(machine, { context: 0 });
+      const service2 = service1.provideOptions(({ assign }) => ({
+        actions: {
+          increment: assign('context', ({ context }) => context + 1),
+        },
+      }));
+
+      // Verify they are different instances
+      expect(service1).not.toBe(service2);
+
+      // service1 should not have the increment action defined
+      service1.start();
+      service1.send('INCREMENT');
+      expect(service1.state.context).toBe(0); // No change
+
+      // service2 should have the increment action
+      service2.start();
+      service2.send('INCREMENT');
+      expect(service2.state.context).toBe(1);
+    });
+
+    test('should chain provideOptions with cumulative legacy', () => {
+      const machine = createMachine(
+        {
+          initial: 'idle',
+          states: {
+            idle: {
+              on: {
+                OP1: { actions: 'op1' },
+                OP2: { actions: 'op2' },
+                OP3: { actions: 'op3' },
+              },
+            },
+          },
+        },
+        typings({
+          eventsMap: {
+            OP1: 'primitive',
+            OP2: 'primitive',
+            OP3: 'primitive',
+          },
+          context: 'number',
+        }),
+      );
+
+      const service1 = interpret(machine, { context: 0 });
+
+      const service2 = service1.provideOptions(({ assign }) => ({
+        actions: {
+          op1: assign('context', ({ context }) => context + 1),
+        },
+      }));
+
+      const service3 = service2.provideOptions(({ _legacy, assign }) => {
+        expect(_legacy.actions?.op1).toBeDefined();
+        expect(_legacy.actions?.op2).toBeUndefined();
+
+        return {
+          actions: {
+            op2: assign('context', ({ context }) => context + 10),
+          },
+        };
+      });
+
+      const service4 = service3.provideOptions(({ _legacy, assign }) => {
+        expect(_legacy.actions?.op1).toBeDefined();
+        expect(_legacy.actions?.op2).toBeDefined();
+        expect(_legacy.actions?.op3).toBeUndefined();
+
+        return {
+          actions: {
+            op3: assign('context', ({ context }) => context + 100),
+          },
+        };
+      });
+
+      service4.start();
+
+      service4.send('OP1');
+      expect(service4.state.context).toBe(1);
+
+      service4.send('OP2');
+      expect(service4.state.context).toBe(11);
+
+      service4.send('OP3');
+      expect(service4.state.context).toBe(111);
+    });
+
+    test('should preserve context and pContext across provideOptions', () => {
+      const machine = createMachine(
+        {
+          initial: 'idle',
+          states: {
+            idle: {
+              on: {
+                INCREMENT: {
+                  actions: 'increment',
+                },
+              },
+            },
+          },
+        },
+        typings({
+          eventsMap: {
+            INCREMENT: 'primitive',
+          },
+          context: 'number',
+        }),
+      );
+
+      const service1 = interpret(machine, { context: 10 });
+
+      const service2 = service1.provideOptions(({ assign }) => ({
+        actions: {
+          increment: assign('context', ({ context }) => context + 5),
+        },
+      }));
+
+      // Verify initial context is preserved
+      service2.start();
+      expect(service2.state.context).toBe(10);
+
+      service2.send('INCREMENT');
+      expect(service2.state.context).toBe(15);
+    });
+  });
 });
