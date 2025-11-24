@@ -11,6 +11,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.4.2] - 2025/11/24** => _17:30_
+
+</summary>
+
+- Add comprehensive type tests for native JavaScript classes
+- Add tests for `Date`, `AbortController`, `AbortSignal`, `RegExp`, `Error` types
+- Add tests for `Promise`, `Map`, `Set`, `WeakMap`, `WeakSet` types
+- Add tests for complex nested structures with native types
+- Add tests for tuples, arrays, unions and intersections with native types
+- Add over 150+ type-level tests covering edge cases and real-world scenarios
+- Enhance typings system with improved `Undefiny` and `UndefinyObject` types
+- Fix array transformation for `ArrayCustom` type
+- Update dependencies
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.4.1] - 2025/02/24** => _11:00_
 
 </summary>
