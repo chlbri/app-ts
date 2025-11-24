@@ -11,17 +11,52 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.4.3] - 24/11/2025** => _18:00_
+
+</summary>
+
+- **Add `_legacy` parameter to `addOptions` and `provideOptions` methods**
+  - Allows access to previously defined actions, predicates, delays,
+    promises, machines, and emitters
+  - Available in both `Machine` and `Interpreter` classes
+  - Provides immutable snapshot of options from previous calls
+  - Enables reusing and composing existing options without manual tracking
+- **Add `provideOptions` method to `Interpreter` class**
+  - Returns new service instance with applied options (similar to
+    `Machine.provideOptions`)
+  - Preserves initial context and private context
+  - Maintains service independence across instances
+- **Add comprehensive test coverage for legacy options**
+  - 13 tests for `Machine` legacy access and immutability
+  - Tests for `Interpreter.addOptions` with `_legacy` parameter
+  - Tests for `Interpreter.provideOptions` with instance independence
+  - Validates cumulative behavior across multiple option calls
+- Enhance type definitions with `AddOptionsParam_F` including `_legacy`
+  property
+- Fix batch action filtering to handle undefined functions
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.4.2] - 24/11/2025** => _17:30_
 
 </summary>
 
 - Add comprehensive type tests for native JavaScript classes
-- Add tests for `Date`, `AbortController`, `AbortSignal`, `RegExp`, `Error` types
+- Add tests for `Date`, `AbortController`, `AbortSignal`, `RegExp`, `Error`
+  types
 - Add tests for `Promise`, `Map`, `Set`, `WeakMap`, `WeakSet` types
 - Add tests for complex nested structures with native types
 - Add tests for tuples, arrays, unions and intersections with native types
-- Add over 150+ type-level tests covering edge cases and real-world scenarios
-- Enhance typings system with improved `Undefiny` and `UndefinyObject` types
+- Add over 150+ type-level tests covering edge cases and real-world
+  scenarios
+- Enhance typings system with improved `Undefiny` and `UndefinyObject`
+  types
 - Fix array transformation for `ArrayCustom` type
 - <u>Test coverage **_100%_**</u>
 
