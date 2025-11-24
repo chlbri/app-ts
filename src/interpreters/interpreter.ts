@@ -1698,6 +1698,23 @@ export class Interpreter<
     return this.#machine.addOptions;
   }
 
+  /**
+   * Provides options for the interpreter and returns a new interpreter instance.
+   *
+   * @param option a function that provides options for the machine.
+   * Options can include actions, predicates, delays, promises, and child machines.
+   * @returns a new interpreter instance with the provided options applied.
+   */
+  provideOptions = (
+    option: Parameters<(typeof this)['addOptions']>[0],
+  ) => {
+    const newMachine = this.#machine.provideOptions(option);
+    const out = new Interpreter(newMachine, this.#mode, this.#exact);
+    out._ppC(this.#initialPpc);
+    out._provideContext(this.#initialContext);
+    return out;
+  };
+
   #subscribers = new Set<SubscriberClass<E, P, Tc>>();
 
   get state() {

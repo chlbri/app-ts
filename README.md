@@ -460,6 +460,95 @@ Provides actions, guards, delays, promises, and child machines.
 
 Adds or overwrites options dynamically.
 
+#### Accessing Legacy Options with `_legacy`
+
+Both `provideOptions` and `addOptions` now support accessing previously
+defined options through the `_legacy` parameter. This allows you to reuse
+and compose existing actions, predicates, delays, promises, machines, and
+emitters without manual tracking.
+
+**Example with Machine:**
+
+```typescript
+const machine = createMachine(config, types)
+  .provideOptions(({ assign }) => ({
+    actions: {
+      increment: assign('context', ({ context }) => context + 1),
+    },
+  }))
+  .provideOptions(({ _legacy, batch }) => {
+    // Access previously defined increment action
+    const previousIncrement = _legacy.actions?.increment;
+
+    return {
+      actions: {
+        doubleIncrement: batch(previousIncrement!, previousIncrement!),
+      },
+    };
+  });
+```
+
+**Example with Interpreter:**
+
+```typescript
+const service = interpret(machine, { context: 0 });
+
+// Define initial action
+service.addOptions(({ assign }) => ({
+  actions: {
+    add: assign('context', ({ context }) => context + 5),
+  },
+}));
+
+// Reuse previous action via _legacy
+service.addOptions(({ _legacy, batch }) => ({
+  actions: {
+    addTwice: batch(_legacy.actions.add!, _legacy.actions.add!),
+  },
+}));
+```
+
+**Example with `provideOptions` on Interpreter:**
+
+```typescript
+// Create new service instances with cumulative options
+const service1 = interpret(machine, { context: 0 });
+
+const service2 = service1.provideOptions(({ assign }) => ({
+  actions: {
+    multiply: assign('context', ({ context }) => context * 2),
+  },
+}));
+
+const service3 = service2.provideOptions(({ _legacy, assign }) => ({
+  actions: {
+    multiplyAndAdd: assign('context', ({ context }) => {
+      // Can access previous multiply action
+      return context * 2 + 10;
+    }),
+  },
+}));
+
+// service1, service2, and service3 are independent instances
+```
+
+**Properties available in `_legacy`:**
+
+- `_legacy.actions` - Previously defined actions
+- `_legacy.predicates` - Previously defined guards/predicates
+- `_legacy.delays` - Previously defined delays
+- `_legacy.promises` - Previously defined promises
+- `_legacy.machines` - Previously defined child machines
+- `_legacy.emitters` - Previously defined emitters
+
+**Key features:**
+
+- Immutable: `_legacy` object is frozen and cannot be modified
+- Cumulative: Each call sees options from all previous calls
+- Type-safe: Fully typed for IntelliSense support
+- Works with both `addOptions` (mutates) and `provideOptions` (returns new
+  instance)
+
 ### Interpreter
 
 #### `interpret(machine, options)`
@@ -525,6 +614,49 @@ Resumes the service after pausing.
 #### `service.stop()`
 
 Stops the service completely.
+
+#### `service.addOptions(callback)`
+
+Dynamically adds or overwrites options on the running service. Mutates the
+current service instance.
+
+**Parameters:**
+
+- `callback`: Same as `machine.provideOptions` callback, including
+  `_legacy` parameter
+
+**Example:**
+
+```typescript
+service.addOptions(({ _legacy, assign }) => ({
+  actions: {
+    newAction: assign('context', ({ context }) => context + 1),
+  },
+}));
+```
+
+#### `service.provideOptions(callback)`
+
+Creates a new service instance with additional options. Does not mutate the
+original service.
+
+**Parameters:**
+
+- `callback`: Same as `machine.provideOptions` callback, including
+  `_legacy` parameter
+
+**Returns:** New `Interpreter` instance with preserved initial context
+
+**Example:**
+
+```typescript
+const service2 = service1.provideOptions(({ assign }) => ({
+  actions: {
+    customAction: assign('context', ({ context }) => context * 2),
+  },
+}));
+// service1 and service2 are independent
+```
 
 #### `await service[Symbol.asyncDispose]()`
 

@@ -4,7 +4,11 @@ import type { DefinedValue } from '#guards';
 import type { NodeConfig, StateValue } from '#states';
 import type { Decompose } from '@bemedev/decompose';
 
-import type { Fn, PrimitiveObject } from '#bemedev/globals/types';
+import type {
+  Fn,
+  NotUndefined,
+  PrimitiveObject,
+} from '#bemedev/globals/types';
 import type { FnMap, FnR, KeyU } from '~types';
 import type { Rinit } from './constants';
 import type {
@@ -216,7 +220,7 @@ export type BatchAction_F<
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = <T extends ActionResultFn<E, P, Pc, Tc>>(
+> = <T extends ActionResultFn<E, P, Pc, Tc> | undefined>(
   ...fns: T[]
 ) => ActionResultFn<E, P, Pc, Tc>;
 
@@ -249,6 +253,25 @@ export type AddOptionsParam_F<
   resumeTimer: TimeAction_F<E, P, Pc, Tc>;
   stopTimer: TimeAction_F<E, P, Pc, Tc>;
   rinitFn: () => Rinit;
+  /**
+   * Access to previously defined options from previous addOptions or provideOptions calls.
+   * Provides actions, predicates, emitters, machines, promises, and delays.
+   */
+  _legacy: Readonly<{
+    actions?: {
+      [key in keyof NotUndefined<Mo['actions']>]?: ActionResultFn<
+        E,
+        P,
+        Pc,
+        Tc
+      >;
+    };
+    predicates?: Mo['predicates'];
+    delays?: Mo['delays'];
+    promises?: Mo['promises'];
+    machines?: Mo['machines'];
+    emitters?: Mo['emitters'];
+  }>;
   // merge: DirectMerge_F<Pc, Tc>;
   // emitter: Emitter<E, P, Pc, Tc>;
 }) => Mo | undefined;
