@@ -11,7 +11,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
-## **[1.4.2] - 2025/11/24** => _17:30_
+## **[1.4.2] - 24/11/2025** => _17:30_
 
 </summary>
 
@@ -23,7 +23,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Add over 150+ type-level tests covering edge cases and real-world scenarios
 - Enhance typings system with improved `Undefiny` and `UndefinyObject` types
 - Fix array transformation for `ArrayCustom` type
-- Update dependencies
 - <u>Test coverage **_100%_**</u>
 
 </details>

@@ -1,6 +1,6 @@
 # Update Documentation
 
-Update CHANGELOG.md and README.md after version upgrade, then commit automatically.
+Update CHANGELOG.md and README.md after version upgrade.
 
 ## Prerequisites
 
@@ -43,31 +43,24 @@ Order: Breaking changes → Features → Fixes → Docs → Refactor → Depende
    - API changes
    - New examples needed
 
-4. **Commit automatically** (NO manual intervention):
+**STOP HERE - DO NOT COMMIT**
 
-```bash
-git add CHANGELOG.md
-# Add README.md only if modified
-git commit -m "docs: update documentation for version X.Y.Z
-
-Update CHANGELOG.md with version X.Y.Z changes
-
-@chlbri:bri_lvi@icloud.com"
-```
-
-**IMPORTANT**: Execute the commit command automatically using `run_in_terminal` tool.
-DO NOT ask for user confirmation. DO NOT stop before committing.
+User will commit manually.
 
 ## Format
 
-- Date: DD/MM/YYYY (European format, not YYYY/MM/DD)
+- Date: DD/MM/YYYY (European format)
 - Time: HH:MM (24h format)
 - English commit messages
 - French allowed in CHANGELOG details
 - Actions: Add, Fix, Remove, Update, Enhance, Refactor
 
-## Automation
+## Commit Message Format (for reference only)
 
-- Always use `run_in_terminal` to execute git commands
-- Never ask user to run commands manually
-- Complete the entire workflow in one execution
+```
+docs: update documentation for version X.Y.Z
+
+Update CHANGELOG.md with version X.Y.Z changes
+
+@chlbri:bri_lvi@icloud.com
+```
