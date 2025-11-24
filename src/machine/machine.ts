@@ -48,10 +48,11 @@ import { decompose, type Decompose } from '@bemedev/decompose';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
-import { RINIT_STATE } from './constants';
 import {
+  assignByKey,
   createChildS,
   expandFnMap,
+  getByKey,
   type CreateChild_F,
 } from './functions';
 import type {
@@ -1072,7 +1073,59 @@ class Machine<
           return out;
         };
       },
-      rinitFn: () => RINIT_STATE,
+      filter: (key, fn) => {
+        const _fn = reduceFnMap(this.#eventsMap, this.#promiseesMap, fn);
+
+        return ({ context, pContext, ...rest }) => {
+          const state = this.#cloneStateExtended({
+            context,
+            pContext,
+            ...rest,
+          });
+
+          const predicate = _fn(state) as any;
+          const currentValue = getByKey(
+            { context, pContext },
+            _any(key),
+          ) as any;
+
+          let filteredValue: any;
+
+          if (Array.isArray(currentValue)) {
+            // Filter array elements
+            filteredValue = currentValue.filter(predicate);
+          } else if (
+            currentValue !== null &&
+            typeof currentValue === 'object'
+          ) {
+            // Filter object properties
+            filteredValue = Object.keys(currentValue).reduce(
+              (acc, objKey) => {
+                const value = currentValue[objKey];
+                if (predicate(value, objKey, currentValue)) {
+                  acc[objKey] = value;
+                }
+                return acc;
+              },
+              {} as any,
+            );
+          } else {
+            // Not an array or object, return unchanged
+            return _any({ context, pContext });
+          }
+
+          return assignByKey(
+            { context, pContext },
+            _any(key),
+            filteredValue,
+          );
+        };
+      },
+      erase: key => {
+        return ({ context, pContext }) => {
+          return assignByKey({ context, pContext }, _any(key), undefined);
+        };
+      },
       voidAction,
       sendTo,
       debounce: (fn, { id, ms = 100 }) => {

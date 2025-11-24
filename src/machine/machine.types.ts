@@ -10,7 +10,6 @@ import type {
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import type { FnMap, FnR, KeyU } from '~types';
-import type { Rinit } from './constants';
 import type {
   ChildS,
   Config,
@@ -139,6 +138,55 @@ export type VoidAction_F<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (fn?: FnMap<E, P, Pc, Tc, void>) => ActionResultFn<E, P, Pc, Tc>;
 
+export type FilterAction_F<
+  E extends EventsMap,
+  P extends PromiseeMap,
+  Pc,
+  Tc extends PrimitiveObject,
+> = <
+  D = Decompose<
+    {
+      pContext: Pc;
+      context: Tc;
+    },
+    { object: 'both'; start: false; sep: '.' }
+  >,
+  K extends keyof D = keyof D,
+>(
+  key: K,
+  fn: K extends string
+    ? FnMap<
+        E,
+        P,
+        Pc,
+        Tc,
+        D[K] extends Array<infer Item>
+          ? (item: Item, index: number, array: Item[]) => boolean
+          : D[K] extends object
+            ? (value: any, key: string, obj: D[K]) => boolean
+            : never
+      >
+    : never,
+) => ActionResultFn<E, P, Pc, Tc>;
+
+export type EraseAction_F<
+  E extends EventsMap,
+  P extends PromiseeMap,
+  Pc,
+  Tc extends PrimitiveObject,
+> = <
+  D = Decompose<
+    {
+      pContext: Pc;
+      context: Tc;
+    },
+    { object: 'both'; start: false; sep: '.' }
+  >,
+  K extends keyof D = keyof D,
+>(
+  key: K,
+) => ActionResultFn<E, P, Pc, Tc>;
+
 export type DirectMerge_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -238,6 +286,8 @@ export type AddOptionsParam_F<
   createChild: ChildProvider_F<E, P, Pc>;
   assign: AssignAction_F<E, P, Pc, Tc>;
   batch: BatchAction_F<E, P, Pc, Tc>;
+  filter: FilterAction_F<E, P, Pc, Tc>;
+  erase: EraseAction_F<E, P, Pc, Tc>;
   voidAction: VoidAction_F<E, P, Pc, Tc>;
   sendTo: SendAction_F<E, P, Pc, Tc>;
   debounce: DebounceAction_F<E, P, Pc, Tc>;
@@ -252,7 +302,6 @@ export type AddOptionsParam_F<
   pauseTimer: TimeAction_F<E, P, Pc, Tc>;
   resumeTimer: TimeAction_F<E, P, Pc, Tc>;
   stopTimer: TimeAction_F<E, P, Pc, Tc>;
-  rinitFn: () => Rinit;
   /**
    * Access to previously defined options from previous addOptions or provideOptions calls.
    * Provides actions, predicates, emitters, machines, promises, and delays.

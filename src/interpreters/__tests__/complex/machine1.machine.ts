@@ -192,13 +192,18 @@ export const machine = createMachine(
       },
     },
   }),
-).provideOptions(({ assign, rinitFn }) => ({
+).provideOptions(({ assign, erase, batch }) => ({
   actions: {
     provideAsset: assign('context.asset', {
       START: ({ payload }) => payload.asset,
     }),
 
-    reset: assign('context', rinitFn),
+    reset: batch(
+      erase('context.asset'),
+      erase('context.intermediaries'),
+      erase('context.internetStatus'),
+      erase('context.errors'),
+    ),
 
     addMandatoryIntermediary: assign('context.intermediaries', {
       START: ({ payload }) => [payload.mandatory],
