@@ -1075,6 +1075,7 @@ class Machine<
       },
       filter: (key, fn) => {
         const _fn = reduceFnMap(this.#eventsMap, this.#promiseesMap, fn);
+        const fullKey = `context.${_any(key)}`;
 
         return ({ context, pContext, ...rest }) => {
           const state = this.#cloneStateExtended({
@@ -1086,7 +1087,7 @@ class Machine<
           const predicate = _fn(state) as any;
           const currentValue = getByKey(
             { context, pContext },
-            _any(key),
+            fullKey,
           ) as any;
 
           let filteredValue: any;
@@ -1116,7 +1117,7 @@ class Machine<
 
           return assignByKey(
             { context, pContext },
-            _any(key),
+            fullKey,
             filteredValue,
           );
         };

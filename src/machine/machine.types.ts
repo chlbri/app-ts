@@ -144,13 +144,7 @@ export type FilterAction_F<
   Pc,
   Tc extends PrimitiveObject,
 > = <
-  D = Decompose<
-    {
-      pContext: Pc;
-      context: Tc;
-    },
-    { object: 'both'; start: false; sep: '.' }
-  >,
+  D = Decompose<Tc, { object: 'object'; start: false; sep: '.' }>,
   K extends keyof D = keyof D,
 >(
   key: K,
