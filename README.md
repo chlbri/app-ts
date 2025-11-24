@@ -156,9 +156,494 @@ const machine = createMachine(
 );
 ```
 
+### Machine Interpretation
+
+```typescript
+import { interpret } from '@bemedev/app-ts';
+
+// Create an interpreter service
+const service = interpret(machine, {
+  context: { items: [], error: undefined },
+  pContext: {}, // private context
+});
+
+// Start the service
+service.start();
+
+// Send events
+service.send('FETCH');
+service.send({ type: 'SUCCESS', payload: { data: ['item1', 'item2'] } });
+
+// Get current state
+console.log(service.value); // 'success'
+console.log(service.context); // { items: ['item1', 'item2'], error: undefined }
+
+// Stop the service
+await service[Symbol.asyncDispose]();
+```
+
+### Subscribe to State Changes
+
+```typescript
+import { interpret } from '@bemedev/app-ts';
+
+const service = interpret(machine, {
+  context: { items: [], error: undefined },
+});
+
+// Subscribe to all state changes
+const subscription = service.subscribe((prevState, currentState) => {
+  console.log('State changed:', {
+    from: prevState.value,
+    to: currentState.value,
+  });
+});
+
+// Subscribe to specific events
+const eventSubscription = service.subscribe({
+  SUCCESS: ({ payload }) => console.log('Success:', payload.data),
+  ERROR: ({ payload }) => console.log('Error:', payload.message),
+  else: () => console.log('Other event'),
+});
+
+service.start();
+
+// Later: unsubscribe
+subscription.unsubscribe();
+eventSubscription.close();
+```
+
+### Advanced Machine with Actions, Guards, and Delays
+
+```typescript
+import { createMachine, typings } from '@bemedev/app-ts';
+
+const fetchMachine = createMachine(
+  {
+    initial: 'idle',
+    states: {
+      idle: {
+        on: {
+          FETCH: {
+            guards: 'canFetch',
+            target: 'loading',
+            actions: 'setLoading',
+          },
+        },
+      },
+      loading: {
+        entry: 'logEntry',
+        exit: 'logExit',
+        promises: {
+          src: 'fetchData',
+          then: {
+            actions: 'handleSuccess',
+            target: 'success',
+          },
+          catch: {
+            actions: 'handleError',
+            target: 'error',
+          },
+        },
+      },
+      success: {
+        after: {
+          RESET_DELAY: { target: 'idle', actions: 'reset' },
+        },
+      },
+      error: {
+        on: {
+          RETRY: 'loading',
+        },
+      },
+    },
+  },
+  typings({
+    eventsMap: {
+      FETCH: { url: 'string' },
+      RETRY: 'primitive',
+    },
+    context: {
+      data: typings.maybe(typings.array('string')),
+      error: typings.maybe('string'),
+      loading: 'boolean',
+    },
+    pContext: {
+      retryCount: 'number',
+    },
+    promiseesMap: {
+      fetchData: {
+        then: typings.array('string'),
+        catch: { message: 'string' },
+      },
+    },
+  }),
+).provideOptions(({ assign, voidAction, isValue }) => ({
+  actions: {
+    setLoading: assign('context.loading', () => true),
+    handleSuccess: assign('context', {
+      'fetchData::then': ({ payload }) => ({
+        data: payload,
+        error: undefined,
+        loading: false,
+      }),
+    }),
+    handleError: assign('context', {
+      'fetchData::catch': ({ payload }) => ({
+        data: undefined,
+        error: payload.message,
+        loading: false,
+      }),
+    }),
+    reset: assign('context', () => ({
+      data: undefined,
+      error: undefined,
+      loading: false,
+    })),
+    logEntry: voidAction(() => console.log('Entering loading state')),
+    logExit: voidAction(() => console.log('Exiting loading state')),
+  },
+  predicates: {
+    canFetch: isValue('context.loading', false),
+  },
+  promises: {
+    fetchData: async ({ event }) => {
+      if (event.type !== 'FETCH') return [];
+      const response = await fetch(event.payload.url);
+      return response.json();
+    },
+  },
+  delays: {
+    RESET_DELAY: 3000, // 3 seconds
+  },
+}));
+```
+
+### Nested Machines
+
+```typescript
+import { createMachine, typings } from '@bemedev/app-ts';
+
+const childMachine = createMachine(
+  {
+    initial: 'step1',
+    states: {
+      step1: { on: { NEXT: 'step2' } },
+      step2: { on: { NEXT: 'step3' } },
+      step3: { type: 'final' },
+    },
+  },
+  typings({
+    eventsMap: { NEXT: 'primitive' },
+    context: { step: 'number' },
+  }),
+);
+
+const parentMachine = createMachine(
+  {
+    machines: { child: 'childProcess' },
+    initial: 'idle',
+    states: {
+      idle: {
+        on: { START: 'working' },
+      },
+      working: {
+        on: { COMPLETE: 'done' },
+      },
+      done: {},
+    },
+  },
+  typings({
+    eventsMap: { START: 'primitive', COMPLETE: 'primitive' },
+    context: { status: 'string' },
+  }),
+).provideOptions(({ createChild }) => ({
+  machines: {
+    childProcess: createChild(
+      childMachine,
+      { context: { step: 0 } },
+      { events: 'FULL' },
+    ),
+  },
+}));
+```
+
+### Activities (Recurring Actions)
+
+```typescript
+import { createMachine, typings } from '@bemedev/app-ts';
+
+const timerMachine = createMachine(
+  {
+    initial: 'running',
+    states: {
+      running: {
+        activities: {
+          TICK_DELAY: 'incrementCounter',
+        },
+        on: {
+          PAUSE: 'paused',
+        },
+      },
+      paused: {
+        on: {
+          RESUME: 'running',
+        },
+      },
+    },
+  },
+  typings({
+    eventsMap: { PAUSE: 'primitive', RESUME: 'primitive' },
+    context: { counter: 'number' },
+  }),
+).provideOptions(({ assign }) => ({
+  actions: {
+    incrementCounter: assign(
+      'context.counter',
+      ({ context }) => context.counter + 1,
+    ),
+  },
+  delays: {
+    TICK_DELAY: 1000, // 1 second
+  },
+}));
+```
+
 <br/>
 
 ## API Reference
+
+### Machine Creation
+
+#### `createMachine(config, types)`
+
+Creates a new state machine.
+
+**Parameters:**
+
+- `config`: Machine configuration object
+  - `initial`: Initial state name
+  - `states`: State definitions
+  - `machines?`: Child machine definitions
+  - `emitters?`: Observable emitters
+- `types`: Type definitions
+  - `context`: Public context type
+  - `pContext?`: Private context type
+  - `eventsMap`: Event definitions
+  - `promiseesMap?`: Promise definitions
+
+**Returns:** `Machine` instance
+
+#### `createConfig(config)`
+
+Utility to create a typed configuration object.
+
+### Machine Methods
+
+#### `machine.provideOptions(callback)`
+
+Provides actions, guards, delays, promises, and child machines.
+
+**Parameters:**
+
+- `callback`: Function receiving helper utilities:
+  - `assign`: Update context values
+  - `voidAction`: Create side-effect actions
+  - `isValue`, `isNotValue`: Value comparison guards
+  - `createChild`: Create child machine instances
+  - `sendTo`: Send events to child machines
+  - `debounce`, `throttle`: Rate limiting utilities
+
+**Returns:** `Machine` instance
+
+#### `machine.addOptions(callback)`
+
+Adds or overwrites options dynamically.
+
+### Interpreter
+
+#### `interpret(machine, options)`
+
+Creates an interpreter service for a machine.
+
+**Parameters:**
+
+- `machine`: Machine instance
+- `options`:
+  - `context`: Initial public context
+  - `pContext?`: Initial private context
+  - `mode?`: `'strict'` | `'normal'` (default: `'strict'`)
+  - `exact?`: Use exact timing intervals (default: `true`)
+
+**Returns:** `Interpreter` service
+
+### Interpreter Properties
+
+- **`service.value`** - Current state value
+- **`service.context`** - Current public context
+- **`service.status`** - Service status (`'idle'`, `'working'`,
+  `'stopped'`, etc.)
+- **`service.state`** - Complete state snapshot
+- **`service.config`** - Current state configuration
+- **`service.mode`** - Current mode (`'strict'` | `'normal'`)
+
+### Interpreter Methods
+
+#### `service.start()`
+
+Starts the service and begins processing.
+
+#### `service.send(event)`
+
+Sends an event to the machine.
+
+**Parameters:**
+
+- `event`: Event name (string) or event object `{ type, payload }`
+
+#### `service.subscribe(subscriber, options?)`
+
+Subscribes to state changes.
+
+**Parameters:**
+
+- `subscriber`: Callback function or event map
+- `options?`:
+  - `id?`: Unique subscriber ID
+  - `equals?`: Custom equality function
+
+**Returns:** Subscription object with `unsubscribe()` or `close()` method
+
+#### `service.pause()`
+
+Pauses the service (stops activities and timers).
+
+#### `service.resume()`
+
+Resumes the service after pausing.
+
+#### `service.stop()`
+
+Stops the service completely.
+
+#### `await service[Symbol.asyncDispose]()`
+
+Cleanly disposes of the service (async).
+
+#### `service.dispose()`
+
+Synchronously disposes of the service.
+
+### State Configuration
+
+#### State Definition
+
+```typescript
+states: {
+  stateName: {
+    type?: 'atomic' | 'compound' | 'parallel' | 'final',
+    initial?: string, // For compound states
+    entry?: ActionConfig, // Actions on entry
+    exit?: ActionConfig, // Actions on exit
+    on?: { [event: string]: TransitionConfig }, // Event transitions
+    after?: { [delay: string]: TransitionConfig }, // Delayed transitions
+    always?: TransitionConfig, // Automatic transitions
+    activities?: { [delay: string]: ActionConfig }, // Recurring actions
+    promises?: PromiseConfig, // Async operations
+    states?: { [state: string]: StateDefinition }, // Nested states
+  }
+}
+```
+
+#### Transition Configuration
+
+```typescript
+type TransitionConfig =
+  | string // Target state
+  | {
+      target?: string;
+      guards?: GuardConfig; // Conditions
+      actions?: ActionConfig; // Actions to execute
+    }
+  | TransitionConfig[]; // Multiple transitions (first match wins)
+```
+
+### Actions
+
+#### `assign(path, updater)`
+
+Updates context values.
+
+```typescript
+actions: {
+  updateCount: assign('context.count', ({ context }) => context.count + 1),
+  updateMultiple: assign('context', () => ({ count: 0, name: 'New' })),
+}
+```
+
+#### `voidAction(callback)`
+
+Creates side-effect only actions.
+
+```typescript
+actions: {
+  logState: voidAction(() => console.log('State changed')),
+}
+```
+
+#### `batch(...actions)`
+
+Groups multiple actions.
+
+```typescript
+actions: {
+  initialize: batch('resetCount', 'clearError', 'logStart'),
+}
+```
+
+### Guards (Predicates)
+
+#### `isValue(path, value)`
+
+Checks if a value equals expected value.
+
+```typescript
+predicates: {
+  isEmpty: isValue('context.items', []),
+}
+```
+
+#### `isNotValue(path, value)`
+
+Checks if a value differs from expected value.
+
+#### Custom Guards
+
+```typescript
+predicates: {
+  isAuthenticated: ({ context }) => context.token !== undefined,
+}
+```
+
+### Delays
+
+```typescript
+delays: {
+  SHORT: 1000,
+  LONG: ({ context }) => context.timeout,
+}
+```
+
+### Promises
+
+```typescript
+promises: {
+  fetchUser: async ({ event, context }) => {
+    const response = await fetch(`/api/users/${event.payload.id}`);
+    return response.json();
+  },
+}
+```
 
 ### Typings Utilities
 
