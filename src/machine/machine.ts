@@ -1058,37 +1058,18 @@ class Machine<
           fns
             .filter(f => !!f)
             .forEach(fn => {
-              return (out = fn({
-                ...state,
-                ...merge(
-                  {
-                    context,
-                    pContext,
-                  },
-                  out,
-                ),
-              }));
+              if (!out) out = fn(state);
+              else out = fn({ ...out, ...rest });
             });
 
           return out;
         };
       },
       filter: (key, fn) => {
-        const _fn = reduceFnMap(this.#eventsMap, this.#promiseesMap, fn);
-        const fullKey = `context.${_any(key)}`;
+        return ({ context, pContext }) => {
+          const currentValue = getByKey.low({ context, pContext }, key);
 
-        return ({ context, pContext, ...rest }) => {
-          const state = this.#cloneStateExtended({
-            context,
-            pContext,
-            ...rest,
-          });
-
-          const predicate = _fn(state) as any;
-          const currentValue = getByKey(
-            { context, pContext },
-            fullKey,
-          ) as any;
+          const predicate = fn as any;
 
           let filteredValue: any;
 
@@ -1100,31 +1081,26 @@ class Machine<
             typeof currentValue === 'object'
           ) {
             // Filter object properties
-            filteredValue = Object.keys(currentValue).reduce(
-              (acc, objKey) => {
-                const value = currentValue[objKey];
-                if (predicate(value, objKey, currentValue)) {
-                  acc[objKey] = value;
-                }
+            filteredValue = Object.entries(currentValue).reduce(
+              (acc, [objKey, value]) => {
+                const check = predicate(value, currentValue);
+                if (check) acc[objKey] = value;
                 return acc;
               },
               {} as any,
             );
-          } else {
-            // Not an array or object, return unchanged
-            return _any({ context, pContext });
           }
 
-          return assignByKey(
-            { context, pContext },
-            fullKey,
-            filteredValue,
-          );
+          return assignByKey({ context, pContext }, key, filteredValue);
         };
       },
       erase: key => {
         return ({ context, pContext }) => {
-          return assignByKey({ context, pContext }, _any(key), undefined);
+          const state = cloneDeep({
+            context,
+            pContext,
+          });
+          return assignByKey(state, key, undefined);
         };
       },
       voidAction,

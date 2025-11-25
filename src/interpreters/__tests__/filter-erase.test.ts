@@ -1,9 +1,10 @@
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
+import { typings } from '#utils';
 import { constructSend, constructValue } from './fixtures';
 
 describe('Filter and Erase actions', () => {
-  describe('Filter action', () => {
+  describe('#01 => Filter action', () => {
     describe('#01 => Filter array of numbers', () => {
       const machine = createMachine(
         {
@@ -27,17 +28,18 @@ describe('Filter and Erase actions', () => {
             },
           },
         },
-        {
+        typings({
           context: {
-            numbers: [] as number[],
+            numbers: typings.array('number'),
           },
           eventsMap: {
-            ADD: { payload: { values: [] as number[] } },
-            FILTER: {},
-            RESET: {},
+            ADD: {
+              values: typings.array('number'),
+            },
+            FILTER: 'primitive',
+            RESET: 'primitive',
           },
-          promiseesMap: {},
-        },
+        }),
       );
 
       const service = interpret(machine, {
@@ -45,11 +47,9 @@ describe('Filter and Erase actions', () => {
       });
 
       const useValue = constructValue(service);
-      const useSend = (
-        type: 'ADD' | 'FILTER' | 'RESET',
-        payload?: any,
-        index?: number,
-      ) => constructSend(service)(type, index ?? 1, payload);
+      type SE = Parameters<typeof service.send>[0];
+      const useSend = (event: SE, index?: number) =>
+        constructSend(service)(event, index ?? 1);
 
       test('#01 => Start service', () => {
         service.start();
@@ -64,8 +64,8 @@ describe('Filter and Erase actions', () => {
               ADD: ({ payload }) => payload.values,
             }),
             filterEven: filter(
-              'numbers',
-              () => (num: number) => num % 2 === 0,
+              'context.numbers',
+              (num: number) => num % 2 === 0,
             ),
           },
         }));
@@ -84,7 +84,7 @@ describe('Filter and Erase actions', () => {
         ]);
       });
 
-      test(...useSend('FILTER', undefined, 6));
+      test(...useSend('FILTER', 6));
 
       test(...useValue('state2', 7));
 
@@ -99,6 +99,12 @@ describe('Filter and Erase actions', () => {
         age: number;
         active: boolean;
       }
+
+      const person = typings.any({
+        name: 'string',
+        age: 'number',
+        active: 'boolean',
+      });
 
       const machine = createMachine(
         {
@@ -118,41 +124,46 @@ describe('Filter and Erase actions', () => {
             filtered: {},
           },
         },
-        {
+        typings({
           context: {
-            people: [] as Person[],
+            people: typings.array(person),
           },
           eventsMap: {
-            ADD_PEOPLE: { payload: { people: [] as Person[] } },
-            FILTER_ACTIVE: {},
+            ADD_PEOPLE: {
+              people: typings.array(person),
+            },
+            FILTER_ACTIVE: 'primitive',
           },
-          promiseesMap: {},
-        },
+        }),
       );
 
       const service = interpret(machine, {
         context: { people: [] },
       });
 
+      const useValue = constructValue(service);
+      type SE = Parameters<typeof service.send>[0];
+      const useSend = (event: SE, index?: number) =>
+        constructSend(service)(event, index ?? 1);
+
       test('#01 => Start service', () => {
         service.start();
       });
 
-      test('#02 => Add actions', () => {
+      test(...useValue('idle', 2));
+
+      test('#03 => Add actions', () => {
         service.addOptions(({ assign, filter }) => ({
           actions: {
             addPeople: assign('context.people', {
               ADD_PEOPLE: ({ payload }) => payload.people,
             }),
-            filterActive: filter(
-              'people',
-              () => (person: Person) => person.active,
-            ),
+            filterActive: filter('context.people', ({ active }) => active),
           },
         }));
       });
 
-      test('#03 => Add people', () => {
+      test('#04 => Add people', () => {
         service.send({
           type: 'ADD_PEOPLE',
           payload: {
@@ -167,15 +178,15 @@ describe('Filter and Erase actions', () => {
         });
       });
 
-      test('#04 => Check people', () => {
+      test('#05 => Check people', () => {
         expect(service.select('people')).toHaveLength(5);
       });
 
-      test('#05 => Filter active people', () => {
-        service.send('FILTER_ACTIVE');
-      });
+      test(...useSend('FILTER_ACTIVE', 6));
 
-      test('#06 => Check filtered people (only active)', () => {
+      test(...useValue('filtered', 7));
+
+      test('#08 => Check filtered people (only active)', () => {
         const people = service.select('people');
         expect(people).toHaveLength(3);
         expect(people?.every((p: Person) => p.active)).toBe(true);
@@ -188,9 +199,7 @@ describe('Filter and Erase actions', () => {
     });
 
     describe('#03 => Filter object properties', () => {
-      interface UserScores {
-        [userId: string]: number;
-      }
+      const scores = typings.record('number');
 
       const machine = createMachine(
         {
@@ -210,42 +219,52 @@ describe('Filter and Erase actions', () => {
             filtered: {},
           },
         },
-        {
+        typings({
           context: {
-            scores: {} as UserScores,
+            scores,
           },
           eventsMap: {
-            SET_SCORES: { payload: { scores: {} as UserScores } },
-            FILTER_HIGH_SCORES: {},
+            SET_SCORES: { scores },
+            FILTER_HIGH_SCORES: 'primitive',
           },
           promiseesMap: {},
-        },
+        }),
       );
 
       const service = interpret(machine, {
         context: { scores: {} },
       });
 
+      const useValue = constructValue(service);
+      type SE = Parameters<typeof service.send>[0];
+      const useSend = (event: SE, index?: number) =>
+        constructSend(service)(event, index ?? 1);
+
       test('#01 => Start service', () => {
         service.start();
       });
 
-      test('#02 => Add actions', () => {
+      test(...useValue('idle', 2));
+
+      test('#03 => Add actions', () => {
         service.addOptions(({ assign, filter }) => ({
           actions: {
             setScores: assign('context.scores', {
-              SET_SCORES: ({ payload }) => payload.scores,
+              SET_SCORES: ({ payload }) => {
+                console.warn('Setting scores:', payload.scores);
+                return payload.scores;
+              },
             }),
             filterHighScores: filter(
-              'scores',
-              () => (score: number) => score >= 80,
+              'context.scores',
+              score => score >= 80,
             ),
           },
         }));
       });
 
-      test('#03 => Set scores', () => {
-        service.send({
+      test(
+        ...useSend({
           type: 'SET_SCORES',
           payload: {
             scores: {
@@ -256,16 +275,15 @@ describe('Filter and Erase actions', () => {
               user5: 90,
             },
           },
-        });
-      });
+        }),
+      );
 
       test('#04 => Check scores', () => {
+        console.warn(service.select('scores'));
         expect(Object.keys(service.select('scores') ?? {}).length).toBe(5);
       });
 
-      test('#05 => Filter high scores', () => {
-        service.send('FILTER_HIGH_SCORES');
-      });
+      test(...useSend('FILTER_HIGH_SCORES', 5));
 
       test('#06 => Check filtered scores (>= 80)', () => {
         const scores = service.select('scores');
@@ -279,7 +297,7 @@ describe('Filter and Erase actions', () => {
     });
   });
 
-  describe('Erase action', () => {
+  describe('#02 => Erase action', () => {
     describe('#01 => Erase single context property', () => {
       const machine = createMachine(
         {
@@ -299,27 +317,36 @@ describe('Filter and Erase actions', () => {
             cleared: {},
           },
         },
-        {
+        typings({
           context: {
-            name: undefined as string | undefined,
+            name: typings.maybe('string'),
+            data: 'number',
           },
           eventsMap: {
-            SET_NAME: { payload: { name: '' } },
-            CLEAR_NAME: {},
+            SET_NAME: { name: 'string' },
+            CLEAR_NAME: 'primitive',
           },
-          promiseesMap: {},
-        },
+        }),
       );
 
       const service = interpret(machine, {
-        context: {},
+        context: {
+          data: 42,
+        },
       });
+
+      const useValue = constructValue(service);
+      type SE = Parameters<typeof service.send>[0];
+      const useSend = (event: SE, index?: number) =>
+        constructSend(service)(event, index ?? 1);
 
       test('#01 => Start service', () => {
         service.start();
       });
 
-      test('#02 => Add actions', () => {
+      test(...useValue('idle', 2));
+
+      test('#03 => Add actions', () => {
         service.addOptions(({ assign, erase }) => ({
           actions: {
             setName: assign('context.name', {
@@ -330,17 +357,21 @@ describe('Filter and Erase actions', () => {
         }));
       });
 
-      test('#03 => Set name', () => {
-        service.send({ type: 'SET_NAME', payload: { name: 'John Doe' } });
-      });
+      test(
+        ...useSend(
+          {
+            type: 'SET_NAME',
+            payload: { name: 'John Doe' },
+          },
+          3,
+        ),
+      );
 
       test('#04 => Check name', () => {
         expect(service.select('name')).toBe('John Doe');
       });
 
-      test('#05 => Clear name', () => {
-        service.send('CLEAR_NAME');
-      });
+      test(...useSend('CLEAR_NAME', 5));
 
       test('#06 => Check name is undefined', () => {
         expect(service.select('name')).toBeUndefined();
@@ -364,21 +395,19 @@ describe('Filter and Erase actions', () => {
             },
           },
         },
-        {
+        typings({
           context: {
             user: {
-              name: '',
-              email: undefined as string | undefined,
+              name: 'string',
+              email: typings.maybe('string'),
             },
           },
           eventsMap: {
-            SET_USER: {
-              payload: { name: '', email: '' },
-            },
-            CLEAR_EMAIL: {},
+            SET_USER: { name: 'string', email: 'string' },
+            CLEAR_EMAIL: 'primitive',
           },
           promiseesMap: {},
-        },
+        }),
       );
 
       const service = interpret(machine, {
@@ -389,11 +418,18 @@ describe('Filter and Erase actions', () => {
         },
       });
 
+      const useValue = constructValue(service);
+      type SE = Parameters<typeof service.send>[0];
+      const useSend = (event: SE, index?: number) =>
+        constructSend(service)(event, index ?? 1);
+
       test('#01 => Start service', () => {
         service.start();
       });
 
-      test('#02 => Add actions', () => {
+      test(...useValue('idle', 2));
+
+      test('#03 => Add actions', () => {
         service.addOptions(({ assign, erase }) => ({
           actions: {
             setUser: assign('context.user', {
@@ -407,15 +443,18 @@ describe('Filter and Erase actions', () => {
         }));
       });
 
-      test('#03 => Set user', () => {
-        service.send({
-          type: 'SET_USER',
-          payload: {
-            name: 'Jane Doe',
-            email: 'jane@example.com',
+      test(
+        ...useSend(
+          {
+            type: 'SET_USER',
+            payload: {
+              name: 'Jane Doe',
+              email: 'jane@example.com',
+            },
           },
-        });
-      });
+          3,
+        ),
+      );
 
       test('#04 => Check user', () => {
         const user = service.select('user');
@@ -423,9 +462,7 @@ describe('Filter and Erase actions', () => {
         expect(user?.email).toBe('jane@example.com');
       });
 
-      test('#05 => Clear email', () => {
-        service.send('CLEAR_EMAIL');
-      });
+      test(...useSend('CLEAR_EMAIL', 5));
 
       test('#06 => Check email is undefined, name still exists', () => {
         const user = service.select('user');
@@ -453,39 +490,44 @@ describe('Filter and Erase actions', () => {
             cleared: {},
           },
         },
-        {
-          context: {
-            name: undefined as string | undefined,
-            email: undefined as string | undefined,
-            age: undefined as number | undefined,
-          },
+        typings({
+          context: typings.partial({
+            name: 'string',
+            email: 'string',
+            age: 'number',
+          }),
           eventsMap: {
             SET_DATA: {
-              payload: { name: '', email: '', age: 0 },
+              name: 'string',
+              email: 'string',
+              age: 'number',
             },
-            CLEAR_ALL: {},
+            CLEAR_ALL: 'primitive',
           },
           promiseesMap: {},
-        },
+        }),
       );
 
       const service = interpret(machine, {
         context: {},
       });
 
+      const useValue = constructValue(service);
+      type SE = Parameters<typeof service.send>[0];
+      const useSend = (event: SE, index?: number) =>
+        constructSend(service)(event, index ?? 1);
+
       test('#01 => Start service', () => {
         service.start();
       });
 
-      test('#02 => Add actions', () => {
+      test(...useValue('idle', 2));
+
+      test('#03 => Add actions', () => {
         service.addOptions(({ assign, erase, batch }) => ({
           actions: {
             setData: assign('context', {
-              SET_DATA: ({ payload }) => ({
-                name: payload.name,
-                email: payload.email,
-                age: payload.age,
-              }),
+              SET_DATA: ({ payload }) => payload,
             }),
             clearAll: batch(
               erase('context.name'),
@@ -496,16 +538,19 @@ describe('Filter and Erase actions', () => {
         }));
       });
 
-      test('#03 => Set data', () => {
-        service.send({
-          type: 'SET_DATA',
-          payload: {
-            name: 'Alice',
-            email: 'alice@example.com',
-            age: 30,
+      test(
+        ...useSend(
+          {
+            type: 'SET_DATA',
+            payload: {
+              name: 'Alice',
+              email: 'alice@example.com',
+              age: 30,
+            },
           },
-        });
-      });
+          3,
+        ),
+      );
 
       test('#04 => Check data', () => {
         expect(service.select('name')).toBe('Alice');
@@ -513,11 +558,11 @@ describe('Filter and Erase actions', () => {
         expect(service.select('age')).toBe(30);
       });
 
-      test('#05 => Clear all', () => {
-        service.send('CLEAR_ALL');
-      });
+      test(...useSend('CLEAR_ALL', 6));
 
-      test('#06 => Check all properties are undefined', () => {
+      test(...useValue('cleared', 7));
+
+      test('#08 => Check all properties are undefined', () => {
         expect(service.select('name')).toBeUndefined();
         expect(service.select('email')).toBeUndefined();
         expect(service.select('age')).toBeUndefined();

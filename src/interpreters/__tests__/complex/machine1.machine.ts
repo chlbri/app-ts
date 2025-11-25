@@ -166,7 +166,7 @@ export const machine = createMachine(
     },
     context: typings.partial({
       asset,
-      intermediaries: [intermediary],
+      intermediaries: typings.array(intermediary),
       internetStatus: 'boolean',
       errors: typings.partial({
         noAsset: 'string',
@@ -206,7 +206,7 @@ export const machine = createMachine(
     ),
 
     addMandatoryIntermediary: assign('context.intermediaries', {
-      START: ({ payload }) => [payload.mandatory],
+      START: ({ payload }) => [payload.mandatory!],
     }),
 
     addBlockImmoIntermediary: assign('context.intermediaries', {

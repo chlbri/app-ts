@@ -8,8 +8,10 @@ import type {
   Fn,
   NotUndefined,
   PrimitiveObject,
+  Ru,
+  SubTypeLow,
 } from '#bemedev/globals/types';
-import type { FnMap, FnR, KeyU } from '~types';
+import type { FnMap, FnR, KeyU, ValuesOf } from '~types';
 import type {
   ChildS,
   Config,
@@ -144,22 +146,22 @@ export type FilterAction_F<
   Pc,
   Tc extends PrimitiveObject,
 > = <
-  D = Decompose<Tc, { object: 'object'; start: false; sep: '.' }>,
-  K extends keyof D = keyof D,
+  D = Decompose<
+    {
+      pContext: Pc;
+      context: Tc;
+    },
+    { object: 'object'; start: false; sep: '.' }
+  >,
+  K extends keyof D & string = keyof D & string,
 >(
   key: K,
   fn: K extends string
-    ? FnMap<
-        E,
-        P,
-        Pc,
-        Tc,
-        D[K] extends Array<infer Item>
-          ? (item: Item, index: number, array: Item[]) => boolean
-          : D[K] extends object
-            ? (value: any, key: string, obj: D[K]) => boolean
-            : never
-      >
+    ? D[K] extends Array<infer Item>
+      ? (item: Item, index: number, array: Item[]) => boolean
+      : D[K] extends Ru
+        ? (value: ValuesOf<D[K]>, all: D[K]) => boolean
+        : never
     : never,
 ) => ActionResultFn<E, P, Pc, Tc>;
 
@@ -169,14 +171,15 @@ export type EraseAction_F<
   Pc,
   Tc extends PrimitiveObject,
 > = <
-  D = Decompose<
+  D extends object = Decompose<
     {
       pContext: Pc;
       context: Tc;
     },
     { object: 'both'; start: false; sep: '.' }
   >,
-  K extends keyof D = keyof D,
+  DD = SubTypeLow<D, undefined>,
+  K extends keyof DD & string = keyof DD & string,
 >(
   key: K,
 ) => ActionResultFn<E, P, Pc, Tc>;
