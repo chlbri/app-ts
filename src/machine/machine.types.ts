@@ -328,7 +328,7 @@ export type AddOptions_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
-> = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => void;
+> = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => Mo | undefined;
 
 /**
  * Represents a scheduled action with its data and execution time.
