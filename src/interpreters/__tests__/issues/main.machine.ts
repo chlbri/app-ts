@@ -211,7 +211,7 @@ export const machine = createMachine(
       ],
     },
   }),
-).provideOptions(({ assign, batch, voidAction, rinitFn }) => ({
+).provideOptions(({ assign, batch, voidAction, erase }) => ({
   actions: {
     mount: assign('pContext.mount', {
       MOUNT: ({ pContext: { mount }, payload: { id, ...rest } }) => ({
@@ -464,7 +464,7 @@ export const machine = createMachine(
       START_EDGE: ({ payload }) => payload,
     }),
 
-    endEdge: assign('context.edge', rinitFn),
+    endEdge: erase('context.edge'),
   },
   predicates: {
     edgeStarted: ({ context: { edge } }) => !!edge,

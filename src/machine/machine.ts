@@ -48,10 +48,11 @@ import { decompose, type Decompose } from '@bemedev/decompose';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
-import { RINIT_STATE } from './constants';
 import {
+  assignByKey,
   createChildS,
   expandFnMap,
+  getByKey,
   type CreateChild_F,
 } from './functions';
 import type {
@@ -1057,22 +1058,51 @@ class Machine<
           fns
             .filter(f => !!f)
             .forEach(fn => {
-              return (out = fn({
-                ...state,
-                ...merge(
-                  {
-                    context,
-                    pContext,
-                  },
-                  out,
-                ),
-              }));
+              if (!out) out = fn(state);
+              else out = fn({ ...out, ...rest });
             });
 
           return out;
         };
       },
-      rinitFn: () => RINIT_STATE,
+      filter: (key, fn) => {
+        return ({ context, pContext }) => {
+          const currentValue = getByKey.low({ context, pContext }, key);
+
+          const predicate = fn as any;
+
+          let filteredValue: any;
+
+          if (Array.isArray(currentValue)) {
+            // Filter array elements
+            filteredValue = currentValue.filter(predicate);
+          } else if (
+            currentValue !== null &&
+            typeof currentValue === 'object'
+          ) {
+            // Filter object properties
+            filteredValue = Object.entries(currentValue).reduce(
+              (acc, [objKey, value]) => {
+                const check = predicate(value, currentValue);
+                if (check) acc[objKey] = value;
+                return acc;
+              },
+              {} as any,
+            );
+          }
+
+          return assignByKey({ context, pContext }, key, filteredValue);
+        };
+      },
+      erase: key => {
+        return ({ context, pContext }) => {
+          const state = cloneDeep({
+            context,
+            pContext,
+          });
+          return assignByKey(state, key, undefined);
+        };
+      },
       voidAction,
       sendTo,
       debounce: (fn, { id, ms = 100 }) => {
