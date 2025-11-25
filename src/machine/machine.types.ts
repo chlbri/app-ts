@@ -86,6 +86,7 @@ export interface AnyMachine<
   eventsMap: E;
   promiseesMap: P;
   __events: ToEvents<E, P>;
+  __state: any;
   actions: any;
   predicates: any;
   delays: any;

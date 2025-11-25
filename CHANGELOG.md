@@ -11,6 +11,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.4.6] - 25/11/2025** => _14:30_
+
+</summary>
+
+- **Add `__state` property to `AnyMachine` interface**
+  - Adds state tracking capability to machine interface
+  - Improves type inference for machine state
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.4.5] - 25/11/2025** => _12:00_
 
 </summary>
