@@ -733,6 +733,41 @@ actions: {
 }
 ```
 
+#### `filter(key, predicate)`
+
+Filters arrays or objects in context.
+
+```typescript
+actions: {
+  // Filter array elements
+  filterEven: filter('context.numbers', (num: number) => num % 2 === 0),
+
+  // Filter array of objects
+  filterActive: filter('context.users', (user) => user.active),
+
+  // Filter object properties (by value)
+  filterHighScores: filter('context.scores', (score) => score >= 80),
+}
+```
+
+#### `erase(path)`
+
+Sets a property to `undefined`. Uses full decomposed keys like `assign`.
+
+```typescript
+actions: {
+  // Erase single property
+  clearEmail: erase('context.user.email'),
+
+  // Erase multiple properties with batch
+  resetForm: batch(
+    erase('context.name'),
+    erase('context.email'),
+    erase('context.age'),
+  ),
+}
+```
+
 ### Guards (Predicates)
 
 #### `isValue(path, value)`

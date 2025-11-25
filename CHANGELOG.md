@@ -11,6 +11,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.4.4] - 25/11/2025** => _10:30_
+
+</summary>
+
+- **Add `filter` action helper to `addOptions` and `provideOptions`**
+  - Filters arrays by element using predicate functions
+  - Filters objects by property using predicate functions
+  - Type-safe with conditional types for array vs object filtering
+  - Uses context-only keys with Decompose
+- **Add `erase` action helper to `addOptions` and `provideOptions`**
+  - Sets properties to `undefined`
+  - Uses full decomposed keys ('context.' or 'pContext.' prefix) like
+    `assign`
+  - Composable with `batch` for multiple erasures
+- **Remove deprecated `rinitFn` function**
+  - Replaced all usages with explicit `erase()` calls
+  - Clearer intent and more flexible than magic reset state
+- Add comprehensive test coverage for filter and erase actions
+  - Array filtering (primitives and objects)
+  - Object property filtering
+  - Single/nested/batched property erasure
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.4.3] - 24/11/2025** => _18:00_
 
 </summary>
