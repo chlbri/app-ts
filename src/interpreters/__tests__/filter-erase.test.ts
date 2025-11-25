@@ -251,7 +251,6 @@ describe('Filter and Erase actions', () => {
           actions: {
             setScores: assign('context.scores', {
               SET_SCORES: ({ payload }) => {
-                console.warn('Setting scores:', payload.scores);
                 return payload.scores;
               },
             }),
@@ -279,7 +278,6 @@ describe('Filter and Erase actions', () => {
       );
 
       test('#04 => Check scores', () => {
-        console.warn(service.select('scores'));
         expect(Object.keys(service.select('scores') ?? {}).length).toBe(5);
       });
 
