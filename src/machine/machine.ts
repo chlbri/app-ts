@@ -1158,6 +1158,8 @@ class Machine<
     this.#addPromises(out?.promises);
     this.#addMachines(out?.machines);
     this.#addEmitters(out?.emitters);
+
+    return out;
   };
 }
 
