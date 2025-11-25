@@ -11,6 +11,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.4.5] - 25/11/2025** => _12:00_
+
+</summary>
+
+- **Return options from `addOptions` method in `Machine` and `Interpreter`**
+  - Allows chaining or inspecting the added options
+  - Returns the full options object including actions, delays, guards, etc.
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.4.4] - 25/11/2025** => _10:30_
 
 </summary>

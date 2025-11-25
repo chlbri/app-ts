@@ -460,6 +460,8 @@ Provides actions, guards, delays, promises, and child machines.
 
 Adds or overwrites options dynamically.
 
+**Returns:** The added options object.
+
 #### Accessing Legacy Options with `_legacy`
 
 Both `provideOptions` and `addOptions` now support accessing previously
@@ -624,6 +626,8 @@ current service instance.
 
 - `callback`: Same as `machine.provideOptions` callback, including
   `_legacy` parameter
+
+**Returns:** The added options object.
 
 **Example:**
 
