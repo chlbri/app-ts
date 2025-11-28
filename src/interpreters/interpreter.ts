@@ -965,58 +965,76 @@ export class Interpreter<
       const id = `${from}::${_delay}`;
       const _interval = this._cachedIntervals.find(f => f.id === id);
 
+      const buildCallback = () => {
+        const delayF = this.toDelayFn(_delay);
+        const check0 = !isDefined(delayF);
+        if (check0) return;
+        const interval = this.#executeDelay(delayF);
+
+        const check11 = interval < DEFAULT_MIN_ACTIVITY_TIME;
+        if (check11) {
+          this._addWarning(`Delay (${_delay}) is too short`);
+          return;
+        }
+
+        const check12 = interval > DEFAULT_MAX_TIME_PROMISE;
+        if (check12) {
+          this._addWarning(`Delay (${_delay}) is too long`);
+          return;
+        }
+
+        const activities = toArray.typed(_activity);
+
+        const callback = () => {
+          for (const activity of activities) {
+            const check2 = typeof activity === 'string';
+            const check3 = isDescriber(activity);
+            const check4 = check2 || check3;
+
+            if (check4) {
+              this.#performActions(activity);
+              continue;
+            }
+
+            const check5 = this.#performPredicates(
+              ...toArray.typed(activity.guards),
+            );
+            if (check5) {
+              const actions = toArray.typed(activity.actions);
+              this.#performActions(...actions);
+            }
+          }
+        };
+
+        const promise = this.createInterval({
+          callback,
+          interval,
+          id,
+        });
+
+        this._cachedIntervals.push(promise);
+
+        return id;
+      };
+
       if (_interval) {
-        outs.push(id);
+        const check =
+          _interval.state === 'idle' || _interval.state === 'paused';
+        if (check) {
+          const index = this._cachedIntervals.findIndex(f => f.id === id);
+          this._cachedIntervals.splice(index, 1);
+          const result = buildCallback();
+          if (!result) return [];
+
+          outs.push(result);
+        } else outs.push(id);
         continue;
       }
 
-      const delayF = this.toDelayFn(_delay);
-      const check0 = !isDefined(delayF);
-      if (check0) return [];
-      const interval = this.#executeDelay(delayF);
+      const result = buildCallback();
+      if (!result) return [];
 
-      const check11 = interval < DEFAULT_MIN_ACTIVITY_TIME;
-      if (check11) {
-        this._addWarning(`Delay (${_delay}) is too short`);
-        return [];
-      }
-
-      const check12 = interval > DEFAULT_MAX_TIME_PROMISE;
-      if (check12) {
-        this._addWarning(`Delay (${_delay}) is too long`);
-        return [];
-      }
-
-      const activities = toArray.typed(_activity);
-
-      const callback = () => {
-        for (const activity of activities) {
-          const check2 = typeof activity === 'string';
-          const check3 = isDescriber(activity);
-          const check4 = check2 || check3;
-
-          if (check4) {
-            this.#performActions(activity);
-            continue;
-          }
-
-          const check5 = this.#performPredicates(
-            ...toArray.typed(activity.guards),
-          );
-          if (check5) {
-            const actions = toArray.typed(activity.actions);
-            this.#performActions(...actions);
-          }
-        }
-      };
-      const promise = this.createInterval({
-        callback,
-        interval,
-        id,
-      });
-
-      this._cachedIntervals.push(promise);
-      outs.push(id);
+      outs.push(result);
     }
 
     return outs;
