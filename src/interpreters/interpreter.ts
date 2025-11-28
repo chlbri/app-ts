@@ -962,7 +962,12 @@ export class Interpreter<
 
     for (const [_delay, _activity] of entries) {
       const id = `${from}::${_delay}`;
-      const _interval = this._cachedIntervals.find(f => f.id === id);
+      let index = -1;
+      const _interval = this._cachedIntervals.find((f, i) => {
+        const check = f.id === id;
+        if (check) index = i;
+        return check;
+      });
 
       const buildCallback = () => {
         const delayF = this.toDelayFn(_delay);
@@ -1020,7 +1025,6 @@ export class Interpreter<
         const check =
           _interval.state === 'idle' || _interval.state === 'paused';
         if (check) {
-          const index = this._cachedIntervals.findIndex(f => f.id === id);
           this._cachedIntervals.splice(index, 1);
           const result = buildCallback();
           if (!result) return [];
