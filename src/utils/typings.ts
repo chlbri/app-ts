@@ -61,10 +61,8 @@ type __PrimitiveObject =
   | PartialCustom;
 
 export type Maybe<
-  T extends
-    | __PrimitiveObject
-    | ArrayCustom
-    | __PrimitiveObject[] = __PrimitiveObject,
+  T extends __PrimitiveObject | ArrayCustom | __PrimitiveObject[] =
+    __PrimitiveObject,
 > = {
   [MAYBE]: T;
 };

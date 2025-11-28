@@ -37,7 +37,7 @@ describe('Legacy Options Access', () => {
     }));
 
     // Second call to addOptions - access previous action via _legacy
-    machine.addOptions(({ _legacy, batch }) => {
+    machine.addOptions(({ batch }, { _legacy }) => {
       const prev = _legacy.actions?.increment;
       expect(prev).toBeDefined();
 
@@ -90,7 +90,7 @@ describe('Legacy Options Access', () => {
     }));
 
     // Second call to addOptions - access previous action via _legacy
-    machine.addOptions(({ _legacy, batch }) => {
+    machine.addOptions(({ batch }, { _legacy }) => {
       const prev = _legacy.actions?.increment;
       expect(prev).toBeDefined();
 
@@ -152,7 +152,7 @@ describe('Legacy Options Access', () => {
     }));
 
     // Second call - access and extend with isNegative using _legacy
-    machine.addOptions(({ _legacy }) => {
+    machine.addOptions((_, { _legacy }) => {
       const previousPredicates = _legacy.predicates;
       expect(previousPredicates?.isPositive).toBeDefined();
 
@@ -203,7 +203,7 @@ describe('Legacy Options Access', () => {
     }));
 
     // provideOptions on the result should also have access to _legacy
-    const machine2 = machine.provideOptions(({ _legacy, assign }) => {
+    const machine2 = machine.provideOptions(({ assign }, { _legacy }) => {
       const previousAdd = _legacy.actions?.add;
       expect(previousAdd).toBeDefined();
 
@@ -246,7 +246,7 @@ describe('Legacy Options Access', () => {
       },
     }));
 
-    machine.addOptions(({ _legacy }) => {
+    machine.addOptions((_, { _legacy }) => {
       // Attempt to modify _legacy should not affect the original
       expect(() => {
         (_legacy as any).actions = {};
@@ -288,7 +288,7 @@ describe('Legacy Options Access', () => {
     }));
 
     // Second call - should see first
-    machine.addOptions(({ _legacy, assign }) => {
+    machine.addOptions(({ assign }, { _legacy }) => {
       expect(_legacy.actions?.first).toBeDefined();
       expect(_legacy.actions?.second).toBeUndefined();
 
@@ -300,7 +300,7 @@ describe('Legacy Options Access', () => {
     });
 
     // Third call - should see first and second
-    machine.addOptions(({ _legacy, assign }) => {
+    machine.addOptions(({ assign }, { _legacy }) => {
       expect(_legacy.actions?.first).toBeDefined();
       expect(_legacy.actions?.second).toBeDefined();
       expect(_legacy.actions?.third).toBeUndefined();
@@ -362,7 +362,7 @@ describe('Legacy Options Access', () => {
       }));
 
       // Second call to service.addOptions - access previous action via _legacy
-      service.addOptions(({ _legacy, batch }) => {
+      service.addOptions(({ batch }, { _legacy }) => {
         const prev = _legacy.actions?.increment;
         expect(prev).toBeDefined();
         const params = Array(3).fill(prev);
@@ -422,7 +422,7 @@ describe('Legacy Options Access', () => {
       expect(service.state.context).toBe(1);
 
       // Second call to service.addOptions - access previous action via _legacy
-      service.addOptions(({ _legacy, batch }) => {
+      service.addOptions(({ batch }, { _legacy }) => {
         const prev = _legacy.actions?.increment;
         expect(prev).toBeDefined();
         const params = Array(2).fill(prev);
@@ -438,7 +438,7 @@ describe('Legacy Options Access', () => {
       expect(service.state.context).toBe(3);
 
       // Third call to service.addOptions - access previous action via _legacy
-      service.addOptions(({ _legacy, batch }) => {
+      service.addOptions(({ batch }, { _legacy }) => {
         const prev = _legacy.actions?.increment;
         expect(prev).toBeDefined();
 
@@ -494,7 +494,7 @@ describe('Legacy Options Access', () => {
       }));
 
       // Second call - access and extend with isNegative using _legacy
-      service.addOptions(({ _legacy }) => {
+      service.addOptions((_, { _legacy }) => {
         const previousPredicates = _legacy.predicates;
         expect(previousPredicates?.isPositive).toBeDefined();
 
@@ -544,7 +544,7 @@ describe('Legacy Options Access', () => {
       }));
 
       // Second call - should see first
-      service.addOptions(({ _legacy, assign }) => {
+      service.addOptions(({ assign }, { _legacy }) => {
         expect(_legacy.actions?.first).toBeDefined();
         expect(_legacy.actions?.second).toBeUndefined();
 
@@ -602,16 +602,18 @@ describe('Legacy Options Access', () => {
       }));
 
       // Second provideOptions - access previous action via _legacy
-      const service3 = service2.provideOptions(({ _legacy, assign }) => {
-        const previousAdd = _legacy.actions?.add;
-        expect(previousAdd).toBeDefined();
+      const service3 = service2.provideOptions(
+        ({ assign }, { _legacy }) => {
+          const previousAdd = _legacy.actions?.add;
+          expect(previousAdd).toBeDefined();
 
-        return {
-          actions: {
-            multiply: assign('context', ({ context }) => context * 2),
-          },
-        };
-      });
+          return {
+            actions: {
+              multiply: assign('context', ({ context }) => context * 2),
+            },
+          };
+        },
+      );
 
       service3.start();
       expect(service3.state.context).toBe(1);
@@ -698,28 +700,32 @@ describe('Legacy Options Access', () => {
         },
       }));
 
-      const service3 = service2.provideOptions(({ _legacy, assign }) => {
-        expect(_legacy.actions?.op1).toBeDefined();
-        expect(_legacy.actions?.op2).toBeUndefined();
+      const service3 = service2.provideOptions(
+        ({ assign }, { _legacy }) => {
+          expect(_legacy.actions?.op1).toBeDefined();
+          expect(_legacy.actions?.op2).toBeUndefined();
 
-        return {
-          actions: {
-            op2: assign('context', ({ context }) => context + 10),
-          },
-        };
-      });
+          return {
+            actions: {
+              op2: assign('context', ({ context }) => context + 10),
+            },
+          };
+        },
+      );
 
-      const service4 = service3.provideOptions(({ _legacy, assign }) => {
-        expect(_legacy.actions?.op1).toBeDefined();
-        expect(_legacy.actions?.op2).toBeDefined();
-        expect(_legacy.actions?.op3).toBeUndefined();
+      const service4 = service3.provideOptions(
+        ({ assign }, { _legacy }) => {
+          expect(_legacy.actions?.op1).toBeDefined();
+          expect(_legacy.actions?.op2).toBeDefined();
+          expect(_legacy.actions?.op3).toBeUndefined();
 
-        return {
-          actions: {
-            op3: assign('context', ({ context }) => context + 100),
-          },
-        };
-      });
+          return {
+            actions: {
+              op3: assign('context', ({ context }) => context + 100),
+            },
+          };
+        },
+      );
 
       service4.start();
 

@@ -4,9 +4,7 @@ Update CHANGELOG.md and README.md after version upgrade.
 
 ## Prerequisites
 
-1. **First check the changed files** to understand recent changes
-
-2. **Check version changed**:
+Check version changed:
 
 ```bash
 git --no-pager diff HEAD~1 HEAD -- package.json | grep version
@@ -16,7 +14,7 @@ If no version change: STOP.
 
 ## Steps
 
-1. **Use #codebase** to understand recent changes in detail
+1. **Use #codebase** to understand recent changes
 
 2. **Update CHANGELOG.md** (top of file):
 

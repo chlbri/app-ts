@@ -11,6 +11,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.5.0] - 28/11/2025** => _12:00_
+
+</summary>
+
+- **BREAKING CHANGE: Restructure `addOptions` and `provideOptions` signature**
+  - `_legacy` parameter is now passed as a second argument instead of being included in the first object
+  - Before: `({ assign, _legacy, batch }) => ...`
+  - After: `({ assign, batch }, { _legacy }) => ...`
+  - Affects both `Machine` and `Interpreter` classes
+  - Migration: Move `_legacy` destructuring to second parameter
+- **Add `LegacyOptions` type export**
+  - New exported type for accessing previously defined options
+  - Improves type safety when using legacy options
+- Update dependencies
+  - prettier: ^3.6.2 → ^3.7.1
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.4.6] - 25/11/2025** => _14:30_
 
 </summary>

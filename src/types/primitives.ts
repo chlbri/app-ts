@@ -171,10 +171,8 @@ type __ChangeProperties<
 type _ChangeProperties<
   T extends object,
   U extends DeepPartial<KeyStrings<T>> = DeepPartial<KeyStrings<T>>,
-  option extends Extract<
-    ChangePropertyOption,
-    'normal' | 'undefined'
-  > = 'normal',
+  option extends Extract<ChangePropertyOption, 'normal' | 'undefined'> =
+    'normal',
 > =
   __ChangeProperties<T, U> extends infer Tn
     ? option extends 'undefined'
@@ -198,10 +196,8 @@ type _ChangeProperties<
 export type ChangeProperties<
   T extends object,
   U extends DeepPartial<KeyStrings<T>> = DeepPartial<KeyStrings<T>>,
-  option extends Extract<
-    ChangePropertyOption,
-    'normal' | 'undefined'
-  > = 'normal',
+  option extends Extract<ChangePropertyOption, 'normal' | 'undefined'> =
+    'normal',
 > =
   DeepPartial<KeyStrings<T>> extends U
     ? T

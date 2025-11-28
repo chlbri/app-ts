@@ -478,7 +478,7 @@ const machine = createMachine(config, types)
       increment: assign('context', ({ context }) => context + 1),
     },
   }))
-  .provideOptions(({ _legacy, batch }) => {
+  .provideOptions(({ batch }, { _legacy }) => {
     // Access previously defined increment action
     const previousIncrement = _legacy.actions?.increment;
 
@@ -503,7 +503,7 @@ service.addOptions(({ assign }) => ({
 }));
 
 // Reuse previous action via _legacy
-service.addOptions(({ _legacy, batch }) => ({
+service.addOptions(({ batch }, { _legacy }) => ({
   actions: {
     addTwice: batch(_legacy.actions.add!, _legacy.actions.add!),
   },
@@ -522,7 +522,7 @@ const service2 = service1.provideOptions(({ assign }) => ({
   },
 }));
 
-const service3 = service2.provideOptions(({ _legacy, assign }) => ({
+const service3 = service2.provideOptions(({ assign }, { _legacy }) => ({
   actions: {
     multiplyAndAdd: assign('context', ({ context }) => {
       // Can access previous multiply action
@@ -632,7 +632,7 @@ current service instance.
 **Example:**
 
 ```typescript
-service.addOptions(({ _legacy, assign }) => ({
+service.addOptions(({ assign }, { _legacy }) => ({
   actions: {
     newAction: assign('context', ({ context }) => context + 1),
   },

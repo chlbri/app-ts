@@ -99,8 +99,7 @@ class Machine<
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
-> implements AnyMachine<E, P, Pc, Tc>
-{
+> implements AnyMachine<E, P, Pc, Tc> {
   /**
    * The configuration of the machine for this {@linkcode Machine}.
    *
@@ -1029,128 +1028,130 @@ class Machine<
       emitters: cloneDeep(this.#emitters),
     });
 
-    const out = func({
-      isValue,
-      isNotValue,
-      isDefined,
-      isNotDefined,
-      createChild,
-      _legacy,
-      assign: (key, fn) => {
-        const out = _any(expandFnMap)(
-          this.#eventsMap,
-          this.#promiseesMap,
-          _any(key),
-          fn,
-        );
-
-        return out;
-      },
-      batch: (...fns) => {
-        return ({ context, pContext, ...rest }) => {
-          const state = this.#cloneStateExtended({
-            context,
-            pContext,
-            ...rest,
-          });
-
-          let out: any;
-          fns
-            .filter(f => !!f)
-            .forEach(fn => {
-              if (!out) out = fn(state);
-              else out = fn({ ...out, ...rest });
-            });
+    const out = func(
+      {
+        isValue,
+        isNotValue,
+        isDefined,
+        isNotDefined,
+        createChild,
+        assign: (key, fn) => {
+          const out = _any(expandFnMap)(
+            this.#eventsMap,
+            this.#promiseesMap,
+            _any(key),
+            fn,
+          );
 
           return out;
-        };
+        },
+        batch: (...fns) => {
+          return ({ context, pContext, ...rest }) => {
+            const state = this.#cloneStateExtended({
+              context,
+              pContext,
+              ...rest,
+            });
+
+            let out: any;
+            fns
+              .filter(f => !!f)
+              .forEach(fn => {
+                if (!out) out = fn(state);
+                else out = fn({ ...out, ...rest });
+              });
+
+            return out;
+          };
+        },
+        filter: (key, fn) => {
+          return ({ context, pContext }) => {
+            const currentValue = getByKey.low({ context, pContext }, key);
+
+            const predicate = fn as any;
+
+            let filteredValue: any;
+
+            if (Array.isArray(currentValue)) {
+              // Filter array elements
+              filteredValue = currentValue.filter(predicate);
+            } else if (
+              currentValue !== null &&
+              typeof currentValue === 'object'
+            ) {
+              // Filter object properties
+              filteredValue = Object.entries(currentValue).reduce(
+                (acc, [objKey, value]) => {
+                  const check = predicate(value, currentValue);
+                  if (check) acc[objKey] = value;
+                  return acc;
+                },
+                {} as any,
+              );
+            }
+
+            return assignByKey({ context, pContext }, key, filteredValue);
+          };
+        },
+        erase: key => {
+          return ({ context, pContext }) => {
+            const state = cloneDeep({
+              context,
+              pContext,
+            });
+            return assignByKey(state, key, undefined);
+          };
+        },
+        voidAction,
+        sendTo,
+        debounce: (fn, { id, ms = 100 }) => {
+          return ({ context, pContext, ...rest }) => {
+            const state = this.#cloneStateExtended({
+              context,
+              pContext,
+              ...rest,
+            });
+            const data = fn(state);
+
+            const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
+
+            return _any({
+              context,
+              pContext,
+              scheduled,
+            });
+          };
+        },
+
+        resend: resend => {
+          return ({ context, pContext }) => {
+            return _any({
+              context,
+              pContext,
+              resend,
+            });
+          };
+        },
+
+        forceSend: forceSend => {
+          return ({ context, pContext }) => {
+            return _any({
+              context,
+              pContext,
+              forceSend,
+            });
+          };
+        },
+
+        pauseActivity: this.#timeAction('pauseActivity'),
+        resumeActivity: this.#timeAction('resumeActivity'),
+        stopActivity: this.#timeAction('stopActivity'),
+        pauseTimer: this.#timeAction('pauseTimer'),
+        resumeTimer: this.#timeAction('resumeTimer'),
+        stopTimer: this.#timeAction('stopTimer'),
       },
-      filter: (key, fn) => {
-        return ({ context, pContext }) => {
-          const currentValue = getByKey.low({ context, pContext }, key);
-
-          const predicate = fn as any;
-
-          let filteredValue: any;
-
-          if (Array.isArray(currentValue)) {
-            // Filter array elements
-            filteredValue = currentValue.filter(predicate);
-          } else if (
-            currentValue !== null &&
-            typeof currentValue === 'object'
-          ) {
-            // Filter object properties
-            filteredValue = Object.entries(currentValue).reduce(
-              (acc, [objKey, value]) => {
-                const check = predicate(value, currentValue);
-                if (check) acc[objKey] = value;
-                return acc;
-              },
-              {} as any,
-            );
-          }
-
-          return assignByKey({ context, pContext }, key, filteredValue);
-        };
-      },
-      erase: key => {
-        return ({ context, pContext }) => {
-          const state = cloneDeep({
-            context,
-            pContext,
-          });
-          return assignByKey(state, key, undefined);
-        };
-      },
-      voidAction,
-      sendTo,
-      debounce: (fn, { id, ms = 100 }) => {
-        return ({ context, pContext, ...rest }) => {
-          const state = this.#cloneStateExtended({
-            context,
-            pContext,
-            ...rest,
-          });
-          const data = fn(state);
-
-          const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
-
-          return _any({
-            context,
-            pContext,
-            scheduled,
-          });
-        };
-      },
-
-      resend: resend => {
-        return ({ context, pContext }) => {
-          return _any({
-            context,
-            pContext,
-            resend,
-          });
-        };
-      },
-
-      forceSend: forceSend => {
-        return ({ context, pContext }) => {
-          return _any({
-            context,
-            pContext,
-            forceSend,
-          });
-        };
-      },
-
-      pauseActivity: this.#timeAction('pauseActivity'),
-      resumeActivity: this.#timeAction('resumeActivity'),
-      stopActivity: this.#timeAction('stopActivity'),
-      pauseTimer: this.#timeAction('pauseTimer'),
-      resumeTimer: this.#timeAction('resumeTimer'),
-      stopTimer: this.#timeAction('stopTimer'),
-    });
+      { _legacy },
+    );
 
     this.#addActions(out?.actions);
     this.#addPredicates(out?.predicates);
@@ -1200,8 +1201,8 @@ export const getExits = partialCall(getIO, 'exit');
 export type { Machine };
 
 export type CreateMachine_F = <
-  const C2 extends
-    NoExtraKeysConfigDef<ConfigDef> = NoExtraKeysConfigDef<ConfigDef>,
+  const C2 extends NoExtraKeysConfigDef<ConfigDef> =
+    NoExtraKeysConfigDef<ConfigDef>,
   const C extends Config & TransformConfigDef<C2> = Config &
     TransformConfigDef<C2>,
   Pc = any,

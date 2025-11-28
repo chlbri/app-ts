@@ -279,16 +279,15 @@ export type ExtractDelayKeysFromTransitions<T extends TransitionsConfig> =
  * @see {@linkcode Extract}
  */
 export type ExtractActionKeysFromTransitions<T extends TransitionsConfig> =
-
-    | ExtractActionKeysFromDelayed<T['on']>
-    | ExtractActionKeysFromDelayed<T['after']>
-    | ExtractActionsFromTransition<
-        Extract<
-          ReduceArray<T['always']>,
-          { actions: SingleOrArrayL<ActionConfig> }
-        >
+  | ExtractActionKeysFromDelayed<T['on']>
+  | ExtractActionKeysFromDelayed<T['after']>
+  | ExtractActionsFromTransition<
+      Extract<
+        ReduceArray<T['always']>,
+        { actions: SingleOrArrayL<ActionConfig> }
       >
-    | ExtractActionsFromPromisee<NotUndefined<ReduceArray<T['promises']>>>;
+    >
+  | ExtractActionsFromPromisee<NotUndefined<ReduceArray<T['promises']>>>;
 
 /**
  * Extracts guard keys from a {@linkcode TransitionsConfig}.

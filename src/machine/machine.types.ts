@@ -270,58 +270,73 @@ export type BatchAction_F<
   ...fns: T[]
 ) => ActionResultFn<E, P, Pc, Tc>;
 
+/**
+ * Type for the _legacy parameter containing previously defined options.
+ */
+export type LegacyOptions<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
+> = Readonly<{
+  actions?: {
+    [key in keyof NotUndefined<Mo['actions']>]?: ActionResultFn<
+      E,
+      P,
+      Pc,
+      Tc
+    >;
+  };
+  predicates?: Mo['predicates'];
+  delays?: Mo['delays'];
+  promises?: Mo['promises'];
+  machines?: Mo['machines'];
+  emitters?: Mo['emitters'];
+}>;
+
 export type AddOptionsParam_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
-> = (option: {
-  isDefined: DefineGuard_F<E, P, Pc, Tc>;
-  isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
-  isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
-  isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
-  createChild: ChildProvider_F<E, P, Pc>;
-  assign: AssignAction_F<E, P, Pc, Tc>;
-  batch: BatchAction_F<E, P, Pc, Tc>;
-  filter: FilterAction_F<E, P, Pc, Tc>;
-  erase: EraseAction_F<E, P, Pc, Tc>;
-  voidAction: VoidAction_F<E, P, Pc, Tc>;
-  sendTo: SendAction_F<E, P, Pc, Tc>;
-  debounce: DebounceAction_F<E, P, Pc, Tc>;
-  resend: ResendAction_F<E, P, Pc, Tc>;
-  /**
-   * Force send action, performs the action regardless of the current state.
-   */
-  forceSend: ResendAction_F<E, P, Pc, Tc>;
-  pauseActivity: TimeAction_F<E, P, Pc, Tc>;
-  resumeActivity: TimeAction_F<E, P, Pc, Tc>;
-  stopActivity: TimeAction_F<E, P, Pc, Tc>;
-  pauseTimer: TimeAction_F<E, P, Pc, Tc>;
-  resumeTimer: TimeAction_F<E, P, Pc, Tc>;
-  stopTimer: TimeAction_F<E, P, Pc, Tc>;
+> = (
+  option: {
+    isDefined: DefineGuard_F<E, P, Pc, Tc>;
+    isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
+    isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
+    isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
+    createChild: ChildProvider_F<E, P, Pc>;
+    assign: AssignAction_F<E, P, Pc, Tc>;
+    batch: BatchAction_F<E, P, Pc, Tc>;
+    filter: FilterAction_F<E, P, Pc, Tc>;
+    erase: EraseAction_F<E, P, Pc, Tc>;
+    voidAction: VoidAction_F<E, P, Pc, Tc>;
+    sendTo: SendAction_F<E, P, Pc, Tc>;
+    debounce: DebounceAction_F<E, P, Pc, Tc>;
+    resend: ResendAction_F<E, P, Pc, Tc>;
+    /**
+     * Force send action, performs the action regardless of the current state.
+     */
+    forceSend: ResendAction_F<E, P, Pc, Tc>;
+    pauseActivity: TimeAction_F<E, P, Pc, Tc>;
+    resumeActivity: TimeAction_F<E, P, Pc, Tc>;
+    stopActivity: TimeAction_F<E, P, Pc, Tc>;
+    pauseTimer: TimeAction_F<E, P, Pc, Tc>;
+    resumeTimer: TimeAction_F<E, P, Pc, Tc>;
+    stopTimer: TimeAction_F<E, P, Pc, Tc>;
+    // merge: DirectMerge_F<Pc, Tc>;
+    // emitter: Emitter<E, P, Pc, Tc>;
+  },
   /**
    * Access to previously defined options from previous addOptions or provideOptions calls.
    * Provides actions, predicates, emitters, machines, promises, and delays.
    */
-  _legacy: Readonly<{
-    actions?: {
-      [key in keyof NotUndefined<Mo['actions']>]?: ActionResultFn<
-        E,
-        P,
-        Pc,
-        Tc
-      >;
-    };
-    predicates?: Mo['predicates'];
-    delays?: Mo['delays'];
-    promises?: Mo['promises'];
-    machines?: Mo['machines'];
-    emitters?: Mo['emitters'];
-  }>;
-  // merge: DirectMerge_F<Pc, Tc>;
-  // emitter: Emitter<E, P, Pc, Tc>;
-}) => Mo | undefined;
+  legacyOptions: {
+    _legacy: LegacyOptions<E, P, Pc, Tc, Mo>;
+  },
+) => Mo | undefined;
 
 export type AddOptions_F<
   E extends EventsMap = EventsMap,

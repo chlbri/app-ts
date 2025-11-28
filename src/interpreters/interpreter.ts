@@ -165,8 +165,7 @@ export class Interpreter<
   E extends EventsMap = GetEventsFromConfig<C>,
   P extends PromiseeMap = PromiseeMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
-> implements AnyInterpreter<E, P, Pc, Tc>
-{
+> implements AnyInterpreter<E, P, Pc, Tc> {
   /**
    * The {@linkcode Machine} machine being interpreted.
    */
