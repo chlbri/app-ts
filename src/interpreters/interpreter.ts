@@ -30,6 +30,7 @@ import {
   assignByKey,
   ChildS,
   getByKey,
+  getTags,
   mergeByKey,
   reduceEvents,
   toMachine,
@@ -353,13 +354,15 @@ export class Interpreter<
     this.#mode = mode;
     this.#exact = exact;
     this.#performConfig(true);
+
     this.#state = this.#previousState = {
       status: this.#status,
       context: this.#context,
       event: INIT_EVENT,
       value: this.#value,
-      tags: this.#config.tags,
+      tags: getTags(this.#config),
     };
+    console.warn('tags', this.#state.tags);
     this.#collectEmitters();
     this.#collectServices();
 
@@ -455,12 +458,13 @@ export class Interpreter<
     if (target === true) {
       this._performConfig();
       const value = this.#value;
-      return this.#performStates({ value });
+      const tags = getTags(this.#config);
+      return this.#performStates({ value, tags });
     }
 
     if (target) {
       this.#config = initialConfig(this.proposedNextConfig(target));
-      const tags = this.#config.tags;
+      const tags = getTags(this.#config);
       this._performConfig();
       const value = this.#value;
       return this.#performStates({ tags, value });

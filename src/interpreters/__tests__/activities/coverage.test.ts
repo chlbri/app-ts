@@ -253,11 +253,11 @@ describe('Interpreter integration ofr activities coverage', () => {
     test(...useValue('state1', 11));
     test(...useWaiter(12, 3));
     describe('#13 => Check Activity', () => {
-      test('#01 => activity2 is called one time', () => {
+      it('#01 => activity2 is called one time', () => {
         expect(activity2).toHaveBeenCalledTimes(1);
       });
 
-      test('#02 => activity2 is called with correct params', () => {
+      it('#02 => activity2 is called with correct params', () => {
         expect(activity2).toHaveBeenCalledWith({
           pContext: {},
           context: {},

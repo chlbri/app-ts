@@ -11,12 +11,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.6.0] - 28/11/2025** => _14:30_
+
+</summary>
+
+- **Fix state tags always returning undefined**
+  - Tags are now properly propagated from machine state configuration
+  - `service.state.tags` correctly returns the tags array for the current
+    state
+  - Fixes issue where tags were defined in state config but not accessible
+    at runtime
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.5.0] - 28/11/2025** => _12:00_
 
 </summary>
 
-- **BREAKING CHANGE: Restructure `addOptions` and `provideOptions` signature**
-  - `_legacy` parameter is now passed as a second argument instead of being included in the first object
+- **BREAKING CHANGE: Restructure `addOptions` and `provideOptions`
+  signature**
+  - `_legacy` parameter is now passed as a second argument instead of being
+    included in the first object
   - Before: `({ assign, _legacy, batch }) => ...`
   - After: `({ assign, batch }, { _legacy }) => ...`
   - Affects both `Machine` and `Interpreter` classes
