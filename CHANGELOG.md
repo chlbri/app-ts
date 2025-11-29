@@ -11,6 +11,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.6.1] - 29/11/2025** => _10:40_
+
+</summary>
+
+- **Remove debug console.warn from Interpreter constructor**
+  - Clean up debugging statement for tags in interpreter initialization
+  - Improves code cleanliness for production
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.6.0] - 28/11/2025** => _14:30_
 
 </summary>

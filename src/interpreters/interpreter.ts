@@ -362,7 +362,6 @@ export class Interpreter<
       value: this.#value,
       tags: getTags(this.#config),
     };
-    console.warn('tags', this.#state.tags);
     this.#collectEmitters();
     this.#collectServices();
 
