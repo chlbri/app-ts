@@ -3,7 +3,7 @@ import { typings } from '#utils';
 import { interval } from 'rxjs/internal/observable/interval';
 import { map } from 'rxjs/internal/operators/map';
 import { take } from 'rxjs/internal/operators/take';
-import { createPausable } from './pausable';
+import { createPausable } from '../functions';
 
 export const WAITERS = {
   short: 200,

@@ -11,6 +11,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.6.3] - 02/12/2025** => _23:42_
+
+</summary>
+
+- **Refactor pausable emitter exports**
+  - Export pausable functionality from main emitters index
+  - Improves module organization and accessibility
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
+## **[1.6.2] - 01/12/2025** => _04:22_
+
+</summary>
+
+- **Monthly maintenance and dependency updates**
+  - Update dependencies to latest versions
+  - prettier: ^3.7.2 → ^3.7.3
+  - tsx: ^4.20.6 → ^4.21.0
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.6.1] - 29/11/2025** => _10:40_
 
 </summary>
