@@ -172,12 +172,15 @@ export type EraseAction_F<
   Pc,
   Tc extends PrimitiveObject,
 > = <
-  D extends object = Decompose<
-    {
-      pContext: Pc;
-      context: Tc;
-    },
-    { object: 'both'; start: false; sep: '.' }
+  D extends object = Extract<
+    Decompose<
+      {
+        pContext: Pc;
+        context: Tc;
+      },
+      { object: 'both'; start: false; sep: '.' }
+    >,
+    object
   >,
   DD = SubTypeLow<D, undefined>,
   K extends keyof DD & string = keyof DD & string,

@@ -117,10 +117,13 @@ class Machine<
    */
   #flat: FlatMapN<C, true>;
 
-  #decomposed: Decompose<C, { sep: '.'; start: false; object: 'both' }>;
+  #decomposed: any;
 
   get decomposed() {
-    return this.#decomposed;
+    return this.#decomposed as Decompose<
+      C,
+      { sep: '.'; start: false; object: 'both' }
+    >;
   }
 
   /**

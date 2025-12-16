@@ -12,13 +12,12 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v5
 
       - name: Setup node for publication
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          always-auth: true
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           scope: '@bemedev'
 
@@ -26,7 +25,7 @@ jobs:
         uses: pnpm/action-setup@v4
         id: pnpm-install
         with:
-          version: 9
+          version: 10
           run_install: false
 
       - name: Get pnpm store directory
@@ -34,7 +33,7 @@ jobs:
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         name: Setup pnpm cache
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
@@ -50,7 +49,7 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      - uses: JS-DevTools/npm-publish@v3
+      - uses: JS-DevTools/npm-publish@v4
         id: publish
         name: Publish
         with:
@@ -67,6 +66,4 @@ jobs:
 
       - name: Check - not updated
         if: ${{ ! steps.publish.outputs.type }}
-        run:
-          echo "Versoin remains the same! - ${{
-          steps.publish.outputs.version }}"
+        run: echo "Remain the same! - ${{ steps.publish.outputs.version }}"

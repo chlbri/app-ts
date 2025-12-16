@@ -11,6 +11,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.6.4] - 16/12/2025** => _15:30_
+
+</summary>
+
+- **Export pausable emitter functionality**
+  - Move `createPausable` function from `__tests__` to `functions/`
+    directory
+  - Export `createPausable` from main emitters functions index
+  - Improve module organization and public API accessibility
+  - Allows external usage of pausable observables with pause/resume
+    controls
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.6.3] - 02/12/2025** => _23:42_
 
 </summary>
