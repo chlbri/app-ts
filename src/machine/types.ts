@@ -615,18 +615,18 @@ export type MachineOptions<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Flat extends FlatMapN<C> = FlatMapN<C>,
-> = {
-  actions?: Partial<GetActionsFromFlat<Flat, E, P, Pc, Tc>>;
-  predicates?: Partial<GetGuardsFromFlat<Flat, E, P, Pc, Tc>>;
-  promises?: Partial<GetSrcFromFlat<Flat, E, P, Pc, Tc>>;
-  delays?: Partial<GetDelaysFromFlat<Flat, E, P, Pc, Tc>>;
-  machines?: Partial<
+> = Partial<{
+  actions: Partial<GetActionsFromFlat<Flat, E, P, Pc, Tc>>;
+  predicates: Partial<GetGuardsFromFlat<Flat, E, P, Pc, Tc>>;
+  promises: Partial<GetSrcFromFlat<Flat, E, P, Pc, Tc>>;
+  delays: Partial<GetDelaysFromFlat<Flat, E, P, Pc, Tc>>;
+  machines: Partial<
     Record<GetMachineKeysFromFlat<Flat>, ChildS<E, P, Pc>>
   >;
-  emitters?: Partial<
+  emitters: Partial<
     Record<GetEmitterKeysFromFlat<Flat>, Emitter<E, P, Pc, Tc>>
   >;
-};
+}>;
 
 /**
  * Getting the options from a machine.

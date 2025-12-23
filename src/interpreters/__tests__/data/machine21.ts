@@ -168,7 +168,7 @@ export const machine21 = createMachine(
           events: EVENTS_FULL,
           contexts: { iterator: 'iterator' },
         },
-      ),
+      ) as any,
     },
   }),
 );

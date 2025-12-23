@@ -38,6 +38,11 @@ describe('Integration testing for interpret, Children', () => {
     machine.addOptions(() => ({
       delays: { DELAY },
     }));
+
+    machine.createOptions(() => ({
+      delays: { DELAY },
+      ezre: {},
+    }));
     const service = interpret(machine, defaultC);
     const useValue = constructValue(service);
 

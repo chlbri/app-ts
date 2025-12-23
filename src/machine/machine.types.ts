@@ -11,7 +11,13 @@ import type {
   Ru,
   SubTypeLow,
 } from '#bemedev/globals/types';
-import type { FnMap, FnR, KeyU, ValuesOf } from '~types';
+import type {
+  FnMap,
+  FnR,
+  KeyU,
+  NoExtraKeysStrict,
+  ValuesOf,
+} from '~types';
 import type {
   ChildS,
   Config,
@@ -298,6 +304,47 @@ export type LegacyOptions<
   emitters?: Mo['emitters'];
 }>;
 
+export type AddOption<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  isDefined: DefineGuard_F<E, P, Pc, Tc>;
+  isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
+  isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
+  isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
+  createChild: ChildProvider_F<E, P, Pc>;
+  assign: AssignAction_F<E, P, Pc, Tc>;
+  batch: BatchAction_F<E, P, Pc, Tc>;
+  filter: FilterAction_F<E, P, Pc, Tc>;
+  erase: EraseAction_F<E, P, Pc, Tc>;
+  voidAction: VoidAction_F<E, P, Pc, Tc>;
+  sendTo: SendAction_F<E, P, Pc, Tc>;
+  debounce: DebounceAction_F<E, P, Pc, Tc>;
+  resend: ResendAction_F<E, P, Pc, Tc>;
+  /**
+   * Force send action, performs the action regardless of the current state.
+   */
+  forceSend: ResendAction_F<E, P, Pc, Tc>;
+  pauseActivity: TimeAction_F<E, P, Pc, Tc>;
+  resumeActivity: TimeAction_F<E, P, Pc, Tc>;
+  stopActivity: TimeAction_F<E, P, Pc, Tc>;
+  pauseTimer: TimeAction_F<E, P, Pc, Tc>;
+  resumeTimer: TimeAction_F<E, P, Pc, Tc>;
+  stopTimer: TimeAction_F<E, P, Pc, Tc>;
+  // merge: DirectMerge_F<Pc, Tc>;
+  // emitter: Emitter<E, P, Pc, Tc>;
+};
+
+export type NoExtraKeysMO<T extends SimpleMachineOptions2> = T & {
+  [K in Exclude<keyof T, keyof SimpleMachineOptions2>]: never;
+};
+
+export type NoExtraKeysMO2<
+  T extends SimpleMachineOptions2,
+  E extends T,
+> = NoExtraKeysStrict<E, T>;
 export type AddOptionsParam_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -305,33 +352,7 @@ export type AddOptionsParam_F<
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = (
-  option: {
-    isDefined: DefineGuard_F<E, P, Pc, Tc>;
-    isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
-    isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
-    isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
-    createChild: ChildProvider_F<E, P, Pc>;
-    assign: AssignAction_F<E, P, Pc, Tc>;
-    batch: BatchAction_F<E, P, Pc, Tc>;
-    filter: FilterAction_F<E, P, Pc, Tc>;
-    erase: EraseAction_F<E, P, Pc, Tc>;
-    voidAction: VoidAction_F<E, P, Pc, Tc>;
-    sendTo: SendAction_F<E, P, Pc, Tc>;
-    debounce: DebounceAction_F<E, P, Pc, Tc>;
-    resend: ResendAction_F<E, P, Pc, Tc>;
-    /**
-     * Force send action, performs the action regardless of the current state.
-     */
-    forceSend: ResendAction_F<E, P, Pc, Tc>;
-    pauseActivity: TimeAction_F<E, P, Pc, Tc>;
-    resumeActivity: TimeAction_F<E, P, Pc, Tc>;
-    stopActivity: TimeAction_F<E, P, Pc, Tc>;
-    pauseTimer: TimeAction_F<E, P, Pc, Tc>;
-    resumeTimer: TimeAction_F<E, P, Pc, Tc>;
-    stopTimer: TimeAction_F<E, P, Pc, Tc>;
-    // merge: DirectMerge_F<Pc, Tc>;
-    // emitter: Emitter<E, P, Pc, Tc>;
-  },
+  option: AddOption<E, P, Pc, Tc>,
   /**
    * Access to previously defined options from previous addOptions or provideOptions calls.
    * Provides actions, predicates, emitters, machines, promises, and delays.
@@ -339,7 +360,7 @@ export type AddOptionsParam_F<
   legacyOptions: {
     _legacy: LegacyOptions<E, P, Pc, Tc, Mo>;
   },
-) => Mo | undefined;
+) => Mo;
 
 export type AddOptions_F<
   E extends EventsMap = EventsMap,
@@ -347,7 +368,9 @@ export type AddOptions_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
-> = (option: AddOptionsParam_F<E, P, Pc, Tc, Mo>) => Mo | undefined;
+> = <T extends Mo>(
+  option: AddOptionsParam_F<E, P, Pc, Tc, NoExtraKeysMO2<Mo, T>>,
+) => T;
 
 /**
  * Represents a scheduled action with its data and execution time.

@@ -413,3 +413,141 @@ export type TrueObject = Ru & {
 export type NoValue = void | undefined | null;
 
 export type Delimiter = typeof DEFAULT_DELIMITER;
+
+// #region NoExtraKeys
+
+/**
+ * Extracts keys from type T that represent object properties which should be
+ * recursively processed for no-extra-keys validation.
+ *
+ * @template T - The type to extract recursive keys from.
+ * @template Schema - The schema type to compare against.
+ */
+type RecursiveObjectKeys<T, Schema> = {
+  [K in keyof T & keyof Schema]: T[K] extends TrueObject ? K : never;
+}[keyof T & keyof Schema];
+
+/**
+ * Generic type that restricts extra keys deeply on any object type.
+ * Works with partial objects and ensures all keys match the schema exactly.
+ *
+ * @template T - The type to validate (the actual value type).
+ * @template Schema - The schema type that defines allowed keys.
+ *
+ * @remarks
+ * This type performs deep validation ensuring:
+ * 1. No extra keys are present at the top level
+ * 2. All nested object properties are recursively validated
+ * 3. Works with partial/optional properties
+ * 4. Preserves readonly modifiers
+ *
+ * @example
+ * ```typescript
+ * type MySchema = {
+ *   name: string;
+ *   config?: {
+ *     value: number;
+ *     nested?: {
+ *       deep: boolean;
+ *     };
+ *   };
+ * };
+ *
+ * // Valid - all keys match schema
+ * type Valid = NoExtraKeys<{ name: 'test'; config: { value: 1 } }, MySchema>;
+ *
+ * // Invalid - 'extra' key is not in schema, will be typed as 'never'
+ * type Invalid = NoExtraKeys<{ name: 'test'; extra: true }, MySchema>;
+ * ```
+ *
+ * @see {@linkcode NoExtraKeysStrict} for a stricter version that requires exact match.
+ */
+export type NoExtraKeys<T, Schema> = T & {
+  [K in Exclude<keyof T, keyof Schema>]: never;
+} & {
+  [K in RecursiveObjectKeys<T, Schema>]?: NoExtraKeys<
+    NotUndefined<T[K]>,
+    NotUndefined<Schema[K]>
+  >;
+};
+
+/**
+ * A stricter version of {@linkcode NoExtraKeys} that also validates
+ * that all keys in the schema are present in the type T.
+ *
+ * @template T - The type to validate (the actual value type).
+ * @template Schema - The schema type that defines allowed keys.
+ *
+ * @remarks
+ * Use this when you want to ensure not only that there are no extra keys,
+ * but also that all required keys from the schema are present.
+ *
+ * @example
+ * ```typescript
+ * type MySchema = {
+ *   name: string;
+ *   value: number;
+ * };
+ *
+ * // T must have both 'name' and 'value'
+ * type Strict = NoExtraKeysStrict<{ name: 'test'; value: 1 }, MySchema>;
+ * ```
+ */
+export type NoExtraKeysStrict<T extends Schema, Schema> = NoExtraKeys<
+  T,
+  Schema
+>;
+
+/**
+ * Deep version of {@linkcode NoExtraKeys} that processes Record types
+ * (objects with dynamic string keys).
+ *
+ * @template T - The Record type to validate.
+ * @template Schema - The schema type for each value in the record.
+ *
+ * @example
+ * ```typescript
+ * type StateSchema = {
+ *   target: string;
+ *   initial?: string;
+ * };
+ *
+ * type States = NoExtraKeysRecord<
+ *   { idle: { target: 'active' }; active: { target: 'idle' } },
+ *   StateSchema
+ * >;
+ * ```
+ */
+export type NoExtraKeysRecord<T extends Record<string, any>, Schema> = {
+  [K in keyof T]: NoExtraKeys<T[K], Schema>;
+};
+
+/**
+ * Utility type to create a no-extra-keys validator for a specific schema.
+ * This is useful when you want to create reusable type validators.
+ *
+ * @template Schema - The schema type to validate against.
+ *
+ * @example
+ * ```typescript
+ * type ConfigSchema = {
+ *   name: string;
+ *   options?: {
+ *     enabled: boolean;
+ *   };
+ * };
+ *
+ * type ValidConfig<T extends ConfigSchema> = NoExtraKeysFor<ConfigSchema, T>;
+ *
+ * // Usage
+ * function createConfig<T extends ConfigSchema>(config: ValidConfig<T>): T {
+ *   return config as T;
+ * }
+ * ```
+ */
+export type NoExtraKeysFor<
+  Schema,
+  T extends Partial<Schema>,
+> = NoExtraKeys<T, Schema>;
+
+// #endregion NoExtraKeys

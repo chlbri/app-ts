@@ -11,6 +11,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.6.5] - 16/12/2025** => _08:59_
+
+</summary>
+
+- **Refactor type handling in Machine class**
+  - Improve type handling and EraseAction_F type definitions
+  - Enhance Machine class type system for better type safety
+- **Add createPausable function for Observable state management**
+  - Introduce `createPausable` function for managing pausable Observable states
+  - Allows external usage of pausable observables with pause/resume controls
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.6.4] - 16/12/2025** => _15:30_
 
 </summary>
