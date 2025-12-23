@@ -48,6 +48,7 @@ import { decompose, type Decompose } from '@bemedev/decompose';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
+import type { NoExtraKeysStrict } from '~types';
 import {
   assignByKey,
   createChildS,
@@ -63,7 +64,6 @@ import type {
   Elements,
   GetIO_F,
   LegacyOptions,
-  NoExtraKeysMO2,
   ScheduledData,
   SendAction_F,
   TimeAction_F,
@@ -639,7 +639,7 @@ class Machine<
       options: {
         _legacy: LegacyOptions<E, P, Pc, Tc, Mo>;
       },
-    ) => T,
+    ) => NoExtraKeysStrict<T, Mo>,
   ) => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
@@ -819,7 +819,7 @@ class Machine<
    * @returns a new instance of the machine with the provided options applied.
    */
   provideOptions = <T extends Mo>(
-    option: AddOptionsParam_F<E, P, Pc, Tc, NoExtraKeysMO2<Mo, T>>,
+    option: AddOptionsParam_F<E, P, Pc, Tc, NoExtraKeysStrict<T, Mo>>,
   ) => {
     const out = this.renew;
     out.addOptions(option);

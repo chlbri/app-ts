@@ -11,6 +11,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.6.6] - 23/12/2025** => _14:27_
+
+</summary>
+
+- **Refactor machine options handling and validation**
+  - Updated `createOptions` method in Machine class for structured option
+    creation
+  - `addOptions` method now has with strict type validation
+  - Implemented `NoExtraKeys` type utilities for key validation
+  - Added comprehensive tests for `NoExtraKeys` functionality
+  - Refactored machine configuration files for alignment
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.6.5] - 16/12/2025** => _08:59_
 
 </summary>
@@ -19,8 +39,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - Improve type handling and EraseAction_F type definitions
   - Enhance Machine class type system for better type safety
 - **Add createPausable function for Observable state management**
-  - Introduce `createPausable` function for managing pausable Observable states
-  - Allows external usage of pausable observables with pause/resume controls
+  - Introduce `createPausable` function for managing pausable Observable
+    states
+  - Allows external usage of pausable observables with pause/resume
+    controls
 - <u>Test coverage **_100%_**</u>
 
 </details>

@@ -337,14 +337,6 @@ export type AddOption<
   // emitter: Emitter<E, P, Pc, Tc>;
 };
 
-export type NoExtraKeysMO<T extends SimpleMachineOptions2> = T & {
-  [K in Exclude<keyof T, keyof SimpleMachineOptions2>]: never;
-};
-
-export type NoExtraKeysMO2<
-  T extends SimpleMachineOptions2,
-  E extends T,
-> = NoExtraKeysStrict<E, T>;
 export type AddOptionsParam_F<
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
@@ -369,7 +361,7 @@ export type AddOptions_F<
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = <T extends Mo>(
-  option: AddOptionsParam_F<E, P, Pc, Tc, NoExtraKeysMO2<Mo, T>>,
+  option: AddOptionsParam_F<E, P, Pc, Tc, NoExtraKeysStrict<T, Mo>>,
 ) => T;
 
 /**
