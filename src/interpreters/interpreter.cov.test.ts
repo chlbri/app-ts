@@ -185,9 +185,7 @@ describe('Covers all inner actions', () => {
           resume: resumeTimer('inc'),
           stop: stopTimer('inc'),
         },
-        delays: {
-          DELAY,
-        },
+        delays: {},
       }),
     );
 
