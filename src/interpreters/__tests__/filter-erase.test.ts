@@ -338,10 +338,7 @@ describe('Filter and Erase actions', () => {
       const useSend = (event: SE, index?: number) =>
         constructSend(service)(event, index ?? 1);
 
-      test('#01 => Start service', () => {
-        service.start();
-      });
-
+      test('#01 => Start service', service.start);
       test(...useValue('idle', 2));
 
       test('#03 => Add actions', () => {
