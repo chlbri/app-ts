@@ -17,11 +17,13 @@ export const machineEmitter1 = createMachine(
     emitters: {
       interval1: 'interval',
     },
+
     states: {
       inactive: {
         on: {
           NEXT: '/active',
         },
+        
       },
       active: {
         on: {
