@@ -11,6 +11,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[1.7.0] - 18/02/2026** => _00:00_
+
+</summary>
+
+- **Refactor pausable Observable functionality into separate package**
+  - Extract `createPausable` function to dedicated `@bemedev/rx-pausable`
+    package
+  - Update import statements to use `@bemedev/rx-pausable` instead of local
+    functions
+  - Improve modularity and reusability of pausable Observable utilities
+- **Update dependencies**
+  - Add `@bemedev/rx-pausable` v0.1.0
+  - Upgrade `@types/node` from 25.0.3 to 25.1.0
+  - Upgrade `@typescript-eslint/eslint-plugin` from 8.50.1 to 8.54.0
+  - Upgrade `@typescript-eslint/parser` from 8.50.1 to 8.54.0
+  - Upgrade `globals` from 16.5.0 to 17.3.0
+  - Upgrade `prettier` from 3.7.4 to 3.8.1
+  - Upgrade `rollup` from 4.54.0 to 4.57.1
+- **Fix import paths in tests**
+  - Correct import path for `createPausable` function in emitter tests
+- **Add documentation**
+  - Add new translation prompt file (`translate.prompt.md`) for
+    internationalization
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.6.6] - 23/12/2025** => _14:27_
 
 </summary>

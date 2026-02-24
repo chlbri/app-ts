@@ -736,6 +736,7 @@ export class Interpreter<
    * @remarks Throw if the number of self transitions exceeds {@linkcode DEFAULT_MAX_SELF_TRANSITIONS}.
    */
   protected _next = async () => {
+    // eslint-disable-next-line no-useless-assignment
     let check = false;
     do {
       const startTime = Date.now();
