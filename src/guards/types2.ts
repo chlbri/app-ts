@@ -1,7 +1,7 @@
 import type { ActionConfig, FromActionConfig } from '#actions';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { GUARD_TYPE } from '#constants';
-import type { EventsMap, PromiseeMap } from '#events';
+import type { ActorsConfigMap, EventsMap, PromiseeMap } from '#events';
 import type { KeysMatching } from '@bemedev/decompose';
 import type { FnMap, FnR } from 'src/types/primitives2';
 import type { RecordS, ReduceArray } from '~types';
@@ -49,44 +49,44 @@ export type FromGuard<T extends GuardConfig> = T extends ActionConfig
 
 export type PredicateS<
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, P, Pc, Tc, boolean>;
+> = FnMap<E, A, Pc, Tc, boolean>;
 
 export type PredicateS2<
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<E, P, Pc, Tc, boolean>;
+> = FnR<E, A, Pc, Tc, boolean>;
 
 export type PredicateUnion<
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > =
-  | PredicateS<E, P, Pc, Tc>
-  | PredicateAnd<E, P, Pc, Tc>
-  | PredicateOr<E, P, Pc, Tc>;
+  | PredicateS<E, A, Pc, Tc>
+  | PredicateAnd<E, A, Pc, Tc>
+  | PredicateOr<E, A, Pc, Tc>;
 
 export type PredicateAnd<
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  and: PredicateUnion<E, P, Pc, Tc>[];
+  and: PredicateUnion<E, A, Pc, Tc>[];
 };
 
 export type PredicateOr<
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  or: PredicateUnion<E, P, Pc, Tc>[];
+  or: PredicateUnion<E, A, Pc, Tc>[];
 };
 
 /**

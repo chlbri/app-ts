@@ -18,10 +18,12 @@ export type Subscribable = {
  * @see {@linkcode Describer} for more details.
  */
 export type EmitterConfig = Describer | string;
-type EmitterDef = {
+
+export type EmitterDef = {
   next: PrimitiveObject;
   error: PrimitiveObject;
 };
+
 export type EmitterConfigMap = RecordS<EmitterDef>;
 
 export type Emitter<

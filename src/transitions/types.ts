@@ -361,6 +361,13 @@ export type ExtractGuardKeysFromTransitions<T extends TransitionsConfig> =
       Extract<NotUndefined<ReduceArray<T['actors']>>, { then: any }>
     >;
 
+export type ExtractSrcKeyFromTransitions<
+  T extends TransitionsConfig,
+  Filter extends object = object,
+> = ExtractSrcFromPromisee<
+  NotUndefined<Extract<ReduceArray<T['actors']>, Filter>>
+>;
+
 /**
  * Extracts source keys from a {@linkcode TransitionsConfig}.
  *
@@ -371,8 +378,17 @@ export type ExtractGuardKeysFromTransitions<T extends TransitionsConfig> =
  * @see {@linkcode NotUndefined} for ensuring the type is not undefined.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * */
-export type ExtractSrcFromTransitions<T extends TransitionsConfig> =
-  ExtractSrcFromPromisee<NotUndefined<ReduceArray<T['actors']>>>;
+export type ExtractPromiseeSrcKeyFromTransitions<
+  T extends TransitionsConfig,
+> = ExtractSrcKeyFromTransitions<T, { then: any }>;
+
+export type ExtractEmitterSrcKeyFromTransitions<
+  T extends TransitionsConfig,
+> = ExtractSrcKeyFromTransitions<T, { next: any }>;
+
+export type ExtractChildSrcKeyFromTransitions<
+  T extends TransitionsConfig,
+> = ExtractSrcKeyFromTransitions<T, { on: any } | { contexts: any }>;
 
 /**
  * Represents a transition in a state machine with full defined functions.

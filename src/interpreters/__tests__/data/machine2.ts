@@ -238,7 +238,6 @@ export const _machine2 = createMachine(
       // fetch: async ({ context: { input } }) => {
       //   return fakeDB.filter(item => item.name.includes(input));
       // },
-      
     },
     delays: {
       DELAY,

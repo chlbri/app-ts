@@ -4,7 +4,7 @@ import type {
   Unionize,
 } from '#bemedev/globals/types';
 import type { EmitterConfigMap } from '#emitters';
-import type { ChildConfigMap } from '#machines';
+import type { ChildConfigMap } from 'src/machine/types2';
 import type { INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE } from './constants';
 
 /**
@@ -102,10 +102,10 @@ type _ChildConfigR<T extends ChildConfigMap> = {
     : never;
 }[keyof T & string];
 
-export type ActorConfigMap = {
+export type ActorsConfigMap = {
   children?: ChildConfigMap;
   emitters?: EmitterConfigMap;
-  promisses?: PromiseeMap;
+  promisees?: PromiseeMap;
 };
 
 /**
@@ -119,16 +119,16 @@ export type ToEventsR<E extends EventsMap, P extends PromiseeMap> =
   | _EventsR<E>
   | _PromiseesR<P>;
 
-  /**
+/**
  * Represents a union type of all events, promisees, emitters, and child events.
  * It combines the transformed events, promisees, emitters, and child events into a single type.
  * @template : {@linkcode EventsMap} [E], the map of events.
- * @template : {@linkcode ActorConfigMap} [A], the configuration map for actors which includes children, emitters, and promisees.
+ * @template : {@linkcode ActorsConfigMap} [A], the configuration map for actors which includes children, emitters, and promisees.
  * @returns A union type of events, promisee-events, emitter-events, and child-events.
  */
-export type ToEventsR2<E extends EventsMap, A extends ActorConfigMap> =
+export type ToEventsR2<E extends EventsMap, A extends ActorsConfigMap> =
   | _EventsR<E>
-  | _PromiseesR<NotUndefined<A['promisses']>>
+  | _PromiseesR<NotUndefined<A['promisees']>>
   | _EmitterConfigR<NotUndefined<A['emitters']>>
   | _ChildConfigR<NotUndefined<A['children']>>;
 
@@ -137,10 +137,10 @@ export type ToEvents<E extends EventsMap, P extends PromiseeMap> =
   | InitEvent
   | MaxExceededEvent;
 
-export type ToEvents2<
-  E extends EventsMap,
-  A extends ActorConfigMap,
-> = ToEventsR2<E, A> | InitEvent | MaxExceededEvent;
+export type ToEvents2<E extends EventsMap, A extends ActorsConfigMap> =
+  | ToEventsR2<E, A>
+  | InitEvent
+  | MaxExceededEvent;
 
 /**
  * Transforms an event map into arguments to send to the machine.

@@ -1,22 +1,22 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
-import type { FnMap } from '~types';
+import type { ActorsConfigMap, EventsMap, PromiseeMap } from '#events';
+import type { FnMap } from 'src/types/primitives2';
 
 /**
  * Delay type definition.
  * The function takes in a context object and returns a delay in milliseconds.
  * @template : type {@linkcode EventsMap} [E], the events map.
- * @template : type {@linkcode PromiseeMap} [P], the promisees map.
+ * @template : type {@linkcode ActorsConfigMap} [A], the actors config map.
  * @template : [Pc], the type of the private context.
- * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
+ * @template : type {@linkcode types.PrimitiveObject} [Tc], the type of the context.
  * @returns : A number or a {@linkcode FnMap} function that returns a number.
  */
 export type Delay<
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = number | FnMap<E, P, Pc, Tc, number>;
+> = number | FnMap<E, A, Pc, Tc, number>;
 
 /**
  * Delay configuration map.
