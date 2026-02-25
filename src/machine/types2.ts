@@ -390,7 +390,7 @@ export type GetPromiseesSrcKeyFromFlat<Flat extends FlatMapN> = Record<
   _GetPromiseeSrcKeyFromFlat<Flat>,
   PromiseeDef
 >;
-export type GetPromiseesSrcFromFlat<
+export type GetPromisesFromFlat<
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
@@ -520,7 +520,7 @@ export type GetActorsSrcFromFlat<
 > = {
   children?: Partial<GetChildrenSrcFromFlat<Flat>>;
   emitters?: Partial<GetEmittersSrcFromFlat<Flat, A>>;
-  promisees?: Partial<GetPromiseesSrcFromFlat<Flat, E, A, Pc, Tc>>;
+  promises?: Partial<GetPromisesFromFlat<Flat, E, A, Pc, Tc>>;
 };
 
 export type GetActorsSrcFromConfig<
@@ -949,7 +949,14 @@ export type SimpleMachineOptions<
  */
 export type SimpleMachineOptions2 = Partial<
   Record<'actions' | 'predicates' | 'delays', any> &
-    Record<'actors', RecordS<any>>
+    Record<
+      'actors',
+      {
+        children?: RecordS<any>;
+        emitters?: RecordS<any>;
+        promises?: RecordS<any>;
+      }
+    >
 >;
 
 /**

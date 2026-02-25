@@ -13,7 +13,6 @@ import {
   type ActorsConfigMap,
   type EventsMap,
   type PromiseeMap,
-  type ToEvents,
   type ToEvents2,
   type ToEventsR2,
 } from '#events';
@@ -52,21 +51,13 @@ import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
 import type { PredicateS } from 'src/guards/types2';
 import type { NoExtraKeysStrict } from '~types';
-import {
-  assignByKey,
-  createChildS,
-  expandFnMap,
-  getByKey,
-  type CreateChild_F,
-} from './functions';
+import { assignByKey, expandFnMap, getByKey } from './functions';
 import type {
-  AddOption,
   AddOptions_F,
   AddOptionsParam_F,
   AnyMachine,
   Elements,
   GetIO_F,
-  LegacyOptions,
   ScheduledData,
   SendAction_F,
   TimeAction_F,
@@ -619,8 +610,8 @@ class Machine<
   #addPromises = (promises?: NotUndefined<Mo['actors']>['promises']) =>
     (this.#actors = merge(this.#actors, { promises }));
 
-  #addMachines = (machines?: NotUndefined<Mo['actors']>['children']) =>
-    (this.#actors = merge(this.#actors, { children: machines }));
+  #addChildren = (children?: NotUndefined<Mo['actors']>['children']) =>
+    (this.#actors = merge(this.#actors, { children }));
 
   #addEmitters = (emitters?: NotUndefined<Mo['actors']>['emitters']) =>
     (this.#actors = merge(this.#actors, { emitters }));
@@ -633,19 +624,11 @@ class Machine<
    *
    * Remark: Used for typings, when you're outside the Machine class.
    */
-  createOptions = <T extends Mo>(
-    helper: (
-      functions: AddOption<E, A, Pc, Tc>,
-      options: {
-        _legacy: LegacyOptions<E, A, Pc, Tc, Mo>;
-      },
-    ) => NoExtraKeysStrict<T, Mo>,
-  ) => {
+  createOptions: AddOptions_F<E, A, Pc, Tc, Mo> = helper => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
     const isNotDefined = this.#isNotDefined;
-    const createChild = this.#createChild;
     const voidAction = this.#voidAction;
     const sendTo = this.#sendTo;
 
@@ -653,10 +636,8 @@ class Machine<
       actions: cloneDeep(this.#actions),
       predicates: cloneDeep(this.#predicates),
       delays: cloneDeep(this.#delays),
-      promises: cloneDeep(this.#actors?.promises),
-      machines: cloneDeep(this.#actors?.children),
-      emitters: cloneDeep(this.#actors?.emitters),
-    });
+      actors: cloneDeep(this.#actors),
+    }) as any;
 
     const out = helper(
       {
@@ -664,7 +645,6 @@ class Machine<
         isNotValue,
         isDefined,
         isNotDefined,
-        createChild,
 
         assign: (key, fn) => {
           const out = _any(expandFnMap)(
@@ -805,7 +785,7 @@ class Machine<
     this.#addPredicates(out?.predicates);
     this.#addDelays(out?.delays);
     this.#addPromises(out?.actors?.promises);
-    this.#addMachines(out?.actors?.children);
+    this.#addChildren(out?.actors?.children);
     this.#addEmitters(out?.actors?.emitters);
 
     return out;
@@ -844,11 +824,9 @@ class Machine<
     const actions = cloneDeep(this.#actions);
     const predicates = cloneDeep(this.#predicates);
     const delays = cloneDeep(this.#delays);
-    const promises = cloneDeep(this.#promises);
-    const machines = cloneDeep(this.#machines);
+    const actorsMap = cloneDeep(this.#actorsMap);
     const events = cloneDeep(this.#eventsMap);
-    const promisees = cloneDeep(this.#actorsMap);
-    const emitters = cloneDeep(this.#emitters);
+    const actors = cloneDeep(this.#actors);
 
     return {
       config,
@@ -857,11 +835,9 @@ class Machine<
       actions,
       predicates,
       delays,
-      promises,
-      machines,
+      actors,
       events,
-      promisees,
-      emitters,
+      actorsMap,
     };
   }
 
@@ -900,11 +876,10 @@ class Machine<
       predicates,
       actions,
       delays,
-      promises,
-      machines,
-      promisees,
+
       events,
-      emitters,
+      actors,
+      actorsMap,
     } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, E, A, Mo>(config);
@@ -912,14 +887,14 @@ class Machine<
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
-    out.#actorsMap = promisees;
+    out.#actorsMap = actorsMap;
 
     out.#addPredicates(predicates);
     out.#addActions(actions);
     out.#addDelays(delays);
-    out.#addPromises(promises);
-    out.#addMachines(machines);
-    out.#addEmitters(emitters);
+    out.#addPromises(actors?.promises);
+    out.#addChildren(actors?.children);
+    out.#addEmitters(actors?.emitters);
 
     return out;
   };
@@ -938,14 +913,14 @@ class Machine<
    * @remarks used internally
    */
   _providePrivateContext = <T = any>(pContext: T) => {
-    const { context, config, events, promisees } = this.#elements;
+    const { context, config, events, actorsMap } = this.#elements;
 
     const out = new Machine<C, T, Tc, E, A>(config);
 
     out.#context = context;
     out.#pContext = pContext;
     out.#eventsMap = events;
-    out.#actorsMap = promisees;
+    out.#actorsMap = actorsMap;
 
     return out;
   };
@@ -959,14 +934,14 @@ class Machine<
    * @remarks used internally
    */
   _provideContext = <T extends PrimitiveObject>(context: T) => {
-    const { pContext, config, events, promisees } = this.#elements;
+    const { pContext, config, events, actorsMap } = this.#elements;
 
     const out = new Machine<C, Pc, T, E, A>(config);
 
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
-    out.#actorsMap = promisees;
+    out.#actorsMap = actorsMap;
 
     return out;
   };
@@ -979,14 +954,14 @@ class Machine<
    * @remarks used internally
    */
   _provideEvents = <T extends EventsMap>(map: T) => {
-    const { pContext, config, context, promisees } = this.#elements;
+    const { pContext, config, context, actorsMap } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, T, A>(config);
 
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = map;
-    out.#actorsMap = promisees;
+    out.#actorsMap = actorsMap;
 
     return out;
   };
@@ -1045,15 +1020,14 @@ class Machine<
     const predicates = this.#predicates;
     const actions = this.#actions;
     const delays = this.#delays;
-    const promises = this.#promises;
-    const machines = this.#machines;
+    const actors = this.#actors;
 
     const out = _unknown<Mo>({
       predicates,
       actions,
       delays,
-      promises,
-      machines,
+
+      actors,
     });
 
     return out;
@@ -1115,20 +1089,6 @@ class Machine<
   // #merge = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {};
 
   /**
-   * Function helper to create a child service for this {@linkcode Machine}.
-   *
-   * @see type inferences :
-   *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc}
-   *
-   * @see {@linkcode createChildS}
-   */
-  #createChild: CreateChild_F<E, A, Pc> = (...args) => {
-    return createChildS(...args);
-  };
-  // #endregion
-
-  /**
    * Function helper to send an event to a child service.
    *
    * @param _ an optional parameter of type {@linkcode AnyMachine} [{@linkcode T}] to specify the machine context. Only used for type inference.
@@ -1144,7 +1104,7 @@ class Machine<
     _?: T,
   ) => {
     return fn => {
-      const fn2 = reduceFnMap(this.eventsMap, this.promiseesMap, fn);
+      const fn2 = reduceFnMap(this.eventsMap, this.#actorsMap, fn);
       return ({ context, pContext, ...rest }) => {
         const state = this.#cloneStateExtended({
           context,
@@ -1193,7 +1153,9 @@ class Machine<
       };
   };
 
-  #cloneStateExtended = (state: StateExtended<Pc, Tc, ToEvents<E, A>>) => {
+  #cloneStateExtended = (
+    state: StateExtended<Pc, Tc, ToEvents2<E, A>>,
+  ) => {
     return structuredClone(state);
   };
 }

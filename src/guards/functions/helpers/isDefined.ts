@@ -1,17 +1,18 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
+import type { EventsMap } from '#events';
 import type { DefinedValue } from '#guards';
-import type { FnR } from '~types';
+import type { FnR } from 'src/types/primitives2';
 import { isNotValue, isValue } from './value';
+import type { ActorsConfigMap } from '#events';
 
 export type IsDefinedS_F = <
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   path: DefinedValue<Pc, Tc>,
-) => FnR<E, P, Pc, Tc, boolean>;
+) => FnR<E, A, Pc, Tc, boolean>;
 
 /**
  * Checks if the given path is defined (not undefined or null).

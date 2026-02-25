@@ -1,25 +1,30 @@
 import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap, ToEventsR } from '#events';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  PromiseeMap,
+  ToEventsR2,
+} from '#events';
 import {
   isFunction,
   type FnMap,
   type FnMapR,
   type FnR,
   type FnReduced,
-} from '~types';
+} from 'src/types/primitives2';
 import { nothing } from './nothing';
 
 type ToEventMap_F = <
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
 >(
   events: E,
-  promisees: P,
-) => ToEventsR<E, P>;
+  actors: A,
+) => ToEventsR2<E, A>;
 
-export const toEventsMap: ToEventMap_F = (events, _promisees) => {
-  const promisees = Object.entries(_promisees).reduce(
+export const toEventsMap: ToEventMap_F = (events, _actors) => {
+  const promisees = Object.entries(_actors.promisees || {}).reduce(
     (acc, [key, value]) => {
       acc[`${key}::then`] = value.then;
       acc[`${key}::catch`] = value.catch;
@@ -28,25 +33,44 @@ export const toEventsMap: ToEventMap_F = (events, _promisees) => {
     {} as any,
   );
 
-  return { ...events, ...promisees };
+  const emitters = Object.entries(_actors.emitters || {}).reduce(
+    (acc, [key, value]) => {
+      acc[`${key}::next`] = value.next;
+      acc[`${key}::error`] = value.error;
+      return acc;
+    },
+    {} as any,
+  );
+
+  const children = Object.entries(_actors.children || {}).reduce(
+    (acc, [key, value]) => {
+      Object.entries(value).forEach(([childKey, childValue]) => {
+        acc[`${key}::on::${childKey}`] = childValue;
+      });
+      return acc;
+    },
+    {} as any,
+  );
+
+  return { ...events, ...promisees, ...emitters, ...children };
 };
 
 export type ReduceFnMap_F = <
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 >(
   events: E,
-  promisees: P,
-  fn: FnMap<E, P, Pc, Tc, R>,
-) => FnR<E, P, Pc, Tc, R>;
+  actorsMap: A,
+  fn: FnMap<E, A, Pc, Tc, R>,
+) => FnR<E, A, Pc, Tc, R>;
 
 /**
  * Reduces a function map to a single function that processes events.
  * @param events the events map.
- * @param promisees the promisees map.
+ * @param actors the promisees map.
  * @param fn the function map to reduce.
  * @returns a function that takes a context and an event, returning the result of the function map.
  *
@@ -55,11 +79,11 @@ export type ReduceFnMap_F = <
  * @see {@linkcode isFunction} for checking if a value is a function.
  * @see {@linkcode nothing} for the default else function.
  */
-export const reduceFnMap: ReduceFnMap_F = (events, promisees, fn) => {
+export const reduceFnMap: ReduceFnMap_F = (events, actors, fn) => {
   const check1 = isFunction(fn);
   if (check1) return fn;
 
-  const map = toEventsMap(events, promisees);
+  const map = toEventsMap(events, actors);
   const keys = Object.keys(map);
 
   return ({ event, context, pContext, status, value, tags }) => {

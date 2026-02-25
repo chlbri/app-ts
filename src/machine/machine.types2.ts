@@ -10,7 +10,6 @@ import type { Decompose } from '@bemedev/decompose';
 
 import type {
   Fn,
-  NotUndefined,
   PrimitiveObject,
   Ru,
   SubTypeLow,
@@ -39,6 +38,7 @@ import type { SimpleMachineOptions2 } from './types2';
 export type Elements<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
@@ -46,6 +46,7 @@ export type Elements<
   config: C;
   pContext: Pc;
   events: E;
+  actorsMap: A;
   context: Tc;
   actions?: Mo['actions'];
   predicates?: Mo['predicates'];
@@ -260,20 +261,9 @@ export type BatchAction_F<
  * Type for the _legacy parameter containing previously defined options.
  */
 export type LegacyOptions<
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = Readonly<{
-  actions?: {
-    [key in keyof NotUndefined<Mo['actions']>]?: ActionResultFn<
-      E,
-      A,
-      Pc,
-      Tc
-    >;
-  };
+  actions?: Mo['actions'];
   predicates?: Mo['predicates'];
   delays?: Mo['delays'];
   actors?: Mo['actors'];
@@ -324,7 +314,7 @@ export type AddOptionsParam_F<
    * Provides actions, predicates, emitters, machines, promises, and delays.
    */
   legacyOptions: {
-    _legacy: LegacyOptions<E, A, Pc, Tc, Mo>;
+    _legacy: LegacyOptions<Mo>;
   },
 ) => Mo;
 
