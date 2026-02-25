@@ -42,7 +42,7 @@ export const config2 = createConfig({
               },
             },
             fetch: {
-              promises: {
+              actors: {
                 src: 'fetch',
                 then: {
                   actions: {
@@ -235,9 +235,10 @@ export const _machine2 = createMachine(
       isInputNotEmpty: isNotValue('context.input', ''),
     },
     promises: {
-      fetch: async ({ context: { input } }) => {
-        return fakeDB.filter(item => item.name.includes(input));
-      },
+      // fetch: async ({ context: { input } }) => {
+      //   return fakeDB.filter(item => item.name.includes(input));
+      // },
+      
     },
     delays: {
       DELAY,

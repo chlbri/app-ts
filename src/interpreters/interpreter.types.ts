@@ -27,7 +27,6 @@ import type {
   PrivateContextFrom,
 } from '#machines';
 import type {
-  PromiseeConfig,
   PromiseeResult,
   PromiseFunction,
   PromiseFunction2,
@@ -49,6 +48,7 @@ import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { FnR } from '~types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
+import type { PromiseeConfig } from '#actor';
 
 export type WorkingStatus =
   | 'idle'

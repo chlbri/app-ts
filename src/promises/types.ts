@@ -10,10 +10,10 @@ import type {
   ExtractActionsFromTransition,
   ExtractGuardKeysFromDelayed,
   GetEventKeysFromDelayed,
-  SingleOrArrayT,
   Transition,
   TransitionConfigMapA,
 } from '#transitions';
+import type { PromiseeConfig } from 'src/actor';
 import type { FnMap, FnR, SingleOrArrayL } from '~types';
 
 /**
@@ -75,16 +75,6 @@ export type FinallyConfig<Paths extends string = string> =
  * @see {@linkcode SingleOrArrayT} for the type of then and catch.
  * @see {@linkcode FinallyConfig} for the type of finally.
  */
-export type PromiseeConfig<Paths extends string = string> = {
-  readonly src: string;
-
-  // Max wait time to perform the promise
-  readonly max?: string;
-  readonly description?: string;
-  readonly then: SingleOrArrayT<Paths>;
-  readonly catch: SingleOrArrayT<Paths>;
-  readonly finally?: FinallyConfig<Paths>;
-};
 
 export type GetEventKeysFromPromisee<T extends PromiseeConfig> =
   GetEventKeysFromDelayed<Pick<T, 'then' | 'catch'>>;

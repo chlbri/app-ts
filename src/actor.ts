@@ -1,27 +1,27 @@
 import type { FinallyConfig } from '#promises';
 import type { SingleOrArrayT } from '#transitions';
 
-type CommonActor = {
+export type CommonActor = {
   readonly src: string;
   readonly description?: string;
 };
 
-type EmitterConfig<Paths extends string = string> = CommonActor & {
+export type EmitterConfig<Paths extends string = string> = CommonActor & {
+  readonly id: string;
   readonly next: SingleOrArrayT<Paths>;
   readonly error?: SingleOrArrayT<Paths>;
   readonly complete?: FinallyConfig<Paths>;
 };
 
-type PromiseeConfig<Paths extends string = string> = CommonActor & {
+export type PromiseeConfig<Paths extends string = string> = CommonActor & {
   // Max wait time to perform the promise
   readonly max?: string;
-  readonly id: string;
   readonly then: SingleOrArrayT<Paths>;
   readonly catch: SingleOrArrayT<Paths>;
   readonly finally?: FinallyConfig<Paths>;
 };
 
-type MachineConfig<Paths extends string = string> = CommonActor & {
+export type MachineConfig<Paths extends string = string> = CommonActor & {
   readonly id: string;
 } & (
     | {
@@ -34,7 +34,7 @@ type MachineConfig<Paths extends string = string> = CommonActor & {
       }
   );
 
-export type Actor<Paths extends string = string> =
+export type ActorConfig<Paths extends string = string> =
   | EmitterConfig<Paths>
   | PromiseeConfig<Paths>
   | MachineConfig<Paths>;

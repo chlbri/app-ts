@@ -223,6 +223,8 @@ export type ReduceArray<T> = T extends readonly (infer U1)[]
     ? U2
     : T;
 
+// TODO : Rebuild the Fn with ActorConfigMap and ToEvents2
+
 /**
  * An helper to write common function signatures.
  *

@@ -71,7 +71,7 @@ export const resolveNode: ResolveNode_F = (
   const always = toArray.typed(config.always).map(tMapper);
   const after = identify(config.after).map(tMapper);
   const promises = toArray
-    .typed(config.promises)
+    .typed(config.actors)
     .map(promise => toPromise(events, promisees, promise, options));
 
   const out = _any({

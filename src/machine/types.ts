@@ -479,6 +479,8 @@ export type SubscriberType<
   : SubNev);
 // #endregion
 
+export type ChildConfigMap = RecordS<RecordS<PrimitiveObject>>;
+
 /**
  * Type representing a child service in a state machine.
  *

@@ -1,4 +1,10 @@
-import type { PrimitiveObject, Unionize } from '#bemedev/globals/types';
+import type {
+  NotUndefined,
+  PrimitiveObject,
+  Unionize,
+} from '#bemedev/globals/types';
+import type { EmitterConfigMap } from '#emitters';
+import type { ChildConfigMap } from '#machines';
 import type { INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE } from './constants';
 
 /**
@@ -73,6 +79,35 @@ type _PromiseesR<T extends PromiseeMap> =
       : never
     : never;
 
+type _EmitterConfigR<T extends EmitterConfigMap> =
+  Unionize<T> extends infer U extends EmitterConfigMap
+    ? U extends any
+      ?
+          | {
+              type: `${keyof U & string}::next`;
+              payload: U[keyof U]['next'];
+            }
+          | {
+              type: `${keyof U & string}::error`;
+              payload: U[keyof U]['error'];
+            }
+      : never
+    : never;
+
+type _ChildConfigR<T extends ChildConfigMap> = {
+  [key in keyof T & string]: Unionize<T[key]> extends infer U
+    ? U extends any
+      ? { type: `${key}::on::${keyof U & string}`; payload: U[keyof U] }
+      : never
+    : never;
+}[keyof T & string];
+
+export type ActorConfigMap = {
+  children?: ChildConfigMap;
+  emitters?: EmitterConfigMap;
+  promisses?: PromiseeMap;
+};
+
 /**
  * Represents a union type of all events and promisees.
  * It combines the transformed events and promisees into a single type.
@@ -84,10 +119,28 @@ export type ToEventsR<E extends EventsMap, P extends PromiseeMap> =
   | _EventsR<E>
   | _PromiseesR<P>;
 
+  /**
+ * Represents a union type of all events, promisees, emitters, and child events.
+ * It combines the transformed events, promisees, emitters, and child events into a single type.
+ * @template : {@linkcode EventsMap} [E], the map of events.
+ * @template : {@linkcode ActorConfigMap} [A], the configuration map for actors which includes children, emitters, and promisees.
+ * @returns A union type of events, promisee-events, emitter-events, and child-events.
+ */
+export type ToEventsR2<E extends EventsMap, A extends ActorConfigMap> =
+  | _EventsR<E>
+  | _PromiseesR<NotUndefined<A['promisses']>>
+  | _EmitterConfigR<NotUndefined<A['emitters']>>
+  | _ChildConfigR<NotUndefined<A['children']>>;
+
 export type ToEvents<E extends EventsMap, P extends PromiseeMap> =
   | ToEventsR<E, P>
   | InitEvent
   | MaxExceededEvent;
+
+export type ToEvents2<
+  E extends EventsMap,
+  A extends ActorConfigMap,
+> = ToEventsR2<E, A> | InitEvent | MaxExceededEvent;
 
 /**
  * Transforms an event map into arguments to send to the machine.

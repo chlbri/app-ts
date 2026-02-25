@@ -54,7 +54,7 @@ const ttest3 = {
     { guards: 'guard3', actions: 'build3', target: '/state' },
     { actions: 'f', target: '/state' },
   ],
-  promises: [
+  actors: [
     {
       src: 'source1',
       then: [{ guards: 'guard4', actions: 'build4' }, { actions: 'g' }],
@@ -66,6 +66,22 @@ const ttest3 = {
       then: [{ guards: 'guard7', actions: 'build7' }, { actions: 'j' }],
       catch: [{ guards: 'guard8', actions: 'build8' }, { actions: 'k' }],
       finally: [{ guards: 'guard9', actions: 'build9' }, { actions: 'l' }],
+    },
+    {
+      src: 'emitter1',
+      next: '/dfdfd',
+      id: 'em1',
+    },
+    {
+      src: 'machine1',
+      on: {
+        EVENT1: { actions: 'action1' },
+        EVENT34: [
+          { guards: 'guard2', actions: 'build2' },
+          { actions: 'e' },
+        ],
+      },
+      id: 'm1',
     },
   ],
 } as const satisfies TransitionsConfig;
@@ -81,13 +97,18 @@ expectTypeOf<TTest3>().toEqualTypeOf<
   | 'after.END.[1]'
   | 'always.[0]'
   | 'always.[1]'
-  | 'promises.[0].then.[0]'
-  | 'promises.[0].then.[1]'
-  | 'promises.[0].catch.[0]'
-  | 'promises.[0].catch.[1]'
-  | 'promises.[1].then.[0]'
-  | 'promises.[1].then.[1]'
-  | 'promises.[1].catch.[0]'
-  | 'promises.[1].catch.[1]'
+  | 'actors.[0].then.[0]'
+  | 'actors.[0].then.[1]'
+  | 'actors.[0].catch.[0]'
+  | 'actors.[0].catch.[1]'
+  | 'actors.[1].then.[0]'
+  | 'actors.[1].then.[1]'
+  | 'actors.[1].catch.[0]'
+  | 'actors.[1].catch.[1]'
+  | 'actors.[2].next'
+  | 'actors.[2].error'
+  | 'actors.[3].on.EVENT1'
+  | 'actors.[3].on.EVENT34.[0]'
+  | 'actors.[3].on.EVENT34.[1]'
 >();
 // #endregion

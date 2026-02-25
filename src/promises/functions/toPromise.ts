@@ -1,11 +1,11 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { SimpleMachineOptions } from '#machines';
-import type { PromiseeConfig } from '#promises';
 import { toTransition } from '#transitions';
 import { toArray } from '@bemedev/basifun';
 import type { Promisee } from '../types';
 import { toPromiseSrc } from './src';
+import type { PromiseeConfig } from '#actor';
 
 type ToPromise_F = <
   E extends EventsMap = EventsMap,

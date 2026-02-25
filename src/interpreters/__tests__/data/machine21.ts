@@ -41,7 +41,7 @@ export const config21 = createConfig({
               },
             },
             fetch: {
-              promises: {
+              actors: {
                 src: 'fetch',
                 then: {
                   actions: {

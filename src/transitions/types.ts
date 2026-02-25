@@ -5,18 +5,26 @@ import type {
   NotUndefined,
   PrimitiveObject,
   Require,
+  SoA,
 } from '#bemedev/globals/types';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { FromGuard, GuardConfig, Predicate } from '#guards';
 import type {
+  ExtractActionsFromFinally,
   ExtractActionsFromPromisee,
   ExtractGuardsFromPromise,
   ExtractMaxFromPromisee,
   ExtractSrcFromPromisee,
   GetEventKeysFromPromisee,
   Promisee,
-  PromiseeConfig,
 } from '#promises';
+import type { Observable } from 'rxjs';
+import type {
+  ActorConfig,
+  EmitterConfig,
+  MachineConfig,
+  PromiseeConfig,
+} from 'src/actor';
 
 import type {
   Identitfy,
@@ -220,8 +228,22 @@ export type TransitionsConfig<Paths extends string = string> = {
   readonly on?: DelayedTransitions<Paths>;
   readonly always?: AlwaysConfig<Paths>;
   readonly after?: DelayedTransitions<Paths>;
-  readonly promises?: SingleOrArrayL<PromiseeConfig<Paths>>;
+  readonly actors?: SoA<ActorConfig<Paths>>;
 };
+
+export type GetEventKeysFromEmitter<T extends EmitterConfig> =
+  GetEventKeysFromDelayed<Pick<T, 'next' | 'error'>>;
+
+export type GetEventKeysFromMachineConfig<T extends MachineConfig> =
+  `on.${GetEventKeysFromDelayed<T['on']>}`;
+
+export type GetEvntKeysFromActor<T> = T extends EmitterConfig
+  ? GetEventKeysFromEmitter<T>
+  : T extends MachineConfig
+    ? GetEventKeysFromMachineConfig<T>
+    : T extends PromiseeConfig
+      ? GetEventKeysFromPromisee<T>
+      : never;
 
 export type GetEventKeysFromTransitions<T> =
   | ('on' extends keyof T
@@ -235,14 +257,14 @@ export type GetEventKeysFromTransitions<T> =
         ? `always.[${IndexesOfArray<TA>}]`
         : 'always'
       : never)
-  | ('promises' extends keyof T
-      ? `${NotUndefined<T['promises']> extends infer TP
+  | ('actors' extends keyof T
+      ? `${NotUndefined<T['actors']> extends infer TP
           ? TP extends AnyArray
-            ? `promises.${{
+            ? `actors.${{
                 [key in keyof TP &
-                  string]: `[${key}].${GetEventKeysFromPromisee<Extract<TP[key], PromiseeConfig>>}`;
+                  string]: `[${key}].${GetEvntKeysFromActor<TP[key]>}`;
               }[keyof TP & string]}`
-            : `promises.${GetEventKeysFromPromisee<Extract<TP, PromiseeConfig>>}`
+            : `actors.${GetEvntKeysFromActor<TP>}`
           : never}`
       : never);
 
@@ -259,10 +281,32 @@ export type GetEventKeysFromTransitions<T> =
  */
 export type ExtractDelayKeysFromTransitions<T extends TransitionsConfig> =
   | ExtractMaxFromPromisee<
-      Extract<ReduceArray<T['promises']>, { max: string }>
+      Extract<ReduceArray<T['actors']>, { max: string }>
     >
   | (T['after'] extends undefined ? never : keyof T['after']);
 
+type _ExtractActionsFromMap<T> = ExtractActionsFromTransition<
+  Extract<
+    ReduceArray<NotUndefined<T>>,
+    { actions: SingleOrArrayL<ActionConfig> }
+  >
+>;
+
+export type ExtractActionsFromEmitter<T extends EmitterConfig> =
+  | _ExtractActionsFromMap<T['next']>
+  | _ExtractActionsFromMap<T['error']>
+  | ExtractActionsFromFinally<NotUndefined<T['complete']>>;
+
+export type ExtractActionsFromMachine<T extends MachineConfig> =
+  ExtractActionKeysFromDelayed<T['on']>;
+
+export type ExtractActionKeysFromActor<T> = T extends EmitterConfig
+  ? ExtractActionsFromEmitter<T>
+  : T extends MachineConfig
+    ? ExtractActionsFromMachine<T>
+    : T extends PromiseeConfig
+      ? ExtractActionsFromPromisee<T>
+      : never;
 /**
  * Extracts actions keys from a {@linkcode TransitionsConfig}.
  *
@@ -287,7 +331,7 @@ export type ExtractActionKeysFromTransitions<T extends TransitionsConfig> =
         { actions: SingleOrArrayL<ActionConfig> }
       >
     >
-  | ExtractActionsFromPromisee<NotUndefined<ReduceArray<T['promises']>>>;
+  | ExtractActionKeysFromActor<NotUndefined<ReduceArray<T['actors']>>>;
 
 /**
  * Extracts guard keys from a {@linkcode TransitionsConfig}.
@@ -313,7 +357,9 @@ export type ExtractGuardKeysFromTransitions<T extends TransitionsConfig> =
         { guards: SingleOrArrayL<GuardConfig> }
       >
     >
-  | ExtractGuardsFromPromise<NotUndefined<ReduceArray<T['promises']>>>;
+  | ExtractGuardsFromPromise<
+      Extract<NotUndefined<ReduceArray<T['actors']>>, { then: any }>
+    >;
 
 /**
  * Extracts source keys from a {@linkcode TransitionsConfig}.
@@ -326,7 +372,7 @@ export type ExtractGuardKeysFromTransitions<T extends TransitionsConfig> =
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * */
 export type ExtractSrcFromTransitions<T extends TransitionsConfig> =
-  ExtractSrcFromPromisee<NotUndefined<ReduceArray<T['promises']>>>;
+  ExtractSrcFromPromisee<NotUndefined<ReduceArray<T['actors']>>>;
 
 /**
  * Represents a transition in a state machine with full defined functions.
@@ -345,11 +391,23 @@ export type Transition<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  readonly target: string;
+  readonly target?: string;
   readonly actions: Action<E, P, Pc, Tc>[];
   readonly guards: Predicate<E, P, Pc, Tc>[];
   readonly description?: string;
-  readonly in: string[];
+};
+
+export type Emiter4<
+  E extends EventsMap = EventsMap,
+  P extends PromiseeMap = PromiseeMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  src: Observable<any>;
+  description?: string;
+  then: Transition<E, P, Pc, Tc>[];
+  catch: Transition<E, P, Pc, Tc>[];
+  finally: Transition<E, P, Pc, Tc>[];
 };
 
 /**
