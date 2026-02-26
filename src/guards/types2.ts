@@ -1,7 +1,7 @@
 import type { ActionConfig, FromActionConfig } from '#actions';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { GUARD_TYPE } from '#constants';
-import type { ActorsConfigMap, EventsMap, PromiseeMap } from '#events';
+import type { ActorsConfigMap, EventsMap } from '#events';
 import type { KeysMatching } from '@bemedev/decompose';
 import type { FnMap, FnR } from 'src/types/primitives2';
 import type { RecordS, ReduceArray } from '~types';
@@ -104,13 +104,13 @@ export type PredicateOr<
  */
 export type Predicate<
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > =
-  | PredicateS2<E, P, Pc, Tc>
-  | PredicateAnd<E, P, Pc, Tc>
-  | PredicateOr<E, P, Pc, Tc>;
+  | PredicateS2<E, A, Pc, Tc>
+  | PredicateAnd<E, A, Pc, Tc>
+  | PredicateOr<E, A, Pc, Tc>;
 
 /**
  * Represents a map of predicates, where each key is a string and each value is a {@linkcode Predicate}.
@@ -126,10 +126,10 @@ export type Predicate<
  */
 export type PredicateMap<
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
+> = Partial<RecordS<PredicateS<E, A, Pc, Tc>>>;
 
 type _DefinedValue<
   Pc = any,

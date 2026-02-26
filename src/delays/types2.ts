@@ -1,5 +1,5 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap, PromiseeMap } from '#events';
+import type { ActorsConfigMap, EventsMap } from '#events';
 import type { FnMap } from 'src/types/primitives2';
 
 /**
@@ -22,14 +22,14 @@ export type Delay<
  * Delay configuration map.
  * Maps a string key to a {@linkcode Delay} function.
  * @template : type {@linkcode EventsMap} [E] - The events map.
- * @template : type {@linkcode PromiseeMap} [P] - The promisees map.
+ * @template : type {@linkcode ActorsConfigMap} [A] - The actors config map.
  * @template : [Pc] - The type of the private context.
- * @template : type {@linkcode types.PrimitiveObject} [Tc] - The type of the context.
+ * @template : type {@linkcode PrimitiveObject} [Tc] - The type of the context.
  * @returns : A partial record where each key is a string and each value is a {@linkcode Delay}.
  */
 export type DelayMap<
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<Record<string, Delay<E, P, Pc, Tc>>>;
+> = Partial<Record<string, Delay<E, A, Pc, Tc>>>;

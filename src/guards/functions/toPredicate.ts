@@ -1,49 +1,49 @@
 import isDefined from '#bemedev/features/common/castings/is/defined';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import { GUARD_TYPE } from '#constants';
-import type { EventsMap, PromiseeMap, ToEvents } from '#events';
+import type { ActorsConfigMap, EventsMap, ToEvents2 } from '#events';
 import type { GuardConfig } from '#guards';
 import type { StateExtended } from '#interpreters';
 import { reduceFnMap } from '#utils';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
 import { isDescriber, isString } from '~types';
-import type { PredicateMap, PredicateS2 } from '../types';
+import type { PredicateMap, PredicateS2 } from '../types2';
 
 export type _ToPredicateF = <
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
-  promisees: P,
+  actorsMap: A,
   guard: GuardConfig,
-  predicates?: PredicateMap<E, P, Pc, Tc>,
+  predicates?: PredicateMap<E, A, Pc, Tc>,
 ) => {
   func?:
-    | GuardDefUnion<[StateExtended<Pc, Tc, ToEvents<E, P>>]>
+    | GuardDefUnion<[StateExtended<Pc, Tc, ToEvents2<E, A>>]>
     | undefined;
   errors: string[];
 };
 
 export type ToPredicate_F = <
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
-  promisees: P,
+  actorsMap: A,
   guard: GuardConfig,
-  predicates?: PredicateMap<E, P, Pc, Tc>,
+  predicates?: PredicateMap<E, A, Pc, Tc>,
 ) => {
-  predicate?: PredicateS2<E, P, Pc, Tc> | undefined;
+  predicate?: PredicateS2<E, A, Pc, Tc> | undefined;
   errors: string[];
 };
 
 const _toPredicate: _ToPredicateF = (
   events,
-  promisees,
+  actorsMap,
   guard,
   predicates,
 ) => {
@@ -51,21 +51,21 @@ const _toPredicate: _ToPredicateF = (
 
   if (isDescriber(guard)) {
     const fn = predicates?.[guard.name];
-    const func = fn ? reduceFnMap(events, promisees, fn) : undefined;
+    const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
     if (!func) errors.push(`Predicate (${guard.name}) is not defined`);
     return { func, errors };
   }
 
   if (isString(guard)) {
     const fn = predicates?.[guard];
-    const func = fn ? reduceFnMap(events, promisees, fn) : undefined;
+    const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
     if (!func) errors.push(`Predicate (${guard}) is not defined`);
     return { func, errors };
   }
 
   const makeArray = (guards: GuardConfig[]) => {
     return guards
-      .map(guard => _toPredicate(events, promisees, guard, predicates))
+      .map(guard => _toPredicate(events, actorsMap, guard, predicates))
       .filter(({ errors: errors1 }) => {
         const check = errors1.length > 0;
         if (check) {
@@ -116,13 +116,13 @@ const _toPredicate: _ToPredicateF = (
  */
 export const toPredicate: ToPredicate_F = (
   events,
-  promisees,
+  actorsMap,
   guard,
   predicates,
 ) => {
   const { func, errors } = _toPredicate(
     events,
-    promisees,
+    actorsMap,
     guard,
     predicates,
   );

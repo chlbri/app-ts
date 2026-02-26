@@ -208,7 +208,7 @@ export type ChangeProperties<
  *
  * @template T - The object type to remap.
  */
-export type Identitfy<T> = T extends object ? T & { __id: string } : T;
+export type Identify<T> = T extends object ? T & { __id: string } : T;
 
 /**
  * A helper type to reduce an array type to its element type.

@@ -21,7 +21,7 @@ export type PromiseeConfig<Paths extends string = string> = CommonActor & {
   readonly finally?: FinallyConfig<Paths>;
 };
 
-export type MachineConfig<Paths extends string = string> = CommonActor & {
+export type ChildConfig<Paths extends string = string> = CommonActor & {
   readonly id: string;
 } & (
     | {
@@ -34,7 +34,8 @@ export type MachineConfig<Paths extends string = string> = CommonActor & {
       }
   );
 
+
 export type ActorConfig<Paths extends string = string> =
   | EmitterConfig<Paths>
   | PromiseeConfig<Paths>
-  | MachineConfig<Paths>;
+  | ChildConfig<Paths>;

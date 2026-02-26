@@ -5,7 +5,7 @@ import type {
 } from 'src/actions/types2';
 
 import type { DefinedValue } from '#guards';
-import type { NodeConfig, StateValue } from '#states';
+import type { NodeConfig, StateExtended, StateValue } from '#states';
 import type { Decompose } from '@bemedev/decompose';
 
 import type {
@@ -141,6 +141,19 @@ export type VoidAction_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (fn?: FnMap<E, A, Pc, Tc, void>) => ActionResultFn<E, A, Pc, Tc>;
+
+export type ByKey_F<
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = <
+  S extends StateExtended<Pc, Tc, ToEvents2<E, A>, A>,
+  D = Decompose<S, { object: 'both'; start: false; sep: '.' }>,
+  K extends keyof D & string = keyof D & string,
+>(
+  key: K,
+) => () => D[K];
 
 export type FilterAction_F<
   E extends EventsMap,

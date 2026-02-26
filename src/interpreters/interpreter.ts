@@ -15,17 +15,15 @@ import {
   INIT_EVENT,
   possibleEvents,
   transformEventArg,
+  type ActorsConfigMap,
   type EventArg,
   type EventArgT,
   type EventObject,
-  type EventsMap,
   type InitEvent,
-  type PromiseeMap,
-  type ToEvents,
-  type ToEventsR,
+  type ToEvents2,
+  type ToEventsR2
 } from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
-import { getEntries, getExits, type Machine } from '#machine';
 import {
   assignByKey,
   ChildS,
@@ -33,8 +31,7 @@ import {
   getTags,
   mergeByKey,
   reduceEvents,
-  toMachine,
-  type AnyMachine,
+  toChildSrc,
   type ChildS2,
   type Config,
   type ConfigFrom,
@@ -44,18 +41,12 @@ import {
   type ExtendedActionsParams,
   type GetEventsFromConfig,
   type MachineConfig,
-  type MachineOptions,
   type MachineOptionsFrom,
   type PrivateContextFrom,
   type PromiseesMapFrom,
-  type ScheduledData,
-  type SimpleMachineOptions2,
+  type ScheduledData
 } from '#machines';
-import {
-  PromiseeConfig,
-  toPromiseSrc,
-  type PromiseeResult,
-} from '#promises';
+import { toPromiseSrc } from '#promises';
 import {
   flatMap,
   initialConfig,
@@ -65,6 +56,8 @@ import {
   resolveNode,
   type ActivityConfig,
   type NodeConfig,
+  type State,
+  type StateExtended,
   type StateValue,
 } from '#states';
 import type {
@@ -93,6 +86,7 @@ import {
 import sleep from '@bemedev/sleep';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
+import { getEntries, getExits } from 'src/machine/machine2';
 import { isDescriber, type RecordS } from '~types';
 import type {
   _Send_F,
@@ -115,11 +109,10 @@ import type {
   PerformTransition_F,
   PerformTransitions_F,
   Selector_F,
-  State,
-  StateExtended,
   WorkingStatus,
 } from './interpreter.types';
 
+import type { PromiseeConfig } from '#actor';
 import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
   AllowedNames,
@@ -129,10 +122,18 @@ import type {
 } from '#bemedev/globals/types';
 import {
   Emitter3,
-  toEmitter,
+  toEmitterSrc,
   type Emitter2,
   type EmitterConfig,
 } from '#emitters';
+import type { AnyMachine } from 'src/machine/machine.types2';
+import type { Machine } from 'src/machine/machine2';
+import type {
+  GetActorsSrcKeyFromConfig,
+  MachineOptions,
+  SimpleMachineOptions2,
+} from 'src/machine/types2';
+import type { PromiseeResult } from 'src/promises/types2';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
@@ -161,16 +162,16 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
  */
 export class Interpreter<
   const C extends Config = Config,
-  Pc = any,
+  const Pc = any,
   const Tc extends PrimitiveObject = PrimitiveObject,
-  E extends EventsMap = GetEventsFromConfig<C>,
-  P extends PromiseeMap = PromiseeMap,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
-> implements AnyInterpreter<E, P, Pc, Tc> {
+  E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
+  A extends ActorsConfigMap = GetActorsSrcKeyFromConfig<C>,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
+> implements AnyInterpreter<E, A, Pc, Tc> {
   /**
    * The {@linkcode Machine} machine being interpreted.
    */
-  #machine: Machine<C, Pc, Tc, E, P, Mo>;
+  #machine: Machine<C, Pc, Tc, E, A, Mo>;
 
   /**
    * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.
@@ -200,12 +201,12 @@ export class Interpreter<
   /**
    * The initial {@linkcode Node} of the inner {@linkcode Machine}.
    */
-  readonly #initialNode: Node<E, P, Pc, Tc>;
+  readonly #initialNode: Node<E, A, Pc, Tc>;
 
   /**
    * The current {@linkcode Node} of this {@linkcode Interpreter} service.
    */
-  #node!: Node<E, P, Pc, Tc>;
+  #node!: Node<E, A, Pc, Tc>;
 
   /**
    * an iiner ietrator to count the number of operations performed by this {@linkcode Interpreter} service.
@@ -215,7 +216,7 @@ export class Interpreter<
   /**
    * The current {@linkcode ToEvents} event of this {@linkcode Interpreter} service.
    */
-  #event: ToEvents<E, P> | InitEvent = INIT_EVENT;
+  #event: ToEvents2<E, A> | InitEvent = INIT_EVENT;
 
   /**
    * The initial {@linkcode NodeConfigWithInitials} of the inner {@linkcode Machine}.
@@ -250,7 +251,7 @@ export class Interpreter<
   /**
    * The current {@linkcode State} of this {@linkcode Interpreter} service.
    */
-  #state!: State<Tc, ToEvents<E, P>>;
+  #state!: State<Tc, ToEvents2<E, A>>;
 
   /**
    * All {@linkcode AnyInterpreter2} service subscribers of this {@linkcode Interpreter} service.
@@ -289,17 +290,8 @@ export class Interpreter<
    */
   at = this.getChildAt;
 
-  #reduceEmitter = ({ id, emitter, from }: Emitter2<E, P, Pc, Tc>) => {
-    const args: Parameters<typeof emitter>[0] = {
-      selector: func => {
-        return () => func(this.#cloneState);
-      },
-      merge: this.#mergeContexts,
-      send: this.send,
-    };
-
-    const instance = emitter(args);
-    return { id, instance, from };
+  #toEmitter = (emitter: string) => {
+    return toEmitterSrc(emitter, this.#machine.options.actors?.emitters);
   };
 
   /**
@@ -343,7 +335,7 @@ export class Interpreter<
    * @param exact, whether to use exact intervals or not, default is false.
    */
   constructor(
-    machine: Machine<C, Pc, Tc, E, P, Mo>,
+    machine: Machine<C, Pc, Tc, E, A, Mo>,
     mode: Mode = 'strict',
     exact = true,
   ) {
@@ -361,6 +353,7 @@ export class Interpreter<
       event: INIT_EVENT,
       value: this.#value,
       tags: getTags(this.#config),
+      children: {} as any,
     };
     this.#collectEmitters();
     this.#collectServices();
@@ -428,7 +421,7 @@ export class Interpreter<
    * @see {@linkcode SubscriberClass}
    * @see {@linkcode SubscriberClass}
    */
-  #performStates = (parts?: Partial<State<Tc, ToEvents<E, P>>>) => {
+  #performStates = (parts?: Partial<State<Tc, ToEvents2<E, A>>>) => {
     this.#previousState = cloneDeep(this.#state);
     this.#state = { ...this.#state, ...parts };
     const check = !equal(this.#previousState, this.#state);
@@ -488,9 +481,9 @@ export class Interpreter<
   #resolveNode = (config: NodeConfig) => {
     const options = this.#machine.options;
     const events = this.#machine.eventsMap;
-    const promisees = this.#machine.promiseesMap;
+    const actorsMap = this.#machine.actorsMap;
 
-    return resolveNode<E, P, Pc, Tc>(events, promisees, config, options);
+    return resolveNode<E, A, Pc, Tc>(events, actorsMap, config, options);
   };
 
   /**
@@ -761,13 +754,13 @@ export class Interpreter<
     this.#selfTransitionsCounter = 0;
   };
 
-  get #cloneState(): StateExtended<Pc, Tc, ToEvents<E, P>> {
+  get #cloneState(): StateExtended<Pc, Tc, ToEvents2<E, A>, A> {
     const pContext = cloneDeep(this.#pContext);
 
     return structuredClone({ pContext, ...this.#state });
   }
 
-  #performAction: PerformActionLater_F<E, P, Pc, Tc> = action => {
+  #performAction: PerformActionLater_F<E, A, Pc, Tc> = action => {
     this._iterate();
     return action(this.#cloneState);
   };
@@ -881,7 +874,7 @@ export class Interpreter<
     return result;
   };
 
-  #executeAction: PerformAction_F<E, P, Pc, Tc> = action => {
+  #executeAction: PerformAction_F<E, A, Pc, Tc> = action => {
     this.#makeBusy();
 
     const { pContext, context, ...extendeds } =
@@ -912,12 +905,12 @@ export class Interpreter<
       .forEach(this.#executeAction);
   };
 
-  #performPredicate: PerformPredicate_F<E, P, Pc, Tc> = predicate => {
+  #performPredicate: PerformPredicate_F<E, A, Pc, Tc> = predicate => {
     this._iterate();
     return predicate(this.#cloneState);
   };
 
-  #executePredicate: PerformPredicate_F<E, P, Pc, Tc> = predicate => {
+  #executePredicate: PerformPredicate_F<E, A, Pc, Tc> = predicate => {
     this.#makeBusy();
     const out = this.#performPredicate(predicate);
 
@@ -935,12 +928,12 @@ export class Interpreter<
       .every(b => b);
   };
 
-  #performDelay: PerformDelay_F<E, P, Pc, Tc> = delay => {
+  #performDelay: PerformDelay_F<E, A, Pc, Tc> = delay => {
     this._iterate();
     return delay(this.#cloneState);
   };
 
-  #executeDelay: PerformDelay_F<E, P, Pc, Tc> = delay => {
+  #executeDelay: PerformDelay_F<E, A, Pc, Tc> = delay => {
     this.#makeBusy();
     const out = this.#performDelay(delay);
     this.#startStatus();
@@ -1104,7 +1097,7 @@ export class Interpreter<
     return false;
   };
 
-  #performPromiseSrc: PerformPromise_F<E, P, Pc, Tc> = promise => {
+  #performPromiseSrc: PerformPromise_F<E, A, Pc, Tc> = promise => {
     this._iterate();
     return promise(this.#cloneState);
   };
@@ -1143,8 +1136,8 @@ export class Interpreter<
     return this.#machine.longRuns;
   }
 
-  #performPromisee: PerformPromisee_F<E, P> = (from, ...promisees) => {
-    type PR = PromiseeResult<E, P>;
+  #performPromisee: PerformPromisee_F<E, A> = (from, ...promisees) => {
+    type PR = PromiseeResult<E, A>;
 
     const promises: (() => Promise<PR | undefined>)[] = [];
 
@@ -1296,8 +1289,10 @@ export class Interpreter<
     const entries: [from: string, ...promisees: PromiseeConfig[]][] = [];
 
     entriesFlat.forEach(([from, node]) => {
-      const promisees = toArray.typed(node.promises);
-      if (node.promises) {
+      const promisees = toArray
+        .typed(node.actors)
+        .filter(actor => 'then' in actor);
+      if (node.actors) {
         entries.push([from, ...promisees]);
       }
     });
@@ -1355,9 +1350,13 @@ export class Interpreter<
     ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
-      const _machines = node.machines;
-      if (_machines) {
-        const machines = Object.entries(_machines).map(([id, machine]) => {
+      const _machines = toArray
+        .typed(node.actors)
+        .filter(actor => 'on' in actor || 'contexts' in actor);
+
+      const len = _machines.length;
+      if (len > 0) {
+        const machines = _machines.map(({ id, src: machine }) => {
           return { id, machine };
         });
         entries.push([from, ...machines]);
@@ -1370,12 +1369,12 @@ export class Interpreter<
       })
       .flat()
       .map(({ id, machine, from }) => {
-        return { id, machine: this.toMachine(machine), from };
+        return { id, machine: this.toChild(machine), from };
       })
       .filter(
         (({ machine }) => !!machine) as (value: any) => value is {
           id: string;
-          machine: ChildS<E, P, Pc>;
+          machine: AnyMachine;
           from: string;
         },
       )
@@ -1493,7 +1492,7 @@ export class Interpreter<
    * Get all brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
    */
   get #collectedSelfTransitions0() {
-    const entries = new Map<string, Collected0<E, P>>();
+    const entries = new Map<string, Collected0<E, A>>();
 
     this.#collectedAlways.forEach(([from, always]) => {
       entries.set(from, { always: () => this.#performAlways(always) });
@@ -1525,7 +1524,7 @@ export class Interpreter<
    *
    * @param event - the {@linkcode ToEvents} event to change the current {@linkcode Interpreter} service state.
    */
-  #changeEvent = (event: ToEventsR<E, P>) => {
+  #changeEvent = (event: ToEventsR2<E, A>) => {
     this.#performStates({ event });
     this.#event = event;
   };
@@ -1740,15 +1739,15 @@ export class Interpreter<
     return out;
   };
 
-  #subscribers = new Set<SubscriberClass<E, P, Tc>>();
+  #subscribers = new Set<SubscriberClass<E, A, Tc>>();
 
   get state() {
     return Object.freeze(cloneDeep(this.#state));
   }
 
-  subscribe: AddSubscriber_F<E, P, Tc> = (_subscriber, options) => {
+  subscribe: AddSubscriber_F<E, A, Tc> = (_subscriber, options) => {
     const eventsMap = this.#machine.eventsMap;
-    const promiseesMap = this.#machine.promiseesMap;
+    const actorsMap = this.#machine.actorsMap;
     const find = Array.from(this.#subscribers).find(
       f => f.id === options?.id,
     );
@@ -1756,7 +1755,7 @@ export class Interpreter<
 
     const subcriber = createSubscriber(
       eventsMap,
-      promiseesMap,
+      actorsMap,
       _subscriber,
       options,
     );
@@ -1805,7 +1804,7 @@ export class Interpreter<
 
   // #region Next
 
-  #extractTransitions = (event: ToEventsR<E, P>) => {
+  #extractTransitions = (event: ToEventsR2<E, A>) => {
     type FlatArray = [from: string, transitions: TransitionConfig[]][];
     const entriesFlat = Object.entries(this.#flat);
     const flat: FlatArray = [];
@@ -1848,7 +1847,7 @@ export class Interpreter<
     return flat2;
   };
 
-  protected _send: _Send_F<E, P> = event => {
+  protected _send: _Send_F<E, A> = event => {
     this.#changeEvent(event);
     this.#setStatus('sending');
     let sv = this.#value;
@@ -1895,7 +1894,7 @@ export class Interpreter<
    * @see {@linkcode send} for sending events directly.
    */
   sender = <T extends EventArgT<E>>(type: T) => {
-    type Arg = Extract<ToEventsR<E, P>, { type: T }>['payload'];
+    type Arg = Extract<ToEventsR2<E, A>, { type: T }>['payload'];
     type Payload = object extends Arg ? [] : [Arg];
 
     return (...data: Payload) => {
@@ -2076,23 +2075,23 @@ export class Interpreter<
 
   toActionFn = (action: ActionConfig) => {
     const events = this.#machine.eventsMap;
-    const promisees = this.#machine.promiseesMap;
+    const actorsMap = this.#machine.actorsMap;
     const actions = this.#machine.actions;
 
     return this.#returnWithWarning(
-      toAction<E, P, Pc, Tc>(events, promisees, action, actions),
+      toAction<E, A, Pc, Tc>(events, actorsMap, action, actions),
       `Action (${reduceAction(action)}) is not defined`,
     );
   };
 
   toPredicateFn = (guard: GuardConfig) => {
     const events = this.#machine.eventsMap;
-    const promisees = this.#machine.promiseesMap;
+    const actorsMap = this.#machine.actorsMap;
     const predicates = this.#machine.predicates;
 
-    const { predicate, errors } = toPredicate<E, P, Pc, Tc>(
+    const { predicate, errors } = toPredicate<E, A, Pc, Tc>(
       events,
-      promisees,
+      actorsMap,
       guard,
       predicates,
     );
@@ -2102,40 +2101,40 @@ export class Interpreter<
 
   toPromiseSrcFn = (src: string) => {
     const events = this.#machine.eventsMap;
-    const promisees = this.#machine.promiseesMap;
+    const actorsMap = this.#machine.actorsMap;
     const promises = this.#machine.promises;
 
     return this.#returnWithWarning(
-      toPromiseSrc<E, P, Pc, Tc>(events, promisees, src, promises),
+      toPromiseSrc<E, A, Pc, Tc>(events, actorsMap, src, promises),
       `Promise (${src}) is not defined`,
     );
   };
 
   toDelayFn = (delay: string) => {
     const events = this.#machine.eventsMap;
-    const promisees = this.#machine.promiseesMap;
+    const actorsMap = this.#machine.actorsMap;
     const delays = this.#machine.delays;
 
     return this.#returnWithWarning(
-      toDelay<E, P, Pc, Tc>(events, promisees, delay, delays),
+      toDelay<E, A, Pc, Tc>(events, actorsMap, delay, delays),
       `Delay (${delay}) is not defined`,
     );
   };
 
-  toMachine = (machine: MachineConfig) => {
-    const machines = this.#machine.machines;
+  toChild = (machine: string) => {
+    const machines = this.#machine.children;
 
     return this.#returnWithWarning(
-      toMachine<E, P, Tc>(machine, machines),
+      toChildSrc(machine, machines),
       `Machine (${reduceAction(machine)}) is not defined`,
     );
   };
 
-  toEmitter = (emitter: EmitterConfig) => {
+  toEmitter = (emitter: string) => {
     const emitters = this.#machine.emitters;
 
     return this.#returnWithWarning(
-      toEmitter<E, P, Pc, Tc>(emitter, emitters),
+      toEmitterSrc(emitter, emitters),
       `Emitter (${reduceAction(emitter)}) is not defined`,
     );
   };

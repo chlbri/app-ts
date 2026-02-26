@@ -1,4 +1,8 @@
-import type { Action, ActionConfig, FromActionConfig } from '#actions';
+import type {
+  Action,
+  ActionConfig,
+  FromActionConfig,
+} from 'src/actions/types2';
 import type {
   AnyArray,
   IndexesOfArray,
@@ -7,8 +11,8 @@ import type {
   Require,
   SoA,
 } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
-import type { FromGuard, GuardConfig, Predicate } from '#guards';
+import type { ActorsConfigMap, EventsMap, PromiseeMap } from '#events';
+import type { FromGuard, GuardConfig, Predicate } from 'src/guards/types2';
 import type {
   ExtractActionsFromFinally,
   ExtractActionsFromPromisee,
@@ -17,21 +21,23 @@ import type {
   ExtractSrcFromPromisee,
   GetEventKeysFromPromisee,
   Promisee,
-} from '#promises';
+} from 'src/promises/types2';
 import type { Observable } from 'rxjs';
 import type {
   ActorConfig,
   EmitterConfig,
-  MachineConfig,
+  ChildConfig,
   PromiseeConfig,
 } from 'src/actor';
 
 import type {
-  Identitfy,
+  Identify,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
 } from '~types';
+import type { Emitter } from 'src/emitters/types2';
+import type { Child } from 'src/machine/types2';
 
 /**
  * Represents the simpliest configuration map for a transition.
@@ -234,12 +240,12 @@ export type TransitionsConfig<Paths extends string = string> = {
 export type GetEventKeysFromEmitter<T extends EmitterConfig> =
   GetEventKeysFromDelayed<Pick<T, 'next' | 'error'>>;
 
-export type GetEventKeysFromMachineConfig<T extends MachineConfig> =
+export type GetEventKeysFromMachineConfig<T extends ChildConfig> =
   `on.${GetEventKeysFromDelayed<T['on']>}`;
 
 export type GetEvntKeysFromActor<T> = T extends EmitterConfig
   ? GetEventKeysFromEmitter<T>
-  : T extends MachineConfig
+  : T extends ChildConfig
     ? GetEventKeysFromMachineConfig<T>
     : T extends PromiseeConfig
       ? GetEventKeysFromPromisee<T>
@@ -297,12 +303,12 @@ export type ExtractActionsFromEmitter<T extends EmitterConfig> =
   | _ExtractActionsFromMap<T['error']>
   | ExtractActionsFromFinally<NotUndefined<T['complete']>>;
 
-export type ExtractActionsFromMachine<T extends MachineConfig> =
+export type ExtractActionsFromMachine<T extends ChildConfig> =
   ExtractActionKeysFromDelayed<T['on']>;
 
 export type ExtractActionKeysFromActor<T> = T extends EmitterConfig
   ? ExtractActionsFromEmitter<T>
-  : T extends MachineConfig
+  : T extends ChildConfig
     ? ExtractActionsFromMachine<T>
     : T extends PromiseeConfig
       ? ExtractActionsFromPromisee<T>
@@ -403,13 +409,13 @@ export type ExtractChildSrcKeyFromTransitions<
  */
 export type Transition<
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   readonly target?: string;
-  readonly actions: Action<E, P, Pc, Tc>[];
-  readonly guards: Predicate<E, P, Pc, Tc>[];
+  readonly actions: Action<E, A, Pc, Tc>[];
+  readonly guards: Predicate<E, A, Pc, Tc>[];
   readonly description?: string;
 };
 
@@ -436,16 +442,18 @@ export type Emiter4<
  *
  * @see {@linkcode Transition} for the structure of a single transition.
  * @see {@linkcode Promisee} for the structure of promises in the transitions.
- * @see {@linkcode Identitfy} for identifying properties in the transitions.
+ * @see {@linkcode Identify} for identifying properties in the transitions.
  */
 export type Transitions<
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  on: Identitfy<Transition<E, P, Pc, Tc>>[];
-  always: Transition<E, P, Pc, Tc>[];
-  after: Identitfy<Transition<E, P, Pc, Tc>>[];
-  promises: Promisee<E, P, Pc, Tc>[];
+  on: Identify<Transition<E, A, Pc, Tc>>[];
+  always: Transition<E, A, Pc, Tc>[];
+  after: Identify<Transition<E, A, Pc, Tc>>[];
+  promises: Promisee<E, A, Pc, Tc>[];
+  emitters: Emitter<E, A, Pc, Tc>[];
+  children: Child<E, A, Pc, Tc>[];
 };

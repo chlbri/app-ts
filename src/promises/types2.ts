@@ -5,12 +5,7 @@ import type {
   ReduceArray,
   Require,
 } from '#bemedev/globals/types';
-import type {
-  ActorsConfigMap,
-  EventsMap,
-  PromiseeMap,
-  ToEvents,
-} from '#events';
+import type { ActorsConfigMap, EventsMap, ToEvents2 } from '#events';
 import type {
   ExtractActionsFromTransition,
   ExtractGuardKeysFromDelayed,
@@ -183,22 +178,22 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
  */
 export type Promisee<
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  src: PromiseFunction2<E, P, Pc, Tc>;
+  src: PromiseFunction2<E, A, Pc, Tc>;
   description?: string;
-  then: Transition<E, P, Pc, Tc>[];
-  catch: Transition<E, P, Pc, Tc>[];
-  finally: Transition<E, P, Pc, Tc>[];
+  then: Transition<E, A, Pc, Tc>[];
+  catch: Transition<E, A, Pc, Tc>[];
+  finally: Transition<E, A, Pc, Tc>[];
 };
 
 /**
  * Represents the result of a promisee execution.
  *
  * @template E - The events map, defaults to {@linkcode EventsMap}.
- * @template P - The promisees map, defaults to {@linkcode PromiseeMap}.
+ * @template A - The actors map, defaults to {@linkcode ActorsConfigMap}.
  * @template Pc - The context type, defaults to `any`.
  * @template : {@linkcode PrimitiveObject} Tc - The primitive object type, defaults to `PrimitiveObject`.
  *
@@ -207,8 +202,8 @@ export type Promisee<
  */
 export type PromiseeResult<
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
 > = {
-  event: ToEvents<E, P>;
+  event: ToEvents2<E, A>;
   target: string | false;
 };

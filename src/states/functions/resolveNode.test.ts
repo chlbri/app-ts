@@ -20,6 +20,8 @@ test('resolveNode -> coverage', () => {
     always: [],
     entry: [inc],
     exit: [inc],
+    children: [],
+    emitters: [],
     on: [],
     promises: [],
     states: [],

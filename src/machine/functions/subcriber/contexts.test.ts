@@ -1,3 +1,4 @@
+import _any from '#bemedev/features/common/castings/any';
 import { createTests } from '@bemedev/vitest-extended';
 import { assignByKey, getByKey, mergeByKey } from './contexts';
 
@@ -76,7 +77,44 @@ describe('functions', () => {
     );
   });
 
-  describe('#03 => mergeByKey', () => {
+  describe('#03 => getByKey.options', () => {
+    const { acceptation, success } = createTests(
+      _any(getByKey.options({ start: false })),
+    );
+
+    describe('Acceptation', acceptation);
+
+    describe(
+      'Success',
+      success(
+        {
+          invite: 'small object',
+          parameters: [{ a: 1, b: true }, 'a'],
+          expected: 1,
+        },
+
+        {
+          invite: 'nested object #1',
+          parameters: [{ a: { b: 3 } }, 'a.b'],
+          expected: 3,
+        },
+
+        {
+          invite: 'nested object #2',
+          parameters: [{ a: { b: { c: 14 } }, b: 'file' }, 'a.b.c'],
+          expected: 14,
+        },
+
+        {
+          invite: 'nested object #3',
+          parameters: [{ a: { b: { c: 1 }, d: true }, b: 'file' }, 'a.d'],
+          expected: true,
+        },
+      ),
+    );
+  });
+
+  describe('#04 => mergeByKey', () => {
     const func = mergeByKey({ a: 1, b: { c: 2 } });
     const { acceptation, success } = createTests(func);
 

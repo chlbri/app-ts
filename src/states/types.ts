@@ -1,16 +1,25 @@
-import type { Action, ActionConfig, FromActionConfig } from '#actions';
 import type {
   Keys,
+  NotUndefined,
   PrimitiveObject,
+  SoA,
   UnionToIntersection,
 } from '#bemedev/globals/types';
-import { EmitterConfig } from '#emitters';
-import type { EventsMap, PromiseeMap } from '#events';
+import type {
+  _EventsR,
+  ActorsConfigMap,
+  AllEvent,
+  EventsMap,
+} from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
-import { MachineConfig } from '#machines';
 import type { Transitions, TransitionsConfig } from '#transitions';
 import type {
-  Identitfy,
+  Action,
+  ActionConfig,
+  FromActionConfig,
+} from 'src/actions/types2';
+import type {
+  Identify,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
@@ -73,8 +82,6 @@ export type BaseConfig = {
   readonly exit?: SingleOrArrayL<ActionConfig>;
   readonly tags?: SingleOrArrayL<string>;
   readonly activities?: ActivityConfig;
-  readonly emitters?: RecordS<EmitterConfig>;
-  readonly machines?: RecordS<MachineConfig>;
 };
 
 export type CommonNodeConfig<Paths extends string = string> = BaseConfig &
@@ -133,6 +140,80 @@ export interface StateValueMap {
 
 // #region Flat
 
+// #region States
+export type WorkingStatus =
+  | 'idle'
+  | 'starting'
+  | 'started'
+  | 'paused'
+  | 'working'
+  | 'sending'
+  | 'stopped'
+  | 'busy';
+
+export type State<
+  Tc extends PrimitiveObject = PrimitiveObject,
+  E extends AllEvent = AllEvent,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  C extends NotUndefined<A['children']> = NotUndefined<A['children']>,
+> = {
+  context: Tc;
+  status: WorkingStatus;
+  value: StateValue;
+  event: E;
+  tags?: SoA<string>;
+  children: {
+    [key in keyof C]: {
+      context: any;
+      status: WorkingStatus;
+      value: StateValue;
+      event: _EventsR<C[key]>;
+      tags?: SoA<string>;
+    };
+  };
+};
+
+export type StateP<
+  Tc extends PrimitiveObject = PrimitiveObject,
+  E = any,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  C extends NotUndefined<A['children']> = NotUndefined<A['children']>,
+> = {
+  context: Tc;
+  status: WorkingStatus;
+  value: StateValue;
+  payload: E;
+  tags?: string | readonly string[];
+  children: {
+    [key in keyof C]: {
+      context: any;
+      status: WorkingStatus;
+      value: StateValue;
+      event: _EventsR<C[key]>;
+      tags?: SoA<string>;
+    };
+  };
+};
+
+export type StateExtended<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  E extends AllEvent = AllEvent,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = {
+  pContext: Pc;
+} & State<Tc, E, A>;
+
+export type StatePextended<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  E = any,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = {
+  pContext: Pc;
+} & StateP<Tc, E, A>;
+// #endregion
+
 type FlatMapNodeConfig<
   T extends NodeConfig,
   withChildren extends boolean = true,
@@ -174,16 +255,16 @@ export type EndwA<T extends Keys> = EndWithAlways<T>;
 
 export type Node<
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   id?: string;
   description?: string;
   type: StateType;
-  entry: Action<E, P, Pc, Tc>[];
-  exit: Action<E, P, Pc, Tc>[];
+  entry: Action<E, A, Pc, Tc>[];
+  exit: Action<E, A, Pc, Tc>[];
   tags: string[];
-  states: Identitfy<Node<E, P, Pc, Tc>>[];
+  states: Identify<Node<E, A, Pc, Tc>>[];
   initial?: string;
-} & Transitions<E, P, Pc, Tc>;
+} & Transitions<E, A, Pc, Tc>;

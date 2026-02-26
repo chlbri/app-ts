@@ -1,20 +1,25 @@
-import type { ActionConfig, ActionMap, ActionResult } from '#actions';
+import type {
+  ActionConfig,
+  ActionMap,
+  ActionResult,
+} from 'src/actions/types2';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
+import type { ActorsConfigMap, EventsMap } from '#events';
 import { reduceFnMap } from '#utils';
-import { isDescriber, type FnR } from '~types';
+import type { FnR } from 'src/types/primitives2';
+import { isDescriber } from '~types';
 
 export type ToAction_F = <
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
-  promisees: P,
+  actorsMap: A,
   action: ActionConfig,
-  actions?: ActionMap<E, P, Pc, Tc>,
-) => FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>> | undefined;
+  actions?: ActionMap<E, A, Pc, Tc>,
+) => FnR<E, A, Pc, Tc, ActionResult<Pc, Tc>> | undefined;
 
 /**
  * Converts an ActionConfig to a function that can be executed with the provided eventsMap and promisees.
@@ -23,7 +28,7 @@ export type ToAction_F = <
  * @param action of type {@linkcode ActionConfig}, action configuration to convert.
  * @param actions of type {@linkcode ActionMap}, The actions map containing functions to execute.
  *
- * @see {@linkcode types.PrimitiveObject}
+ * @see {@linkcode PrimitiveObject}
  * @see {@linkcode ActionResult}
  * @see {@linkcode reduceFnMap}
  * @see {@linkcode isDescriber}

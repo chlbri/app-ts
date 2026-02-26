@@ -2,6 +2,7 @@ import type { Ru } from '#bemedev/globals/types';
 import {
   decompose,
   type Decompose,
+  type DecomposeOptions,
   type Recompose,
 } from '@bemedev/decompose';
 
@@ -60,15 +61,26 @@ assignByKey.low = _assignByKey;
 assignByKey.typed = _assignByKey;
 
 // #region type GetByKey_F
-export type GetByKey_F = <T extends Ru, K extends keyof Decompose<T>>(
+export type GetByKey_F = <
+  const T extends Ru,
+  const K extends keyof Decompose<T, { start: false }>,
+>(
   obj: T,
   key: Extract<K, string>,
-) => Decompose<T>[K];
+) => Decompose<T, { start: false }>[K];
+
+export type GetByKeyOption_F = <const O extends DecomposeOptions>(
+  val: O,
+) => <const T extends Ru, const K extends keyof Decompose<T, O>>(
+  obj: T,
+  key: Extract<K, string>,
+) => Decompose<T, O>[K];
 // #endregion
 export interface GetByKey {
   (obj: any, key: string): any;
   low: (obj: any, key: string) => any;
   typed: GetByKey_F;
+  options: GetByKeyOption_F;
 }
 
 const _getByKey: GetByKey['low'] = (obj, key) => {
@@ -88,6 +100,10 @@ export const getByKey: GetByKey = (obj, key) => _getByKey(obj, key);
 
 getByKey.low = _getByKey;
 getByKey.typed = _getByKey;
+getByKey.options = options => (obj, key) => {
+  const decomposed = decompose.low(obj, options);
+  return decomposed[key];
+};
 
 // #region type MergeByKey_F
 export type MergeByKey_F = (
@@ -112,9 +128,9 @@ const _mergeByKey: MergeByKey['low'] = () => {
     if (check1) {
       out[key] = value;
     } else {
-      out[keys[0]] = _mergeByKey(out[keys[0]])(
-        keys.slice(1).join('.'),
-        value,
+      out[keys[0]] = Object.assign(
+        {},
+        _mergeByKey(out[keys[0]])(keys.slice(1).join('.'), value),
       );
     }
 

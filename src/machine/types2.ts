@@ -4,7 +4,7 @@ import type {
   PrimitiveObject,
   Ru,
 } from '#bemedev/globals/types';
-import type { EmitterConfig, EmitterDef } from '#emitters';
+import type { EmitterDef } from '#emitters';
 import type { EventsMap, PromiseeDef, PromiseeMap } from '#events';
 import { ActorsConfigMap } from '#events';
 import type {
@@ -25,6 +25,7 @@ import type {
   ExtractEmitterSrcKeyFromTransitions,
   ExtractGuardKeysFromTransitions,
   ExtractPromiseeSrcKeyFromTransitions,
+  Transition,
   TransitionsConfig,
 } from '#transitions';
 import type { Decompose } from '@bemedev/decompose';
@@ -40,6 +41,8 @@ import type {
   RecordS,
   ReduceArray,
 } from '~types';
+import type { AnyMachine } from './machine.types2';
+import type { Identitfy } from 'src/types/primitives2';
 
 /**
  * Type representing the main JSON config.
@@ -552,20 +555,6 @@ export type GetActorsSrcKeyFromMachine<T extends KeyU<'config'>> =
   GetActorsSrcKeyFromConfig<ConfigFrom<T>>;
 
 /**
- * Get all child machines from a machine config.
- *
- * @template : {@linkcode Config} [C] - type of the machine config
- * @returns A type representing all child machines from the machine config.
- *
- * @see {@linkcode ReduceArray} for reducing arrays to a single type.
- * @see {@linkcode FromActionConfig}.
- * @see {@linkcode NotUndefined}
- */
-export type GetMachineKeysFromConfig<C extends Config> = FromActionConfig<
-  ReduceArray<NotUndefined<C['machines']>>
->;
-
-/**
  * Second version decomposition of a type.
  */
 export type Decompose2<T> = T extends Ru
@@ -574,6 +563,21 @@ export type Decompose2<T> = T extends Ru
 
 export type ChildConfigDef = RecordS<PrimitiveObject>;
 export type ChildConfigMap = RecordS<ChildConfigDef>;
+
+export type Child<
+  E extends EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  src: AnyMachine;
+  description?: string;
+  id: string;
+  on: Identitfy<RecordS<Transition<E, A, Pc, Tc>>>[];
+  contexts: string[];
+};
+
+export type ChildrenMap = RecordS<AnyMachine>;
 
 /**
  * Not used in the codebase, but provided for completeness.
@@ -587,24 +591,6 @@ export type FnMapFrom<
   Extract<ContextFrom<T>, PrimitiveObject>,
   R
 >;
-
-export type GetEmitterKeysFromFlat<F extends RecordS<NodeConfig>> = {
-  [K in keyof F]: F[K] extends NodeConfig
-    ? F[K]['emitters'][keyof F[K]['emitters']] extends infer DK extends
-        EmitterConfig
-      ? FromActionConfig<DK>
-      : never
-    : never;
-}[keyof F];
-
-export type GetMachineKeysFromFlat<F extends RecordS<NodeConfig>> = {
-  [K in keyof F]: F[K] extends NodeConfig
-    ? F[K]['machines'][keyof F[K]['machines']] extends infer DK extends
-        MachineConfig
-      ? FromActionConfig<DK>
-      : never
-    : never;
-}[keyof F];
 
 /**
  * The big one !
@@ -927,14 +913,14 @@ export type ChildrenKeysFrom<T extends KeyU<'__childKey'>> =
  */
 export type SimpleMachineOptions<
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  actions?: Partial<RecordS<Action<E, P, Pc, Tc>>>;
-  predicates?: Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
-  promises?: Partial<RecordS<PromiseFunction<E, P, Pc, Tc>>>;
-  delays?: Partial<RecordS<Delay<E, P, Pc, Tc>>>;
+  actions?: Partial<RecordS<Action<E, A, Pc, Tc>>>;
+  predicates?: Partial<RecordS<PredicateS<E, A, Pc, Tc>>>;
+  promises?: Partial<RecordS<PromiseFunction<E, A, Pc, Tc>>>;
+  delays?: Partial<RecordS<Delay<E, A, Pc, Tc>>>;
   actors?: Partial<RecordS<any>>;
 };
 

@@ -1,28 +1,28 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
-import type { SimpleMachineOptions } from '#machines';
+import type { ActorsConfigMap, EventsMap } from '#events';
+import type { SimpleMachineOptions } from 'src/machine/types2';
 import { toTransition } from '#transitions';
 import { toArray } from '@bemedev/basifun';
-import type { Promisee } from '../types';
+import type { Promisee } from '../types2';
 import { toPromiseSrc } from './src';
 import type { PromiseeConfig } from '#actor';
 
-type ToPromise_F = <
+export type ToPromise_F = <
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   TC extends PrimitiveObject = PrimitiveObject,
 >(
   events: E,
-  promisees: P,
+  actorsMap: A,
   src: PromiseeConfig,
-  promises?: SimpleMachineOptions<E, P, Pc, TC>,
-) => Promisee<E, P, Pc, TC>;
+  promises?: SimpleMachineOptions<E, A, Pc, TC>,
+) => Promisee<E, A, Pc, TC>;
 
 /**
  * Converts a promise config to a promisee object with a source and transitions.
  * @param events of type {@linkcode EventsMap}, the events map.
- * @param promisees of type {@linkcode PromiseeMap}, the promisees map.
+ * @param actorsMap of type {@linkcode PromiseeMap}, the promisees map.
  * @param promise of type {@linkcode PromiseeConfig}, the promise configuration to convert.
  * @param options of type {@linkcode SimpleMachineOptions}, the machine options.
  * @returns a promisee object with a source and transitions.
@@ -34,13 +34,13 @@ type ToPromise_F = <
  */
 export const toPromise: ToPromise_F = (
   events,
-  promisees,
+  actorsMap,
   promise,
   options,
 ) => {
   const src = toPromiseSrc(
     events,
-    promisees,
+    actorsMap,
     promise.src,
     options?.promises,
   );
@@ -48,20 +48,20 @@ export const toPromise: ToPromise_F = (
   const then = toArray
     .typed(promise.then)
     .map(config =>
-      toTransition(events, promisees, config as any, options),
+      toTransition(events, actorsMap, config as any, options),
     );
 
   const _catch = toArray
     .typed(promise.catch)
     .map(config =>
-      toTransition(events, promisees, config as any, options),
+      toTransition(events, actorsMap, config as any, options),
     );
 
   const _finally = toArray.typed(promise.finally).map(config => {
     const check1 = typeof config === 'object' && 'actions' in config;
-    if (check1) return toTransition(events, promisees, config, options);
+    if (check1) return toTransition(events, actorsMap, config, options);
 
-    return toTransition(events, promisees, { actions: config }, options);
+    return toTransition(events, actorsMap, { actions: config }, options);
   });
 
   const out = { src, then, catch: _catch, finally: _finally } as any;

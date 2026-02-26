@@ -20,7 +20,7 @@ import type {
   StateExtended,
   StateP,
   StatePextended,
-} from '#interpreters';
+} from '#states';
 import { checkKeys } from '#utils';
 
 export type IsString_F = (value: unknown) => value is string;
@@ -259,7 +259,7 @@ export type FnR<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = (state: StateExtended<Pc, Tc, ToEvents2<E, A>>) => R;
+> = (state: StateExtended<Pc, Tc, ToEvents2<E, A>, A>) => R;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -278,7 +278,7 @@ export type FnReduced<
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = (state: State<Tc, ToEvents2<E, A>>) => R;
+> = (state: State<Tc, ToEvents2<E, A>, A>) => R;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -300,7 +300,7 @@ export type FnMap2<
   TT extends ToEventsR2<E, A> = ToEventsR2<E, A>,
 > = {
   [key in TT['type']]?: (
-    state: StateP<Tc, Extract<TT, { type: key }>['payload']>,
+    state: StateP<Tc, Extract<TT, { type: key }>['payload'], A>,
   ) => R;
 } & {
   else?: FnReduced<E, A, Tc, R>;
@@ -323,7 +323,12 @@ type _FnMap<
   TT extends ToEvents2<E, A> = ToEvents2<E, A>,
 > = {
   [key in EventToType<TT>]?: (
-    state: StatePextended<Pc, Tc, Extract<TT, { type: key }>['payload']>,
+    state: StatePextended<
+      Pc,
+      Tc,
+      Extract<TT, { type: key }>['payload'],
+      A
+    >,
   ) => R;
 } & {
   else?: FnR<E, A, Pc, Tc, R>;
@@ -337,7 +342,7 @@ type _FnMapR<
   TT extends ToEvents2<E, A> = ToEvents2<E, A>,
 > = {
   [key in EventToType<TT>]?: (
-    state: StateP<Tc, Extract<TT, { type: key }>['payload']>,
+    state: StateP<Tc, Extract<TT, { type: key }>['payload'], A>,
   ) => R;
 } & {
   else?: FnReduced<E, A, Tc, R>;

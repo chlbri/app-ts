@@ -10,7 +10,6 @@ import type {
 } from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
 import {
-  type ActorsConfigMap,
   type EventsMap,
   type PromiseeMap,
   type ToEvents2,
@@ -28,7 +27,7 @@ import type {
   StateExtended,
   StateP,
   StatePextended,
-} from '#interpreters';
+} from '#states';
 import {
   flatMap,
   initialConfig,
@@ -42,16 +41,17 @@ import {
 } from '#states';
 import { merge, reduceFnMap } from '#utils';
 import { partialCall, toArray } from '@bemedev/basifun';
-import { decompose, type Decompose } from '@bemedev/decompose';
+import { decompose, getByKey, type Decompose } from '@bemedev/decompose';
 import type { Action } from 'src/actions/types2';
 import type { Delay } from 'src/delays/types2';
 import { type PromiseFunction } from 'src/promises/types2';
+import { ActorsConfigMap } from './../events/types';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
 import type { PredicateS } from 'src/guards/types2';
 import type { NoExtraKeysStrict } from '~types';
-import { assignByKey, expandFnMap, getByKey } from './functions';
+import { assignByKey, expandFnMap } from './functions';
 import type {
   AddOptions_F,
   AddOptionsParam_F,
@@ -68,7 +68,6 @@ import type {
   ConfigDef,
   GetActorsSrcKeyFromConfig,
   GetEventsFromConfig,
-  GetMachineKeysFromFlat,
   GetPromiseesSrcFromConfig,
   MachineOptions,
   NoExtraKeysConfig,
@@ -229,14 +228,16 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode StateExtended}
-   * @see {@linkcode ToEvents}
-   * @see {@linkcode E}
+   * @see {@linkcode ToEvents2}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __stateExtended() {
-    return _unknown<StateExtended<Pc, Tc, ToEvents2<E, A>>>();
+    return _unknown<StateExtended<Pc, Tc, ToEvents2<E, A>, A>>();
   }
 
   /**
@@ -247,10 +248,11 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode State}
-   * @see {@linkcode ToEvents}
-   * @see {@linkcode E}
+   * @see {@linkcode ToEventsR2}
    * @see {@linkcode PrimitiveObject}
-   * @see {@linkcode Pc}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode E}
+   * @see {@linkcode A}   * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __state() {
@@ -266,8 +268,10 @@ class Machine<
    *
    * @see {@linkcode StateP}
    * @see {@linkcode ToEventsR2}
-   * @see {@linkcode E}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
@@ -284,8 +288,10 @@ class Machine<
    *
    * @see {@linkcode StatePextended}
    * @see {@linkcode ToEventsR2}
-   * @see {@linkcode E}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
@@ -326,11 +332,11 @@ class Machine<
    *
    * @see {@linkcode PredicateS}
    * @see {@linkcode ToEvents}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode E}
-   * @see {@linkcode PromiseeMap}
    * @see {@linkcode A}
    * @see {@linkcode Pc}
-   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __predictate() {
@@ -357,11 +363,11 @@ class Machine<
    *
    * @see {@linkcode Delay}
    * @see {@linkcode ToEvents}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode E}
-   * @see {@linkcode PromiseeMap}
    * @see {@linkcode A}
    * @see {@linkcode Pc}
-   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __delay() {
@@ -376,8 +382,8 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode DefinedValue}
-   * @see {@linkcode Pc}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __definedValue() {
@@ -404,28 +410,15 @@ class Machine<
    *
    * @see {@linkcode PromiseFunction}
    * @see {@linkcode ToEvents}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode E}
-   * @see {@linkcode PromiseeMap}
    * @see {@linkcode A}
    * @see {@linkcode Pc}
-   * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __promise() {
     return _unknown<PromiseFunction<E, A, Pc, Tc>>();
-  }
-
-  /**
-   * @deprecated
-   *
-   * This property provides any machine key for this {@linkcode Machine} as a type.
-   *
-   * @remarks Used for typing purposes only.
-   */
-  get __childKey() {
-    return undefined as unknown as GetMachineKeysFromFlat<
-      typeof this.flat
-    >;
   }
 
   /**
@@ -448,10 +441,6 @@ class Machine<
   #delays?: Mo['delays'];
 
   #actors?: Mo['actors'];
-
-  /**
-   * Initials {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
-   */
 
   /**
    * Context for this {@linkcode Machine}.
@@ -490,7 +479,7 @@ class Machine<
     this.#decomposed = decompose(config, {
       start: false,
       object: 'both',
-    }) as Decompose<C, { sep: '.'; start: false; object: 'both' }>;
+    });
     this.#flat = flatMap(this.#config, true);
     this.#initialConfig = initialConfig(this.#config);
     this.#getInitialKeys();
@@ -1154,7 +1143,7 @@ class Machine<
   };
 
   #cloneStateExtended = (
-    state: StateExtended<Pc, Tc, ToEvents2<E, A>>,
+    state: StateExtended<Pc, Tc, ToEvents2<E, A>, A>,
   ) => {
     return structuredClone(state);
   };
