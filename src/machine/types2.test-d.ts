@@ -1,9 +1,6 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { machine2 } from '#fixturesData';
-import type {
-  FnMapFrom,
-  GetEventsFromMachine
-} from './types2';
+import type { FnMapFrom, GetEventsFromMachine } from './types2';
 
 type TT2 = keyof FnMapFrom<typeof machine2>;
 expectTypeOf<TT2>().toEqualTypeOf<

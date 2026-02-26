@@ -34,7 +34,6 @@ export type ChildConfig<Paths extends string = string> = CommonActor & {
       }
   );
 
-
 export type ActorConfig<Paths extends string = string> =
   | EmitterConfig<Paths>
   | PromiseeConfig<Paths>

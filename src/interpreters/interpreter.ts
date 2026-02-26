@@ -21,7 +21,7 @@ import {
   type EventObject,
   type InitEvent,
   type ToEvents2,
-  type ToEventsR2
+  type ToEventsR2,
 } from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
 import {
@@ -44,7 +44,7 @@ import {
   type MachineOptionsFrom,
   type PrivateContextFrom,
   type PromiseesMapFrom,
-  type ScheduledData
+  type ScheduledData,
 } from '#machines';
 import { toPromiseSrc } from '#promises';
 import {

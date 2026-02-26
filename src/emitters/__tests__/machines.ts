@@ -23,7 +23,6 @@ export const machineEmitter1 = createMachine(
         on: {
           NEXT: '/active',
         },
-        
       },
       active: {
         on: {
