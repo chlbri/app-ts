@@ -1,9 +1,9 @@
 import type { Observable } from 'rxjs';
-import type { EmitterMap } from '../types2';
+import type { EmittersMap } from '../types2';
 
 export type ToEmitterSrc_F = <R = any>(
   emitter: string,
-  emitters?: EmitterMap,
+  emitters?: EmittersMap,
 ) => Observable<R> | undefined;
 
 /**
@@ -12,7 +12,7 @@ export type ToEmitterSrc_F = <R = any>(
  * * If the machine is a string, it looks up the machine configuration by that string.
  * * If the machine is not found in the provided machines map, it returns undefined.
  * @param _emitter of type {@linkcode EmitterSrcConfig}, the machine configuration to convert.
- * @param emitters of type {@linkcode EmitterMap}, the map of emitters to look up the emitter configuration.
+ * @param emitters of type {@linkcode EmittersMap}, the map of emitters to look up the emitter configuration.
  * @returns an emitter object with an id, or undefined if the emitter is not found.
  *
  * @see {@linkcode ChildS} for the structure of the emitter object.

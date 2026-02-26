@@ -18,7 +18,6 @@ import type {
   ExtractActionsFromPromisee,
   ExtractGuardsFromPromise,
   ExtractMaxFromPromisee,
-  ExtractSrcFromPromisee,
   GetEventKeysFromPromisee,
   Promisee,
 } from 'src/promises/types2';
@@ -28,6 +27,7 @@ import type {
   EmitterConfig,
   ChildConfig,
   PromiseeConfig,
+  ExtractSrcFromActor,
 } from 'src/actor';
 
 import type {
@@ -37,7 +37,10 @@ import type {
   SingleOrArrayL,
 } from '~types';
 import type { Emitter } from 'src/emitters/types2';
-import type { Child } from 'src/machine/types2';
+import type {
+  Child,
+  ExtractContextKeysFromChild,
+} from 'src/machine/types2';
 
 /**
  * Represents the simpliest configuration map for a transition.
@@ -370,7 +373,7 @@ export type ExtractGuardKeysFromTransitions<T extends TransitionsConfig> =
 export type ExtractSrcKeyFromTransitions<
   T extends TransitionsConfig,
   Filter extends object = object,
-> = ExtractSrcFromPromisee<
+> = ExtractSrcFromActor<
   NotUndefined<Extract<ReduceArray<T['actors']>, Filter>>
 >;
 
@@ -380,7 +383,7 @@ export type ExtractSrcKeyFromTransitions<
  * @template : {@linkcode TransitionsConfig} [T] - The transitions configuration type.
  * @returns The source keys extracted from the transitions configuration.
  *
- * @see {@linkcode ExtractSrcFromPromisee} for extracting source from promises.
+ * @see {@linkcode ExtractSrcFromActor} for extracting source from promises.
  * @see {@linkcode NotUndefined} for ensuring the type is not undefined.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * */
@@ -392,9 +395,18 @@ export type ExtractEmitterSrcKeyFromTransitions<
   T extends TransitionsConfig,
 > = ExtractSrcKeyFromTransitions<T, { next: any }>;
 
-export type ExtractChildSrcKeyFromTransitions<
-  T extends TransitionsConfig,
-> = ExtractSrcKeyFromTransitions<T, { on: any } | { contexts: any }>;
+export type ExtractChildKeysFromTransitions<T extends TransitionsConfig> =
+  {
+    src: ExtractSrcKeyFromTransitions<T, { on: any } | { contexts: any }>;
+    contexts: ExtractContextKeysFromChild<
+      NotUndefined<
+        Extract<
+          ReduceArray<T['actors']>,
+          { contexts: Record<string, string> }
+        >
+      >
+    >;
+  };
 
 /**
  * Represents a transition in a state machine with full defined functions.

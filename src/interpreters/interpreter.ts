@@ -112,7 +112,7 @@ import type {
   WorkingStatus,
 } from './interpreter.types';
 
-import type { PromiseeConfig } from '#actor';
+import type { ChildConfig, InitialConfig, PromiseeConfig } from '#actor';
 import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
   AllowedNames,
@@ -1346,31 +1346,36 @@ export class Interpreter<
     const entriesFlat = Object.entries(this.#machine.flat);
     const entries: [
       from: string,
-      ...machines: { id: string; machine: MachineConfig }[],
+      ...children: Pick<ChildConfig, 'id' | 'src' | 'initials'>[],
     ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
-      const _machines = toArray
+      const _children = toArray
         .typed(node.actors)
         .filter(actor => 'on' in actor || 'contexts' in actor);
 
-      const len = _machines.length;
+      const len = _children.length;
       if (len > 0) {
-        const machines = _machines.map(({ id, src: machine }) => {
-          return { id, machine };
-        });
-        entries.push([from, ...machines]);
+        const children = _children.map(({ id, src, initials }) => ({
+          id,
+          src,
+          initials,
+        }));
+        entries.push([from, ...children]);
       }
     });
 
     entries
-      .map(([from, ...machines]) => {
-        return machines.map(emitter => ({ ...emitter, from }));
+      .map(([from, ...children]) => {
+        return children.map(child => ({ ...child, from }));
       })
       .flat()
-      .map(({ id, machine, from }) => {
-        return { id, machine: this.toChild(machine), from };
-      })
+      .map(({ id, src: machine, from }) => ({
+        id,
+        machine: this.toChild(machine),
+        from,
+        /* TODO : Add toData to transform data */
+      }))
       .filter(
         (({ machine }) => !!machine) as (value: any) => value is {
           id: string;
@@ -2129,6 +2134,8 @@ export class Interpreter<
       `Machine (${reduceAction(machine)}) is not defined`,
     );
   };
+
+  toInitials = (name: InitialConfig) => {};
 
   toEmitter = (emitter: string) => {
     const emitters = this.#machine.emitters;

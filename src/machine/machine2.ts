@@ -5,16 +5,12 @@ import byKey from '#bemedev/features/objects/typings/byKey';
 import keysOf from '#bemedev/features/objects/typings/keysOf';
 import type {
   AllowedNames,
+  DeepPartial,
   NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
-import {
-  type EventsMap,
-  type PromiseeMap,
-  type ToEvents2,
-  type ToEventsR2,
-} from '#events';
+import { type EventsMap, type ToEvents2, type ToEventsR2 } from '#events';
 import {
   isDefinedS,
   isNotDefinedS,
@@ -68,7 +64,6 @@ import type {
   ConfigDef,
   GetActorsSrcKeyFromConfig,
   GetEventsFromConfig,
-  GetPromiseesSrcFromConfig,
   MachineOptions,
   NoExtraKeysConfig,
   NoExtraKeysConfigDef,
@@ -959,7 +954,7 @@ class Machine<
    * @deprecated
    * @remarks used internally
    */
-  _providePromisees = <T extends PromiseeMap>(map: T) => {
+  _provideActors = <T extends ActorsConfigMap>(map: T) => {
     const { pContext, config, context, events } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, E, T>(config);
@@ -1193,18 +1188,26 @@ export type CreateMachine_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  P extends PromiseeMap = GetPromiseesSrcFromConfig<C>,
-  Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<
+  A extends ActorsConfigMap = GetActorsSrcKeyFromConfig<C>,
+  Mo extends MachineOptions<C, EventM, A, Pc, Tc> = MachineOptions<
     C,
     EventM,
-    P,
+    A,
     Pc,
     Tc
   >,
 >(
   config: NoExtraKeysConfig<C & { __tsSchema?: NoExtraKeysConfigDef<C2> }>,
-  types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
-) => Machine<C, Pc, Tc, EventM, P, Mo>;
+  types: { pContext: Pc; context: Tc; eventsMap: EventM; actorsMap: A },
+) => Machine<
+  C,
+  // No need to be instanciated, they will be instanciated inside
+  DeepPartial<Pc> | undefined,
+  DeepPartial<Tc> | undefined,
+  EventM,
+  A,
+  Mo
+>;
 
 /**
  * Creates a new instance of {@linkcode Machine} with the provided configuration and
@@ -1223,13 +1226,11 @@ export type CreateMachine_F = <
  */
 export const createMachine: CreateMachine_F = (
   config,
-  { eventsMap, pContext, context, promiseesMap },
+  { eventsMap, actorsMap },
 ) => {
   const out = new Machine(config as Config)
     ._provideEvents(eventsMap)
-    ._providePrivateContext(pContext)
-    ._provideContext(context)
-    ._providePromisees(promiseesMap);
+    ._provideActors(actorsMap);
 
   return out as any;
 };

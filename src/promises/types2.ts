@@ -140,7 +140,7 @@ export type ExtractActionsFromPromisee<T extends PromiseeConfig> =
  * @template T - The type of the promisee configuration, which should have a `src` property.
  * @returns The source string of the promisee configuration.
  */
-export type ExtractSrcFromPromisee<T extends { src: string }> = T['src'];
+export type ExtractSrcFromActor<T extends { src: string }> = T['src'];
 
 /**
  * Extracts the maximum wait time from a promisee configuration.

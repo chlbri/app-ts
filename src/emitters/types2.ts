@@ -40,4 +40,4 @@ export type Emitter<
   complete: Transition<E, A, Pc, Tc>[];
 };
 
-export type EmitterMap = Partial<RecordS<Observable<any>>>;
+export type EmittersMap = RecordS<Observable<any>>;

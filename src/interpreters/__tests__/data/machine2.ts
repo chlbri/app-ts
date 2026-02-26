@@ -1,9 +1,9 @@
-import { createMachine } from '#machine';
-import { createConfig, EVENTS_FULL } from '#machines';
-import { typings } from '#utils';
+import { notU, typings } from '#utils';
+import { createConfig } from 'src/machine/functions/create2';
+import { createMachine } from 'src/machine/machine2';
 import { DELAY } from './constants';
-import { fakeDB } from './fakeDB';
-import { machine1 } from './machine1';
+
+// TODO : Clean errors
 
 // #region machine2
 
@@ -96,7 +96,11 @@ export const config2 = createConfig({
 
 export const machine2 = createMachine(
   {
-    machines: { machine1: 'machine1' },
+    actors: {
+      id: 'machine1',
+      src: 'machine1',
+      contexts: {},
+    },
     ...config2,
   },
   typings({
@@ -114,64 +118,60 @@ export const machine2 = createMachine(
       input: 'string',
       data: ['string'],
     },
-    promiseesMap: {
-      fetch: {
-        then: ['string'],
-        catch: 'primitive',
-      },
-    },
-  }),
-).provideOptions(
-  ({ isNotValue, isValue, createChild, assign, voidAction }) => ({
-    actions: {
-      inc: assign(
-        'context.iterator',
-        ({ context: { iterator } }) => iterator + 1,
-      ),
-      inc2: assign(
-        'context.iterator',
-        ({ context: { iterator } }) => iterator + 4,
-      ),
-      sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
-      askUsertoInput: voidAction(() => console.log('Input, please !!')),
-      write: assign('context.input', {
-        WRITE: ({ payload: { value } }) => value,
-      }),
-      insertData: assign('context.data', {
-        'fetch::then': ({ payload, context: { data } }) => {
-          data.push(...payload);
-          return data;
-        },
-      }),
-    },
-    predicates: {
-      isInputEmpty: isValue('context.input', ''),
-      isInputNotEmpty: isNotValue('context.input', ''),
-    },
-    promises: {
-      fetch: async ({ context: { input } }) => {
-        return fakeDB.filter(item => item.name.includes(input));
-      },
-    },
-    delays: {
-      DELAY,
-      DELAY2: 2 * DELAY,
-    },
-    machines: {
-      machine1: createChild(
-        machine1,
-        {
-          pContext: {},
-          context: { iterator: 0 },
-        },
-        {
-          events: EVENTS_FULL,
-          contexts: { iterator: 'iterator' },
-        },
-      ),
-    },
   }),
 );
+
+// .provideOptions(
+//   ({ isNotValue, isValue, createChild, assign, voidAction }) => ({
+//     actions: {
+//       inc: assign(
+//         'context.iterator',
+//         ({ context: { iterator } }) => iterator + 1,
+//       ),
+//       inc2: assign(
+//         'context.iterator',
+//         ({ context: { iterator } }) => iterator + 4,
+//       ),
+//       sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
+//       askUsertoInput: voidAction(() => console.log('Input, please !!')),
+//       write: assign('context.input', {
+//         WRITE: ({ payload: { value } }) => value,
+//       }),
+//       insertData: assign('context.data', {
+//         'fetch::then': ({ payload, context: { data } }) => {
+//           data.push(...payload);
+//           return data;
+//         },
+//       }),
+//     },
+//     predicates: {
+//       isInputEmpty: isValue('context.input', ''),
+//       isInputNotEmpty: isNotValue('context.input', ''),
+//     },
+//     promises: {
+//       fetch: async ({ context: { input } }) => {
+//         return fakeDB.filter(item => item.name.includes(input));
+//       },
+//     },
+//     delays: {
+//       DELAY,
+//       DELAY2: 2 * DELAY,
+//     },
+//     machines: {
+//       machine1: createChild(
+//         machine1,
+//         {
+//           pContext: {},
+//           context: { iterator: 0 },
+//         },
+//         {
+//           events: EVENTS_FULL,
+//           contexts: { iterator: 'iterator' },
+//         },
+//       ),
+//     },
+//   }),
+// );
 
 const _config2 = createConfig({ ...config2, entry: 'debounce' });
 
@@ -204,12 +204,12 @@ export const _machine2 = createMachine(
     actions: {
       inc: assign(
         'context.iterator',
-        ({ context: { iterator } }) => iterator + 1,
+        ({ context }) => notU(context?.iterator) + 1,
       ),
 
       inc2: assign(
         'context.iterator',
-        ({ context: { iterator } }) => iterator + 4,
+        ({ context }) => notU(context?.iterator) + 4,
       ),
       sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
       askUsertoInput: voidAction(() => console.log('Input, please !!')),

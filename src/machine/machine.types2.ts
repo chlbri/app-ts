@@ -153,7 +153,7 @@ export type ByKey_F<
   K extends keyof D & string = keyof D & string,
 >(
   key: K,
-) => () => D[K];
+) => D[K];
 
 export type FilterAction_F<
   E extends EventsMap,

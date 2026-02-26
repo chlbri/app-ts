@@ -72,6 +72,12 @@ export const isDescriber = (arg: any): arg is Describer => {
   return out;
 };
 
+
+export const fromDescriber = (value: string | Describer) => {
+  return isDescriber(value) ? value.name : value;
+};
+
+
 /**
  * Can be used after
  */

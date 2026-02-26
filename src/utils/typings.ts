@@ -85,15 +85,19 @@ type _PrimitiveObject = __PrimitiveObject | Maybe | ArrayCustom;
  * @remark
  */
 type PrimitiveObject = _PrimitiveObject | SoRa<_PrimitiveObject>;
+type ActorsMap = Record<
+  'children' | 'promises' | 'emitters',
+  PrimitiveObject
+>;
 
 export type Args<
   E extends PrimitiveObject = PrimitiveObject,
-  P extends PrimitiveObject = PrimitiveObject,
+  P extends ActorsMap = ActorsMap,
 > = {
   eventsMap: E;
   pContext: PrimitiveObject;
   context: PrimitiveObject;
-  promiseesMap: P;
+  actorsMap: P;
 };
 
 type ReduceTuple2<T extends AnyArray<PrimitiveObject>> = T extends [
@@ -193,14 +197,18 @@ export type TransformArgs<T extends Partial<Args>> = {
   eventsMap: TransformPrimitiveObject<T['eventsMap']>;
   pContext: TransformPrimitiveObject<T['pContext']>;
   context: TransformPrimitiveObject<T['context']>;
-  promiseesMap: __TransformPrimitiveObject<T['promiseesMap']>;
+  actorsMap: __TransformPrimitiveObject<T['actorsMap']>;
 };
 
 const DEFAULT_ARGS = {
   eventsMap: 'primitive',
   pContext: 'primitive',
   context: 'primitive',
-  promiseesMap: 'primitive',
+  actorsMap: {
+    children: 'primitive',
+    promises: 'primitive',
+    emitters: 'primitive',
+  },
 } satisfies Args;
 
 const defaultArgs = <T extends Partial<Args>>(values: T) => {

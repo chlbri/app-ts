@@ -1,5 +1,6 @@
 import type { FinallyConfig } from '#promises';
 import type { SingleOrArrayT } from '#transitions';
+import type { Describer } from './types/primitives2';
 
 export type CommonActor = {
   readonly src: string;
@@ -20,6 +21,10 @@ export type PromiseeConfig<Paths extends string = string> = CommonActor & {
   readonly catch: SingleOrArrayT<Paths>;
   readonly finally?: FinallyConfig<Paths>;
 };
+
+export type ExtractSrcFromActor<T extends { src: string }> = T['src'];
+
+export type InitialConfig = string | Describer;
 
 export type ChildConfig<Paths extends string = string> = CommonActor & {
   readonly id: string;
