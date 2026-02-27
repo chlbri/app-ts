@@ -1,5 +1,8 @@
 import type { ActionConfig, FromActionConfig } from '#actions';
-import type { PrimitiveObject } from '#bemedev/globals/types';
+import type {
+  NotUndefined,
+  PrimitiveObject,
+} from '#bemedev/globals/types';
 import type { GUARD_TYPE } from '#constants';
 import type { EventsMap, PromiseeMap } from '#events';
 import type { KeysMatching } from '@bemedev/decompose';
@@ -135,8 +138,8 @@ type _DefinedValue<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = KeysMatching<{
-  pContext: Pc;
-  context: Tc;
+  pContext: NotUndefined<Pc>;
+  context: NotUndefined<Tc>;
 }>;
 
 /**

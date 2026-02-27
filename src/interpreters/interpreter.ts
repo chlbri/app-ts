@@ -32,7 +32,6 @@ import {
   mergeByKey,
   reduceEvents,
   toChildSrc,
-  type ChildS2,
   type Config,
   type ConfigFrom,
   type ContextFrom,
@@ -40,7 +39,6 @@ import {
   type EventsMapFrom,
   type ExtendedActionsParams,
   type GetEventsFromConfig,
-  type MachineConfig,
   type MachineOptionsFrom,
   type PrivateContextFrom,
   type PromiseesMapFrom,
@@ -112,7 +110,7 @@ import type {
   WorkingStatus,
 } from './interpreter.types';
 
-import type { ChildConfig, InitialConfig, PromiseeConfig } from '#actor';
+import type { ChildConfig, PromiseeConfig } from '#actor';
 import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
   AllowedNames,
@@ -214,7 +212,7 @@ export class Interpreter<
   #iterator = 0;
 
   /**
-   * The current {@linkcode ToEvents} event of this {@linkcode Interpreter} service.
+   * The current {@linkcode ToEvents2} event of this {@linkcode Interpreter} service.
    */
   #event: ToEvents2<E, A> | InitEvent = INIT_EVENT;
 
@@ -246,17 +244,17 @@ export class Interpreter<
   /**
    * The previous {@linkcode State} of this {@linkcode Interpreter} service.
    */
-  #previousState!: State<Tc>;
+  #previousState!: State<Tc, ToEvents2<E, A>, A>;
 
   /**
    * The current {@linkcode State} of this {@linkcode Interpreter} service.
    */
-  #state!: State<Tc, ToEvents2<E, A>>;
+  #state!: State<Tc, ToEvents2<E, A>, A>;
 
   /**
-   * All {@linkcode AnyInterpreter2} service subscribers of this {@linkcode Interpreter} service.
+   * All {@linkcode AnyInterpreter} service subscribers of this {@linkcode Interpreter} service.
    */
-  #childrenServices: AnyInterpreter2[] = [];
+  #childrenServices: AnyInterpreter[] = [];
 
   #collectedEmitters: {
     from: string;
@@ -279,7 +277,7 @@ export class Interpreter<
   /**
    * Returns a service subscriber of this {@linkcode Interpreter} service with a specific id.
    * @param id - The id of the service subscriber to get.
-   * @return The service subscriber {@linkcode AnyInterpreter2} of this {@linkcode Interpreter} service with the specified id, or undefined if not found.
+   * @return The service subscriber {@linkcode AnyInterpreter} of this {@linkcode Interpreter} service with the specified id, or undefined if not found.
    *
    * @see {@linkcode children} for all children.
    */
@@ -313,7 +311,7 @@ export class Interpreter<
    * @deprecated
    *
    * Used for typings only
-   * The accessor of current {@linkcode ToEvents} of this {@linkcode Interpreter} service
+   * The accessor of current {@linkcode ToEvents2} of this {@linkcode Interpreter} service
    *
    * @remarks Usually for typings
    */
@@ -335,7 +333,7 @@ export class Interpreter<
    * @param exact, whether to use exact intervals or not, default is false.
    */
   constructor(
-    machine: Machine<C, Pc, Tc, E, A, Mo>,
+    machine: AnyMachine<E, A, Pc, Tc>,
     mode: Mode = 'strict',
     exact = true,
   ) {
@@ -421,7 +419,7 @@ export class Interpreter<
    * @see {@linkcode SubscriberClass}
    * @see {@linkcode SubscriberClass}
    */
-  #performStates = (parts?: Partial<State<Tc, ToEvents2<E, A>>>) => {
+  #performStates = (parts?: Partial<State<Tc, ToEvents2<E, A>, A>>) => {
     this.#previousState = cloneDeep(this.#state);
     this.#state = { ...this.#state, ...parts };
     const check = !equal(this.#previousState, this.#state);
@@ -1346,7 +1344,7 @@ export class Interpreter<
     const entriesFlat = Object.entries(this.#machine.flat);
     const entries: [
       from: string,
-      ...children: Pick<ChildConfig, 'id' | 'src' | 'initials'>[],
+      ...children: Pick<ChildConfig, 'id' | 'src'>[],
     ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
@@ -1356,10 +1354,9 @@ export class Interpreter<
 
       const len = _children.length;
       if (len > 0) {
-        const children = _children.map(({ id, src, initials }) => ({
+        const children = _children.map(({ id, src }) => ({
           id,
           src,
-          initials,
         }));
         entries.push([from, ...children]);
       }
@@ -1525,9 +1522,9 @@ export class Interpreter<
   }
 
   /**
-   * Changes the current {@linkcode ToEvents} event of this {@linkcode Interpreter} service.
+   * Changes the current {@linkcode ToEvents2} event of this {@linkcode Interpreter} service.
    *
-   * @param event - the {@linkcode ToEvents} event to change the current {@linkcode Interpreter} service state.
+   * @param event - the {@linkcode ToEventsR2} event to change the current {@linkcode Interpreter} service state.
    */
   #changeEvent = (event: ToEventsR2<E, A>) => {
     this.#performStates({ event });
@@ -2135,8 +2132,6 @@ export class Interpreter<
     );
   };
 
-  toInitials = (name: InitialConfig) => {};
-
   toEmitter = (emitter: string) => {
     const emitters = this.#machine.emitters;
 
@@ -2148,33 +2143,33 @@ export class Interpreter<
 
   protected interpretChild = interpret;
 
-  /**
-   * Subscribes a child machine to the current machine.
-   *
-   * @param id - The unique identifier for the child machine.
-   * @param {@linkcode ChildS2} - The child machine configuration to subscribe.
-   * @returns a {@linkcode SubscriberClass} result of the child machine subscription.
-   *
-   */
-  addChild = <T extends AnyMachine = AnyMachine>(
-    id: string,
-    { initials: _initials, ...rest }: ChildS2<E, P, Pc, Tc, T>,
-  ) => {
-    const reduced = reduceFnMap(
-      this.#machine.eventsMap,
-      this.#machine.promiseesMap,
-      _initials,
-    );
+  // /**
+  //  * Subscribes a child machine to the current machine.
+  //  *
+  //  * @param id - The unique identifier for the child machine.
+  //  * @param {@linkcode ChildS2} - The child machine configuration to subscribe.
+  //  * @returns a {@linkcode SubscriberClass} result of the child machine subscription.
+  //  *
+  //  */
+  // addChild = <T extends AnyMachine = AnyMachine>(
+  //   id: string,
+  //   { initials: _initials, ...rest }: ChildS2<E, P, Pc, Tc, T>,
+  // ) => {
+  //   const reduced = reduceFnMap(
+  //     this.#machine.eventsMap,
+  //     this.#machine.actorsMap,
+  //     _initials,
+  //   );
 
-    const initials = reduced(this.#cloneState);
+  //   const initials = reduced(this.#cloneState);
 
-    const child = _unknown<ChildS<E, P, Pc, T>>({
-      initials,
-      ...rest,
-    });
+  //   const child = _unknown<ChildS<E, P, Pc, T>>({
+  //     initials,
+  //     ...rest,
+  //   });
 
-    return this.#reduceChild(child, id);
-  };
+  //   return this.#reduceChild(child, id);
+  // };
 
   /**
    * Sends an event to a specific child service by its ID.
@@ -2285,8 +2280,6 @@ export class Interpreter<
 
 export const TIME_TO_RINIT_SELF_COUNTER = DEFAULT_MIN_ACTIVITY_TIME * 2;
 
-export type AnyInterpreter2 = Interpreter<any, any, any, any, any, any>;
-
 /**
  * Retrieves the {@linkcode Interpreter} service from the given {@linkcode AnyMachine} machine.
  *
@@ -2308,16 +2301,6 @@ export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   MachineOptionsFrom<M>
 >;
 
-const _interpret: any = (machine: any, args: any) => {
-  const { context, pContext, mode, exact } = args ?? {};
-  const out = new (Interpreter as any)(machine, mode, exact);
-
-  out._ppC(pContext ?? {});
-  out._provideContext(context ?? {});
-
-  return out as any;
-};
-
 /**
  * Creates an {@linkcode Interpreter} service from the given {@linkcode MachineConfig} machine.
  *
@@ -2327,4 +2310,8 @@ const _interpret: any = (machine: any, args: any) => {
  *
  * @see {@linkcode MachineConfig}
  */
-export const interpret: Interpreter_F = _interpret;
+export const interpret: Interpreter_F = (machine, args) => {
+  const { mode, exact } = args ?? {};
+  const out = new Interpreter(machine, mode, exact);
+  return out as any;
+};

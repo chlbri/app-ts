@@ -85,7 +85,11 @@ export type InterpretArgs<M extends AnyMachine> =
     : [machine: M, config: InterpreterOptions<M>];
 
 export type Interpreter_F = <M extends AnyMachine>(
-  ...args: InterpretArgs<M>
+  machine: M,
+  args?: {
+    mode?: Mode;
+    exact?: boolean;
+  },
 ) => InterpreterFrom<M>;
 
 export type ToAction_F<

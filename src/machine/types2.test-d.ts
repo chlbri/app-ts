@@ -9,7 +9,14 @@ import type {
 
 type TT2 = keyof FnMapFrom<typeof machine2>;
 expectTypeOf<TT2>().toEqualTypeOf<
-  'NEXT' | 'FINISH' | 'FETCH' | 'WRITE' | 'else' | 'machine1::on::NEXT'
+  | 'NEXT'
+  | 'FINISH'
+  | 'FETCH'
+  | 'WRITE'
+  | 'else'
+  | 'machine1::on::NEXT'
+  | 'fetch::then'
+  | 'fetch::catch'
 >;
 
 type GEFC2 = GetEventsFromMachine<typeof machine2>;

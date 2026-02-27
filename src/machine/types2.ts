@@ -490,11 +490,7 @@ export type GetChildrenSrcFromFlat<
 > = {
   [key in G['src']]: {
     eventsMap: NotUndefined<A['children']>[key];
-  } & (Extract<G, { src: key }>['contexts'] extends infer C
-    ? C extends never
-      ? EmptyObject
-      : { contexts: C }
-    : never);
+  };
 };
 
 /**

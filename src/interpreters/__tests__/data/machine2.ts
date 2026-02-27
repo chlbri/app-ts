@@ -1,11 +1,10 @@
+import { interpret } from '#interpreters';
 import { notU, typings } from '#utils';
 import { createConfig } from 'src/machine/functions/create2';
 import { createMachine } from 'src/machine/machine2';
 import { DELAY } from './constants';
-import type { Simplify } from 'src/types/primitives.test-d';
-
-// TODO : Clean errors
-
+import { fakeDB } from './fakeDB';
+import { machine1 } from './machine1';
 // #region machine2
 
 export const config2 = createConfig({
@@ -99,7 +98,7 @@ export const machine2 = createMachine(
   {
     actors: {
       id: 'machine1',
-      src: 'machine1',
+      src: 'machine11',
       contexts: {},
       on: {
         NEXT: '/working',
@@ -124,7 +123,7 @@ export const machine2 = createMachine(
     },
     actorsMap: {
       children: {
-        machine1: {
+        machine11: {
           NEXT: 'boolean',
         },
       },
@@ -136,59 +135,49 @@ export const machine2 = createMachine(
       },
     },
   }),
-);
-
-// .provideOptions(
-//   ({ isNotValue, isValue, createChild, assign, voidAction }) => ({
-//     actions: {
-//       inc: assign(
-//         'context.iterator',
-//         ({ context: { iterator } }) => iterator + 1,
-//       ),
-//       inc2: assign(
-//         'context.iterator',
-//         ({ context: { iterator } }) => iterator + 4,
-//       ),
-//       sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
-//       askUsertoInput: voidAction(() => console.log('Input, please !!')),
-//       write: assign('context.input', {
-//         WRITE: ({ payload: { value } }) => value,
-//       }),
-//       insertData: assign('context.data', {
-//         'fetch::then': ({ payload, context: { data } }) => {
-//           data.push(...payload);
-//           return data;
-//         },
-//       }),
-//     },
-//     predicates: {
-//       isInputEmpty: isValue('context.input', ''),
-//       isInputNotEmpty: isNotValue('context.input', ''),
-//     },
-//     promises: {
-//       fetch: async ({ context: { input } }) => {
-//         return fakeDB.filter(item => item.name.includes(input));
-//       },
-//     },
-//     delays: {
-//       DELAY,
-//       DELAY2: 2 * DELAY,
-//     },
-//     machines: {
-//       machine1: createChild(
-//         machine1,
-//         {
-//           pContext: {},
-//           context: { iterator: 0 },
-//         },
-//         {
-//           events: EVENTS_FULL,
-//           contexts: { iterator: 'iterator' },
-//         },
-//       ),
-//     },
-//   }),
-// );
+).provideOptions(({ isNotValue, isValue, assign, voidAction }) => ({
+  actions: {
+    inc: assign(
+      'context.iterator',
+      ({ context }) => notU(context?.iterator) + 1,
+    ),
+    inc2: assign(
+      'context.iterator',
+      ({ context }) => notU(context?.iterator) + 4,
+    ),
+    sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
+    askUsertoInput: voidAction(() => console.log('Input, please !!')),
+    write: assign('context.input', {
+      WRITE: ({ payload: { value } }) => value,
+    }),
+    insertData: assign('context.data', {
+      'fetch::then': ({ payload, context }) => {
+        context?.data?.push(...payload);
+        return context?.data;
+      },
+    }),
+  },
+  predicates: {
+    isInputEmpty: isValue('context.input', ''),
+    isInputNotEmpty: isNotValue('context.input', ''),
+  },
+  actors: {
+    promises: {
+      fetch: async ({ context }) => {
+        return fakeDB
+          .filter(item => item.name.includes(context?.input))
+          .map(item => item.name);
+      },
+    },
+    children: {
+      machine11: interpret(machine1, {}),
+    },
+  },
+  delays: {
+    DELAY,
+    DELAY2: 2 * DELAY,
+  },
+}));
 
 const _config2 = createConfig({ ...config2, entry: 'debounce' });
 
@@ -209,10 +198,12 @@ export const _machine2 = createMachine(
       input: 'string',
       data: ['string'],
     },
-    promiseesMap: {
-      fetch: {
-        then: ['string'],
-        catch: 'primitive',
+    actorsMap: {
+      promisees: {
+        fetch: {
+          then: ['string'],
+          catch: 'primitive',
+        },
       },
     },
   }),
@@ -234,9 +225,9 @@ export const _machine2 = createMachine(
         WRITE: ({ payload: { value } }) => value,
       }),
       insertData: assign('context.data', {
-        'fetch::then': ({ payload, context: { data } }) => {
-          data.push(...payload);
-          return data;
+        'fetch::then': ({ payload, context }) => {
+          context?.data?.push(...payload);
+          return context?.data;
         },
       }),
       debounce: _debounce(
@@ -251,10 +242,14 @@ export const _machine2 = createMachine(
       isInputEmpty: isValue('context.input', ''),
       isInputNotEmpty: isNotValue('context.input', ''),
     },
-    promises: {
-      // fetch: async ({ context: { input } }) => {
-      //   return fakeDB.filter(item => item.name.includes(input));
-      // },
+    actors: {
+      promises: {
+        fetch: async ({ context }) => {
+          return fakeDB
+            .filter(item => item.name.includes(context?.input))
+            .map(item => item.name);
+        },
+      },
     },
     delays: {
       DELAY,
