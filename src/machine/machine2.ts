@@ -62,7 +62,7 @@ import type {
 import type {
   Config,
   ConfigDef,
-  GetActorsSrcKeyFromConfig,
+  GetActorKeysFromConfig,
   GetEventsFromConfig,
   MachineOptions,
   NoExtraKeysConfig,
@@ -90,7 +90,7 @@ class Machine<
   const Pc = any,
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  A extends ActorsConfigMap = GetActorsSrcKeyFromConfig<C>,
+  A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
 > implements AnyMachine<E, A, Pc, Tc> {
   /**
@@ -1188,7 +1188,7 @@ export type CreateMachine_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  A extends ActorsConfigMap = GetActorsSrcKeyFromConfig<C>,
+  A extends GetActorKeysFromConfig<C> = GetActorKeysFromConfig<C>,
   Mo extends MachineOptions<C, EventM, A, Pc, Tc> = MachineOptions<
     C,
     EventM,

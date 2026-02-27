@@ -2,6 +2,7 @@ import type {
   AnyArray,
   Keys,
   NOmit,
+  NotUndefined,
   Ru,
   SoA,
   SoRa,
@@ -85,9 +86,8 @@ type _PrimitiveObject = __PrimitiveObject | Maybe | ArrayCustom;
  * @remark
  */
 type PrimitiveObject = _PrimitiveObject | SoRa<_PrimitiveObject>;
-type ActorsMap = Record<
-  'children' | 'promises' | 'emitters',
-  PrimitiveObject
+type ActorsMap = Partial<
+  Record<'children' | 'promisees' | 'emitters', PrimitiveObject>
 >;
 
 export type Args<
@@ -197,7 +197,17 @@ export type TransformArgs<T extends Partial<Args>> = {
   eventsMap: TransformPrimitiveObject<T['eventsMap']>;
   pContext: TransformPrimitiveObject<T['pContext']>;
   context: TransformPrimitiveObject<T['context']>;
-  actorsMap: __TransformPrimitiveObject<T['actorsMap']>;
+  actorsMap: {
+    children: TransformPrimitiveObject<
+      NotUndefined<T['actorsMap']>['children']
+    >;
+    promisees: TransformPrimitiveObject<
+      NotUndefined<T['actorsMap']>['promisees']
+    >;
+    emitters: TransformPrimitiveObject<
+      NotUndefined<T['actorsMap']>['emitters']
+    >;
+  };
 };
 
 const DEFAULT_ARGS = {
@@ -206,13 +216,20 @@ const DEFAULT_ARGS = {
   context: 'primitive',
   actorsMap: {
     children: 'primitive',
-    promises: 'primitive',
+    promisees: 'primitive',
     emitters: 'primitive',
   },
 } satisfies Args;
 
 const defaultArgs = <T extends Partial<Args>>(values: T) => {
-  const args = { ...DEFAULT_ARGS, ...values } as Args;
+  const args = {
+    ...DEFAULT_ARGS,
+    ...values,
+    actorsMap: {
+      ...DEFAULT_ARGS.actorsMap,
+      ...values.actorsMap,
+    },
+  } as Args;
   return args;
 };
 

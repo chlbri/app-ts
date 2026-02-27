@@ -2,6 +2,7 @@ import { notU, typings } from '#utils';
 import { createConfig } from 'src/machine/functions/create2';
 import { createMachine } from 'src/machine/machine2';
 import { DELAY } from './constants';
+import type { Simplify } from 'src/types/primitives.test-d';
 
 // TODO : Clean errors
 
@@ -100,6 +101,9 @@ export const machine2 = createMachine(
       id: 'machine1',
       src: 'machine1',
       contexts: {},
+      on: {
+        NEXT: '/working',
+      },
     },
     ...config2,
   },
@@ -117,6 +121,19 @@ export const machine2 = createMachine(
       iterator: 'number',
       input: 'string',
       data: ['string'],
+    },
+    actorsMap: {
+      children: {
+        machine1: {
+          NEXT: 'boolean',
+        },
+      },
+      promisees: {
+        fetch: {
+          then: 'primitive',
+          catch: 'primitive',
+        },
+      },
     },
   }),
 );

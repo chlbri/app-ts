@@ -5,12 +5,8 @@ import type {
   Ru,
 } from '#bemedev/globals/types';
 import type { EmitterDef } from '#emitters';
-import type {
-  ActorsConfigMap,
-  EventsMap,
-  PromiseeDef,
-  PromiseeMap,
-} from '#events';
+import type { ActorsConfigMap, EventsMap, PromiseeDef } from '#events';
+import type { AnyInterpreter } from '#interpreters';
 import type {
   ActivityConfig,
   BaseConfig,
@@ -36,19 +32,18 @@ import type { Decompose, EmptyObject } from '@bemedev/decompose';
 import type { Observable } from 'rxjs';
 import type { Action, FromActionConfig } from 'src/actions/types2';
 import type { Delay } from 'src/delays/types2';
+import type { EmittersMap } from 'src/emitters/types2';
 import type { PredicateS } from 'src/guards/types2';
 import type { PromiseFunction } from 'src/promises/types2';
-import type { FnMap, Identitfy } from 'src/types/primitives2';
+import type { FnMap, Identify } from 'src/types/primitives2';
 import type {
   Describer,
   FnMap2,
   KeyU,
   RecordS,
   ReduceArray,
-} from '~types';
+} from 'src/types/primitives2';
 import type { AnyMachine } from './machine.types2';
-import type { AnyInterpreter } from '#interpreters';
-import type { EmittersMap } from 'src/emitters/types2';
 
 /**
  * Type representing the main JSON config.
@@ -481,10 +476,12 @@ export type GetEmittersSrcFromConfig<C extends Config> =
 export type GetEmittersSrcFromMachine<T extends KeyU<'config'>> =
   GetEmittersSrcFromConfig<ConfigFrom<T>>;
 
-export type GetChildrenSrcKeyFromFlat<Flat extends FlatMapN> = Record<
-  _GetChildKeysFromFlat<Flat>['src'],
-  ChildConfigDef
->;
+export type GetChildrenSrcKeyFromFlat<
+  Flat extends FlatMapN,
+  G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
+> = {
+  [key in G['src']]: Record<Extract<G, { src: key }>['on'], any>;
+};
 
 export type GetChildrenSrcFromFlat<
   Flat extends FlatMapN,
@@ -555,16 +552,16 @@ export type GetActorsFromMachine<
 > = GetActorsFromConfig<ConfigFrom<T>, E, A, Pc, Tc>;
 
 export type GetActorsSrcKeyFromFlat<Flat extends FlatMapN> = {
-  children?: GetChildrenSrcKeyFromFlat<Flat>;
-  emitters?: GetEmittersSrcKeyFromFlat<Flat>;
-  promisees?: GetPromiseesSrcKeyFromFlat<Flat>;
+  children: GetChildrenSrcKeyFromFlat<Flat>;
+  emitters: GetEmittersSrcKeyFromFlat<Flat>;
+  promisees: GetPromiseesSrcKeyFromFlat<Flat>;
 };
 
-export type GetActorsSrcKeyFromConfig<C extends Config> =
+export type GetActorKeysFromConfig<C extends Config> =
   GetActorsSrcKeyFromFlat<FlatMapN<C>>;
 
-export type GetActorsSrcKeyFromMachine<T extends KeyU<'config'>> =
-  GetActorsSrcKeyFromConfig<ConfigFrom<T>>;
+export type GetActorKeysFromMachine<T extends KeyU<'config'>> =
+  GetActorKeysFromConfig<ConfigFrom<T>>;
 
 /**
  * Second version decomposition of a type.
@@ -586,7 +583,7 @@ export type Child<
   src: AnyMachine;
   description?: string;
   id: string;
-  on: Identitfy<RecordS<Transition<E, A, Pc, Tc>>>[];
+  on: Identify<RecordS<Transition<E, A, Pc, Tc>>>[];
   contexts: string[];
 };
 
@@ -596,11 +593,11 @@ export type ChildrenMap = RecordS<AnyMachine>;
  * Not used in the codebase, but provided for completeness.
  */
 export type FnMapFrom<
-  T extends KeyU<'eventsMap' | 'pContext' | 'context' | 'promiseesMap'>,
+  T extends KeyU<'eventsMap' | 'pContext' | 'context' | 'actorsMap'>,
   R = any,
 > = FnMap2<
   Extract<EventsMapFrom<T>, EventsMap>,
-  Extract<PromiseesMapFrom<T>, PromiseeDef>,
+  Extract<ActorsMapFrom<T>, ActorsConfigMap>,
   Extract<ContextFrom<T>, PrimitiveObject>,
   R
 >;
@@ -750,9 +747,9 @@ export type StatePextendedFrom<T extends KeyU<'__statePextended'>> =
  *
  * @see {@linkcode ActorsConfigMap} for the structure of the promisees map.
  */
-export type PromiseesMapFrom<T extends KeyU<'promiseesMap'>> = Extract<
-  T['promiseesMap'],
-  PromiseeMap
+export type ActorsMapFrom<T extends KeyU<'actorsMap'>> = Extract<
+  T['actorsMap'],
+  ActorsConfigMap
 >;
 
 /**
@@ -961,9 +958,13 @@ export type SimpleMachineOptions2 = Partial<
     >
 >;
 
-export type ExtractContextKeysFromChild<
+export type ExtractContextsKeyFromChild<
   T extends { contexts: Record<string, string> },
 > = keyof T['contexts'];
+
+export type ExtractEventsKeyFromChild<
+  T extends { on: Record<string, any> },
+> = keyof T['on'];
 
 export type Initial<
   E extends EventsMap = EventsMap,

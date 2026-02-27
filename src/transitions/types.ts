@@ -1,9 +1,4 @@
 import type {
-  Action,
-  ActionConfig,
-  FromActionConfig,
-} from 'src/actions/types2';
-import type {
   AnyArray,
   IndexesOfArray,
   NotUndefined,
@@ -12,6 +7,19 @@ import type {
   SoA,
 } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventsMap, PromiseeMap } from '#events';
+import type { Observable } from 'rxjs';
+import type {
+  Action,
+  ActionConfig,
+  FromActionConfig,
+} from 'src/actions/types2';
+import type {
+  ActorConfig,
+  ChildConfig,
+  EmitterConfig,
+  ExtractSrcFromActor,
+  PromiseeConfig,
+} from 'src/actor';
 import type { FromGuard, GuardConfig, Predicate } from 'src/guards/types2';
 import type {
   ExtractActionsFromFinally,
@@ -21,26 +29,15 @@ import type {
   GetEventKeysFromPromisee,
   Promisee,
 } from 'src/promises/types2';
-import type { Observable } from 'rxjs';
-import type {
-  ActorConfig,
-  EmitterConfig,
-  ChildConfig,
-  PromiseeConfig,
-  ExtractSrcFromActor,
-} from 'src/actor';
 
+import type { Emitter } from 'src/emitters/types2';
+import type { Child } from 'src/machine/types2';
 import type {
   Identify,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
-} from '~types';
-import type { Emitter } from 'src/emitters/types2';
-import type {
-  Child,
-  ExtractContextKeysFromChild,
-} from 'src/machine/types2';
+} from 'src/types/primitives2';
 
 /**
  * Represents the simpliest configuration map for a transition.
@@ -395,18 +392,20 @@ export type ExtractEmitterSrcKeyFromTransitions<
   T extends TransitionsConfig,
 > = ExtractSrcKeyFromTransitions<T, { next: any }>;
 
+export type ExtractChildKeysFromActors<
+  T extends NotUndefined<TransitionsConfig['actors']>,
+  G extends Extract<ReduceArray<T>, { on: any } | { contexts: any }> =
+    Extract<ReduceArray<T>, { on: any } | { contexts: any }>,
+> = G extends any
+  ? {
+      src: G['src'];
+      contexts: keyof NotUndefined<G['contexts']>;
+      on: keyof NotUndefined<G['on']>;
+    }
+  : never;
+
 export type ExtractChildKeysFromTransitions<T extends TransitionsConfig> =
-  {
-    src: ExtractSrcKeyFromTransitions<T, { on: any } | { contexts: any }>;
-    contexts: ExtractContextKeysFromChild<
-      NotUndefined<
-        Extract<
-          ReduceArray<T['actors']>,
-          { contexts: Record<string, string> }
-        >
-      >
-    >;
-  };
+  ExtractChildKeysFromActors<NotUndefined<T['actors']>>;
 
 /**
  * Represents a transition in a state machine with full defined functions.

@@ -72,11 +72,9 @@ export const isDescriber = (arg: any): arg is Describer => {
   return out;
 };
 
-
 export const fromDescriber = (value: string | Describer) => {
   return isDescriber(value) ? value.name : value;
 };
-
 
 /**
  * Can be used after
@@ -231,7 +229,7 @@ export type ChangeProperties<
  *
  * @template T - The object type to remap.
  */
-export type Identitfy<T> = T extends object ? T & { __id: string } : T;
+export type Identify<T> = T extends object ? T & { __id: string } : T;
 
 /**
  * A helper type to reduce an array type to its element type.
@@ -245,6 +243,18 @@ export type ReduceArray<T> = T extends readonly (infer U1)[]
   : T extends (infer U2)[]
     ? U2
     : T;
+
+/**
+ * The inverse of {@linkcode ReduceArray}.
+ * Takes a type and wraps it in a readonly array, or returns it as-is if already an array.
+ *
+ * @template T - The type to wrap.
+ */
+export type ToArray<T> = T extends readonly unknown[]
+  ? T
+  : T extends unknown[]
+    ? T
+    : readonly T[];
 
 /**
  * An helper to write common function signatures.
@@ -372,7 +382,7 @@ export type FnMapR<
  *
  * @see {@linkcode Record} for more details.
  */
-export type RecordS<T> = Record<string, T>;
+export type RecordS<T = unknown> = Record<string, T>;
 
 /**
  * A type that represents all values of type {@linkcode T},
@@ -579,3 +589,24 @@ export type NoExtraKeysFor<
 > = NoExtraKeys<T, Schema>;
 
 // #endregion NoExtraKeys
+
+/**
+ * Filters an array type to only include elements that match a condition type.
+ *
+ * @template Arr - The array type to filter.
+ * @template Condition - The condition type to filter by.
+ *
+ * @example
+ * ```typescript
+ * type Numbers = FilterArray<[1, 'two', 3, 'four', 5], number>;
+ * // Result: [1, 3, 5]
+ * ```
+ */
+export type FilterArray<
+  Arr extends readonly unknown[],
+  Condition,
+> = Arr extends readonly [infer Head, ...infer Tail]
+  ? Head extends Condition
+    ? [Head, ...FilterArray<Tail, Condition>]
+    : FilterArray<Tail, Condition>
+  : [];

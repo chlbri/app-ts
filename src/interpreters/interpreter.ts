@@ -129,7 +129,7 @@ import {
 import type { AnyMachine } from 'src/machine/machine.types2';
 import type { Machine } from 'src/machine/machine2';
 import type {
-  GetActorsSrcKeyFromConfig,
+  GetActorKeysFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
 } from 'src/machine/types2';
@@ -165,7 +165,7 @@ export class Interpreter<
   const Pc = any,
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  A extends ActorsConfigMap = GetActorsSrcKeyFromConfig<C>,
+  A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
 > implements AnyInterpreter<E, A, Pc, Tc> {
   /**

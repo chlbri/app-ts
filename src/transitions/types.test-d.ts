@@ -1,5 +1,6 @@
 import type {
   DelayedTransitions,
+  ExtractChildKeysFromTransitions,
   GetEventKeysFromDelayed,
   GetEventKeysFromTransitions,
   TransitionsConfig,
@@ -112,3 +113,41 @@ expectTypeOf<TTest3>().toEqualTypeOf<
   | 'actors.[3].on.EVENT34.[1]'
 >();
 // #endregion
+
+const transition1 = {
+  actors: [
+    {
+      id: 'machine111',
+      src: 'machine11',
+      contexts: {},
+      on: {
+        NEXT: '/working',
+        PREVIOUS: '/idle',
+      },
+    },
+    {
+      id: 'machine122',
+      src: 'machine12',
+      contexts: {},
+      on: {
+        NEXT2: '/working',
+        PREVIOUS2: '/idle',
+      },
+    },
+  ],
+} as const satisfies TransitionsConfig;
+
+type TTS = ExtractChildKeysFromTransitions<typeof transition1>;
+
+expectTypeOf<TTS>().toEqualTypeOf<
+  | {
+      src: 'machine11';
+      contexts: never;
+      on: 'NEXT' | 'PREVIOUS';
+    }
+  | {
+      src: 'machine12';
+      contexts: never;
+      on: 'NEXT2' | 'PREVIOUS2';
+    }
+>();
