@@ -130,7 +130,7 @@ export const machine2 = createMachine(
       },
       promisees: {
         fetch: {
-          then: 'primitive',
+          then: ['string'],
           catch: 'primitive',
         },
       },
