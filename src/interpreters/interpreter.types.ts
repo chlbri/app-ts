@@ -28,7 +28,7 @@ import type {
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
-import type { Observable } from 'rxjs';
+import type { Pausable } from '@bemedev/rx-pausable';
 import type {
   Action,
   Action2,
@@ -310,10 +310,12 @@ export interface AnyInterpreter<
     src: string,
   ) => PromiseFunction<E, A, Pc, Tc> | undefined;
   toDelayFn: (delay: string) => Delay<E, A, Pc, Tc> | undefined;
-  toChild: (machine: string) => AnyMachine | undefined;
-  toEmitter: (emitter: string) => Observable<any> | undefined;
+  toChild: (machine: string) => AnyInterpreter | undefined;
+  toEmitter: (emitter: string) => Pausable | undefined;
   id?: string;
   from?: string;
+
+  dispose: () => void;
 }
 
 export type CreateInterval2_F = (

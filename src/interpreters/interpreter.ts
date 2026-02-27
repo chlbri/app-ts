@@ -1,5 +1,4 @@
 import { reduceAction, toAction, type ActionConfig } from '#actions';
-import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import _any from '#bemedev/features/common/castings/any';
 import isPrimitive from '#bemedev/features/common/castings/primitive/is';
 import {
@@ -25,12 +24,8 @@ import {
 } from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
 import {
-  assignByKey,
-  ChildS,
   getByKey,
   getTags,
-  mergeByKey,
-  reduceEvents,
   toChildSrc,
   type Config,
   type ConfigFrom,
@@ -41,7 +36,6 @@ import {
   type GetEventsFromConfig,
   type MachineOptionsFrom,
   type PrivateContextFrom,
-  type PromiseesMapFrom,
   type ScheduledData,
 } from '#machines';
 import { toPromiseSrc } from '#promises';
@@ -63,7 +57,7 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '#transitions';
-import { IS_TEST, isStringEmpty, reduceFnMap, replaceAll } from '#utils';
+import { IS_TEST, isStringEmpty, replaceAll } from '#utils';
 import {
   anyPromises,
   asyncfy,
@@ -116,17 +110,13 @@ import type {
   AllowedNames,
   Fn,
   PrimitiveObject,
-  SingleOrArray,
 } from '#bemedev/globals/types';
-import {
-  Emitter3,
-  toEmitterSrc,
-  type Emitter2,
-  type EmitterConfig,
-} from '#emitters';
+import { toEmitterSrc } from '#emitters';
+import type { Pausable } from '@bemedev/rx-pausable';
 import type { AnyMachine } from 'src/machine/machine.types2';
 import type { Machine } from 'src/machine/machine2';
 import type {
+  ActorsMapFrom,
   GetActorKeysFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
@@ -254,17 +244,16 @@ export class Interpreter<
   /**
    * All {@linkcode AnyInterpreter} service subscribers of this {@linkcode Interpreter} service.
    */
-  #childrenServices: AnyInterpreter[] = [];
+  #childrenServices: {
+    id: string;
+    from: string;
+    service: AnyInterpreter;
+  }[] = [];
 
   #collectedEmitters: {
     from: string;
     id: string;
-    instance: {
-      start: () => void;
-      stop: () => void;
-      resume: () => void;
-      pause: () => void;
-    };
+    emitter: Pausable;
   }[] = [];
 
   /**
@@ -287,10 +276,6 @@ export class Interpreter<
    * Allias of {@linkcode getChildAt} function.
    */
   at = this.getChildAt;
-
-  #toEmitter = (emitter: string) => {
-    return toEmitterSrc(emitter, this.#machine.options.actors?.emitters);
-  };
 
   /**
    * The id of the current {@linkcode Interpreter} service.
@@ -670,7 +655,9 @@ export class Interpreter<
     this.#startEmitters();
     this.#flush();
     this.#startInitialEntries();
-    this.#currentServices.forEach(this.#start);
+    this.#currentServices.forEach(({ service }) => {
+      service.start();
+    });
     // this.#performEmitters();
     this.#throwing();
 
@@ -706,10 +693,16 @@ export class Interpreter<
       .filter(({ from }) => {
         return !from || !this.#isInsideValue(from);
       })
-      .forEach(this.#pause);
+      .forEach(({ service }) => {
+        service.pause();
+      });
 
-    this.#currentServices.forEach(this.#resume);
-    this.#currentServices.forEach(this.#start);
+    this.#currentServices.forEach(({ service }) => {
+      service.resume();
+    });
+    this.#currentServices.forEach(({ service }) => {
+      service.start();
+    });
     this.#startEmitters();
     this.#resumeEmitters();
 
@@ -1350,6 +1343,7 @@ export class Interpreter<
     entriesFlat.forEach(([from, node]) => {
       const _children = toArray
         .typed(node.actors)
+        .filter(actor => !('next' in actor))
         .filter(actor => 'on' in actor || 'contexts' in actor);
 
       const len = _children.length;
@@ -1362,27 +1356,24 @@ export class Interpreter<
       }
     });
 
-    entries
+    type Check = (value: any) => value is {
+      id: string;
+      service: AnyInterpreter;
+      from: string;
+    };
+
+    const out = entries
       .map(([from, ...children]) => {
         return children.map(child => ({ ...child, from }));
       })
       .flat()
-      .map(({ id, src: machine, from }) => ({
-        id,
-        machine: this.toChild(machine),
-        from,
-        /* TODO : Add toData to transform data */
+      .map(({ src, ...rest }) => ({
+        service: this.toChild(src),
+        ...rest,
       }))
-      .filter(
-        (({ machine }) => !!machine) as (value: any) => value is {
-          id: string;
-          machine: AnyMachine;
-          from: string;
-        },
-      )
-      .forEach(({ id, machine, from }) => {
-        this.#reduceChild<any>(machine, id, from);
-      });
+      .filter((({ service }) => !!service) as Check);
+
+    this.#childrenServices.push(...out);
   };
 
   get #currentServices() {
@@ -1395,35 +1386,38 @@ export class Interpreter<
     const entriesFlat = Object.entries(this.#machine.flat);
     const entries: [
       from: string,
-      ...machines: { id: string; emitter: EmitterConfig }[],
+      ...machines: { id: string; src: string }[],
     ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
-      const _emitters = node.emitters;
-      if (_emitters) {
-        const emitters = Object.entries(_emitters).map(([id, emitter]) => {
-          return { id, emitter };
-        });
+      const _emitters = toArray
+        .typed(node.actors)
+        .filter(actor => 'next' in actor);
+
+      const len = _emitters.length;
+      if (len > 0) {
+        const emitters = _emitters.map(({ id, src }) => ({ id, src }));
         entries.push([from, ...emitters]);
       }
     });
 
-    const entries2 = entries
+    type Check = (value: any) => value is {
+      id: string;
+      emitter: Pausable;
+      from: string;
+    };
+
+    const out = entries
       .map(([from, ...emitters]) => {
         return emitters.map(emitter => ({ ...emitter, from }));
       })
       .flat()
-      .map(({ id, emitter, from }) => {
-        return { id, emitter: this.toEmitter(emitter), from };
+      .map(({ id, src, from }) => {
+        return { id, emitter: this.toEmitter(src), from };
       })
-      .filter(
-        (({ emitter }) => !!emitter) as (
-          value: any,
-        ) => value is Emitter2<E, P, Pc, Tc>,
-      )
-      .map(this.#reduceEmitter);
+      .filter((({ emitter }) => !!emitter) as Check);
 
-    return this.#collectedEmitters.push(...entries2);
+    return this.#collectedEmitters.push(...out);
   }
 
   get #currentEmitters() {
@@ -1454,7 +1448,7 @@ export class Interpreter<
   #startEmitters = () => {
     this.#currentEmitters
       .filter(({ id }) => !this.#startedEmitterIDs.has(id))
-      .forEach(({ instance, id }) => {
+      .forEach(({ emitter: instance, id }) => {
         instance.start();
         this.#startedEmitterIDs.add(id);
       });
@@ -1463,7 +1457,7 @@ export class Interpreter<
   #resumeEmitters = () => {
     this.#currentEmitters
       .filter(({ id }) => !this.#startedEmitterIDs.has(id))
-      .forEach(({ instance, id }) => {
+      .forEach(({ emitter: instance, id }) => {
         instance.resume();
         this.#startedEmitterIDs.add(id);
       });
@@ -1474,18 +1468,24 @@ export class Interpreter<
   #stopEmitters = () => {
     this.#collectedEmitters
       // .filter(({ id }) => this.#startedEmitterIDs.has(id))
-      .forEach(({ instance, id }) => {
+      .forEach(({ emitter: instance, id }) => {
         instance.stop();
         this.#startedEmitterIDs.delete(id);
       });
   };
 
-  #pauseEmitters = (filter: (value: Emitter3) => boolean = () => true) => {
+  #pauseEmitters = (
+    filter: (value: {
+      from: string;
+      id: string;
+      emitter: Pausable;
+    }) => boolean = () => true,
+  ) => {
     this.#collectedEmitters
       .filter(({ id }) => this.#startedEmitterIDs.has(id))
       .filter(filter)
-      .forEach(({ instance, id }) => {
-        instance.pause();
+      .forEach(({ emitter, id }) => {
+        emitter.pause();
         this.#startedEmitterIDs.delete(id);
       });
   };
@@ -1637,7 +1637,9 @@ export class Interpreter<
     this.#abortablePromisees.forEach(({ abort }) => abort());
     this.#makeBusy();
     this.#subscribers.forEach(this.#close);
-    this.#childrenServices.forEach(this.#pause);
+    this.#childrenServices.forEach(({ service }) => {
+      service.pause();
+    });
     this.#pauseEmitters();
 
     this.#timeoutActions.forEach(this.#pause);
@@ -1650,7 +1652,9 @@ export class Interpreter<
       this.#makeBusy();
       this.#subscribers.forEach(this.#open);
       this.#timeoutActions.forEach(this.#resume);
-      this.#currentServices.forEach(this.#resume);
+      this.#currentServices.forEach(({ service }) => {
+        service.resume();
+      });
       this.#resumeEmitters();
       this.#makeWork();
     }
@@ -1660,7 +1664,9 @@ export class Interpreter<
     this.pause();
     this.#makeBusy();
     this.#subscribers.forEach(this.#unsubscribe);
-    this.#childrenServices.forEach(this.#stop);
+    this.#childrenServices.forEach(({ service }) => {
+      service.stop();
+    });
     this._cachedIntervals.forEach(this.#dispose);
     this.#timeoutActions.forEach(this.#stop);
     this.#stopEmitters();
@@ -2143,34 +2149,6 @@ export class Interpreter<
 
   protected interpretChild = interpret;
 
-  // /**
-  //  * Subscribes a child machine to the current machine.
-  //  *
-  //  * @param id - The unique identifier for the child machine.
-  //  * @param {@linkcode ChildS2} - The child machine configuration to subscribe.
-  //  * @returns a {@linkcode SubscriberClass} result of the child machine subscription.
-  //  *
-  //  */
-  // addChild = <T extends AnyMachine = AnyMachine>(
-  //   id: string,
-  //   { initials: _initials, ...rest }: ChildS2<E, P, Pc, Tc, T>,
-  // ) => {
-  //   const reduced = reduceFnMap(
-  //     this.#machine.eventsMap,
-  //     this.#machine.actorsMap,
-  //     _initials,
-  //   );
-
-  //   const initials = reduced(this.#cloneState);
-
-  //   const child = _unknown<ChildS<E, P, Pc, T>>({
-  //     initials,
-  //     ...rest,
-  //   });
-
-  //   return this.#reduceChild(child, id);
-  // };
-
   /**
    * Sends an event to a specific child service by its ID.
    *
@@ -2180,92 +2158,20 @@ export class Interpreter<
    * @see {@linkcode send} for sending events to the current service.
    */
   #sendTo = <T extends EventObject>(to: string, event: T) => {
-    return this.#childrenServices.find(({ id }) => id === to)?.send(event);
-  };
-
-  /**
-   * Performs some computations to reduce a child machine configuration to a service and subscribes to it.
-   *
-   * @param : {@linkcode ChildS} - The child machine configuration to reduce.
-   * @param id - The unique identifier for the child service.
-   * @returns a {@linkcode SubscriberClass} result of the child service subscription.
-   */
-  #reduceChild = <T extends AnyMachine = AnyMachine>(
-    { subscribers, machine, initials }: ChildS<E, P, Pc, T>,
-    id: string,
-    from?: string,
-  ) => {
-    let service = _unknown<InterpreterFrom<T>>(
-      this.#childrenServices.find(f => f.id === id),
-    );
-
-    if (!service) {
-      service = this.interpretChild(machine, initials);
-      service.id = id;
-      service.from = from;
-      this.#childrenServices.push(service);
-    }
-
-    const subscriber = service.subscribe(
-      ({ event }) => {
-        const type = eventToType(event);
-        const _subscribers = toArray.typed(subscribers);
-
-        _subscribers.forEach(({ contexts, events }) => {
-          const type2 = eventToType(service.#event);
-
-          const checkEvents = reduceEvents(_any(events), type, type2);
-
-          const checkContexts = !isDefined(contexts);
-          if (checkEvents) {
-            if (checkContexts) {
-              const pContext = _any(service.#context);
-              this.#mergeContexts({ pContext });
-            } else {
-              type _Contexts = SingleOrArray<
-                string | Record<string, string | string[]>
-              >;
-              const _contexts = _unknown<_Contexts>(contexts);
-              const paths = toArray.typed(_contexts);
-
-              paths.forEach(path => {
-                if (typeof path === 'string') {
-                  assignByKey(this.#pContext, path, service.#context);
-                } else {
-                  const entries = Object.entries(path).map(
-                    ([key, value]) => {
-                      const paths = toArray.typed(value);
-                      return tupleOf(key, paths);
-                    },
-                  );
-
-                  entries.forEach(([pathChild, paths]) => {
-                    paths.forEach(path => {
-                      const pContext = mergeByKey(this.#pContext)(
-                        path,
-                        getByKey(service.#context, pathChild),
-                      );
-
-                      this.#mergeContexts({ pContext });
-                    });
-                  });
-                }
-              });
-            }
-          }
-        });
-      },
-      { id },
-    );
-
-    return subscriber;
+    return this.#childrenServices
+      .filter(({ from, id }) => this.#isInsideValue(from) && id === to)
+      .forEach(({ service }) => {
+        service.send(event);
+      });
   };
 
   // #region Disposable
 
   dispose = () => {
     this.stop();
-    this.#childrenServices.forEach(this.#dispose);
+    this.#childrenServices.forEach(({ service }) => {
+      service.dispose();
+    });
     this.#timeoutActions.forEach(this.#dispose);
   };
 
@@ -2297,7 +2203,7 @@ export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   PrivateContextFrom<M>,
   ContextFrom<M>,
   EventsMapFrom<M>,
-  PromiseesMapFrom<M>,
+  ActorsMapFrom<M>,
   MachineOptionsFrom<M>
 >;
 

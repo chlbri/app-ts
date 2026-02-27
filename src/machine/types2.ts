@@ -28,22 +28,22 @@ import type {
   Transition,
   TransitionsConfig,
 } from '#transitions';
-import type { Decompose, EmptyObject } from '@bemedev/decompose';
+import type { Decompose } from '@bemedev/decompose';
 import type { Observable } from 'rxjs';
 import type { Action, FromActionConfig } from 'src/actions/types2';
 import type { Delay } from 'src/delays/types2';
 import type { EmittersMap } from 'src/emitters/types2';
 import type { PredicateS } from 'src/guards/types2';
 import type { PromiseFunction } from 'src/promises/types2';
-import type { FnMap, Identify } from 'src/types/primitives2';
 import type {
   Describer,
+  FnMap,
   FnMap2,
+  Identify,
   KeyU,
   RecordS,
   ReduceArray,
 } from 'src/types/primitives2';
-import type { AnyMachine } from './machine.types2';
 
 /**
  * Type representing the main JSON config.
@@ -576,14 +576,14 @@ export type Child<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  src: AnyMachine;
+  src: AnyInterpreter;
   description?: string;
   id: string;
   on: Identify<RecordS<Transition<E, A, Pc, Tc>>>[];
   contexts: string[];
 };
 
-export type ChildrenMap = RecordS<AnyMachine>;
+export type ChildrenMap = RecordS<AnyInterpreter>;
 
 /**
  * Not used in the codebase, but provided for completeness.

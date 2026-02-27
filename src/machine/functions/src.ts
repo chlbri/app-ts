@@ -1,10 +1,10 @@
-import type { AnyMachine } from '../machine.types2';
+import type { AnyInterpreter } from '#interpreters';
 import type { ChildrenMap } from '../types2';
 
 export type ToChildSrc_F = (
   child: string,
   children?: ChildrenMap,
-) => AnyMachine | undefined;
+) => AnyInterpreter | undefined;
 
 /**
  * Converts a child configuration to a child machine object.
@@ -18,5 +18,5 @@ export type ToChildSrc_F = (
 export const toChildSrc: ToChildSrc_F = (_child, children) => {
   const child = children?.[_child];
   if (!child) return undefined;
-  return child;
+  return child.renew;
 };

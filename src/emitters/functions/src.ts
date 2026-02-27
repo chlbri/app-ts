@@ -1,10 +1,10 @@
-import type { Observable } from 'rxjs';
 import type { EmittersMap } from '../types2';
+import { createPausable, type Pausable } from '@bemedev/rx-pausable';
 
-export type ToEmitterSrc_F = <R = any>(
+export type ToEmitterSrc_F = (
   emitter: string,
   emitters?: EmittersMap,
-) => Observable<R> | undefined;
+) => Pausable | undefined;
 
 /**
  * Converts a machine configuration to a machine object with an id.
@@ -23,5 +23,5 @@ export type ToEmitterSrc_F = <R = any>(
 export const toEmitterSrc: ToEmitterSrc_F = (_emitter, emitters) => {
   const emitter = emitters?.[_emitter];
   if (!emitter) return undefined;
-  return emitter;
+  return createPausable(emitter);
 };
