@@ -1,5 +1,6 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventsMap } from '#events';
+import type { Config } from 'src/machine/types2';
 import type { FnMap } from 'src/types/primitives2';
 
 /**
@@ -12,15 +13,17 @@ import type { FnMap } from 'src/types/primitives2';
  * @returns : A number or a {@linkcode FnMap} function that returns a number.
  */
 export type Delay<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = number | FnMap<E, A, Pc, Tc, number>;
+> = number | FnMap<C, E, A, Pc, Tc, number>;
 
 /**
  * Delay configuration map.
  * Maps a string key to a {@linkcode Delay} function.
+ * @template : type {@linkcode Config} [C] - The configuration type.
  * @template : type {@linkcode EventsMap} [E] - The events map.
  * @template : type {@linkcode ActorsConfigMap} [A] - The actors config map.
  * @template : [Pc] - The type of the private context.
@@ -28,8 +31,9 @@ export type Delay<
  * @returns : A partial record where each key is a string and each value is a {@linkcode Delay}.
  */
 export type DelayMap<
-  E extends EventsMap,
+  C extends Config = Config,
+  E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<Record<string, Delay<E, A, Pc, Tc>>>;
+> = Partial<Record<string, Delay<C, E, A, Pc, Tc>>>;

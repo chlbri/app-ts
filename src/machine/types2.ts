@@ -345,12 +345,13 @@ export type GetEmitterSrcsKeyFromFlat<
  * @see {@linkcode _GetDelayKeysFromFlat} for extracting delay keys from the flat map.
  */
 export type GetDelaysFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetDelayKeysFromFlat<Flat>, Delay<E, A, Pc, Tc>>;
+> = Record<_GetDelayKeysFromFlat<Flat>, Delay<C, E, A, Pc, Tc>>;
 
 /**
  * Provide a record of all events by key and {@linkcode PrimitiveObject} payload.
@@ -652,7 +653,7 @@ export type MachineOptions<
 > = Partial<{
   actions: Partial<GetActionsFromFlat<C, Flat, E, A, Pc, Tc>>;
   predicates: Partial<GetGuardsFromFlat<C, Flat, E, A, Pc, Tc>>;
-  delays: Partial<GetDelaysFromFlat<Flat, E, A, Pc, Tc>>;
+  delays: Partial<GetDelaysFromFlat<C, Flat, E, A, Pc, Tc>>;
   actors: Partial<GetActorsFromFlat<C, Flat, E, A, Pc, Tc>>;
 }>;
 
@@ -940,7 +941,7 @@ export type SimpleMachineOptions<
 > = Partial<{
   actions: Partial<RecordS<Action<Config, E, A, Pc, Tc>>>;
   predicates: Partial<RecordS<PredicateS<Config, E, A, Pc, Tc>>>;
-  delays: Partial<RecordS<Delay<E, A, Pc, Tc>>>;
+  delays: Partial<RecordS<Delay<Config, E, A, Pc, Tc>>>;
   actors: Partial<{
     children: RecordS<AnyInterpreter>;
     emitters: EmittersMap;

@@ -154,11 +154,12 @@ export type PerformDelay_F<
 > = (delay: FnR<C, E, A, Pc, Tc, number>) => number;
 
 export type PerformPromise_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (promise: PromiseFunction2<E, A, Pc, Tc>) => Promise<any>;
+> = (promise: PromiseFunction2<C, E, A, Pc, Tc>) => Promise<any>;
 
 export type ExecuteActivities_F = (
   from: string,
@@ -192,11 +193,12 @@ export type Collected0<
 };
 
 export type ToPromiseSrc_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (promise: string) => PromiseFunction2<E, A, Pc, Tc>;
+> = (promise: string) => PromiseFunction2<C, E, A, Pc, Tc>;
 
 export type PerformPromisee_F<
   E extends EventsMap = EventsMap,
@@ -300,8 +302,8 @@ export interface AnyInterpreter<
   mode: Mode;
   event: ToEvents2<E, A>;
   eventsMap: EventsMap;
-  initialNode: Node<E, A, Pc, Tc>;
-  node: Node<E, A, Pc, Tc>;
+  initialNode: Node<Config, E, A, Pc, Tc>;
+  node: Node<Config, E, A, Pc, Tc>;
 
   makeStrict: () => void;
   status: WorkingStatus;
@@ -330,8 +332,8 @@ export interface AnyInterpreter<
   ) => PredicateS<Config, E, A, Pc, Tc> | undefined;
   toPromiseSrcFn: (
     src: string,
-  ) => PromiseFunction<E, A, Pc, Tc> | undefined;
-  toDelayFn: (delay: string) => Delay<E, A, Pc, Tc> | undefined;
+  ) => PromiseFunction<Config, E, A, Pc, Tc> | undefined;
+  toDelayFn: (delay: string) => Delay<Config, E, A, Pc, Tc> | undefined;
   toChild: (machine: string) => AnyInterpreter | undefined;
   toEmitter: (emitter: string) => Pausable | undefined;
   id?: string;

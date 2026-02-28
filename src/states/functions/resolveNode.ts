@@ -2,7 +2,7 @@ import { toAction } from '#actions';
 import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, ActorsConfigMap } from '#events';
-import type { SimpleMachineOptions } from 'src/machine/types2';
+import type { Config, SimpleMachineOptions } from 'src/machine/types2';
 import { toPromise } from '#promises';
 import { toTransition } from '#transitions';
 import { toArray } from '@bemedev/basifun';
@@ -13,6 +13,7 @@ import { toEmitter } from '#emitters';
 import { toChild } from '#machines';
 
 export type ResolveNode_F = <
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -22,7 +23,7 @@ export type ResolveNode_F = <
   actorsMap: A,
   config: NodeConfig,
   options?: SimpleMachineOptions<E, A, Pc, Tc>,
-) => Node<E, A, Pc, Tc>;
+) => Node<C, E, A, Pc, Tc>;
 
 /**
  * Resolves a node configuration into a full node with all functions.

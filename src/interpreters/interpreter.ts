@@ -191,12 +191,12 @@ export class Interpreter<
   /**
    * The initial {@linkcode Node} of the inner {@linkcode Machine}.
    */
-  readonly #initialNode: Node<E, A, Pc, Tc>;
+  readonly #initialNode: Node<C, E, A, Pc, Tc>;
 
   /**
    * The current {@linkcode Node} of this {@linkcode Interpreter} service.
    */
-  #node!: Node<E, A, Pc, Tc>;
+  #node!: Node<C, E, A, Pc, Tc>;
 
   /**
    * an iiner ietrator to count the number of operations performed by this {@linkcode Interpreter} service.
@@ -464,7 +464,12 @@ export class Interpreter<
     const events = this.#machine.eventsMap;
     const actorsMap = this.#machine.actorsMap;
 
-    return resolveNode<E, A, Pc, Tc>(events, actorsMap, config, options);
+    return resolveNode<C, E, A, Pc, Tc>(
+      events,
+      actorsMap,
+      config,
+      options,
+    );
   };
 
   /**
@@ -1092,7 +1097,7 @@ export class Interpreter<
     return false;
   };
 
-  #performPromiseSrc: PerformPromise_F<E, A, Pc, Tc> = promise => {
+  #performPromiseSrc: PerformPromise_F<C, E, A, Pc, Tc> = promise => {
     this._iterate();
     return promise(this.#cloneState);
   };
@@ -2176,7 +2181,7 @@ export class Interpreter<
     const promises = this.#machine.promises;
 
     return this.#returnWithWarning(
-      toPromiseSrc<E, A, Pc, Tc>(events, actorsMap, src, promises),
+      toPromiseSrc<C, E, A, Pc, Tc>(events, actorsMap, src, promises),
       `Promise (${src}) is not defined`,
     );
   };
@@ -2187,7 +2192,7 @@ export class Interpreter<
     const delays = this.#machine.delays;
 
     return this.#returnWithWarning(
-      toDelay<E, A, Pc, Tc>(events, actorsMap, delay, delays),
+      toDelay<C, E, A, Pc, Tc>(events, actorsMap, delay, delays),
       `Delay (${delay}) is not defined`,
     );
   };

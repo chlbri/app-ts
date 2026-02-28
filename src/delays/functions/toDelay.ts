@@ -3,8 +3,10 @@ import type { ActorsConfigMap, EventsMap } from '#events';
 import { reduceFnMap } from '#utils';
 import type { FnR } from 'src/types/primitives2';
 import type { DelayMap } from '../types2';
+import type { Config } from 'src/machine/types2';
 
 export type ToDelay_F = <
+  C extends Config,
   E extends EventsMap,
   A extends ActorsConfigMap,
   Pc = any,
@@ -13,8 +15,8 @@ export type ToDelay_F = <
   events: E,
   actorsMap: A,
   delay: string,
-  delays?: DelayMap<E, A, Pc, Tc>,
-) => FnR<E, A, Pc, Tc, number> | undefined;
+  delays?: DelayMap<C, E, A, Pc, Tc>,
+) => FnR<C, E, A, Pc, Tc, number> | undefined;
 
 /**
  * Converts a delay configuration to a function that returns the delay in milliseconds.

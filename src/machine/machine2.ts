@@ -372,7 +372,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __delay() {
-    return _unknown<Delay<E, A, Pc, Tc>>();
+    return _unknown<Delay<C, E, A, Pc, Tc>>();
   }
 
   /**

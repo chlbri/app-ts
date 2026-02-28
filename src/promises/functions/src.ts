@@ -1,11 +1,15 @@
-import type { PrimitiveObject } from '#bemedev/globals/types';
+import type {
+  NotUndefined,
+  PrimitiveObject,
+} from '#bemedev/globals/types';
 import type { EventsMap } from '#events';
-import type { SimpleMachineOptions } from 'src/machine/types2';
+import type { Config, SimpleMachineOptions } from 'src/machine/types2';
 import { reduceFnMap } from '#utils';
 import type { PromiseFunction2 } from '../types2';
 import type { ActorsConfigMap } from '#events';
 
 export type ToPromiseSrc_F = <
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -14,8 +18,10 @@ export type ToPromiseSrc_F = <
   events: E,
   promisees: A,
   src: string,
-  promises?: SimpleMachineOptions<E, A, Pc, TC>['promises'],
-) => PromiseFunction2<E, A, Pc, TC> | undefined;
+  promises?: NotUndefined<
+    SimpleMachineOptions<E, A, Pc, TC>['actors']
+  >['promises'],
+) => PromiseFunction2<C, E, A, Pc, TC> | undefined;
 
 /**
  * Converts a source string to a function that can be used to retrieve the promise.
@@ -36,5 +42,5 @@ export const toPromiseSrc: ToPromiseSrc_F = (
 ) => {
   const fn = promises?.[src];
   const func = fn ? reduceFnMap(events, promisees, fn) : undefined;
-  return func;
+  return func as any;
 };
