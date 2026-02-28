@@ -111,6 +111,7 @@ import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
   AllowedNames,
   Fn,
+  NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { toEmitterSrc } from '#emitters';
@@ -118,13 +119,13 @@ import type { AnyMachine } from 'src/machine/machine.types2';
 import type { Machine } from 'src/machine/machine2';
 import type {
   ActorsMapFrom,
+  ExtractTagsFromConfig,
   GetActorKeysFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
 } from 'src/machine/types2';
 import type { PromiseeResult } from 'src/promises/types2';
 import { createSubscriber, type SubscriberClass } from './subscriber';
-
 /**
  * The `Interpreter` class is responsible for interpreting and managing the state of a machine.
  * It provides methods to start, stop, pause, and resume the machine, as well as to send events
@@ -235,19 +236,19 @@ export class Interpreter<
   /**
    * The previous {@linkcode State} of this {@linkcode Interpreter} service.
    */
-  #previousState!: State<Tc, ToEvents2<E, A>, A>;
+  #previousState!: State<C, Tc, ToEvents2<E, A>, A>;
 
   /**
    * The current {@linkcode State} of this {@linkcode Interpreter} service.
    */
-  #state!: State<Tc, ToEvents2<E, A>, A>;
+  #state!: State<C, Tc, ToEvents2<E, A>, A>;
 
   /**
    * All {@linkcode AnyInterpreter} service subscribers of this {@linkcode Interpreter} service.
    */
   #children: CollectedService[] = [];
 
-  #collectedEmitters: CollectedEmitter[] = [];
+  #emitters: CollectedEmitter[] = [];
 
   /**
    * Public getter of the service subscribers of this {@linkcode Interpreter} service.
@@ -304,6 +305,10 @@ export class Interpreter<
     return this.#machine.eventsMap;
   }
 
+  get tags() {
+    return getTags<ExtractTagsFromConfig<C>>(this.#config);
+  }
+
   /**
    * Where everything is initialized
    * @param machine, the {@linkcode Machine} to interpret.
@@ -328,7 +333,7 @@ export class Interpreter<
       context: this.#context,
       event: INIT_EVENT,
       value: this.#value,
-      tags: getTags(this.#config),
+      tags: this.tags,
       children: {} as any,
     };
     this.#collectEmitters();
@@ -397,7 +402,7 @@ export class Interpreter<
    * @see {@linkcode SubscriberClass}
    * @see {@linkcode SubscriberClass}
    */
-  #performStates = (parts?: Partial<State<Tc, ToEvents2<E, A>, A>>) => {
+  #performStates = (parts?: Partial<State<C, Tc, ToEvents2<E, A>, A>>) => {
     this.#previousState = cloneDeep(this.#state);
     this.#state = { ...this.#state, ...parts };
     const check = !equal(this.#previousState, this.#state);
@@ -426,13 +431,13 @@ export class Interpreter<
     if (target === true) {
       this._performConfig();
       const value = this.#value;
-      const tags = getTags(this.#config);
+      const tags = this.tags;
       return this.#performStates({ value, tags });
     }
 
     if (target) {
       this.#config = initialConfig(this.proposedNextConfig(target));
-      const tags = getTags(this.#config);
+      const tags = this.tags;
       this._performConfig();
       const value = this.#value;
       return this.#performStates({ tags, value });
@@ -562,6 +567,10 @@ export class Interpreter<
     return;
   }
 
+  get isReady() {
+    return this.#status !== 'idle' && this.#status !== 'stopped';
+  }
+
   /**
    * Select a path from the current {@linkcode Tc} context of this {@linkcode Interpreter} service.
    *
@@ -572,8 +581,8 @@ export class Interpreter<
    * @see {@linkcode getByKey} for retrieving values by key.
    */
 
-  get select(): Selector_F<Tc> {
-    const check = isPrimitive(this.#state.context);
+  get select(): Selector_F<NotUndefined<Tc>> {
+    const check = this.isReady && isPrimitive(this.#state.context ?? {});
     if (check) return undefined as any;
     const out: any = (path: string) => getByKey(this.#state.context, path);
     return out;
@@ -746,12 +755,12 @@ export class Interpreter<
     this.#selfTransitionsCounter = 0;
   };
 
-  get #cloneState(): StateExtended<Pc, Tc, ToEvents2<E, A>, A> {
+  get #cloneState(): StateExtended<C, Pc, Tc, ToEvents2<E, A>, A> {
     const pContext = cloneDeep(this.#pContext);
     return structuredClone({ pContext, ...this.#state });
   }
 
-  #performAction: PerformActionLater_F<E, A, Pc, Tc> = action => {
+  #performAction: PerformActionLater_F<C, E, A, Pc, Tc> = action => {
     this._iterate();
     return action(this.#cloneState);
   };
@@ -865,7 +874,7 @@ export class Interpreter<
     return result;
   };
 
-  #executeAction: PerformAction_F<E, A, Pc, Tc> = action => {
+  #executeAction: PerformAction_F<C, E, A, Pc, Tc> = action => {
     this.#makeBusy();
 
     const { pContext, context, ...extendeds } =
@@ -895,12 +904,12 @@ export class Interpreter<
       .forEach(this.#executeAction);
   };
 
-  #performPredicate: PerformPredicate_F<E, A, Pc, Tc> = predicate => {
+  #performPredicate: PerformPredicate_F<C, E, A, Pc, Tc> = predicate => {
     this._iterate();
     return predicate(this.#cloneState);
   };
 
-  #executePredicate: PerformPredicate_F<E, A, Pc, Tc> = predicate => {
+  #executePredicate: PerformPredicate_F<C, E, A, Pc, Tc> = predicate => {
     this.#makeBusy();
     const out = this.#performPredicate(predicate);
 
@@ -918,12 +927,12 @@ export class Interpreter<
       .every(b => b);
   };
 
-  #performDelay: PerformDelay_F<E, A, Pc, Tc> = delay => {
+  #performDelay: PerformDelay_F<C, E, A, Pc, Tc> = delay => {
     this._iterate();
     return delay(this.#cloneState);
   };
 
-  #executeDelay: PerformDelay_F<E, A, Pc, Tc> = delay => {
+  #executeDelay: PerformDelay_F<C, E, A, Pc, Tc> = delay => {
     this.#makeBusy();
     const out = this.#performDelay(delay);
     this.#startStatus();
@@ -1391,11 +1400,11 @@ export class Interpreter<
       })
       .filter((value => !!value.emitter) as Check);
 
-    return this.#collectedEmitters.push(...out);
+    return this.#emitters.push(...out);
   }
 
   get #currentEmitters() {
-    return this.#collectedEmitters.filter(({ from }) => {
+    return this.#emitters.filter(({ from }) => {
       return this.#isInsideValue(from);
     });
   }
@@ -1440,7 +1449,7 @@ export class Interpreter<
   #startedEmitterIDs: Set<string> = new Set();
 
   #stopEmitters = () => {
-    this.#collectedEmitters
+    this.#emitters
       // .filter(({ id }) => this.#startedEmitterIDs.has(id))
       .forEach(({ emitter: instance, id }) => {
         instance.stop();
@@ -1451,7 +1460,7 @@ export class Interpreter<
   #pauseEmitters = (
     filter: (value: CollectedEmitter) => boolean = () => true,
   ) => {
-    this.#collectedEmitters
+    this.#emitters
       .filter(({ id }) => this.#startedEmitterIDs.has(id))
       .filter(filter)
       .forEach(({ emitter, id }) => {
@@ -1559,7 +1568,11 @@ export class Interpreter<
 
   #subscribeChildren = () => {
     for (const { service, on, contexts, id } of this.#children) {
-      service.subscribe(
+      type SI = AnyInterpreter & {
+        __subscribe: AddSubscriber_F<C, E, A, Tc>;
+      };
+      const si = service as SI;
+      si.__subscribe(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ({ children, ...payload }) => {
           const type = eventToType(payload.event);
@@ -1589,7 +1602,7 @@ export class Interpreter<
         },
       );
 
-      service.subscribe(
+      si.__subscribe(
         ({ context }) => {
           const entries = Object.entries(contexts ?? {});
           entries.forEach(([key, path]) => {
@@ -1773,13 +1786,11 @@ export class Interpreter<
     return out;
   };
 
-  #subscribers = new Set<SubscriberClass<E, A, Tc>>();
+  #subscribers = new Set<SubscriberClass<C, E, A, Tc>>();
+  #innerSubscribers = new Set<SubscriberClass<C, E, A, Tc>>();
 
-  get state() {
-    return Object.freeze(cloneDeep(this.#state));
-  }
-
-  subscribe: AddSubscriber_F<E, A, Tc> = (_subscriber, options) => {
+  // @ts-expect-error Already used recursively
+  subscribe: AddSubscriber_F<C, E, A, Tc> = (_subscriber, options) => {
     const eventsMap = this.#machine.eventsMap;
     const actorsMap = this.#machine.actorsMap;
     const find = Array.from(this.#subscribers).find(
@@ -1794,8 +1805,34 @@ export class Interpreter<
       options,
     );
     this.#subscribers.add(subcriber);
-    return subcriber;
+    return subcriber as any;
   };
+
+  // @ts-expect-error Already used recursively
+  private __subscribe: AddSubscriber_F<C, xE, A, Tc> = (
+    _subscriber,
+    options,
+  ) => {
+    const eventsMap = this.#machine.eventsMap;
+    const actorsMap = this.#machine.actorsMap;
+    const find = Array.from(this.#innerSubscribers).find(
+      f => f.id === options?.id,
+    );
+    if (find) return find;
+
+    const subscriber = createSubscriber(
+      eventsMap,
+      actorsMap,
+      _subscriber,
+      options,
+    );
+    this.#innerSubscribers.add(subscriber);
+    return subscriber;
+  };
+
+  get state() {
+    return Object.freeze(cloneDeep(this.#state));
+  }
 
   #errorsCollector = new Set<string>();
   #warningsCollector = new Set<string>();
@@ -2113,7 +2150,7 @@ export class Interpreter<
     const actions = this.#machine.actions;
 
     return this.#returnWithWarning(
-      toAction<E, A, Pc, Tc>(events, actorsMap, action, actions),
+      toAction<C, E, A, Pc, Tc>(events, actorsMap, action, actions),
       `Action (${reduceAction(action)}) is not defined`,
     );
   };
@@ -2123,7 +2160,7 @@ export class Interpreter<
     const actorsMap = this.#machine.actorsMap;
     const predicates = this.#machine.predicates;
 
-    const { predicate, errors } = toPredicate<E, A, Pc, Tc>(
+    const { predicate, errors } = toPredicate<C, E, A, Pc, Tc>(
       events,
       actorsMap,
       guard,

@@ -13,6 +13,7 @@ import type {
   ExtractActionsFromActivity,
   ExtractDelaysFromActivity,
   ExtractGuardsFromActivity,
+  ExtractTagsFromFlat,
   FlatMapN,
   NodeConfig,
   NodeConfigCompound,
@@ -37,7 +38,6 @@ import type { PredicateS } from 'src/guards/types2';
 import type { PromiseFunction } from 'src/promises/types2';
 import type {
   Describer,
-  FnMap,
   FnMap2,
   Identify,
   KeyU,
@@ -71,6 +71,10 @@ export type Config = ConfigNode & {
   readonly strict?: boolean;
   readonly __longRuns?: boolean;
 };
+
+export type ExtractTagsFromConfig<T extends Config> = ExtractTagsFromFlat<
+  FlatMapN<T>
+>;
 
 export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
   [K in Exclude<keyof T, keyof ConfigDef>]: never;
@@ -252,12 +256,13 @@ type _GetDelayKeysFromFlat<Flat extends FlatMapN> = {
  * @see {@linkcode _GetKeyActionsFromFlat} for extracting action keys from the flat map.
  */
 export type GetActionsFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetKeyActionsFromFlat<Flat>, Action<E, A, Pc, Tc>>;
+> = Record<_GetKeyActionsFromFlat<Flat>, Action<C, E, A, Pc, Tc>>;
 
 /**
  * Provide a record of all guards by key and {@linkcode PredicateS} function.
@@ -271,12 +276,13 @@ export type GetActionsFromFlat<
  * @see {@linkcode _GetKeyGuardsFromFlat} for extracting guard keys from the flat map.
  */
 export type GetGuardsFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, A, Pc, Tc>>;
+> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<C, E, A, Pc, Tc>>;
 
 export type PromiseReturn<
   K extends string,
@@ -297,6 +303,7 @@ export type EmitterReturn<
   : never;
 
 export type GetPromiseSrcsFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
@@ -304,6 +311,7 @@ export type GetPromiseSrcsFromFlat<
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   [key in _GetPromiseeSrcKeyFromFlat<Flat>]: PromiseFunction<
+    C,
     E,
     A,
     Pc,
@@ -395,13 +403,15 @@ export type GetPromiseesSrcKeyFromFlat<Flat extends FlatMapN> = Record<
   PromiseeDef
 >;
 export type GetPromisesFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  [key in _GetPromiseeSrcKeyFromFlat<Flat>]: PromiseFunction<
+  [key in _GetPromiseeSrcKeyFromFlat<Flat>]?: PromiseFunction<
+    C,
     E,
     A,
     Pc,
@@ -520,15 +530,16 @@ export type GetChildrenSrcFromMachine<T extends KeyU<'config'>> =
   GetChildrenSrcFromConfig<ConfigFrom<T>>;
 
 export type GetActorsFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  children?: Partial<GetChildrenSrcFromFlat<Flat>>;
-  emitters?: Partial<GetEmittersSrcFromFlat<Flat, A>>;
-  promises?: Partial<GetPromisesFromFlat<Flat, E, A, Pc, Tc>>;
+  children: Partial<GetChildrenSrcFromFlat<Flat>>;
+  emitters: Partial<GetEmittersSrcFromFlat<Flat, A>>;
+  promises: Partial<GetPromisesFromFlat<C, Flat, E, A, Pc, Tc>>;
 };
 
 export type GetActorsFromConfig<
@@ -537,7 +548,7 @@ export type GetActorsFromConfig<
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = GetActorsFromFlat<FlatMapN<C>, E, A, Pc, Tc>;
+> = GetActorsFromFlat<C, FlatMapN<C>, E, A, Pc, Tc>;
 
 export type GetActorsFromMachine<
   T extends KeyU<'config'>,
@@ -571,6 +582,7 @@ export type ChildConfigDef = EventsMap;
 export type ChildConfigMap = RecordS<ChildConfigDef>;
 
 export type Child<
+  C extends Config,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -579,7 +591,7 @@ export type Child<
   src: AnyInterpreter;
   description?: string;
   id: string;
-  on: Identify<RecordS<Transition<E, A, Pc, Tc>>>[];
+  on: Identify<RecordS<Transition<C, E, A, Pc, Tc>>>[];
   contexts: string[];
 };
 
@@ -589,9 +601,12 @@ export type ChildrenMap = RecordS<AnyInterpreter>;
  * Not used in the codebase, but provided for completeness.
  */
 export type FnMapFrom<
-  T extends KeyU<'eventsMap' | 'pContext' | 'context' | 'actorsMap'>,
+  T extends KeyU<
+    'eventsMap' | 'pContext' | 'context' | 'actorsMap' | '__config'
+  >,
   R = any,
 > = FnMap2<
+  Extract<T['__config'], Config>,
   Extract<EventsMapFrom<T>, EventsMap>,
   Extract<ActorsMapFrom<T>, ActorsConfigMap>,
   Extract<ContextFrom<T>, PrimitiveObject>,
@@ -635,10 +650,10 @@ export type MachineOptions<
   Tc extends PrimitiveObject = PrimitiveObject,
   Flat extends FlatMapN<C> = FlatMapN<C>,
 > = Partial<{
-  actions: Partial<GetActionsFromFlat<Flat, E, A, Pc, Tc>>;
-  predicates: Partial<GetGuardsFromFlat<Flat, E, A, Pc, Tc>>;
+  actions: Partial<GetActionsFromFlat<C, Flat, E, A, Pc, Tc>>;
+  predicates: Partial<GetGuardsFromFlat<C, Flat, E, A, Pc, Tc>>;
   delays: Partial<GetDelaysFromFlat<Flat, E, A, Pc, Tc>>;
-  actors: GetActorsFromFlat<Flat, E, A, Pc, Tc>;
+  actors: Partial<GetActorsFromFlat<C, Flat, E, A, Pc, Tc>>;
 }>;
 
 /**
@@ -923,13 +938,13 @@ export type SimpleMachineOptions<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Partial<{
-  actions: Partial<RecordS<Action<E, A, Pc, Tc>>>;
-  predicates: Partial<RecordS<PredicateS<E, A, Pc, Tc>>>;
+  actions: Partial<RecordS<Action<Config, E, A, Pc, Tc>>>;
+  predicates: Partial<RecordS<PredicateS<Config, E, A, Pc, Tc>>>;
   delays: Partial<RecordS<Delay<E, A, Pc, Tc>>>;
   actors: Partial<{
     children: RecordS<AnyInterpreter>;
     emitters: EmittersMap;
-    promises: RecordS<PromiseFunction<E, A, Pc, Tc>>;
+    promises: RecordS<PromiseFunction<Config, E, A, Pc, Tc>>;
   }>;
 }>;
 
@@ -961,12 +976,3 @@ export type ExtractContextsKeyFromChild<
 export type ExtractEventsKeyFromChild<
   T extends { on: Record<string, any> },
 > = keyof T['on'];
-
-export type Initial<
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, A, Pc, Tc>;
-
-export type InitialsMap = RecordS<Initial>;

@@ -1,6 +1,6 @@
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { constructSend, constructValue, defaultC } from './fixtures';
+import { constructSend, constructStateValue, defaultC } from './fixtures';
 
 describe('Interpret for actions', () => {
   const action1 = vi.fn().mockReturnValue(defaultC);
@@ -32,7 +32,7 @@ describe('Interpret for actions', () => {
     );
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
     const useSendNext = (index: number) =>
       constructSend(service)('NEXT', index);
 
@@ -117,7 +117,7 @@ describe('Interpret for actions', () => {
     );
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
     const useSendNext = (index: number) =>
       constructSend(service)('NEXT', index);
 

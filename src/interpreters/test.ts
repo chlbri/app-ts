@@ -11,7 +11,9 @@ class Ex {
     return out;
   };
 
-  compute = () => this.#compute();
+  get compute() {
+    return this.#compute;
+  }
 }
 
 const a = new Ex('Je', [

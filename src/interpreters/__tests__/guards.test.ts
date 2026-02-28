@@ -4,7 +4,7 @@ import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import {
   constructSend,
-  constructValue,
+  constructStateValue,
   defaultC,
   defaultT,
 } from './fixtures';
@@ -35,7 +35,7 @@ describe('Interpret for guards', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -72,7 +72,7 @@ describe('Interpret for guards', () => {
     );
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
     const useSendNext = (index: number) =>
       constructSend(service)('NEXT', index);
 
@@ -154,7 +154,7 @@ describe('Interpret for guards', () => {
     );
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
     const useSendNext = (index: number) =>
       constructSend(service)('NEXT', index);
 
@@ -255,7 +255,7 @@ describe('Interpret for guards', () => {
       context: { data: 5 },
       pContext: { data: 'avion' },
     });
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();

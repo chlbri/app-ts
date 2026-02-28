@@ -8,8 +8,14 @@ import { machine1 } from './machine1';
 // #region machine2
 
 export const config2 = createConfig({
-  initial: 'idle',
+  initial: 'initialize',
   states: {
+    initialize: {
+      always: {
+        target: '/idle',
+        actions: 'initialize',
+      },
+    },
     idle: {
       activities: {
         DELAY: 'inc',
@@ -99,7 +105,9 @@ export const machine2 = createMachine(
     actors: {
       id: 'machine1',
       src: 'machine11',
-      contexts: {},
+      contexts: {
+        '': '',
+      },
       on: {
         NEXT: '/working',
       },
@@ -135,8 +143,18 @@ export const machine2 = createMachine(
       },
     },
   }),
-).provideOptions(({ isNotValue, isValue, assign, voidAction }) => ({
+).provideOptions(({ isNotValue, isValue, assign, voidAction, batch }) => ({
   actions: {
+    initialize: batch(
+      assign('context', () => ({
+        iterator: 0,
+        input: '',
+        data: [],
+      })),
+      assign('pContext', () => ({
+        iterator: 0,
+      })),
+    ),
     inc: assign(
       'context.iterator',
       ({ context }) => notU(context?.iterator) + 1,
@@ -190,9 +208,7 @@ export const _machine2 = createMachine(
       WRITE: { value: 'string' },
       FINISH: 'primitive',
     },
-    pContext: {
-      iterator: 'number',
-    },
+    pContext: { iterator: 'number' },
     context: {
       iterator: 'number',
       input: 'string',
@@ -200,16 +216,28 @@ export const _machine2 = createMachine(
     },
     actorsMap: {
       promisees: {
-        fetch: {
-          then: ['string'],
-          catch: 'primitive',
-        },
+        fetch: { then: ['string'], catch: 'primitive' },
       },
     },
   }),
 ).provideOptions(
-  ({ isNotValue, isValue, assign, voidAction, debounce: _debounce }) => ({
+  ({
+    isNotValue,
+    isValue,
+    assign,
+    voidAction,
+    debounce: _debounce,
+    batch,
+  }) => ({
     actions: {
+      initialize: batch(
+        assign('context', () => ({
+          iterator: 0,
+          input: '',
+          data: [],
+        })),
+        assign('pContext', () => ({ iterator: 0 })),
+      ),
       inc: assign(
         'context.iterator',
         ({ context }) => notU(context?.iterator) + 1,
@@ -230,12 +258,12 @@ export const _machine2 = createMachine(
           return context?.data;
         },
       }),
-      debounce: _debounce(
-        assign('context.iterator', () => {
-          console.log('Debounced action executed');
-          return 1000;
-        }),
-        { ms: 10_000, id: 'debounce-action' },
+      debounce: batch(
+        voidAction(() => console.log('Debounced action executed')),
+        _debounce(
+          assign('context.iterator', () => 1000),
+          { ms: 10_000, id: 'debounce-action' },
+        ),
       ),
     },
     predicates: {

@@ -1,7 +1,7 @@
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
-import { constructSend, constructValue } from './fixtures';
+import { constructSend, constructStateValue } from './fixtures';
 
 describe('Filter and Erase actions', () => {
   describe('#01 => Filter action', () => {
@@ -46,7 +46,7 @@ describe('Filter and Erase actions', () => {
         context: { numbers: [] },
       });
 
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
       type SE = Parameters<typeof service.send>[0];
       const useSend = (event: SE, index?: number) =>
         constructSend(service)(event, index ?? 1);
@@ -141,7 +141,7 @@ describe('Filter and Erase actions', () => {
         context: { people: [] },
       });
 
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
       type SE = Parameters<typeof service.send>[0];
       const useSend = (event: SE, index?: number) =>
         constructSend(service)(event, index ?? 1);
@@ -235,7 +235,7 @@ describe('Filter and Erase actions', () => {
         context: { scores: {} },
       });
 
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
       type SE = Parameters<typeof service.send>[0];
       const useSend = (event: SE, index?: number) =>
         constructSend(service)(event, index ?? 1);
@@ -333,7 +333,7 @@ describe('Filter and Erase actions', () => {
         },
       });
 
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
       type SE = Parameters<typeof service.send>[0];
       const useSend = (event: SE, index?: number) =>
         constructSend(service)(event, index ?? 1);
@@ -413,7 +413,7 @@ describe('Filter and Erase actions', () => {
         },
       });
 
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
       type SE = Parameters<typeof service.send>[0];
       const useSend = (event: SE, index?: number) =>
         constructSend(service)(event, index ?? 1);
@@ -507,7 +507,7 @@ describe('Filter and Erase actions', () => {
         context: {},
       });
 
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
       type SE = Parameters<typeof service.send>[0];
       const useSend = (event: SE, index?: number) =>
         constructSend(service)(event, index ?? 1);

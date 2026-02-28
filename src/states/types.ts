@@ -18,6 +18,7 @@ import type {
   ActionConfig,
   FromActionConfig,
 } from 'src/actions/types2';
+import type { Config, ExtractTagsFromConfig } from 'src/machine/types2';
 import type {
   Identify,
   RecordS,
@@ -152,66 +153,70 @@ export type WorkingStatus =
   | 'busy';
 
 export type State<
+  C extends Config = Config,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends AllEvent = AllEvent,
   A extends ActorsConfigMap = ActorsConfigMap,
-  C extends NotUndefined<A['children']> = NotUndefined<A['children']>,
+  Ch extends NotUndefined<A['children']> = NotUndefined<A['children']>,
 > = {
   context: Tc;
   status: WorkingStatus;
   value: StateValue;
   event: E;
-  tags?: SoA<string>;
+  tags?: SoA<ExtractTagsFromConfig<C>>;
   children: {
-    [key in keyof C]: {
+    [key in keyof Ch]: {
       context: any;
       status: WorkingStatus;
       value: StateValue;
-      event: _EventsR<C[key]>;
+      event: _EventsR<Ch[key]>;
       tags?: SoA<string>;
     };
   };
 };
 
 export type StateP<
+  C extends Config = Config,
   Tc extends PrimitiveObject = PrimitiveObject,
   E = any,
   A extends ActorsConfigMap = ActorsConfigMap,
-  C extends NotUndefined<A['children']> = NotUndefined<A['children']>,
+  Ch extends NotUndefined<A['children']> = NotUndefined<A['children']>,
 > = {
   context: Tc;
   status: WorkingStatus;
   value: StateValue;
   payload: E;
-  tags?: string | readonly string[];
+  tags?: SoA<ExtractTagsFromConfig<C>>;
   children: {
-    [key in keyof C]: {
+    [key in keyof Ch]: {
       context: any;
       status: WorkingStatus;
       value: StateValue;
-      event: _EventsR<C[key]>;
+      event: _EventsR<Ch[key]>;
       tags?: SoA<string>;
     };
   };
 };
 
 export type StateExtended<
+  C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends AllEvent = AllEvent,
   A extends ActorsConfigMap = ActorsConfigMap,
 > = {
   pContext: Pc;
-} & State<Tc, E, A>;
+} & State<C, Tc, E, A>;
 
 export type StatePextended<
+  C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E = any,
   A extends ActorsConfigMap = ActorsConfigMap,
 > = {
   pContext: Pc;
-} & StateP<Tc, E, A>;
+} & StateP<C, Tc, E, A>;
 // #endregion
 
 type FlatMapNodeConfig<
@@ -253,7 +258,16 @@ export type EndWithAlways<T extends Keys> = Extract<T, AlwaysEnd>;
 
 export type EndwA<T extends Keys> = EndWithAlways<T>;
 
+export type ExtractTagsFromFlat<Flat extends FlatMapN> = {
+  [key in keyof Flat]: Flat[key] extends infer S extends {
+    tags: SingleOrArrayL<string>;
+  }
+    ? ReduceArray<S['tags']>
+    : never;
+}[keyof Flat];
+
 export type Node<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -262,9 +276,9 @@ export type Node<
   id?: string;
   description?: string;
   type: StateType;
-  entry: Action<E, A, Pc, Tc>[];
-  exit: Action<E, A, Pc, Tc>[];
+  entry: Action<C, E, A, Pc, Tc>[];
+  exit: Action<C, E, A, Pc, Tc>[];
   tags: string[];
-  states: Identify<Node<E, A, Pc, Tc>>[];
+  states: Identify<Node<C, E, A, Pc, Tc>>[];
   initial?: string;
-} & Transitions<E, A, Pc, Tc>;
+} & Transitions<C, E, A, Pc, Tc>;

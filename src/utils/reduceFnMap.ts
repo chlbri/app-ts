@@ -14,6 +14,7 @@ import {
   type FnReduced,
 } from 'src/types/primitives2';
 import { nothing } from './nothing';
+import type { Config } from 'src/machine/types2';
 
 type ToEventMap_F = <
   E extends EventsMap,
@@ -56,6 +57,7 @@ export const toEventsMap: ToEventMap_F = (events, _actors) => {
 };
 
 export type ReduceFnMap_F = <
+  C extends Config,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -64,13 +66,13 @@ export type ReduceFnMap_F = <
 >(
   events: E,
   actorsMap: A,
-  fn: FnMap<E, A, Pc, Tc, R>,
-) => FnR<E, A, Pc, Tc, R>;
+  fn: FnMap<C, E, A, Pc, Tc, R>,
+) => FnR<C, E, A, Pc, Tc, R>;
 
 /**
  * Reduces a function map to a single function that processes events.
  * @param events the events map.
- * @param actors the promisees map.
+ * @param actorsMap the promisees map.
  * @param fn the function map to reduce.
  * @returns a function that takes a context and an event, returning the result of the function map.
  *
@@ -86,13 +88,10 @@ export const reduceFnMap: ReduceFnMap_F = (events, actors, fn) => {
   const map = toEventsMap(events, actors);
   const keys = Object.keys(map);
 
-  return ({ event, context, pContext, status, value, tags }) => {
+  return ({ event, ...rest }) => {
     const check5 = typeof event === 'string';
     const _else = fn.else ?? nothing;
-    if (check5)
-      return _any(
-        _else({ event, context, pContext, status, value, tags }),
-      );
+    if (check5) return _any(_else({ ...rest, event }));
 
     const { payload, type } = event;
 
@@ -102,15 +101,15 @@ export const reduceFnMap: ReduceFnMap_F = (events, actors, fn) => {
       const check3 = !!func;
 
       const check4 = check2 && check3;
-      if (check4)
-        return func({ payload, context, pContext, status, value, tags });
+      if (check4) return func({ ...rest, payload });
     }
 
-    return _any(_else({ event, context, pContext, status, value, tags }));
+    return _any(_else({ ...rest, event }));
   };
 };
 
 export type ReduceFnMap2_F = <
+  C extends Config,
   E extends EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -118,8 +117,8 @@ export type ReduceFnMap2_F = <
 >(
   events: E,
   promisees: P,
-  fn: FnMapR<E, P, Tc, R>,
-) => FnReduced<E, P, Tc, R>;
+  fn: FnMapR<C, E, P, Tc, R>,
+) => FnReduced<C, E, P, Tc, R>;
 
 /**
  * Reduces a function map to a single function that processes events with a context.
@@ -149,11 +148,12 @@ export const reduceFnMapReduced: ReduceFnMap2_F = (
   const map = toEventsMap(events, promisees);
   const keys = Object.keys(map);
 
-  return ({ context, event, status, value, tags }) => {
+  return ({ event, ...rest }) => {
     const check5 = typeof event === 'string';
     const _else = fn.else ?? nothing;
-    if (check5)
-      return _any(_else({ context, event, status, value, tags }));
+    if (check5) {
+      return _any(_else({ ...rest, event }));
+    }
 
     const { payload, type } = event;
 
@@ -163,9 +163,9 @@ export const reduceFnMapReduced: ReduceFnMap2_F = (
       const check3 = !!func;
 
       const check4 = check2 && check3;
-      if (check4) return func({ context, payload, status, value, tags });
+      if (check4) return func({ ...rest, payload });
     }
 
-    return _any(_else({ context, event, status, value, tags }));
+    return _any(_else({ ...rest, event }));
   };
 };

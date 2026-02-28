@@ -15,6 +15,7 @@ import type {
   ToEvents2,
   ToEventsR2,
 } from '#events';
+import type { Config } from '#machines';
 import type {
   State,
   StateExtended,
@@ -268,12 +269,13 @@ export type ToArray<T> = T extends readonly unknown[]
  * @see {@linkcode ToEvents2} for converting events and promisees to a map.
  */
 export type FnR<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = (state: StateExtended<Pc, Tc, ToEvents2<E, A>, A>) => R;
+> = (state: StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>) => R;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -288,11 +290,12 @@ export type FnR<
  * @see {@linkcode ToEvents2} for converting events and promisees to a map.
  */
 export type FnReduced<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = (state: State<Tc, ToEvents2<E, A>, A>) => R;
+> = (state: State<C, Tc, ToEvents2<E, A>, A>) => R;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -307,6 +310,7 @@ export type FnReduced<
  * @see {@linkcode Extract}
  */
 export type FnMap2<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -314,10 +318,10 @@ export type FnMap2<
   TT extends ToEventsR2<E, A> = ToEventsR2<E, A>,
 > = {
   [key in TT['type']]?: (
-    state: StateP<Tc, Extract<TT, { type: key }>['payload'], A>,
+    state: StateP<C, Tc, Extract<TT, { type: key }>['payload'], A>,
   ) => R;
 } & {
-  else?: FnReduced<E, A, Tc, R>;
+  else?: FnReduced<C, E, A, Tc, R>;
 };
 
 export type EventToType<T extends string | { type: string }> = T extends {
@@ -329,6 +333,7 @@ export type EventToType<T extends string | { type: string }> = T extends {
     : never;
 
 type _FnMap<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -338,6 +343,7 @@ type _FnMap<
 > = {
   [key in EventToType<TT>]?: (
     state: StatePextended<
+      C,
       Pc,
       Tc,
       Extract<TT, { type: key }>['payload'],
@@ -345,10 +351,11 @@ type _FnMap<
     >,
   ) => R;
 } & {
-  else?: FnR<E, A, Pc, Tc, R>;
+  else?: FnR<C, E, A, Pc, Tc, R>;
 };
 
 type _FnMapR<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -356,26 +363,28 @@ type _FnMapR<
   TT extends ToEvents2<E, A> = ToEvents2<E, A>,
 > = {
   [key in EventToType<TT>]?: (
-    state: StateP<Tc, Extract<TT, { type: key }>['payload'], A>,
+    state: StateP<C, Tc, Extract<TT, { type: key }>['payload'], A>,
   ) => R;
 } & {
-  else?: FnReduced<E, A, Tc, R>;
+  else?: FnReduced<C, E, A, Tc, R>;
 };
 
 export type FnMap<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = FnR<E, A, Pc, Tc, R> | _FnMap<E, A, Pc, Tc, R, ToEvents2<E, A>>;
+> = FnR<C, E, A, Pc, Tc, R> | _FnMap<C, E, A, Pc, Tc, R, ToEvents2<E, A>>;
 
 export type FnMapR<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = FnReduced<E, A, Tc, R> | _FnMapR<E, A, Tc, R, ToEvents2<E, A>>;
+> = FnReduced<C, E, A, Tc, R> | _FnMapR<C, E, A, Tc, R, ToEvents2<E, A>>;
 
 /**
  * A type that represents a record with string keys and values of type {@linkcode T}.
@@ -610,3 +619,5 @@ export type FilterArray<
     ? [Head, ...FilterArray<Tail, Condition>]
     : FilterArray<Tail, Condition>
   : [];
+
+export type DeeperPartial<T> = DeepPartial<T> | undefined;

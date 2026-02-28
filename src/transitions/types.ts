@@ -31,7 +31,7 @@ import type {
 } from 'src/promises/types2';
 
 import type { Emitter } from 'src/emitters/types2';
-import type { Child } from 'src/machine/types2';
+import type { Child, Config } from 'src/machine/types2';
 import type {
   Identify,
   RecordS,
@@ -419,18 +419,20 @@ export type ExtractChildKeysFromTransitions<T extends TransitionsConfig> =
  * @see {@linkcode Predicate} for the structure of guards in the transition.
  */
 export type Transition<
+  C extends Config,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
   readonly target?: string;
-  readonly actions: Action<E, A, Pc, Tc>[];
-  readonly guards: Predicate<E, A, Pc, Tc>[];
+  readonly actions: Action<C, E, A, Pc, Tc>[];
+  readonly guards: Predicate<C, E, A, Pc, Tc>[];
   readonly description?: string;
 };
 
 export type Emiter4<
+  C extends Config,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
@@ -438,9 +440,9 @@ export type Emiter4<
 > = {
   src: Observable<any>;
   description?: string;
-  then: Transition<E, P, Pc, Tc>[];
-  catch: Transition<E, P, Pc, Tc>[];
-  finally: Transition<E, P, Pc, Tc>[];
+  then: Transition<C, E, P, Pc, Tc>[];
+  catch: Transition<C, E, P, Pc, Tc>[];
+  finally: Transition<C, E, P, Pc, Tc>[];
 };
 
 /**
@@ -456,15 +458,16 @@ export type Emiter4<
  * @see {@linkcode Identify} for identifying properties in the transitions.
  */
 export type Transitions<
+  C extends Config,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  on: Identify<Transition<E, A, Pc, Tc>>[];
-  always: Transition<E, A, Pc, Tc>[];
-  after: Identify<Transition<E, A, Pc, Tc>>[];
+  on: Identify<Transition<C, E, A, Pc, Tc>>[];
+  always: Transition<C, E, A, Pc, Tc>[];
+  after: Identify<Transition<C, E, A, Pc, Tc>>[];
   promises: Promisee<E, A, Pc, Tc>[];
-  emitters: Emitter<E, A, Pc, Tc>[];
+  emitters: Emitter<C, E, A, Pc, Tc>[];
   children: Child<E, A, Pc, Tc>[];
 };

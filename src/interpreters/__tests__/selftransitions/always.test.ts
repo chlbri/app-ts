@@ -2,7 +2,7 @@ import { returnFalse } from '#guards';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machines';
 import {
-  constructValue,
+  constructStateValue,
   constructWaiter,
   defaultC,
   defaultT,
@@ -44,7 +44,7 @@ describe('Integration testing for interpret, Children', () => {
       ezre: {},
     }));
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -78,7 +78,7 @@ describe('Integration testing for interpret, Children', () => {
       predicates: { returnFalse },
     }));
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -118,7 +118,7 @@ describe('Integration testing for interpret, Children', () => {
       predicates: { returnFalse: isNotDefined('pContext') },
     }));
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();

@@ -8,8 +8,10 @@ import type { ActorsConfigMap, EventsMap } from '#events';
 import { reduceFnMap } from '#utils';
 import type { FnR } from 'src/types/primitives2';
 import { isDescriber } from '~types';
+import type { Config } from 'src/machine/types2';
 
 export type ToAction_F = <
+  C extends Config,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -18,13 +20,13 @@ export type ToAction_F = <
   events: E,
   actorsMap: A,
   action: ActionConfig,
-  actions?: ActionMap<E, A, Pc, Tc>,
-) => FnR<E, A, Pc, Tc, ActionResult<Pc, Tc>> | undefined;
+  actions?: ActionMap<C, E, A, Pc, Tc>,
+) => FnR<C, E, A, Pc, Tc, ActionResult<Pc, Tc>> | undefined;
 
 /**
  * Converts an ActionConfig to a function that can be executed with the provided eventsMap and promisees.
  * @param events of type {@linkcode EventsMap}, events map to use for resolving the action.
- * @param promisees of type {@linkcode PromiseeMap}, the promisees map to use for resolving the action.
+ * @param actorsMap of type {@linkcode PromiseeMap}, the promisees map to use for resolving the action.
  * @param action of type {@linkcode ActionConfig}, action configuration to convert.
  * @param actions of type {@linkcode ActionMap}, The actions map containing functions to execute.
  *
@@ -35,17 +37,17 @@ export type ToAction_F = <
  */
 export const toAction: ToAction_F = (
   events,
-  promisees,
+  actorsMap,
   action,
   actions,
 ) => {
   if (isDescriber(action)) {
     const fn = actions?.[action.name];
-    const func = fn ? reduceFnMap(events, promisees, fn) : undefined;
+    const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
     return func;
   }
 
   const fn = actions?.[action];
-  const func = fn ? reduceFnMap(events, promisees, fn) : undefined;
+  const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
   return func;
 };

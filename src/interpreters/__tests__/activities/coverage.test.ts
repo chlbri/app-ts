@@ -5,7 +5,7 @@ import {
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { constructSend, constructValue, defaultC } from '../fixtures';
+import { constructSend, constructStateValue, defaultC } from '../fixtures';
 
 describe('Interpreter integration ofr activities coverage', () => {
   beforeAll(() => {
@@ -47,7 +47,7 @@ describe('Interpreter integration ofr activities coverage', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
     const useSendNext = (index: number) =>
       constructSend(service)('NEXT', index);
 
@@ -129,7 +129,7 @@ describe('Interpreter integration ofr activities coverage', () => {
       }));
 
       const service = interpret(machine, defaultC);
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
 
       test('#01 => Start', () => {
         service.start();
@@ -169,7 +169,7 @@ describe('Interpreter integration ofr activities coverage', () => {
       }));
 
       const service = interpret(machine, defaultC);
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
 
       test('#01 => Start', () => {
         service.start();
@@ -233,7 +233,7 @@ describe('Interpreter integration ofr activities coverage', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
     const useSendNext = (index: number) =>
       constructSend(service)('NEXT', index);
 

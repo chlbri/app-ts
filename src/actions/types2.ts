@@ -1,5 +1,6 @@
 import type { DeepPartial, PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, ActorsConfigMap } from '#events';
+import type { Config } from 'src/machine/types2';
 import type { FnMap, FnR } from 'src/types/primitives2';
 import type { Describer, FromDescriber } from '~types';
 
@@ -22,11 +23,12 @@ export type FromActionConfig<T> = T extends Describer
   : T;
 
 export type Action<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, A, Pc, Tc, ActionResult<Pc, Tc>>;
+> = FnMap<C, E, A, Pc, Tc, ActionResult<Pc, Tc>>;
 
 /**
  * Represents a collection of actions, where each action is identified by a string key.
@@ -38,18 +40,20 @@ export type Action<
  * @returns a partial record where each key is a string and each value is an {@linkcode Action}.
  */
 export type ActionMap<
-  E extends EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<Record<string, Action<E, A, Pc, Tc>>>;
-
-export type ActionResultFn<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<E, A, Pc, Tc, ActionResult<Pc, Tc>>;
+> = Partial<Record<string, Action<C, E, A, Pc, Tc>>>;
+
+export type ActionResultFn<
+  C extends Config = Config,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = FnR<C, E, A, Pc, Tc, ActionResult<Pc, Tc>>;
 
 /**
  * Represents the result of executing an action, which includes the private context and the context.
@@ -67,8 +71,9 @@ export type ActionResult<
 }>;
 
 export type Action2<
-  E extends EventsMap,
+  C extends Config = Config,
+  E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = ActionResultFn<E, A, Pc, Tc>;
+> = ActionResultFn<C, E, A, Pc, Tc>;

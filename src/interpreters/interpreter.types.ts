@@ -2,6 +2,7 @@ import type { ChildConfig, EmitterConfig, PromiseeConfig } from '#actor';
 import type {
   Equals,
   NOmit,
+  NotUndefined,
   Primitive,
   PrimitiveObject,
 } from '#bemedev/globals/types';
@@ -42,7 +43,11 @@ import type {
   PredicateS2,
 } from 'src/guards/types2';
 import type { AnyMachine } from 'src/machine/machine.types2';
-import type { ContextFrom, PrivateContextFrom } from 'src/machine/types2';
+import type {
+  Config,
+  ContextFrom,
+  PrivateContextFrom,
+} from 'src/machine/types2';
 import type {
   PromiseeResult,
   PromiseFunction,
@@ -93,53 +98,60 @@ export type Interpreter_F = <M extends AnyMachine>(
 ) => InterpreterFrom<M>;
 
 export type ToAction_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (action?: ActionConfig) => Action2<E, A, Pc, Tc>;
+> = (action?: ActionConfig) => Action2<C, E, A, Pc, Tc>;
 
 export type PerformActionLater_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (action: Action2<E, A, Pc, Tc>) => ActionResult<Pc, Tc>;
+> = (action: Action2<C, E, A, Pc, Tc>) => ActionResult<Pc, Tc>;
 
 export type PerformAction_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (action: Action2<E, A, Pc, Tc>) => void;
+> = (action: Action2<C, E, A, Pc, Tc>) => void;
 
 export type ToPredicate_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (predicate?: GuardConfig) => PredicateS2<E, A, Pc, Tc>;
+> = (predicate?: GuardConfig) => PredicateS2<C, E, A, Pc, Tc>;
 
 export type PerformPredicate_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (predicate: PredicateS2<E, A, Pc, Tc>) => boolean;
+> = (predicate: PredicateS2<C, E, A, Pc, Tc>) => boolean;
 
 export type ToDelay_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (delay?: string) => FnR<E, A, Pc, Tc, number> | undefined;
+> = (delay?: string) => FnR<C, E, A, Pc, Tc, number> | undefined;
 
 export type PerformDelay_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (delay: FnR<E, A, Pc, Tc, number>) => number;
+> = (delay: FnR<C, E, A, Pc, Tc, number>) => number;
 
 export type PerformPromise_F<
   E extends EventsMap = EventsMap,
@@ -223,6 +235,7 @@ export type _Send_F<
 > = (event: ToEventsR2<E, A>) => NodeConfig | undefined;
 
 type _FnMapR<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -230,40 +243,48 @@ type _FnMapR<
   TT extends ToEventsR2<E, A> = ToEventsR2<E, A>,
 > = {
   [key in TT['type']]?: (
-    state: StateP<Tc, Extract<TT, { type: key }>['payload'], A>,
+    state: StateP<C, Tc, Extract<TT, { type: key }>['payload'], A>,
   ) => R;
 } & {
-  else?: (state: State<Tc, ToEvents2<E, A>, A>) => R;
+  else?: (state: State<C, Tc, ToEvents2<E, A>, A>) => R;
 };
 
 export type FnSubReduced<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > =
-  | ((state: State<Tc, ToEvents2<E, A>, A>) => R)
-  | _FnMapR<E, A, Tc, R, ToEventsR2<E, A>>;
+  | ((state: State<C, Tc, ToEvents2<E, A>, A>) => R)
+  | _FnMapR<C, E, A, Tc, R, ToEventsR2<E, A>>;
 
 export type AddSubscriber_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = (
-  subscriber: FnSubReduced<E, A, Tc>,
-  options?: SubscriberOptions<Tc>,
-) => SubscriberClass<E, A, Tc>;
+  subscriber: FnSubReduced<C, E, A, Tc>,
+  options?: SubscriberOptions<C, Tc>,
+) => SubscriberClass<C, E, A, Tc>;
 
 export type Subscribe_F<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (subscriber: FnSubReduced<E, A, Tc>) => SubscriberClass<E, A, Tc>;
+> = (
+  subscriber: FnSubReduced<C, E, A, Tc>,
+) => SubscriberClass<C, E, A, Tc>;
 
 export type Selector_F<T = any> = T extends Primitive
   ? undefined
   : <
-      D extends Decompose<Required<T>, { start: false; object: 'both' }>,
+      D extends Decompose<
+        Required<NotUndefined<T>>,
+        { start: false; object: 'both' }
+      >,
       K extends Extract<keyof D, string>,
       R = D[K],
     >(
@@ -298,13 +319,15 @@ export interface AnyInterpreter<
   _ppC: (pContext: Pc) => AnyMachine<E, A, Pc, Tc>;
   _provideContext: (context: Tc) => AnyMachine<E, A, Pc, Tc>;
 
-  subscribe: AddSubscriber_F<E, A, Tc>;
+  subscribe: AddSubscriber_F<Config, E, A, Tc>;
 
   send: (event: EventArg<E>) => void;
-  toActionFn: (action: ActionConfig) => Action<E, A, Pc, Tc> | undefined;
+  toActionFn: (
+    action: ActionConfig,
+  ) => Action<Config, E, A, Pc, Tc> | undefined;
   toPredicateFn: (
     guard: GuardConfig,
-  ) => PredicateS<E, A, Pc, Tc> | undefined;
+  ) => PredicateS<Config, E, A, Pc, Tc> | undefined;
   toPromiseSrcFn: (
     src: string,
   ) => PromiseFunction<E, A, Pc, Tc> | undefined;

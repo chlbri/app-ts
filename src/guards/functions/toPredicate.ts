@@ -3,13 +3,15 @@ import type { PrimitiveObject } from '#bemedev/globals/types';
 import { GUARD_TYPE } from '#constants';
 import type { ActorsConfigMap, EventsMap, ToEvents2 } from '#events';
 import type { GuardConfig } from '#guards';
-import type { StateExtended } from '#interpreters';
 import { reduceFnMap } from '#utils';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
 import { isDescriber, isString } from '~types';
 import type { PredicateMap, PredicateS2 } from '../types2';
+import type { StateExtended } from '#states';
+import type { Config } from 'src/machine/types2';
 
 export type _ToPredicateF = <
+  C extends Config,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -18,15 +20,16 @@ export type _ToPredicateF = <
   events: E,
   actorsMap: A,
   guard: GuardConfig,
-  predicates?: PredicateMap<E, A, Pc, Tc>,
+  predicates?: PredicateMap<C, E, A, Pc, Tc>,
 ) => {
   func?:
-    | GuardDefUnion<[StateExtended<Pc, Tc, ToEvents2<E, A>>]>
+    | GuardDefUnion<[StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>]>
     | undefined;
   errors: string[];
 };
 
 export type ToPredicate_F = <
+  C extends Config,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -35,9 +38,9 @@ export type ToPredicate_F = <
   events: E,
   actorsMap: A,
   guard: GuardConfig,
-  predicates?: PredicateMap<E, A, Pc, Tc>,
+  predicates?: PredicateMap<C, E, A, Pc, Tc>,
 ) => {
-  predicate?: PredicateS2<E, A, Pc, Tc> | undefined;
+  predicate?: PredicateS2<C, E, A, Pc, Tc> | undefined;
   errors: string[];
 };
 

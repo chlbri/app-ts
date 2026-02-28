@@ -14,6 +14,7 @@ import type {
   TransitionConfigMapA,
 } from '#transitions';
 import type { PromiseeConfig } from 'src/actor';
+import type { Config } from 'src/machine/types2';
 import type { FnMap, FnR, SingleOrArrayL } from 'src/types/primitives2';
 
 /**
@@ -29,12 +30,13 @@ import type { FnMap, FnR, SingleOrArrayL } from 'src/types/primitives2';
  * @see {@linkcode PromiseFunction2} for a reduced version with a context.
  */
 export type PromiseFunction<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = FnMap<E, A, Pc, Tc, Promise<R>>;
+> = FnMap<C, E, A, Pc, Tc, Promise<R>>;
 
 /**
  * A reduced version of {@linkcode PromiseFunction} that takes a context.
@@ -48,11 +50,12 @@ export type PromiseFunction<
  * @see {@linkcode Promise}
  */
 export type PromiseFunction2<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<E, A, Pc, Tc, Promise<any>>;
+> = FnR<C, E, A, Pc, Tc, Promise<any>>;
 
 /**
  * The finally part of a promise configuration.
@@ -177,16 +180,17 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
  * @see {@linkcode Transition} for the type of transitions.
  */
 export type Promisee<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  src: PromiseFunction2<E, A, Pc, Tc>;
+  src: PromiseFunction2<C, E, A, Pc, Tc>;
   description?: string;
-  then: Transition<E, A, Pc, Tc>[];
-  catch: Transition<E, A, Pc, Tc>[];
-  finally: Transition<E, A, Pc, Tc>[];
+  then: Transition<C, E, A, Pc, Tc>[];
+  catch: Transition<C, E, A, Pc, Tc>[];
+  finally: Transition<C, E, A, Pc, Tc>[];
 };
 
 /**

@@ -84,7 +84,7 @@ describe('machine coverage', () => {
       const useInput = (input: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
         return tupleOf(invite, async () => {
-          expect(service.context.input).toBe(input);
+          expect(service.context?.input).toBe(input);
         });
       };
 

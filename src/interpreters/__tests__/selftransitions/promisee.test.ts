@@ -5,7 +5,7 @@ import sleep from '@bemedev/sleep';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import {
   constructSend,
-  constructValue,
+  constructStateValue,
   defaultC,
   defaultT,
 } from '../fixtures';
@@ -37,7 +37,7 @@ describe('promisee', () => {
       defaultT,
     );
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -73,7 +73,7 @@ describe('promisee', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -108,7 +108,7 @@ describe('promisee', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -150,7 +150,7 @@ describe('promisee', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
     const useSend = constructSend(service);
 
     test('#01 => Start', () => {
@@ -197,7 +197,7 @@ describe('promisee', () => {
 
     describe('#01 => max is not defined', () => {
       const service = interpret(machine, defaultC);
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});
       const error = 'Delay (DELAY) is not defined';
 
@@ -242,7 +242,7 @@ describe('promisee', () => {
       }));
 
       const service = interpret(machine, defaultC);
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
 
       test('#01 => Start', () => {
         service.start();
@@ -294,7 +294,7 @@ describe('promisee', () => {
       }));
 
       const service = interpret(machine, defaultC);
-      const useValue = constructValue(service);
+      const useValue = constructStateValue(service);
 
       test('#01 => Start', () => {
         service.start();
@@ -354,7 +354,7 @@ describe('promisee', () => {
         });
 
         const service = interpret(machine, defaultC);
-        const useValue = constructValue(service);
+        const useValue = constructStateValue(service);
 
         test('#01 => Start', () => {
           service.start();
@@ -395,7 +395,7 @@ describe('promisee', () => {
         }));
 
         const service = interpret(machine, defaultC);
-        const useValue = constructValue(service);
+        const useValue = constructStateValue(service);
 
         test('#01 => Start', () => {
           service.start();

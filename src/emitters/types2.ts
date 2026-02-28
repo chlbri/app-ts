@@ -2,6 +2,7 @@ import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventsMap } from '#events';
 import type { Transition } from '#transitions';
 import type { Observable } from 'rxjs';
+import type { Config } from 'src/machine/types2';
 import type { Describer, RecordS } from '~types';
 
 export type Subscriber = {
@@ -27,6 +28,7 @@ export type EmitterDef = {
 export type EmitterConfigMap = RecordS<EmitterDef>;
 
 export type Emitter<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -35,9 +37,9 @@ export type Emitter<
 > = {
   src: Observable<R>;
   description?: string;
-  next: Transition<E, A, Pc, Tc>[];
-  error: Transition<E, A, Pc, Tc>[];
-  complete: Transition<E, A, Pc, Tc>[];
+  next: Transition<C, E, A, Pc, Tc>[];
+  error: Transition<C, E, A, Pc, Tc>[];
+  complete: Transition<C, E, A, Pc, Tc>[];
 };
 
 export type EmittersMap = RecordS<Observable<any>>;

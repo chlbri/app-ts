@@ -2,10 +2,12 @@ import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap } from '#events';
 import { getByKey } from '#machines';
 import type { FnR } from 'src/types/primitives2';
-import type { DefinedValue } from '../../types';
+import type { DefinedValue } from '../../types2';
 import type { ActorsConfigMap } from '#events';
+import type { Config } from 'src/machine/types2';
 
 export type IsValueS_F = <
+  C extends Config,
   E extends EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -13,7 +15,7 @@ export type IsValueS_F = <
 >(
   path: DefinedValue<Pc, Tc>,
   ...values: any[]
-) => FnR<E, A, Pc, Tc, boolean>;
+) => FnR<C, E, A, Pc, Tc, boolean>;
 
 /**
  * Checks if the value at the specified path in pContext, context, or events matches any of the provided values.
@@ -107,7 +109,7 @@ export const isNotValue: IsValueS_F = (path, ...values) => {
   const func = isValue(path, ...values);
 
   return state => {
-    const result = func(state);
+    const result = func(state as any);
     return !result;
   };
 };

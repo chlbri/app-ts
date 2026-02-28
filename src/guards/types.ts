@@ -51,28 +51,31 @@ export type FromGuard<T extends GuardConfig> = T extends ActionConfig
       : never;
 
 export type PredicateS<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, P, Pc, Tc, boolean>;
+> = FnMap<C, E, P, Pc, Tc, boolean>;
 
 export type PredicateS2<
-  E extends EventsMap,
+  C extends Config = Config,
+  E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<E, P, Pc, Tc, boolean>;
+> = FnR<C, E, P, Pc, Tc, boolean>;
 
 export type PredicateUnion<
-  E extends EventsMap,
+  C extends Config = Config,
+  E extends EventsMap = EventsMap,
   P extends PromiseeMap = PromiseeMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > =
-  | PredicateS<E, P, Pc, Tc>
-  | PredicateAnd<E, P, Pc, Tc>
-  | PredicateOr<E, P, Pc, Tc>;
+  | PredicateS<C, E, P, Pc, Tc>
+  | PredicateAnd<C, E, P, Pc, Tc>
+  | PredicateOr<C, E, P, Pc, Tc>;
 
 export type PredicateAnd<
   E extends EventsMap,

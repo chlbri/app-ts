@@ -10,7 +10,7 @@ import equal from 'fast-deep-equal';
 import path from 'path';
 import {
   constructSend,
-  constructValue,
+  constructStateValue,
   defaultC,
   defaultT,
   fakeWaiter,
@@ -960,7 +960,7 @@ describe('machine coverage', () => {
     );
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
     const useSendNEXT = (index: number) => {
       const func = constructSend(service);
       return func('NEXT', index);

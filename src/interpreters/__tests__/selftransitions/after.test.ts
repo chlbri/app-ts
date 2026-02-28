@@ -6,7 +6,7 @@ import { createConfig } from '#machines';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import {
   constructSend,
-  constructValue,
+  constructStateValue,
   constructWaiter,
   defaultC,
   defaultT,
@@ -43,7 +43,7 @@ describe('after', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -80,7 +80,7 @@ describe('after', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -123,7 +123,7 @@ describe('after', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -150,7 +150,7 @@ describe('after', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -164,7 +164,7 @@ describe('after', () => {
   describe('#05 => Delay is not defined', () => {
     const machine = createMachine(simpleConfig, defaultT);
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {
       service.start();
@@ -204,7 +204,7 @@ describe('after', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const useValue = constructStateValue(service);
     const useSend = constructSend(service);
 
     test('#01 => Start', () => {

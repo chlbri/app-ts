@@ -5,7 +5,6 @@ import byKey from '#bemedev/features/objects/typings/byKey';
 import keysOf from '#bemedev/features/objects/typings/keysOf';
 import type {
   AllowedNames,
-  DeepPartial,
   NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
@@ -46,6 +45,7 @@ import { ActorsConfigMap } from './../events/types';
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
 import type { PredicateS } from 'src/guards/types2';
+import type { DeeperPartial } from 'src/types/primitives2';
 import type { NoExtraKeysStrict } from '~types';
 import { assignByKey, expandFnMap } from './functions';
 import type {
@@ -100,6 +100,10 @@ class Machine<
    * @see {@linkcode C}
    */
   #config: C;
+
+  get __config() {
+    return _unknown<C>();
+  }
 
   /**
    * The flat map of the configuration for this {@linkcode Machine}.
@@ -184,7 +188,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __actionFn() {
-    return _unknown<Action<E, A, Pc, Tc>>();
+    return _unknown<Action<C, E, A, Pc, Tc>>();
   }
 
   /**
@@ -232,7 +236,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __stateExtended() {
-    return _unknown<StateExtended<Pc, Tc, ToEvents2<E, A>, A>>();
+    return _unknown<StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>>();
   }
 
   /**
@@ -251,7 +255,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __state() {
-    return _unknown<State<Tc, ToEventsR2<E, A>>>();
+    return _unknown<State<C, Tc, ToEventsR2<E, A>>>();
   }
 
   /**
@@ -271,7 +275,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __stateP() {
-    return _unknown<StateP<Tc, ToEventsR2<E, A>['payload']>>();
+    return _unknown<StateP<C, Tc, ToEventsR2<E, A>['payload']>>();
   }
 
   /**
@@ -291,7 +295,9 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __statePextended() {
-    return _unknown<StatePextended<Pc, Tc, ToEventsR2<E, A>['payload']>>();
+    return _unknown<
+      StatePextended<C, Pc, Tc, ToEventsR2<E, A>['payload']>
+    >();
   }
 
   #typingsByKey = <
@@ -335,7 +341,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __predictate() {
-    return _unknown<PredicateS<E, A, Pc, Tc>>();
+    return _unknown<PredicateS<C, E, A, Pc, Tc>>();
   }
 
   /**
@@ -413,7 +419,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __promise() {
-    return _unknown<PromiseFunction<E, A, Pc, Tc>>();
+    return _unknown<PromiseFunction<C, E, A, Pc, Tc>>();
   }
 
   /**
@@ -608,7 +614,7 @@ class Machine<
    *
    * Remark: Used for typings, when you're outside the Machine class.
    */
-  createOptions: AddOptions_F<E, A, Pc, Tc, Mo> = helper => {
+  createOptions: AddOptions_F<C, E, A, Pc, Tc, Mo> = helper => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
@@ -762,7 +768,7 @@ class Machine<
    * @param option a function that provides options for the machine.
    * Options can include actions, predicates, delays, promises, and child machines.
    */
-  addOptions: AddOptions_F<E, A, Pc, Tc, Mo> = helper => {
+  addOptions: AddOptions_F<C, E, A, Pc, Tc, Mo> = helper => {
     const out = this.createOptions(helper);
 
     this.#addActions(out?.actions);
@@ -783,7 +789,7 @@ class Machine<
    * @returns a new instance of the machine with the provided options applied.
    */
   provideOptions = <T extends Mo>(
-    option: AddOptionsParam_F<E, A, Pc, Tc, NoExtraKeysStrict<T, Mo>>,
+    option: AddOptionsParam_F<C, E, A, Pc, Tc, NoExtraKeysStrict<T, Mo>>,
   ) => {
     const out = this.renew;
     out.addOptions(option);
@@ -1029,7 +1035,7 @@ class Machine<
    * @see {@linkcode isValue}
    */
   get #isValue() {
-    return isValue<E, A, Pc, Tc>;
+    return isValue<C, E, A, Pc, Tc>;
   }
 
   /**
@@ -1042,7 +1048,7 @@ class Machine<
    * @see {@linkcode isNotValue}
    */
   get #isNotValue() {
-    return isNotValue<E, A, Pc, Tc>;
+    return isNotValue<C, E, A, Pc, Tc>;
   }
 
   /**
@@ -1055,7 +1061,7 @@ class Machine<
    * @see {@linkcode isDefinedS}
    */
   get #isDefined() {
-    return isDefinedS<E, A, Pc, Tc>;
+    return isDefinedS<C, E, A, Pc, Tc>;
   }
 
   /**
@@ -1067,7 +1073,7 @@ class Machine<
    * @see {@linkcode isDefinedS}
    */
   get #isNotDefined() {
-    return isNotDefinedS<E, A, Pc, Tc>;
+    return isNotDefinedS<C, E, A, Pc, Tc>;
   }
 
   // #merge = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {};
@@ -1083,7 +1089,7 @@ class Machine<
    *
    * @see {@linkcode reduceFnMap}
    */
-  #sendTo: SendAction_F<E, A, Pc, Tc> = <T extends AnyMachine>(
+  #sendTo: SendAction_F<C, E, A, Pc, Tc> = <T extends AnyMachine>(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _?: T,
   ) => {
@@ -1115,7 +1121,7 @@ class Machine<
    *
    * @see {@linkcode VoidAction_F}
    */
-  #voidAction: VoidAction_F<E, A, Pc, Tc> = fn => {
+  #voidAction: VoidAction_F<C, E, A, Pc, Tc> = fn => {
     return ({ context, pContext, ...rest }) => {
       if (fn) {
         const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
@@ -1130,7 +1136,7 @@ class Machine<
     };
   };
 
-  #timeAction = (name: string): TimeAction_F<E, A, Pc, Tc> => {
+  #timeAction = (name: string): TimeAction_F<C, E, A, Pc, Tc> => {
     return id =>
       ({ context, pContext }) => {
         return _any({ context, pContext, [name]: id });
@@ -1138,7 +1144,7 @@ class Machine<
   };
 
   #cloneStateExtended = (
-    state: StateExtended<Pc, Tc, ToEvents2<E, A>, A>,
+    state: StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>,
   ) => {
     return structuredClone(state);
   };
@@ -1202,8 +1208,8 @@ export type CreateMachine_F = <
 ) => Machine<
   C,
   // No need to be instanciated, they will be instanciated inside
-  DeepPartial<Pc> | undefined,
-  DeepPartial<Tc> | undefined,
+  DeeperPartial<Pc>,
+  DeeperPartial<Tc>,
   EventM,
   A,
   Mo
