@@ -1,4 +1,4 @@
-import type { PromiseeConfig } from '#actor';
+import type { ChildConfig, EmitterConfig, PromiseeConfig } from '#actor';
 import type {
   Equals,
   NOmit,
@@ -175,7 +175,6 @@ export type Collected0<
   A extends ActorsConfigMap = ActorsConfigMap,
 > = {
   after?: TimeoutPromise<string | false>;
-
   promisee?: () => Promise<(PromiseeResult<E, A> | undefined)[]>;
   always?: () => string | false;
 };
@@ -339,4 +338,14 @@ export type DiffNext = {
   sv: StateValue;
   diffEntries: ActionConfig[];
   diffExits: ActionConfig[];
+};
+
+export type CollectedEmitter = NOmit<EmitterConfig, 'src'> & {
+  from: string;
+  emitter: Pausable;
+};
+
+export type CollectedService = NOmit<ChildConfig, 'src'> & {
+  from: string;
+  service: AnyInterpreter;
 };

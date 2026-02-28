@@ -68,7 +68,7 @@ import {
   withTimeout,
   type TimeoutPromise,
 } from '@bemedev/basifun';
-import { decomposeSV } from '@bemedev/decompose';
+import { assignByKey, decomposeSV } from '@bemedev/decompose';
 import {
   createInterval,
   createTimeout,
@@ -85,6 +85,8 @@ import type {
   AddSubscriber_F,
   AnyInterpreter,
   Collected0,
+  CollectedEmitter,
+  CollectedService,
   CreateInterval2_F,
   DiffNext,
   ExecuteActivities_F,
@@ -104,7 +106,7 @@ import type {
   WorkingStatus,
 } from './interpreter.types';
 
-import type { ChildConfig, PromiseeConfig } from '#actor';
+import type { ChildConfig, EmitterConfig, PromiseeConfig } from '#actor';
 import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
   AllowedNames,
@@ -112,7 +114,6 @@ import type {
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { toEmitterSrc } from '#emitters';
-import type { Pausable } from '@bemedev/rx-pausable';
 import type { AnyMachine } from 'src/machine/machine.types2';
 import type { Machine } from 'src/machine/machine2';
 import type {
@@ -244,23 +245,15 @@ export class Interpreter<
   /**
    * All {@linkcode AnyInterpreter} service subscribers of this {@linkcode Interpreter} service.
    */
-  #childrenServices: {
-    id: string;
-    from: string;
-    service: AnyInterpreter;
-  }[] = [];
+  #children: CollectedService[] = [];
 
-  #collectedEmitters: {
-    from: string;
-    id: string;
-    emitter: Pausable;
-  }[] = [];
+  #collectedEmitters: CollectedEmitter[] = [];
 
   /**
    * Public getter of the service subscribers of this {@linkcode Interpreter} service.
    */
   get children() {
-    return this.#childrenServices;
+    return this.#children;
   }
 
   /**
@@ -637,7 +630,9 @@ export class Interpreter<
    * @see {@linkcode SubscriberClass} for more information about map subscribers.
    */
   #flush = () => {
-    this.#flushMapSubscribers();
+    this.#subscribers.forEach(({ fn }) =>
+      fn(this.#previousState, this.#state),
+    );
   };
 
   /**
@@ -646,18 +641,39 @@ export class Interpreter<
    */
   #timeoutActions: Timeout2[] = [];
 
+  #startChildren = () => {
+    this.#currentChildren.forEach(({ service }) => {
+      service.start();
+    });
+  };
+
+  #pauseChildren = (
+    filter: (child: CollectedService) => boolean = () => true,
+  ) => {
+    this.#children
+      .filter(filter)
+      .forEach(({ service }) => service.pause());
+  };
+
+  #resumeChildren = (
+    filter: (child: CollectedService) => boolean = () => true,
+  ) => {
+    this.#currentChildren
+      .filter(filter)
+      .forEach(({ service }) => service.resume());
+  };
+
   /**
    * Start this {@linkcode Interpreter} service.
    */
   start = async () => {
     this.#throwing();
     this.#startStatus();
+    this.#subscribeChildren();
     this.#startEmitters();
     this.#flush();
     this.#startInitialEntries();
-    this.#currentServices.forEach(({ service }) => {
-      service.start();
-    });
+    this.#startChildren();
     // this.#performEmitters();
     this.#throwing();
 
@@ -680,31 +696,16 @@ export class Interpreter<
   /**
    * Performs all self transitions and activities of this {@linkcode Interpreter} service.
    */
-  #next = async () => {
+  #next = () => {
     this.#selfTransitionsCounter++;
     this.#pauseAllActivities();
     this.#performActivities();
-
-    this.#pauseEmitters(({ from }) => {
-      return !this.#isInsideValue(from);
-    });
-
-    this.#childrenServices
-      .filter(({ from }) => {
-        return !from || !this.#isInsideValue(from);
-      })
-      .forEach(({ service }) => {
-        service.pause();
-      });
-
-    this.#currentServices.forEach(({ service }) => {
-      service.resume();
-    });
-    this.#currentServices.forEach(({ service }) => {
-      service.start();
-    });
-    this.#startEmitters();
+    this.#pauseEmitters(({ from }) => !this.#isInsideValue(from));
+    this.#pauseChildren(({ from }) => !this.#isInsideValue(from));
+    this.#resumeChildren();
+    this.#startChildren();
     this.#resumeEmitters();
+    this.#startEmitters();
 
     this.#abortablePromisees
       .filter(({ from }) => {
@@ -712,7 +713,7 @@ export class Interpreter<
       })
       .forEach(({ abort }) => abort());
 
-    await this.#performSelfTransitions();
+    return this.#performSelfTransitions();
   };
 
   /**
@@ -747,7 +748,6 @@ export class Interpreter<
 
   get #cloneState(): StateExtended<Pc, Tc, ToEvents2<E, A>, A> {
     const pContext = cloneDeep(this.#pContext);
-
     return structuredClone({ pContext, ...this.#state });
   }
 
@@ -797,7 +797,7 @@ export class Interpreter<
     values.forEach(({ on }) => {
       const type = eventToType(forceSend);
       const transitions = toArray.typed(on?.[type]);
-      this.#performTransitions(...(transitions as any));
+      this.__performTransitions(...(transitions as any));
     });
   };
 
@@ -872,7 +872,6 @@ export class Interpreter<
       this.#performAction(action);
 
     this.#mergeContexts({ pContext, context });
-
     this.#performsExtendedActions(extendeds);
   };
 
@@ -929,12 +928,6 @@ export class Interpreter<
     const out = this.#performDelay(delay);
     this.#startStatus();
     return out;
-  };
-
-  #flushMapSubscribers = () => {
-    this.#subscribers.forEach(({ fn }) =>
-      fn(this.#previousState, this.#state),
-    );
   };
 
   #mergeContexts: DirectMerge_F<Pc, Tc> = result => {
@@ -1078,7 +1071,9 @@ export class Interpreter<
     return false;
   };
 
-  #performTransitions: PerformTransitions_F = (...transitions) => {
+  private __performTransitions: PerformTransitions_F = (
+    ...transitions
+  ) => {
     // let transition: ReturnType<PerformTransition_F<Pc, Tc>> = false;
     for (const _transition of transitions) {
       const transition = this.#performTransition(_transition);
@@ -1149,7 +1144,7 @@ export class Interpreter<
               type === 'then' ? then : _catch,
             );
 
-            const target = this.#performTransitions(
+            const target = this.__performTransitions(
               ...(transitions as any),
             );
 
@@ -1240,7 +1235,7 @@ export class Interpreter<
         await sleep(delay);
 
         const func = () =>
-          this.#performTransitions(...(transitions as any));
+          this.__performTransitions(...(transitions as any));
 
         if (this.#cannotPerform(from)) return false;
 
@@ -1272,7 +1267,7 @@ export class Interpreter<
 
   #performAlways: PerformAlway_F = alway => {
     const always = toArray<TransitionConfig>(alway);
-    return this.#performTransitions(...always);
+    return this.__performTransitions(...always);
   };
 
   get #collectedPromisees() {
@@ -1335,10 +1330,7 @@ export class Interpreter<
 
   #collectServices = () => {
     const entriesFlat = Object.entries(this.#machine.flat);
-    const entries: [
-      from: string,
-      ...children: Pick<ChildConfig, 'id' | 'src'>[],
-    ][] = [];
+    const entries: [from: string, ...children: ChildConfig[]][] = [];
 
     entriesFlat.forEach(([from, node]) => {
       const _children = toArray
@@ -1348,21 +1340,11 @@ export class Interpreter<
 
       const len = _children.length;
       if (len > 0) {
-        const children = _children.map(({ id, src }) => ({
-          id,
-          src,
-        }));
-        entries.push([from, ...children]);
+        entries.push([from, ..._children]);
       }
     });
 
-    type Check = (value: any) => value is {
-      id: string;
-      service: AnyInterpreter;
-      from: string;
-    };
-
-    const out = entries
+    const out: any = entries
       .map(([from, ...children]) => {
         return children.map(child => ({ ...child, from }));
       })
@@ -1371,23 +1353,20 @@ export class Interpreter<
         service: this.toChild(src),
         ...rest,
       }))
-      .filter((({ service }) => !!service) as Check);
+      .filter(value => !!value.service);
 
-    this.#childrenServices.push(...out);
+    this.#children.push(...out);
   };
 
-  get #currentServices() {
-    return this.#childrenServices.filter(
+  get #currentChildren() {
+    return this.#children.filter(
       ({ from }) => !from || this.#isInsideValue(from),
     );
   }
 
   #collectEmitters() {
     const entriesFlat = Object.entries(this.#machine.flat);
-    const entries: [
-      from: string,
-      ...machines: { id: string; src: string }[],
-    ][] = [];
+    const entries: [from: string, ...machines: EmitterConfig[]][] = [];
 
     entriesFlat.forEach(([from, node]) => {
       const _emitters = toArray
@@ -1396,26 +1375,21 @@ export class Interpreter<
 
       const len = _emitters.length;
       if (len > 0) {
-        const emitters = _emitters.map(({ id, src }) => ({ id, src }));
-        entries.push([from, ...emitters]);
+        entries.push([from, ..._emitters]);
       }
     });
 
-    type Check = (value: any) => value is {
-      id: string;
-      emitter: Pausable;
-      from: string;
-    };
+    type Check = (value: any) => value is CollectedEmitter;
 
     const out = entries
       .map(([from, ...emitters]) => {
         return emitters.map(emitter => ({ ...emitter, from }));
       })
       .flat()
-      .map(({ id, src, from }) => {
-        return { id, emitter: this.toEmitter(src), from };
+      .map(({ src, ...rest }) => {
+        return { emitter: this.toEmitter(src), ...rest };
       })
-      .filter((({ emitter }) => !!emitter) as Check);
+      .filter((value => !!value.emitter) as Check);
 
     return this.#collectedEmitters.push(...out);
   }
@@ -1475,11 +1449,7 @@ export class Interpreter<
   };
 
   #pauseEmitters = (
-    filter: (value: {
-      from: string;
-      id: string;
-      emitter: Pausable;
-    }) => boolean = () => true,
+    filter: (value: CollectedEmitter) => boolean = () => true,
   ) => {
     this.#collectedEmitters
       .filter(({ id }) => this.#startedEmitterIDs.has(id))
@@ -1587,6 +1557,66 @@ export class Interpreter<
     return out;
   }
 
+  #subscribeChildren = () => {
+    for (const { service, on, contexts, id } of this.#children) {
+      service.subscribe(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ({ children, ...payload }) => {
+          const type = eventToType(payload.event);
+
+          const event = {
+            type: `${id}::on::${type}`,
+            payload,
+          } satisfies EventObject;
+
+          const tempState: any = {
+            children: {
+              [id]: payload,
+            },
+          };
+
+          this.#performStates(tempState);
+          this.#changeEvent(_any(event));
+          const transitions = toArray<TransitionConfig>(on?.[type]);
+          this.__performTransitions(...transitions);
+        },
+        {
+          equals: (_, b) => {
+            const keys = Object.keys(on ?? {});
+            const key = eventToType(b.event);
+            return keys.includes(key);
+          },
+        },
+      );
+
+      service.subscribe(
+        ({ context }) => {
+          const entries = Object.entries(contexts ?? {});
+          entries.forEach(([key, path]) => {
+            assignByKey.low(
+              this.#pContext,
+              path,
+              getByKey.low(context, key),
+            );
+          });
+        },
+        {
+          equals: (a, b) => {
+            const keys = Object.keys(contexts ?? {});
+
+            for (const key of keys) {
+              const _a = getByKey.low(a.context, key);
+              const _b = getByKey.low(b.context, key);
+              if (!equal(_a, _b)) return false;
+            }
+
+            return true;
+          },
+        },
+      );
+    }
+  };
+
   #performSelfTransitions = async () => {
     this.#makeBusy();
 
@@ -1637,9 +1667,7 @@ export class Interpreter<
     this.#abortablePromisees.forEach(({ abort }) => abort());
     this.#makeBusy();
     this.#subscribers.forEach(this.#close);
-    this.#childrenServices.forEach(({ service }) => {
-      service.pause();
-    });
+    this.#pauseChildren();
     this.#pauseEmitters();
 
     this.#timeoutActions.forEach(this.#pause);
@@ -1652,9 +1680,7 @@ export class Interpreter<
       this.#makeBusy();
       this.#subscribers.forEach(this.#open);
       this.#timeoutActions.forEach(this.#resume);
-      this.#currentServices.forEach(({ service }) => {
-        service.resume();
-      });
+      this.#resumeChildren();
       this.#resumeEmitters();
       this.#makeWork();
     }
@@ -1664,7 +1690,7 @@ export class Interpreter<
     this.pause();
     this.#makeBusy();
     this.#subscribers.forEach(this.#unsubscribe);
-    this.#childrenServices.forEach(({ service }) => {
+    this.#children.forEach(({ service }) => {
       service.stop();
     });
     this._cachedIntervals.forEach(this.#dispose);
@@ -1867,7 +1893,7 @@ export class Interpreter<
       const cannotContinue = !this.#isInsideValue2(sv, from);
       if (cannotContinue) return;
 
-      const target = this.#performTransitions(
+      const target = this.__performTransitions(
         ...toArray.typed(transitions),
       );
 
@@ -2158,7 +2184,7 @@ export class Interpreter<
    * @see {@linkcode send} for sending events to the current service.
    */
   #sendTo = <T extends EventObject>(to: string, event: T) => {
-    return this.#childrenServices
+    return this.#children
       .filter(({ from, id }) => this.#isInsideValue(from) && id === to)
       .forEach(({ service }) => {
         service.send(event);
@@ -2169,7 +2195,7 @@ export class Interpreter<
 
   dispose = () => {
     this.stop();
-    this.#childrenServices.forEach(({ service }) => {
+    this.#children.forEach(({ service }) => {
       service.dispose();
     });
     this.#timeoutActions.forEach(this.#dispose);
