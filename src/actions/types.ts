@@ -1,6 +1,8 @@
 import type { DeepPartial, PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
-import type { Describer, FnMap, FnR, FromDescriber } from '~types';
+import type { EventsMap, ActorsConfigMap } from '#events';
+import type { Config } from 'src/machine/types';
+import type { FnMap, FnR } from 'src/types/primitives';
+import type { Describer, FromDescriber } from '~types';
 
 /**
  * JSON configuration for an action.
@@ -21,34 +23,37 @@ export type FromActionConfig<T> = T extends Describer
   : T;
 
 export type Action<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
+> = FnMap<C, E, A, Pc, Tc, ActionResult<Pc, Tc>>;
 
 /**
  * Represents a collection of actions, where each action is identified by a string key.
  *
  * @template : type {@linkcode EventsMap}  [E], the events Map.
- * @template : type {@linkcode PromiseeMap} [P], the promisees map.
+ * @template : type {@linkcode ActorsConfigMap} [A], the actors configuration map.
  * @template : [Pc], the type of the private context.
  * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
  * @returns a partial record where each key is a string and each value is an {@linkcode Action}.
  */
 export type ActionMap<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  C extends Config = Config,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<Record<string, Action<E, P, Pc, Tc>>>;
+> = Partial<Record<string, Action<C, E, A, Pc, Tc>>>;
 
 export type ActionResultFn<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>>;
+> = FnR<C, E, A, Pc, Tc, ActionResult<Pc, Tc>>;
 
 /**
  * Represents the result of executing an action, which includes the private context and the context.
@@ -66,8 +71,9 @@ export type ActionResult<
 }>;
 
 export type Action2<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  C extends Config = Config,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = ActionResultFn<E, P, Pc, Tc>;
+> = ActionResultFn<C, E, A, Pc, Tc>;

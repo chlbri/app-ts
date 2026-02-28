@@ -1,35 +1,39 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
-import type { FnMap } from '~types';
+import type { ActorsConfigMap, EventsMap } from '#events';
+import type { Config } from 'src/machine/types';
+import type { FnMap } from 'src/types/primitives';
 
 /**
  * Delay type definition.
  * The function takes in a context object and returns a delay in milliseconds.
  * @template : type {@linkcode EventsMap} [E], the events map.
- * @template : type {@linkcode PromiseeMap} [P], the promisees map.
+ * @template : type {@linkcode ActorsConfigMap} [A], the actors config map.
  * @template : [Pc], the type of the private context.
- * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
+ * @template : type {@linkcode types.PrimitiveObject} [Tc], the type of the context.
  * @returns : A number or a {@linkcode FnMap} function that returns a number.
  */
 export type Delay<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = number | FnMap<E, P, Pc, Tc, number>;
+> = number | FnMap<C, E, A, Pc, Tc, number>;
 
 /**
  * Delay configuration map.
  * Maps a string key to a {@linkcode Delay} function.
+ * @template : type {@linkcode Config} [C] - The configuration type.
  * @template : type {@linkcode EventsMap} [E] - The events map.
- * @template : type {@linkcode PromiseeMap} [P] - The promisees map.
+ * @template : type {@linkcode ActorsConfigMap} [A] - The actors config map.
  * @template : [Pc] - The type of the private context.
- * @template : type {@linkcode types.PrimitiveObject} [Tc] - The type of the context.
+ * @template : type {@linkcode PrimitiveObject} [Tc] - The type of the context.
  * @returns : A partial record where each key is a string and each value is a {@linkcode Delay}.
  */
 export type DelayMap<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  C extends Config = Config,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<Record<string, Delay<E, P, Pc, Tc>>>;
+> = Partial<Record<string, Delay<C, E, A, Pc, Tc>>>;

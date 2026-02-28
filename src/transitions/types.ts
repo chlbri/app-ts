@@ -12,7 +12,7 @@ import type {
   Action,
   ActionConfig,
   FromActionConfig,
-} from 'src/actions/types2';
+} from 'src/actions/types';
 import type {
   ActorConfig,
   ChildConfig,
@@ -20,7 +20,7 @@ import type {
   ExtractSrcFromActor,
   PromiseeConfig,
 } from 'src/actor';
-import type { FromGuard, GuardConfig, Predicate } from 'src/guards/types2';
+import type { FromGuard, GuardConfig, Predicate } from 'src/guards/types';
 import type {
   ExtractActionsFromFinally,
   ExtractActionsFromPromisee,
@@ -28,16 +28,16 @@ import type {
   ExtractMaxFromPromisee,
   GetEventKeysFromPromisee,
   Promisee,
-} from 'src/promises/types2';
+} from '#promises';
 
-import type { Emitter } from 'src/emitters/types2';
-import type { Child, Config } from 'src/machine/types2';
+import type { Emitter } from 'src/emitters/types';
+import type { Child, Config } from 'src/machine/types';
 import type {
   Identify,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
-} from 'src/types/primitives2';
+} from 'src/types/primitives';
 
 /**
  * Represents the simpliest configuration map for a transition.
@@ -467,7 +467,7 @@ export type Transitions<
   on: Identify<Transition<C, E, A, Pc, Tc>>[];
   always: Transition<C, E, A, Pc, Tc>[];
   after: Identify<Transition<C, E, A, Pc, Tc>>[];
-  promises: Promisee<E, A, Pc, Tc>[];
+  promises: Promisee<C, E, A, Pc, Tc>[];
   emitters: Emitter<C, E, A, Pc, Tc>[];
-  children: Child<E, A, Pc, Tc>[];
+  children: Child<C, E, A, Pc, Tc>[];
 };

@@ -1,4 +1,3 @@
-import type { Action } from '#actions';
 import _any from '#bemedev/features/common/castings/any';
 import commonT from '#bemedev/features/common/typings';
 import extract from '#bemedev/features/common/typings/extract';
@@ -6,31 +5,25 @@ import byKey from '#bemedev/features/objects/typings/byKey';
 import keysOf from '#bemedev/features/objects/typings/keysOf';
 import type {
   AllowedNames,
+  NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
-import type { Delay } from '#delays';
-import {
-  type EventsMap,
-  type PromiseeMap,
-  type ToEvents,
-  type ToEventsR,
-} from '#events';
+import { type EventsMap, type ToEvents2, type ToEventsR2 } from '#events';
 import {
   isDefinedS,
   isNotDefinedS,
   isNotValue,
   isValue,
   type DefinedValue,
-  type PredicateS,
 } from '#guards';
+import { type PromiseFunction } from '#promises';
 import type {
   State,
   StateExtended,
   StateP,
   StatePextended,
-} from '#interpreters';
-import { type PromiseFunction } from '#promises';
+} from '#states';
 import {
   flatMap,
   initialConfig,
@@ -44,26 +37,23 @@ import {
 } from '#states';
 import { merge, reduceFnMap } from '#utils';
 import { partialCall, toArray } from '@bemedev/basifun';
-import { decompose, type Decompose } from '@bemedev/decompose';
+import { decompose, getByKey, type Decompose } from '@bemedev/decompose';
+
+import type { Action } from 'src/actions/types';
+import type { Delay } from 'src/delays/types';
+import { ActorsConfigMap } from '../events/types';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
-import type { NoExtraKeysStrict } from '~types';
-import {
-  assignByKey,
-  createChildS,
-  expandFnMap,
-  getByKey,
-  type CreateChild_F,
-} from './functions';
+import type { PredicateS } from 'src/guards/types';
+import type { DeeperPartial, NoExtraKeysStrict } from '~types';
+import { assignByKey, expandFnMap } from './functions';
 import type {
-  AddOption,
   AddOptions_F,
   AddOptionsParam_F,
   AnyMachine,
   Elements,
   GetIO_F,
-  LegacyOptions,
   ScheduledData,
   SendAction_F,
   TimeAction_F,
@@ -72,9 +62,8 @@ import type {
 import type {
   Config,
   ConfigDef,
+  GetActorKeysFromConfig,
   GetEventsFromConfig,
-  GetMachineKeysFromFlat,
-  GetPromiseeSrcFromConfig,
   MachineOptions,
   NoExtraKeysConfig,
   NoExtraKeysConfigDef,
@@ -90,10 +79,10 @@ import type {
  * @template Pc : The private context type of the machine.
  * @template : {@linkcode PrimitiveObject} [Pc] - The context type of the machine.
  * @template : {@linkcode GetEventsFromConfig}<{@linkcode C}> [E] - The events map type derived from the configuration.
- * @template : {@linkcode PromiseeMap} [P] - The promisees map type derived from the configuration. Defaults to {@linkcode GetPromiseeSrcFromConfig}<{@linkcode C}>.
- * @template : {@linkcode SimpleMachineOptions2} [Mo] - The options type for the machine, which includes actions, predicates, delays, promises, and machines. Defaults to {@linkcode MachineOptions}<[{@linkcode C} , {@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} ]>.
+ * @template : {@linkcode PromiseeMap} [P] - The promisees map type derived from the configuration. Defaults to {@linkcode GetPromiseesSrcFromConfig}<{@linkcode C}>.
+ * @template : {@linkcode SimpleMachineOptions2} [Mo] - The options type for the machine, which includes actions, predicates, delays, promises, and machines. Defaults to {@linkcode MachineOptions}<[{@linkcode C} , {@linkcode E} , {@linkcode A} , {@linkcode Pc} , {@linkcode Tc} ]>.
  *
- * @implements {@linkcode AnyMachine}<{@linkcode E} , {@linkcode P} , {@linkcode Pc} , {@linkcode Tc} >
+ * @implements {@linkcode AnyMachine}<{@linkcode E} , {@linkcode A} , {@linkcode Pc} , {@linkcode Tc} >
  */
 
 class Machine<
@@ -101,9 +90,9 @@ class Machine<
   const Pc = any,
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, P, Pc, Tc>,
-> implements AnyMachine<E, P, Pc, Tc> {
+  A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
+> implements AnyMachine<E, A, Pc, Tc> {
   /**
    * The configuration of the machine for this {@linkcode Machine}.
    *
@@ -111,6 +100,10 @@ class Machine<
    * @see {@linkcode C}
    */
   #config: C;
+
+  get __config() {
+    return _unknown<C>();
+  }
 
   /**
    * The flat map of the configuration for this {@linkcode Machine}.
@@ -142,9 +135,9 @@ class Machine<
    * The map of promisees for this {@linkcode Machine}.
    *
    * @see {@linkcode PromiseeMap}
-   * @see {@linkcode P}
+   * @see {@linkcode A}
    */
-  #promiseesMap!: P;
+  #actorsMap!: A;
 
   /**
    * Public accessor for the events map for this {@linkcode Machine}.
@@ -159,10 +152,10 @@ class Machine<
    * Public accessor for the promisees map for this {@linkcode Machine}.
    *
    * @see {@linkcode PromiseeMap}
-   * @see {@linkcode P}
+   * @see {@linkcode A}
    */
-  get promiseesMap() {
-    return this.#promiseesMap;
+  get actorsMap() {
+    return this.#actorsMap;
   }
 
   /**
@@ -170,14 +163,14 @@ class Machine<
    *
    * This property provides the events map for this {@linkcode Machine} as a type.
    *
-   * @see {@linkcode ToEvents}
+   * @see {@linkcode ToEvents2}
    * @see {@linkcode E}
-   * @see {@linkcode P}
+   * @see {@linkcode A}
    *
    * @remarks Used for typing purposes only.
    */
   get __events() {
-    return _unknown<ToEvents<E, P>>();
+    return _unknown<ToEvents2<E, A>>();
   }
 
   /**
@@ -189,13 +182,13 @@ class Machine<
    * @see {@linkcode ToEvents}
    * @see {@linkcode E}
    * @see {@linkcode PromiseeMap}
-   * @see {@linkcode P}
+   * @see {@linkcode A}
    * @see {@linkcode Pc}
    * @see {@linkcode PrimitiveObject}
    * @see {@linkcode Tc}
    */
   get __actionFn() {
-    return _unknown<Action<E, P, Pc, Tc>>();
+    return _unknown<Action<C, E, A, Pc, Tc>>();
   }
 
   /**
@@ -234,14 +227,16 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode StateExtended}
-   * @see {@linkcode ToEvents}
-   * @see {@linkcode E}
+   * @see {@linkcode ToEvents2}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __stateExtended() {
-    return _unknown<StateExtended<Pc, Tc, ToEvents<E, P>>>();
+    return _unknown<StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>>();
   }
 
   /**
@@ -252,14 +247,15 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode State}
-   * @see {@linkcode ToEvents}
-   * @see {@linkcode E}
+   * @see {@linkcode ToEventsR2}
    * @see {@linkcode PrimitiveObject}
-   * @see {@linkcode Pc}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode E}
+   * @see {@linkcode A}   * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __state() {
-    return _unknown<State<Tc, ToEventsR<E, P>>>();
+    return _unknown<State<C, Tc, ToEventsR2<E, A>>>();
   }
 
   /**
@@ -270,14 +266,16 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode StateP}
-   * @see {@linkcode ToEvents}
-   * @see {@linkcode E}
+   * @see {@linkcode ToEventsR2}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __stateP() {
-    return _unknown<StateP<Tc, ToEventsR<E, P>['payload']>>();
+    return _unknown<StateP<C, Tc, ToEventsR2<E, A>['payload']>>();
   }
 
   /**
@@ -288,18 +286,22 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode StatePextended}
-   * @see {@linkcode ToEvents}
-   * @see {@linkcode E}
+   * @see {@linkcode ToEventsR2}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode ActorsConfigMap}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __statePextended() {
-    return _unknown<StatePextended<Pc, Tc, ToEventsR<E, P>['payload']>>();
+    return _unknown<
+      StatePextended<C, Pc, Tc, ToEventsR2<E, A>['payload']>
+    >();
   }
 
   #typingsByKey = <
-    K extends AllowedNames<AnyMachine<E, P, Pc, Tc>, object | undefined>,
+    K extends AllowedNames<AnyMachine<E, A, Pc, Tc>, object | undefined>,
   >(
     key: K,
   ) => {
@@ -331,15 +333,15 @@ class Machine<
    *
    * @see {@linkcode PredicateS}
    * @see {@linkcode ToEvents}
-   * @see {@linkcode E}
-   * @see {@linkcode PromiseeMap}
-   * @see {@linkcode P}
-   * @see {@linkcode Pc}
+   * @see {@linkcode ActorsConfigMap}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
+   * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __predictate() {
-    return _unknown<PredicateS<E, P, Pc, Tc>>();
+    return _unknown<PredicateS<C, E, A, Pc, Tc>>();
   }
 
   /**
@@ -362,15 +364,15 @@ class Machine<
    *
    * @see {@linkcode Delay}
    * @see {@linkcode ToEvents}
-   * @see {@linkcode E}
-   * @see {@linkcode PromiseeMap}
-   * @see {@linkcode P}
-   * @see {@linkcode Pc}
+   * @see {@linkcode ActorsConfigMap}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
+   * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __delay() {
-    return _unknown<Delay<E, P, Pc, Tc>>();
+    return _unknown<Delay<C, E, A, Pc, Tc>>();
   }
 
   /**
@@ -381,8 +383,8 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode DefinedValue}
-   * @see {@linkcode Pc}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __definedValue() {
@@ -409,28 +411,15 @@ class Machine<
    *
    * @see {@linkcode PromiseFunction}
    * @see {@linkcode ToEvents}
-   * @see {@linkcode E}
-   * @see {@linkcode PromiseeMap}
-   * @see {@linkcode P}
-   * @see {@linkcode Pc}
+   * @see {@linkcode ActorsConfigMap}
    * @see {@linkcode PrimitiveObject}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
+   * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
   get __promise() {
-    return _unknown<PromiseFunction<E, P, Pc, Tc>>();
-  }
-
-  /**
-   * @deprecated
-   *
-   * This property provides any machine key for this {@linkcode Machine} as a type.
-   *
-   * @remarks Used for typing purposes only.
-   */
-  get __childKey() {
-    return undefined as unknown as GetMachineKeysFromFlat<
-      typeof this.flat
-    >;
+    return _unknown<PromiseFunction<C, E, A, Pc, Tc>>();
   }
 
   /**
@@ -452,15 +441,7 @@ class Machine<
 
   #delays?: Mo['delays'];
 
-  #promises?: Mo['promises'];
-
-  #machines?: Mo['machines'];
-
-  #emitters?: Mo['emitters'];
-
-  /**
-   * Initials {@linkcode StateValue}s for all compound {@linkcode NodeConfigWithInitials}.
-   */
+  #actors?: Mo['actors'];
 
   /**
    * Context for this {@linkcode Machine}.
@@ -499,7 +480,7 @@ class Machine<
     this.#decomposed = decompose(config, {
       start: false,
       object: 'both',
-    }) as Decompose<C, { sep: '.'; start: false; object: 'both' }>;
+    });
     this.#flat = flatMap(this.#config, true);
     this.#initialConfig = initialConfig(this.#config);
     this.#getInitialKeys();
@@ -563,15 +544,15 @@ class Machine<
   }
 
   get promises() {
-    return this.#promises;
+    return this.#actors?.promises;
   }
 
-  get machines() {
-    return this.#machines;
+  get children() {
+    return this.#actors?.children;
   }
 
   get emitters() {
-    return this.#emitters;
+    return this.#actors?.emitters;
   }
 
   // #region Providers
@@ -616,14 +597,14 @@ class Machine<
   #addDelays = (delays?: Mo['delays']) =>
     (this.#delays = merge(this.#delays, delays));
 
-  #addPromises = (promises?: Mo['promises']) =>
-    (this.#promises = merge(this.#promises, promises));
+  #addPromises = (promises?: NotUndefined<Mo['actors']>['promises']) =>
+    (this.#actors = merge(this.#actors, { promises }));
 
-  #addMachines = (machines?: Mo['machines']) =>
-    (this.#machines = merge(this.#machines, machines));
+  #addChildren = (children?: NotUndefined<Mo['actors']>['children']) =>
+    (this.#actors = merge(this.#actors, { children }));
 
-  #addEmitters = (emitters?: Mo['emitters']) =>
-    (this.#emitters = merge(this.#emitters, emitters));
+  #addEmitters = (emitters?: NotUndefined<Mo['actors']>['emitters']) =>
+    (this.#actors = merge(this.#actors, { emitters }));
 
   /**
    * Create options for the machine.
@@ -633,19 +614,11 @@ class Machine<
    *
    * Remark: Used for typings, when you're outside the Machine class.
    */
-  createOptions = <T extends Mo>(
-    helper: (
-      functions: AddOption<E, P, Pc, Tc>,
-      options: {
-        _legacy: LegacyOptions<E, P, Pc, Tc, Mo>;
-      },
-    ) => NoExtraKeysStrict<T, Mo>,
-  ) => {
+  createOptions: AddOptions_F<C, E, A, Pc, Tc, Mo> = helper => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
     const isNotDefined = this.#isNotDefined;
-    const createChild = this.#createChild;
     const voidAction = this.#voidAction;
     const sendTo = this.#sendTo;
 
@@ -653,10 +626,8 @@ class Machine<
       actions: cloneDeep(this.#actions),
       predicates: cloneDeep(this.#predicates),
       delays: cloneDeep(this.#delays),
-      promises: cloneDeep(this.#promises),
-      machines: cloneDeep(this.#machines),
-      emitters: cloneDeep(this.#emitters),
-    });
+      actors: cloneDeep(this.#actors),
+    }) as any;
 
     const out = helper(
       {
@@ -664,12 +635,11 @@ class Machine<
         isNotValue,
         isDefined,
         isNotDefined,
-        createChild,
 
         assign: (key, fn) => {
           const out = _any(expandFnMap)(
             this.#eventsMap,
-            this.#promiseesMap,
+            this.#actorsMap,
             _any(key),
             fn,
           );
@@ -798,15 +768,15 @@ class Machine<
    * @param option a function that provides options for the machine.
    * Options can include actions, predicates, delays, promises, and child machines.
    */
-  addOptions: AddOptions_F<E, P, Pc, Tc, Mo> = helper => {
+  addOptions: AddOptions_F<C, E, A, Pc, Tc, Mo> = helper => {
     const out = this.createOptions(helper);
 
     this.#addActions(out?.actions);
     this.#addPredicates(out?.predicates);
     this.#addDelays(out?.delays);
-    this.#addPromises(out?.promises);
-    this.#addMachines(out?.machines);
-    this.#addEmitters(out?.emitters);
+    this.#addPromises(out?.actors?.promises);
+    this.#addChildren(out?.actors?.children);
+    this.#addEmitters(out?.actors?.emitters);
 
     return out;
   };
@@ -819,7 +789,7 @@ class Machine<
    * @returns a new instance of the machine with the provided options applied.
    */
   provideOptions = <T extends Mo>(
-    option: AddOptionsParam_F<E, P, Pc, Tc, NoExtraKeysStrict<T, Mo>>,
+    option: AddOptionsParam_F<C, E, A, Pc, Tc, NoExtraKeysStrict<T, Mo>>,
   ) => {
     const out = this.renew;
     out.addOptions(option);
@@ -835,20 +805,18 @@ class Machine<
    *
    * @see type inferences :
    *
-   * @see {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   * @see {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
-  get #elements(): Elements<C, E, P, Pc, Tc, Mo> {
+  get #elements(): Elements<C, E, A, Pc, Tc, Mo> {
     const config = structuredClone(this.#config);
     const pContext = cloneDeep(this.#pContext);
     const context = structuredClone(this.#context);
     const actions = cloneDeep(this.#actions);
     const predicates = cloneDeep(this.#predicates);
     const delays = cloneDeep(this.#delays);
-    const promises = cloneDeep(this.#promises);
-    const machines = cloneDeep(this.#machines);
+    const actorsMap = cloneDeep(this.#actorsMap);
     const events = cloneDeep(this.#eventsMap);
-    const promisees = cloneDeep(this.#promiseesMap);
-    const emitters = cloneDeep(this.#emitters);
+    const actors = cloneDeep(this.#actors);
 
     return {
       config,
@@ -857,11 +825,9 @@ class Machine<
       actions,
       predicates,
       delays,
-      promises,
-      machines,
+      actors,
       events,
-      promisees,
-      emitters,
+      actorsMap,
     };
   }
 
@@ -876,7 +842,7 @@ class Machine<
    *
    * @see type inferences :
    *
-   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
 
   /**
@@ -890,9 +856,9 @@ class Machine<
    *
    * @see type inferences :
    *
-   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode types} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
+   *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode types} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
-  #renew = (): Machine<C, Pc, Tc, E, P, Mo> => {
+  #renew = (): Machine<C, Pc, Tc, E, A, Mo> => {
     const {
       config,
       pContext,
@@ -900,26 +866,25 @@ class Machine<
       predicates,
       actions,
       delays,
-      promises,
-      machines,
-      promisees,
+
       events,
-      emitters,
+      actors,
+      actorsMap,
     } = this.#elements;
 
-    const out = new Machine<C, Pc, Tc, E, P, Mo>(config);
+    const out = new Machine<C, Pc, Tc, E, A, Mo>(config);
 
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
-    out.#promiseesMap = promisees;
+    out.#actorsMap = actorsMap;
 
     out.#addPredicates(predicates);
     out.#addActions(actions);
     out.#addDelays(delays);
-    out.#addPromises(promises);
-    out.#addMachines(machines);
-    out.#addEmitters(emitters);
+    out.#addPromises(actors?.promises);
+    out.#addChildren(actors?.children);
+    out.#addEmitters(actors?.emitters);
 
     return out;
   };
@@ -938,14 +903,14 @@ class Machine<
    * @remarks used internally
    */
   _providePrivateContext = <T = any>(pContext: T) => {
-    const { context, config, events, promisees } = this.#elements;
+    const { context, config, events, actorsMap } = this.#elements;
 
-    const out = new Machine<C, T, Tc, E, P>(config);
+    const out = new Machine<C, T, Tc, E, A>(config);
 
     out.#context = context;
     out.#pContext = pContext;
     out.#eventsMap = events;
-    out.#promiseesMap = promisees;
+    out.#actorsMap = actorsMap;
 
     return out;
   };
@@ -959,14 +924,14 @@ class Machine<
    * @remarks used internally
    */
   _provideContext = <T extends PrimitiveObject>(context: T) => {
-    const { pContext, config, events, promisees } = this.#elements;
+    const { pContext, config, events, actorsMap } = this.#elements;
 
-    const out = new Machine<C, Pc, T, E, P>(config);
+    const out = new Machine<C, Pc, T, E, A>(config);
 
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
-    out.#promiseesMap = promisees;
+    out.#actorsMap = actorsMap;
 
     return out;
   };
@@ -979,14 +944,14 @@ class Machine<
    * @remarks used internally
    */
   _provideEvents = <T extends EventsMap>(map: T) => {
-    const { pContext, config, context, promisees } = this.#elements;
+    const { pContext, config, context, actorsMap } = this.#elements;
 
-    const out = new Machine<C, Pc, Tc, T, P>(config);
+    const out = new Machine<C, Pc, Tc, T, A>(config);
 
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = map;
-    out.#promiseesMap = promisees;
+    out.#actorsMap = actorsMap;
 
     return out;
   };
@@ -995,7 +960,7 @@ class Machine<
    * @deprecated
    * @remarks used internally
    */
-  _providePromisees = <T extends PromiseeMap>(map: T) => {
+  _provideActors = <T extends ActorsConfigMap>(map: T) => {
     const { pContext, config, context, events } = this.#elements;
 
     const out = new Machine<C, Pc, Tc, E, T>(config);
@@ -1003,7 +968,7 @@ class Machine<
     out.#pContext = pContext;
     out.#context = context;
     out.#eventsMap = events;
-    out.#promiseesMap = map;
+    out.#actorsMap = map;
 
     return out;
   };
@@ -1045,15 +1010,14 @@ class Machine<
     const predicates = this.#predicates;
     const actions = this.#actions;
     const delays = this.#delays;
-    const promises = this.#promises;
-    const machines = this.#machines;
+    const actors = this.#actors;
 
     const out = _unknown<Mo>({
       predicates,
       actions,
       delays,
-      promises,
-      machines,
+
+      actors,
     });
 
     return out;
@@ -1066,12 +1030,12 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isValue}
    */
   get #isValue() {
-    return isValue<E, P, Pc, Tc>;
+    return isValue<C, E, A, Pc, Tc>;
   }
 
   /**
@@ -1079,12 +1043,12 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isNotValue}
    */
   get #isNotValue() {
-    return isNotValue<E, P, Pc, Tc>;
+    return isNotValue<C, E, A, Pc, Tc>;
   }
 
   /**
@@ -1092,41 +1056,27 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isDefinedS}
    */
   get #isDefined() {
-    return isDefinedS<E, P, Pc, Tc>;
+    return isDefinedS<C, E, A, Pc, Tc>;
   }
 
   /**
    * Function helper to check if a value is undefined or null
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isDefinedS}
    */
   get #isNotDefined() {
-    return isNotDefinedS<E, P, Pc, Tc>;
+    return isNotDefinedS<C, E, A, Pc, Tc>;
   }
 
   // #merge = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {};
-
-  /**
-   * Function helper to create a child service for this {@linkcode Machine}.
-   *
-   * @see type inferences :
-   *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc}
-   *
-   * @see {@linkcode createChildS}
-   */
-  #createChild: CreateChild_F<E, P, Pc> = (...args) => {
-    return createChildS(...args);
-  };
-  // #endregion
 
   /**
    * Function helper to send an event to a child service.
@@ -1135,16 +1085,16 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode reduceFnMap}
    */
-  #sendTo: SendAction_F<E, P, Pc, Tc> = <T extends AnyMachine>(
+  #sendTo: SendAction_F<C, E, A, Pc, Tc> = <T extends AnyMachine>(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _?: T,
   ) => {
     return fn => {
-      const fn2 = reduceFnMap(this.eventsMap, this.promiseesMap, fn);
+      const fn2 = reduceFnMap(this.eventsMap, this.#actorsMap, fn);
       return ({ context, pContext, ...rest }) => {
         const state = this.#cloneStateExtended({
           context,
@@ -1167,14 +1117,14 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseeSrcFromConfig} , {@linkcode P} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode VoidAction_F}
    */
-  #voidAction: VoidAction_F<E, P, Pc, Tc> = fn => {
+  #voidAction: VoidAction_F<C, E, A, Pc, Tc> = fn => {
     return ({ context, pContext, ...rest }) => {
       if (fn) {
-        const _fn = reduceFnMap(this.#eventsMap, this.#promiseesMap, fn);
+        const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
         const state = this.#cloneStateExtended({
           context,
           pContext,
@@ -1186,14 +1136,16 @@ class Machine<
     };
   };
 
-  #timeAction = (name: string): TimeAction_F<E, P, Pc, Tc> => {
+  #timeAction = (name: string): TimeAction_F<C, E, A, Pc, Tc> => {
     return id =>
       ({ context, pContext }) => {
         return _any({ context, pContext, [name]: id });
       };
   };
 
-  #cloneStateExtended = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {
+  #cloneStateExtended = (
+    state: StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>,
+  ) => {
     return structuredClone(state);
   };
 }
@@ -1242,18 +1194,26 @@ export type CreateMachine_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  P extends PromiseeMap = GetPromiseeSrcFromConfig<C>,
-  Mo extends MachineOptions<C, EventM, P, Pc, Tc> = MachineOptions<
+  A extends GetActorKeysFromConfig<C> = GetActorKeysFromConfig<C>,
+  Mo extends MachineOptions<C, EventM, A, Pc, Tc> = MachineOptions<
     C,
     EventM,
-    P,
+    A,
     Pc,
     Tc
   >,
 >(
   config: NoExtraKeysConfig<C & { __tsSchema?: NoExtraKeysConfigDef<C2> }>,
-  types: { pContext: Pc; context: Tc; eventsMap: EventM; promiseesMap: P },
-) => Machine<C, Pc, Tc, EventM, P, Mo>;
+  types: { pContext: Pc; context: Tc; eventsMap: EventM; actorsMap: A },
+) => Machine<
+  C,
+  // No need to be instanciated, they will be instanciated inside
+  DeeperPartial<Pc>,
+  DeeperPartial<Tc>,
+  EventM,
+  A,
+  Mo
+>;
 
 /**
  * Creates a new instance of {@linkcode Machine} with the provided configuration and
@@ -1272,13 +1232,11 @@ export type CreateMachine_F = <
  */
 export const createMachine: CreateMachine_F = (
   config,
-  { eventsMap, pContext, context, promiseesMap },
+  { eventsMap, actorsMap },
 ) => {
   const out = new Machine(config as Config)
     ._provideEvents(eventsMap)
-    ._providePrivateContext(pContext)
-    ._provideContext(context)
-    ._providePromisees(promiseesMap);
+    ._provideActors(actorsMap);
 
   return out as any;
 };

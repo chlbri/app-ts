@@ -1,4 +1,4 @@
-import type { EmittersMap } from '../types2';
+import type { EmittersMap } from '../types';
 import { createPausable, type Pausable } from '@bemedev/rx-pausable';
 
 export type ToEmitterSrc_F = (

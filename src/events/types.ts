@@ -4,7 +4,7 @@ import type {
   Unionize,
 } from '#bemedev/globals/types';
 import type { EmitterConfigMap } from '#emitters';
-import type { ChildConfigMap } from 'src/machine/types2';
+import type { ChildConfigMap } from 'src/machine/types';
 import type { INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE } from './constants';
 
 /**

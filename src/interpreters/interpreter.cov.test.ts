@@ -3,7 +3,7 @@ import { fakeWaiter } from '#fixtures';
 import { DELAY } from '#fixturesData';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { typings } from '#utils';
+import { notU, typings } from '#utils';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -44,7 +44,7 @@ describe('Covers all inner actions', () => {
         actions: {
           inc: assign(
             'context.iterator',
-            ({ context: { iterator } }) => iterator + 1,
+            ({ context }) => notU(context?.iterator) + 1,
           ),
           pause: pauseActivity('/idle::DELAY'),
           resume: resumeActivity('/idle::DELAY'),
@@ -57,8 +57,6 @@ describe('Covers all inner actions', () => {
     );
 
     const service = interpret(machine101, {
-      pContext: {},
-      context: { iterator: 0 },
       exact: true,
     });
 
@@ -174,7 +172,7 @@ describe('Covers all inner actions', () => {
           inc: debounce(
             assign(
               'context.iterator',
-              ({ context: { iterator } }) => iterator + 1000,
+              ({ context }) => notU(context?.iterator) + 1000,
             ),
             {
               ms: DELAY * 10,
@@ -190,8 +188,6 @@ describe('Covers all inner actions', () => {
     );
 
     const service = interpret(machine101, {
-      pContext: {},
-      context: { iterator: 0 },
       exact: true,
     });
 
@@ -357,13 +353,13 @@ describe('Covers all inner actions', () => {
       actions: {
         inc: assign(
           'context.iterator',
-          ({ context: { iterator } }) => iterator! + 1,
+          ({ context }) => notU(context?.iterator) + 1,
         ),
 
         init: assign('context.iterator', () => 0),
         dec: assign(
           'context.iterator',
-          ({ context: { iterator } }) => iterator! - 1,
+          ({ context }) => notU(context?.iterator) - 1,
         ),
         forceSendInc: forceSend('INCREMENT'),
         sendDec: resend('DECREMENT'),
@@ -473,12 +469,14 @@ describe('Covers all inner actions', () => {
       }),
     ).provideOptions(({ assign, forceSend, resend }) => ({
       actions: {
-        inc: assign('context.iterator', ({ context: { iterator } }) => {
+        inc: assign('context.iterator', ({ context }) => {
+          const iterator = notU(context?.iterator);
           if (iterator === undefined) return;
 
           return iterator + 1;
         }),
-        dec: assign('context.iterator', ({ context: { iterator } }) => {
+        dec: assign('context.iterator', ({ context }) => {
+          const iterator = notU(context?.iterator);
           if (iterator === undefined) return;
           return iterator - 1;
         }),

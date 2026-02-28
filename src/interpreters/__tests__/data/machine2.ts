@@ -1,7 +1,7 @@
 import { interpret } from '#interpreters';
 import { notU, typings } from '#utils';
 import { createConfig } from 'src/machine/functions/create2';
-import { createMachine } from 'src/machine/machine2';
+import { createMachine } from '#machine';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';

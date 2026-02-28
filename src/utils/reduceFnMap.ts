@@ -12,9 +12,9 @@ import {
   type FnMapR,
   type FnR,
   type FnReduced,
-} from 'src/types/primitives2';
+} from 'src/types/primitives';
 import { nothing } from './nothing';
-import type { Config } from 'src/machine/types2';
+import type { Config } from 'src/machine/types';
 
 type ToEventMap_F = <
   E extends EventsMap,

@@ -8,7 +8,7 @@ import equal from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
 import { isFunction } from '../types/primitives';
 import type { FnSubReduced } from './interpreter.types';
-import type { Config } from 'src/machine/types2';
+import type { Config } from 'src/machine/types';
 
 /**
  * Subscriber class that manages the subscription state and provides methods

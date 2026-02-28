@@ -35,25 +35,25 @@ import type {
   Action2,
   ActionConfig,
   ActionResult,
-} from 'src/actions/types2';
-import type { Delay } from 'src/delays/types2';
+} from 'src/actions/types';
+import type { Delay } from 'src/delays/types';
 import type {
   GuardConfig,
   PredicateS,
   PredicateS2,
-} from 'src/guards/types2';
-import type { AnyMachine } from 'src/machine/machine.types2';
+} from 'src/guards/types';
+import type { AnyMachine } from 'src/machine/machine.types';
 import type {
   Config,
   ContextFrom,
   PrivateContextFrom,
-} from 'src/machine/types2';
+} from 'src/machine/types';
 import type {
   PromiseeResult,
   PromiseFunction,
   PromiseFunction2,
-} from 'src/promises/types2';
-import type { FnR } from 'src/types/primitives2';
+} from '#promises';
+import type { FnR } from '~types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
 

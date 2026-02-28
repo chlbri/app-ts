@@ -1,10 +1,10 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap } from '#events';
-import type { DefinedValue } from 'src/guards/types2';
-import type { FnR } from 'src/types/primitives2';
+import type { DefinedValue } from 'src/guards/types';
+import type { FnR } from 'src/types/primitives';
 import { isNotValue, isValue } from './value';
 import type { ActorsConfigMap } from '#events';
-import type { Config } from 'src/machine/types2';
+import type { Config } from 'src/machine/types';
 
 export type IsDefinedS_F = <
   C extends Config,

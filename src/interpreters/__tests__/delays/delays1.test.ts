@@ -1,7 +1,7 @@
 import { DELAY } from '#fixturesData';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { typings } from '#utils';
+import { notU, typings } from '#utils';
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { fakeWaiter } from '#fixtures';
 import {
@@ -49,7 +49,7 @@ describe('DELAYS', () => {
     actions: {
       inc: assign(
         'context.iterator',
-        ({ context }) => context.iterator + 1,
+        ({ context }) => notU(context?.iterator) + 1,
       ),
     },
     delays: {
@@ -57,12 +57,7 @@ describe('DELAYS', () => {
     },
   }));
 
-  const buildService = () =>
-    interpret(machine1, {
-      context: {
-        iterator: 0,
-      },
-    });
+  const buildService = () => interpret(machine1);
 
   const hook = () => {
     const service = buildService();

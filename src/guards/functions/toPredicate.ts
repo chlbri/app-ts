@@ -6,9 +6,9 @@ import type { GuardConfig } from '#guards';
 import { reduceFnMap } from '#utils';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
 import { isDescriber, isString } from '~types';
-import type { PredicateMap, PredicateS2 } from '../types2';
+import type { PredicateMap, PredicateS2 } from '../types';
 import type { StateExtended } from '#states';
-import type { Config } from 'src/machine/types2';
+import type { Config } from '#machines';
 
 export type _ToPredicateF = <
   C extends Config,

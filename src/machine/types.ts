@@ -1,24 +1,19 @@
-import type { Action, FromActionConfig } from '#actions';
 import type {
-  AllowedNames,
   DeepRequired,
   NotUndefined,
-  Primitive,
   PrimitiveObject,
   Ru,
-  SubType,
 } from '#bemedev/globals/types';
-import type { Delay } from '#delays';
-import type { Emitter, EmitterConfig } from '#emitters';
-import type { EventsMap, PromiseeDef, PromiseeMap } from '#events';
-import type { PredicateS } from '#guards';
-import type { PromiseFunction } from '#promises';
+import type { EmitterDef } from '#emitters';
+import type { ActorsConfigMap, EventsMap, PromiseeDef } from '#events';
+import type { AnyInterpreter } from '#interpreters';
 import type {
   ActivityConfig,
   BaseConfig,
   ExtractActionsFromActivity,
   ExtractDelaysFromActivity,
   ExtractGuardsFromActivity,
+  ExtractTagsFromFlat,
   FlatMapN,
   NodeConfig,
   NodeConfigCompound,
@@ -26,23 +21,30 @@ import type {
 } from '#states';
 import type {
   ExtractActionKeysFromTransitions,
+  ExtractChildKeysFromTransitions,
   ExtractDelayKeysFromTransitions,
+  ExtractEmitterSrcKeyFromTransitions,
   ExtractGuardKeysFromTransitions,
   ExtractPromiseeSrcKeyFromTransitions,
+  Transition,
   TransitionsConfig,
 } from '#transitions';
 import type { Decompose } from '@bemedev/decompose';
+import type { Observable } from 'rxjs';
+import type { Action, FromActionConfig } from 'src/actions/types';
+import type { Delay } from 'src/delays/types';
+import type { EmittersMap } from 'src/emitters/types';
+import type { PredicateS } from 'src/guards/types';
+import type { PromiseFunction } from '#promises';
 import type {
+  DeeperPartial,
   Describer,
-  FnMap,
   FnMap2,
+  Identify,
   KeyU,
   RecordS,
   ReduceArray,
-  SingleOrArrayL,
-  TrueObject,
-} from '~types';
-import type { EVENTS_FULL } from './constants';
+} from 'src/types/primitives';
 
 /**
  * Type representing the main JSON config.
@@ -70,6 +72,10 @@ export type Config = ConfigNode & {
   readonly strict?: boolean;
   readonly __longRuns?: boolean;
 };
+
+export type ExtractTagsFromConfig<T extends Config> = ExtractTagsFromFlat<
+  FlatMapN<T>
+>;
 
 export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
   [K in Exclude<keyof T, keyof ConfigDef>]: never;
@@ -175,10 +181,30 @@ type _GetKeyGuardsFromFlat<Flat extends FlatMapN> = {
  * @returns A type representing all promise keys from this flat map.
  *
  * @see {@linkcode TransitionsConfig} for the structure of transitions.
- * @see {@linkcode ExtractSrcFromTransitions} for extracting promise keys from transitions.
+ * @see {@linkcode ExtractPromiseeSrcKeyFromTransitions} for extracting promise keys from transitions.
  */
-type _GetKeySrcFromFlat<Flat extends FlatMapN> = {
+type _GetPromiseeSrcKeyFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]: ExtractPromiseeSrcKeyFromTransitions<
+    Extract<Flat[key], TransitionsConfig>
+  > extends infer V
+    ? unknown extends V
+      ? never
+      : V
+    : never;
+}[keyof Flat];
+
+type _GetEmitterSrcKeyFromFlat<Flat extends FlatMapN> = {
+  [key in keyof Flat]: ExtractEmitterSrcKeyFromTransitions<
+    Extract<Flat[key], TransitionsConfig>
+  > extends infer V
+    ? unknown extends V
+      ? never
+      : V
+    : never;
+}[keyof Flat];
+
+type _GetChildKeysFromFlat<Flat extends FlatMapN> = {
+  [key in keyof Flat]: ExtractChildKeysFromTransitions<
     Extract<Flat[key], TransitionsConfig>
   > extends infer V
     ? unknown extends V
@@ -224,76 +250,109 @@ type _GetDelayKeysFromFlat<Flat extends FlatMapN> = {
  *
  * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes
  * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template : {@linkcode ActorsConfigMap} [P] - type of the promisees map
  * @template Pc - type of the private context
  * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
  *
  * @see {@linkcode _GetKeyActionsFromFlat} for extracting action keys from the flat map.
  */
 export type GetActionsFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetKeyActionsFromFlat<Flat>, Action<E, P, Pc, Tc>>;
+> = Record<_GetKeyActionsFromFlat<Flat>, Action<C, E, A, Pc, Tc>>;
 
 /**
  * Provide a record of all guards by key and {@linkcode PredicateS} function.
  *
  * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes
  * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template : {@linkcode ActorsConfigMap} [P] - type of the promisees map
  * @template Pc - type of the private context
  * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
  *
  * @see {@linkcode _GetKeyGuardsFromFlat} for extracting guard keys from the flat map.
  */
 export type GetGuardsFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, P, Pc, Tc>>;
+> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<C, E, A, Pc, Tc>>;
 
-/**
- * Provide a record of all promisee src(s) by key and {@linkcode PromiseFunction} function.
- *
- * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes
- * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
- * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
- *
- * @see {@linkcode _GetKeySrcFromFlat} for extracting promise src keys from the flat map.
- */
-export type GetSrcFromFlat<
+export type PromiseReturn<
+  K extends string,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = NotUndefined<A['promisees']>[K]['then'] extends infer P
+  ? unknown extends P
+    ? never
+    : P
+  : never;
+
+export type EmitterReturn<
+  K extends string,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = NotUndefined<A['emitters']>[K]['next'] extends infer P
+  ? unknown extends P
+    ? never
+    : P
+  : never;
+
+export type GetPromiseSrcsFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetKeySrcFromFlat<Flat>, PromiseFunction<E, P, Pc, Tc>>;
+> = {
+  [key in _GetPromiseeSrcKeyFromFlat<Flat>]: PromiseFunction<
+    C,
+    E,
+    A,
+    Pc,
+    Tc,
+    PromiseReturn<key, A>
+  >;
+};
+export type GetEmitterSrcsKeyFromFlat<
+  Flat extends FlatMapN,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = {
+  [key in _GetEmitterSrcKeyFromFlat<Flat>]: Observable<
+    EmitterReturn<key, A>
+  >;
+};
+
+/* Record<
+  _GetPromiseeSrcKeyFromFlat<Flat>,
+  PromiseFunction<E, A, Pc, Tc>
+> */
 
 /**
  * Provide a record of all delays by key and {@linkcode Delay} function.
  *
  * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes
  * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template : {@linkcode ActorsConfigMap} [A] - type of the actors config map
  * @template Pc - type of the private context
  * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
  *
  * @see {@linkcode _GetDelayKeysFromFlat} for extracting delay keys from the flat map.
  */
 export type GetDelaysFromFlat<
+  C extends Config,
   Flat extends FlatMapN,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Record<_GetDelayKeysFromFlat<Flat>, Delay<E, P, Pc, Tc>>;
+> = Record<_GetDelayKeysFromFlat<Flat>, Delay<C, E, A, Pc, Tc>>;
 
 /**
  * Provide a record of all events by key and {@linkcode PrimitiveObject} payload.
@@ -339,12 +398,29 @@ export type GetEventsFromMachine<T extends KeyU<'config'>> =
  *
  * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes
  *
- * @see {@linkcode _GetKeySrcFromFlat} for extracting promise keys from the flat map.
+ * @see {@linkcode _GetPromiseeSrcKeyFromFlat} for extracting promise keys from the flat map.
  */
-export type GetPromiseeSrcFromFlat<Flat extends FlatMapN> = Record<
-  _GetKeySrcFromFlat<Flat>,
+export type GetPromiseesSrcKeyFromFlat<Flat extends FlatMapN> = Record<
+  _GetPromiseeSrcKeyFromFlat<Flat>,
   PromiseeDef
 >;
+export type GetPromisesFromFlat<
+  C extends Config,
+  Flat extends FlatMapN,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  [key in _GetPromiseeSrcKeyFromFlat<Flat>]?: PromiseFunction<
+    C,
+    E,
+    A,
+    DeeperPartial<Pc>,
+    DeeperPartial<Tc>,
+    PromiseReturn<key, A>
+  >;
+};
 
 /**
  * Get all promises from a machine config.
@@ -353,11 +429,11 @@ export type GetPromiseeSrcFromFlat<Flat extends FlatMapN> = Record<
  * @returns A type representing all promises from the machine config.
  *
  * @see {@linkcode FlatMapN} for the flat map structure.
- * @see {@linkcode GetPromiseeSrcFromFlat} for extracting promises from the flat map.
+ * @see {@linkcode GetPromiseesSrcKeyFromFlat} for extracting promises from the flat map.
  * @see {@linkcode FlatMapN} for extracting the config from a machine config.
  */
-export type GetPromiseeSrcFromConfig<C extends Config> =
-  GetPromiseeSrcFromFlat<FlatMapN<C>>;
+export type GetPromiseesSrcFromConfig<C extends Config> =
+  GetPromiseesSrcKeyFromFlat<FlatMapN<C>>;
 
 /**
  * Get all promises from a machine.
@@ -367,10 +443,67 @@ export type GetPromiseeSrcFromConfig<C extends Config> =
  * @returns A type representing all promises from the machine.
  *
  * @see {@linkcode ConfigFrom} for extracting the config from the machine.
- * @see {@linkcode GetPromiseeSrcFromConfig} for extracting promises from the machine.
+ * @see {@linkcode GetPromiseesSrcFromConfig} for extracting promises from the machine.
  */
-export type GetPromiseeSrcFromMachine<T extends KeyU<'config'>> =
-  GetPromiseeSrcFromConfig<ConfigFrom<T>>;
+export type GetPromiseesSrcFromMachine<T extends KeyU<'config'>> =
+  GetPromiseesSrcFromConfig<ConfigFrom<T>>;
+
+export type GetEmittersSrcKeyFromFlat<Flat extends FlatMapN> = Record<
+  _GetEmitterSrcKeyFromFlat<Flat>,
+  EmitterDef
+>;
+
+export type GetEmittersSrcFromFlat<
+  Flat extends FlatMapN,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = {
+  [key in _GetEmitterSrcKeyFromFlat<Flat>]: Observable<
+    EmitterReturn<key, A>
+  >;
+};
+
+/**
+ * Get all emitters from a machine config.
+ *
+ * @template : {@linkcode Config} [C] - type of the machine config
+ * @returns A type representing all emitters from the machine config.
+ *
+ * @see {@linkcode FlatMapN} for the flat map structure.
+ * @see {@linkcode GetEmittersSrcKeyFromFlat} for extracting promises from the flat map.
+ * @see {@linkcode FlatMapN} for extracting the config from a machine config.
+ */
+export type GetEmittersSrcFromConfig<C extends Config> =
+  GetEmittersSrcKeyFromFlat<FlatMapN<C>>;
+
+/**
+ * Get all emitters from a machine.
+ *
+ * @template : {@linkcode KeyU}<'config'> [T] - type of the machine
+ *
+ * @returns A type representing all emitters from the machine.
+ *
+ * @see {@linkcode ConfigFrom} for extracting the config from the machine.
+ * @see {@linkcode GetEmittersSrcFromConfig} for extracting promises from the machine.
+ */
+export type GetEmittersSrcFromMachine<T extends KeyU<'config'>> =
+  GetEmittersSrcFromConfig<ConfigFrom<T>>;
+
+export type GetChildrenSrcKeyFromFlat<
+  Flat extends FlatMapN,
+  G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
+> = {
+  [key in G['src']]: Record<Extract<G, { src: key }>['on'], any>;
+};
+
+export type GetChildrenSrcFromFlat<
+  Flat extends FlatMapN,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
+> = {
+  [key in G['src']]: {
+    eventsMap: NotUndefined<A['children']>[key];
+  };
+};
 
 /**
  * Get all child machines from a machine config.
@@ -378,13 +511,66 @@ export type GetPromiseeSrcFromMachine<T extends KeyU<'config'>> =
  * @template : {@linkcode Config} [C] - type of the machine config
  * @returns A type representing all child machines from the machine config.
  *
- * @see {@linkcode ReduceArray} for reducing arrays to a single type.
- * @see {@linkcode FromActionConfig}.
- * @see {@linkcode NotUndefined}
+ * @see {@linkcode FlatMapN} for the flat map structure.
+ * @see {@linkcode GetChildrenSrcKeyFromFlat} for extracting promises from the flat map.
+ * @see {@linkcode FlatMapN} for extracting the config from a machine config.
  */
-export type GetMachineKeysFromConfig<C extends Config> = FromActionConfig<
-  ReduceArray<NotUndefined<C['machines']>>
->;
+export type GetChildrenSrcFromConfig<C extends Config> =
+  GetChildrenSrcKeyFromFlat<FlatMapN<C>>;
+
+/**
+ * Get all child machines from a machine.
+ *
+ * @template : {@linkcode KeyU}<'config'> [T] - type of the machine
+ *
+ * @returns A type representing all child machines from the machine.
+ *
+ * @see {@linkcode ConfigFrom} for extracting the config from the machine.
+ * @see {@linkcode GetChildrenSrcFromConfig} for extracting child machines from the machine.
+ */
+export type GetChildrenSrcFromMachine<T extends KeyU<'config'>> =
+  GetChildrenSrcFromConfig<ConfigFrom<T>>;
+
+export type GetActorsFromFlat<
+  C extends Config,
+  Flat extends FlatMapN,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  children: Partial<GetChildrenSrcFromFlat<Flat>>;
+  emitters: Partial<GetEmittersSrcFromFlat<Flat, A>>;
+  promises: Partial<GetPromisesFromFlat<C, Flat, E, A, Pc, Tc>>;
+};
+
+export type GetActorsFromConfig<
+  C extends Config,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = GetActorsFromFlat<C, FlatMapN<C>, E, A, Pc, Tc>;
+
+export type GetActorsFromMachine<
+  T extends KeyU<'config'>,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = GetActorsFromConfig<ConfigFrom<T>, E, A, Pc, Tc>;
+
+export type GetActorsSrcKeyFromFlat<Flat extends FlatMapN> = {
+  children: GetChildrenSrcKeyFromFlat<Flat>;
+  emitters: GetEmittersSrcKeyFromFlat<Flat>;
+  promisees: GetPromiseesSrcKeyFromFlat<Flat>;
+};
+
+export type GetActorKeysFromConfig<C extends Config> =
+  GetActorsSrcKeyFromFlat<FlatMapN<C>>;
+
+export type GetActorKeysFromMachine<T extends KeyU<'config'>> =
+  GetActorKeysFromConfig<ConfigFrom<T>>;
 
 /**
  * Second version decomposition of a type.
@@ -393,193 +579,41 @@ export type Decompose2<T> = T extends Ru
   ? Decompose<DeepRequired<T>>
   : never;
 
-// #region typ SubscriberType
-type HeritageMap<U extends Ru, Tc extends Ru> =
-  Decompose<U, { start: false; object: 'both' }> extends infer KU extends
-    object
-    ? {
-        [key in keyof KU]?: Decompose<
-          Tc,
-          { start: false }
-        > extends infer KT extends object
-          ? SingleOrArrayL<keyof SubType<KT, KU[key]>>
-          : never;
-      }
-    : never;
+export type ChildConfigDef = EventsMap;
 
-/**
- * Helper type to extract context from a machine.
- */
-type SubNev = { contexts?: never };
+export type ChildConfigMap = RecordS<ChildConfigDef>;
 
-// #region Sub Events Helpers
-type SubEventsKeysFrom<T extends KeyU<'config' | 'context'>> =
-  | keyof GetEventsFromMachine<T>
-  | (GetPromiseeSrcFromMachine<T> extends infer K extends string
-      ? `${K}::${'then' | 'catch'}`
-      : never);
-
-type SubEventsKeys<E extends EventsMap, P extends PromiseeMap> =
-  | keyof E
-  | (keyof P extends infer K extends string
-      ? `${K}::${'then' | 'catch'}`
-      : never);
-// #endregion
-
-/**
- * Type representing a subscriber to events from a parent machine to a child machine.
- *
- * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
- * @template Pc - type of the private context
- * @template : {@linkcode KeyU}<'config' | 'context'> [U] - type of the pre-config and context keys
- *
- * @see {@linkcode SingleOrArrayL} for single or array
- * @see {@linkcode SubEventsKeysFrom} for extracting sub-events keys from the pre-config and context keys.
- * @see {@linkcode SubEventsKeys} for extracting sub-events keys from the events map and promisees map.
- * @see {@linkcode HeritageMap} for extracting heritage map from the pre-config and context keys.
- * @see {@linkcode Primitive} for primitive
- * @see {@linkcode TrueObject} for true object
- * @see {@linkcode Decompose} for decomposing
- * @see {@linkcode SubNev} for the case when contexts are not defined.
- * @see {@linkcode ContextFrom} for extracting context from the pre-config and context keys.
- */
-export type SubscriberType<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-  U extends KeyU<'config' | 'context'> = KeyU<'config' | 'context'>,
-> = {
-  events:
-    | SingleOrArrayL<
-        | {
-            [key in SubEventsKeysFrom<U>]?: SingleOrArrayL<
-              SubEventsKeys<E, P>
-            >;
-          }
-        | SubEventsKeys<E, P>
-      >
-    | typeof EVENTS_FULL;
-} & (ContextFrom<U> extends infer CU
-  ? CU extends TrueObject
-    ? Pc extends TrueObject
-      ? { contexts: SingleOrArrayL<HeritageMap<CU, Pc>> }
-      : SubNev
-    : CU extends Primitive
-      ? Pc extends CU
-        ? SubNev
-        : Pc extends infer Tc1 extends TrueObject
-          ? {
-              contexts: SingleOrArrayL<
-                AllowedNames<Decompose<Tc1, { start: false }>, CU>
-              >;
-            }
-          : SubNev
-      : SubNev
-  : SubNev);
-// #endregion
-
-export type ChildConfigMap = RecordS<RecordS<PrimitiveObject>>;
-
-/**
- * Type representing a child service in a state machine.
- *
- * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
- * @template Pc - type of the private context
- * @template : {@linkcode KeyU}<'config' | 'context' | 'pContext'> [T] - type of the pre-config, context, and private context keys
- *
- * @see {@linkcode SubscriberType} for the type of subscribers to the child service.
- * @see {@linkcode PrivateContextFrom} for extracting private context from the pre-config keys.
- * @see {@linkcode ContextFrom} for extracting context from the pre-config keys.
- * @see {@linkcode SingleOrArrayL} for single or array
- * @see {@linkcode NoInfer} for preventing type inference in the child service type.
- */
-export type ChildS<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-  T extends KeyU<'config' | 'context' | 'pContext'> = KeyU<
-    'config' | 'context' | 'pContext'
-  >,
-> = {
-  machine: T;
-  initials: {
-    pContext: PrivateContextFrom<T>;
-    context: ContextFrom<T>;
-  };
-  subscribers: SingleOrArrayL<SubscriberType<E, P, Pc, NoInfer<T>>>;
-};
-
-/**
- * Type representing a map for providing a child service.
- *
- * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
- * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
- * @template : {@linkcode KeyU}<'config' | 'context' | 'pContext'> [T] - type of the pre-config, context, and private context keys
- *
- * @see {@linkcode SubscriberType} for the type of subscribers to the child service.
- * @see {@linkcode PrivateContextFrom} for extracting private context from the pre-config keys.
- * @see {@linkcode ContextFrom} for extracting context from the pre-config keys.
- * @see {@linkcode SingleOrArrayL} for single or array
- * @see {@linkcode NoInfer} for preventing type inference in the child service type.
- * @see {@linkcode FnMap} for the function map type.
- */
-export type ChildS2<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+export type Child<
+  C extends Config,
+  E extends EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  T extends KeyU<'config' | 'context' | 'pContext'> = KeyU<
-    'config' | 'context' | 'pContext'
-  >,
 > = {
-  machine: T;
-  initials: FnMap<
-    E,
-    P,
-    Pc,
-    Tc,
-    {
-      pContext: PrivateContextFrom<T>;
-      context: ContextFrom<T>;
-    }
-  >;
-  subscribers: SingleOrArrayL<SubscriberType<E, P, Pc, NoInfer<T>>>;
+  src: AnyInterpreter;
+  description?: string;
+  id: string;
+  on: Identify<RecordS<Transition<C, E, A, Pc, Tc>>>[];
+  contexts: string[];
 };
+
+export type ChildrenMap = RecordS<AnyInterpreter>;
 
 /**
  * Not used in the codebase, but provided for completeness.
  */
 export type FnMapFrom<
-  T extends KeyU<'eventsMap' | 'pContext' | 'context' | 'promiseesMap'>,
+  T extends KeyU<
+    'eventsMap' | 'pContext' | 'context' | 'actorsMap' | '__config'
+  >,
   R = any,
 > = FnMap2<
+  Extract<T['__config'], Config>,
   Extract<EventsMapFrom<T>, EventsMap>,
-  Extract<PromiseesMapFrom<T>, PromiseeDef>,
+  Extract<ActorsMapFrom<T>, ActorsConfigMap>,
   Extract<ContextFrom<T>, PrimitiveObject>,
   R
 >;
-
-type GetEmitterKeysFromFlat<F extends RecordS<NodeConfig>> = {
-  [K in keyof F]: F[K] extends NodeConfig
-    ? F[K]['emitters'][keyof F[K]['emitters']] extends infer DK extends
-        EmitterConfig
-      ? FromActionConfig<DK>
-      : never
-    : never;
-}[keyof F];
-
-export type GetMachineKeysFromFlat<F extends RecordS<NodeConfig>> = {
-  [K in keyof F]: F[K] extends NodeConfig
-    ? F[K]['machines'][keyof F[K]['machines']] extends infer DK extends
-        MachineConfig
-      ? FromActionConfig<DK>
-      : never
-    : never;
-}[keyof F];
 
 /**
  * The big one !
@@ -588,7 +622,7 @@ export type GetMachineKeysFromFlat<F extends RecordS<NodeConfig>> = {
  *
  * @template : {@linkcode Config} [C] - type of the machine config
  * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template : {@linkcode ActorsConfigMap} [A] - type of the actors config map
  * @template Pc - type of the private context
  * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
  * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes inside {@linkcode C}
@@ -605,7 +639,7 @@ export type GetMachineKeysFromFlat<F extends RecordS<NodeConfig>> = {
  * @see {@linkcode GetInititalsFromFlat} for extracting initials from the flat map.
  * @see {@linkcode GetActionsFromFlat} for extracting actions from the flat map.
  * @see {@linkcode GetGuardsFromFlat} for extracting guards from the flat map.
- * @see {@linkcode GetSrcFromFlat} for extracting promise sources from the flat map.
+ * @see {@linkcode GetPromiseSrcsFromFlat} for extracting promise sources from the flat map.
  * @see {@linkcode GetDelaysFromFlat} for extracting delays from the flat map.
  * @see {@linkcode GetMachinesFromConfig} for extracting child services from the machine config
  * @see {@linkcode Partial} - intern type to make all properties optional.
@@ -613,21 +647,15 @@ export type GetMachineKeysFromFlat<F extends RecordS<NodeConfig>> = {
 export type MachineOptions<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  Flat extends FlatMapN<C> = FlatMapN<C>,
+  Flat extends FlatMapN<C, false> = FlatMapN<C, false>,
 > = Partial<{
-  actions: Partial<GetActionsFromFlat<Flat, E, P, Pc, Tc>>;
-  predicates: Partial<GetGuardsFromFlat<Flat, E, P, Pc, Tc>>;
-  promises: Partial<GetSrcFromFlat<Flat, E, P, Pc, Tc>>;
-  delays: Partial<GetDelaysFromFlat<Flat, E, P, Pc, Tc>>;
-  machines: Partial<
-    Record<GetMachineKeysFromFlat<Flat>, ChildS<E, P, Pc>>
-  >;
-  emitters: Partial<
-    Record<GetEmitterKeysFromFlat<Flat>, Emitter<E, P, Pc, Tc>>
-  >;
+  actions: Partial<GetActionsFromFlat<C, Flat, E, A, Pc, Tc>>;
+  predicates: Partial<GetGuardsFromFlat<C, Flat, E, A, Pc, Tc>>;
+  delays: Partial<GetDelaysFromFlat<C, Flat, E, A, Pc, Tc>>;
+  actors: Partial<GetActorsFromFlat<C, Flat, E, A, Pc, Tc>>;
 }>;
 
 /**
@@ -730,11 +758,11 @@ export type StatePextendedFrom<T extends KeyU<'__statePextended'>> =
  *
  * @template : {@linkcode KeyU}<'promiseesMap'> [T] - type of the machine promisees map
  *
- * @see {@linkcode PromiseeMap} for the structure of the promisees map.
+ * @see {@linkcode ActorsConfigMap} for the structure of the promisees map.
  */
-export type PromiseesMapFrom<T extends KeyU<'promiseesMap'>> = Extract<
-  T['promiseesMap'],
-  PromiseeMap
+export type ActorsMapFrom<T extends KeyU<'actorsMap'>> = Extract<
+  T['actorsMap'],
+  ActorsConfigMap
 >;
 
 /**
@@ -901,23 +929,26 @@ export type ChildrenKeysFrom<T extends KeyU<'__childKey'>> =
  * Simple representation machine options
  *
  * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promise
+ * @template : {@linkcode ActorsConfigMap} [A] - type of the actors config map
  * @template Pc - type of the private context
  * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
  *
  */
 export type SimpleMachineOptions<
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = {
-  actions?: Partial<RecordS<Action<E, P, Pc, Tc>>>;
-  predicates?: Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
-  promises?: Partial<RecordS<PromiseFunction<E, P, Pc, Tc>>>;
-  delays?: Partial<RecordS<Delay<E, P, Pc, Tc>>>;
-  machines?: Partial<RecordS<any>>;
-};
+> = Partial<{
+  actions: Partial<RecordS<Action<Config, E, A, Pc, Tc>>>;
+  predicates: Partial<RecordS<PredicateS<Config, E, A, Pc, Tc>>>;
+  delays: Partial<RecordS<Delay<Config, E, A, Pc, Tc>>>;
+  actors: Partial<{
+    children: RecordS<AnyInterpreter>;
+    emitters: EmittersMap;
+    promises: RecordS<PromiseFunction<Config, E, A, Pc, Tc>>;
+  }>;
+}>;
 
 /**
  * Second version of simple machine options.
@@ -929,56 +960,21 @@ export type SimpleMachineOptions<
  * This type is more flexible than {@linkcode SimpleMachineOptions}
  */
 export type SimpleMachineOptions2 = Partial<
-  Record<
-    | 'actions'
-    | 'predicates'
-    | 'promises'
-    | 'delays'
-    | 'machines'
-    | 'emitters',
-    any
-  >
+  Record<'actions' | 'predicates' | 'delays', any> &
+    Record<
+      'actors',
+      {
+        children?: RecordS<any>;
+        emitters?: RecordS<any>;
+        promises?: RecordS<any>;
+      }
+    >
 >;
 
-/**
- * Type representing a function that returns a {@linkcode FnMap} of promise.
- *
- * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promise
- * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
- *
- * @see {@linkcode Promise}
- *
- */
+export type ExtractContextsKeyFromChild<
+  T extends { contexts: Record<string, string> },
+> = keyof T['contexts'];
 
-/**
- * Type representing a function that returns a promise.
- *
- * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promise
- * @template Pc - type of the private context
- * @template : {@linkcode PrimitiveObject} [Tc] - type of the context
- *
- * @see {@linkcode Promise}
- *
- * @remarks
- * This type is more flexible than {@linkcode PromiseFunction}
- */
-
-/**
- * Type representing a map of child machines.
- *
- * @template : {@linkcode EventsMap} [E] - type of the events map
- * @template : {@linkcode PromiseeMap} [P] - type of the promisees map
- * @template Pc - type of the private context
- *
- * @see {@linkcode ChildS} for the structure of a child service.
- * @see {@linkcode RecordS} for the record structure.
- * @see {@linkcode Partial}
- */
-export type MachineMap<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-> = Partial<RecordS<ChildS<E, P, Pc>>>;
+export type ExtractEventsKeyFromChild<
+  T extends { on: Record<string, any> },
+> = keyof T['on'];

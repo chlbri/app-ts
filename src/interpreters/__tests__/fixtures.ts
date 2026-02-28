@@ -20,7 +20,7 @@ import type {
   GetEventsFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
-} from 'src/machine/types2';
+} from 'src/machine/types';
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 
 type TestArr = readonly [string, () => void];

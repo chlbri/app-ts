@@ -1,7 +1,7 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventsMap } from '#events';
-import type { SimpleMachineOptions } from 'src/machine/types2';
-import type { Emitter } from '../types2';
+import type { SimpleMachineOptions } from 'src/machine/types';
+import type { Emitter } from '../types';
 import { toEmitterSrc } from './src';
 import { toArray } from '@bemedev/basifun';
 import type { EmitterConfig } from '#actor';

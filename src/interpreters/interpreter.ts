@@ -78,7 +78,7 @@ import {
 import sleep from '@bemedev/sleep';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
-import { getEntries, getExits } from 'src/machine/machine2';
+import { getEntries, getExits } from '#machine';
 import { isDescriber, type RecordS } from '~types';
 import type {
   _Send_F,
@@ -115,16 +115,16 @@ import type {
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { toEmitterSrc } from '#emitters';
-import type { AnyMachine } from 'src/machine/machine.types2';
-import type { Machine } from 'src/machine/machine2';
+import type { AnyMachine } from 'src/machine/machine.types';
+import type { Machine } from '#machine';
 import type {
   ActorsMapFrom,
   ExtractTagsFromConfig,
   GetActorKeysFromConfig,
   MachineOptions,
   SimpleMachineOptions2,
-} from 'src/machine/types2';
-import type { PromiseeResult } from 'src/promises/types2';
+} from 'src/machine/types';
+import type { PromiseeResult } from '#promises';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 /**
  * The `Interpreter` class is responsible for interpreting and managing the state of a machine.
@@ -644,9 +644,8 @@ export class Interpreter<
    * @see {@linkcode SubscriberClass} for more information about map subscribers.
    */
   #flush = () => {
-    this.#subscribers.forEach(({ fn }) =>
-      fn(this.#previousState, this.#state),
-    );
+    const all = [...this.#innerSubscribers, ...this.#subscribers];
+    all.forEach(({ fn }) => fn(this.#previousState, this.#state));
   };
 
   /**

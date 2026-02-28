@@ -17,8 +17,8 @@ import type {
   Action,
   ActionConfig,
   FromActionConfig,
-} from 'src/actions/types2';
-import type { Config, ExtractTagsFromConfig } from 'src/machine/types2';
+} from 'src/actions/types';
+import type { Config, ExtractTagsFromConfig } from 'src/machine/types';
 import type {
   Identify,
   RecordS,

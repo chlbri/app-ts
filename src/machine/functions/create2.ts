@@ -1,5 +1,5 @@
 import _any from '#bemedev/features/common/castings/any';
-import type { Config } from 'src/machine/types2';
+import type { Config } from 'src/machine/types';
 
 export type CreateConfig_F = <const T extends Config>(config: T) => T;
 

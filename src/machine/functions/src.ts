@@ -1,5 +1,5 @@
 import type { AnyInterpreter } from '#interpreters';
-import type { ChildrenMap } from '../types2';
+import type { ChildrenMap } from '../types';
 
 export type ToChildSrc_F = (
   child: string,

@@ -3,9 +3,9 @@ import type {
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import type { EventsMap } from '#events';
-import type { Config, SimpleMachineOptions } from 'src/machine/types2';
+import type { Config, SimpleMachineOptions } from 'src/machine/types';
 import { reduceFnMap } from '#utils';
-import type { PromiseFunction2 } from '../types2';
+import type { PromiseFunction2 } from '../types';
 import type { ActorsConfigMap } from '#events';
 
 export type ToPromiseSrc_F = <

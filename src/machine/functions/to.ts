@@ -3,8 +3,8 @@ import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventsMap } from '#events';
 import { toTransition } from '#transitions';
 import _any from '#bemedev/features/common/castings/any';
-import type { SimpleMachineOptions } from 'src/machine/types2';
-import type { Child } from '../types2';
+import type { SimpleMachineOptions } from 'src/machine/types';
+import type { Child } from '../types';
 import { toChildSrc } from './src';
 import { identify } from '@bemedev/basifun/objects/identify';
 

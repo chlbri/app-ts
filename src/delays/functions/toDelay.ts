@@ -1,9 +1,9 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventsMap } from '#events';
 import { reduceFnMap } from '#utils';
-import type { FnR } from 'src/types/primitives2';
-import type { DelayMap } from '../types2';
-import type { Config } from 'src/machine/types2';
+import type { FnR } from 'src/types/primitives';
+import type { DelayMap } from '../types';
+import type { Config } from 'src/machine/types';
 
 export type ToDelay_F = <
   C extends Config,

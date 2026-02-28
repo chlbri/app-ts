@@ -2,7 +2,7 @@ import { toAction } from '#actions';
 import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap, ActorsConfigMap } from '#events';
-import type { Config, SimpleMachineOptions } from 'src/machine/types2';
+import type { Config, SimpleMachineOptions } from 'src/machine/types';
 import { toPromise } from '#promises';
 import { toTransition } from '#transitions';
 import { toArray } from '@bemedev/basifun';

@@ -5,7 +5,7 @@ import type {
   ReduceArray,
   Require,
 } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap, ToEvents } from '#events';
+import type { ActorsConfigMap, EventsMap, ToEvents2 } from '#events';
 import type {
   ExtractActionsFromTransition,
   ExtractGuardKeysFromDelayed,
@@ -14,13 +14,14 @@ import type {
   TransitionConfigMapA,
 } from '#transitions';
 import type { PromiseeConfig } from 'src/actor';
-import type { FnMap, FnR, SingleOrArrayL } from '~types';
+import type { Config } from 'src/machine/types';
+import type { FnMap, FnR, SingleOrArrayL } from 'src/types/primitives';
 
 /**
  * A function type that represents a promise function with map.
  *
  * @template : {@linkcode EventsMap} [E] - The events map.
- * @template : {@linkcode PromiseeMap} [P] - The promisees map.
+ * @template : {@linkcode ActorsConfigMap} [A] - The actors configuration map.
  * @template Pc - The context type, defaults to `any`.
  * @template : {@linkcode PrimitiveObject} [Tc] - The primitive object type, defaults to `PrimitiveObject`.
  *
@@ -29,17 +30,19 @@ import type { FnMap, FnR, SingleOrArrayL } from '~types';
  * @see {@linkcode PromiseFunction2} for a reduced version with a context.
  */
 export type PromiseFunction<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, P, Pc, Tc, Promise<any>>;
+  R = any,
+> = FnMap<C, E, A, Pc, Tc, Promise<R>>;
 
 /**
  * A reduced version of {@linkcode PromiseFunction} that takes a context.
  *
  * @template : {@linkcode EventsMap} [E] - The events map.
- * @template : {@linkcode PromiseeMap} [P] - The promisees map.
+ * @template : {@linkcode ActorsConfigMap} [A] - The actors configuration map.
  * @template Pc - The context type, defaults to `any`.
  * @template : {@linkcode types} [Tc] - The primitive object type, defaults to `PrimitiveObject`.
  *
@@ -47,11 +50,12 @@ export type PromiseFunction<
  * @see {@linkcode Promise}
  */
 export type PromiseFunction2<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<E, P, Pc, Tc, Promise<any>>;
+> = FnR<C, E, A, Pc, Tc, Promise<any>>;
 
 /**
  * The finally part of a promise configuration.
@@ -139,7 +143,7 @@ export type ExtractActionsFromPromisee<T extends PromiseeConfig> =
  * @template T - The type of the promisee configuration, which should have a `src` property.
  * @returns The source string of the promisee configuration.
  */
-export type ExtractSrcFromPromisee<T extends { src: string }> = T['src'];
+export type ExtractSrcFromActor<T extends { src: string }> = T['src'];
 
 /**
  * Extracts the maximum wait time from a promisee configuration.
@@ -176,23 +180,24 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
  * @see {@linkcode Transition} for the type of transitions.
  */
 export type Promisee<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
-  src: PromiseFunction2<E, P, Pc, Tc>;
+  src: PromiseFunction2<C, E, A, Pc, Tc>;
   description?: string;
-  then: Transition<E, P, Pc, Tc>[];
-  catch: Transition<E, P, Pc, Tc>[];
-  finally: Transition<E, P, Pc, Tc>[];
+  then: Transition<C, E, A, Pc, Tc>[];
+  catch: Transition<C, E, A, Pc, Tc>[];
+  finally: Transition<C, E, A, Pc, Tc>[];
 };
 
 /**
  * Represents the result of a promisee execution.
  *
  * @template E - The events map, defaults to {@linkcode EventsMap}.
- * @template P - The promisees map, defaults to {@linkcode PromiseeMap}.
+ * @template A - The actors map, defaults to {@linkcode ActorsConfigMap}.
  * @template Pc - The context type, defaults to `any`.
  * @template : {@linkcode PrimitiveObject} Tc - The primitive object type, defaults to `PrimitiveObject`.
  *
@@ -201,8 +206,8 @@ export type Promisee<
  */
 export type PromiseeResult<
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
 > = {
-  event: ToEvents<E, P>;
+  event: ToEvents2<E, A>;
   target: string | false;
 };

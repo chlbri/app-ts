@@ -1,7 +1,8 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '#events';
-import type { StateExtended } from '#interpreters';
-import type { DirectMerge_F } from '#machines';
+import type { ActorsConfigMap, EventsMap } from '#events';
+import type { Transition } from '#transitions';
+import type { Observable } from 'rxjs';
+import type { Config } from 'src/machine/types';
 import type { Describer, RecordS } from '~types';
 
 export type Subscriber = {
@@ -17,7 +18,7 @@ export type Subscribable = {
  *
  * @see {@linkcode Describer} for more details.
  */
-export type EmitterConfig = Describer | string;
+export type EmitterSrcConfig = Describer | string;
 
 export type EmitterDef = {
   next: PrimitiveObject;
@@ -27,48 +28,18 @@ export type EmitterDef = {
 export type EmitterConfigMap = RecordS<EmitterDef>;
 
 export type Emitter<
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (args: {
-  merge: DirectMerge_F<Pc, Tc>;
-  send: (event: EventArg<E>) => void;
-  selector: <T>(
-    func: (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => T,
-  ) => () => T;
-}) => {
-  start: () => void;
-  pause: () => void;
-  resume: () => void;
-  stop: () => void;
-};
-
-export type Emitter2<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  R = any,
 > = {
-  id: string;
-  from: string;
-  emitter: Emitter<E, P, Pc, Tc>;
+  src: Observable<R>;
+  description?: string;
+  next: Transition<C, E, A, Pc, Tc>[];
+  error: Transition<C, E, A, Pc, Tc>[];
+  complete: Transition<C, E, A, Pc, Tc>[];
 };
 
-export type Emitter3 = {
-  id: string;
-  from: string;
-  instance: {
-    start: () => void;
-    pause: () => void;
-    resume: () => void;
-    stop: () => void;
-  };
-};
-
-export type EmitterMap<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<RecordS<Emitter<E, P, Pc, Tc>>>;
+export type EmittersMap = RecordS<Observable<any>>;

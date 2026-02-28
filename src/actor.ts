@@ -1,6 +1,6 @@
 import type { FinallyConfig } from '#promises';
 import type { SingleOrArrayT } from '#transitions';
-import type { Describer } from './types/primitives2';
+import type { Describer } from './types/primitives';
 
 export type CommonActor = {
   readonly src: string;

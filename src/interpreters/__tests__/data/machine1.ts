@@ -1,5 +1,5 @@
 import { notU, typings } from '#utils';
-import { createMachine } from 'src/machine/machine2';
+import { createMachine } from '#machine';
 import { DELAY } from './constants';
 
 // #region machine1

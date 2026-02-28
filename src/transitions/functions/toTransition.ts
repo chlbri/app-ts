@@ -2,7 +2,7 @@ import { toAction } from '#actions';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { EventsMap } from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
-import type { SimpleMachineOptions2 } from 'src/machine/types2';
+import type { SimpleMachineOptions2 } from 'src/machine/types';
 import type { Transition, TransitionConfig } from '#transitions';
 import { toArray } from '@bemedev/basifun';
 import type { ActorsConfigMap } from '#events';

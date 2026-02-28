@@ -1,6 +1,6 @@
 import type { ActionConfig } from '#actions';
-import { fromDescriber } from 'src/types/primitives2';
-import type { Initial, InitialsMap } from '../types2';
+import { fromDescriber } from 'src/types/primitives';
+import type { Initial, InitialsMap } from '../types';
 
 export type ToInitials_F = (
   initial: ActionConfig,

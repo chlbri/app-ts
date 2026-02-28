@@ -1,13 +1,14 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventsMap } from '#events';
-import type { SimpleMachineOptions } from 'src/machine/types2';
+import type { Config, SimpleMachineOptions } from 'src/machine/types';
 import { toTransition } from '#transitions';
 import { toArray } from '@bemedev/basifun';
-import type { Promisee } from '../types2';
+import type { Promisee } from '../types';
 import { toPromiseSrc } from './src';
 import type { PromiseeConfig } from '#actor';
 
 export type ToPromise_F = <
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -17,7 +18,7 @@ export type ToPromise_F = <
   actorsMap: A,
   src: PromiseeConfig,
   promises?: SimpleMachineOptions<E, A, Pc, TC>,
-) => Promisee<E, A, Pc, TC>;
+) => Promisee<C, E, A, Pc, TC>;
 
 /**
  * Converts a promise config to a promisee object with a source and transitions.
@@ -42,7 +43,7 @@ export const toPromise: ToPromise_F = (
     events,
     actorsMap,
     promise.src,
-    options?.promises,
+    options?.actors?.promises,
   );
 
   const then = toArray
