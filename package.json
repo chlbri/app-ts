@@ -103,7 +103,7 @@
   "dependencies": {
     "@bemedev/basifun": "^0.5.3",
     "@bemedev/boolean-recursive": "^0.0.3",
-    "@bemedev/decompose": "^2.0.1",
+    "@bemedev/decompose": "^2.0.2",
     "@bemedev/interval2": "^0.1.3",
     "@bemedev/sleep": "^0.2.1",
     "clone-deep": "^4.0.1",

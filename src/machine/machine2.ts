@@ -46,7 +46,7 @@ import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
 import type { PredicateS } from 'src/guards/types2';
 import type { DeeperPartial } from 'src/types/primitives2';
-import type { NoExtraKeysStrict } from '~types';
+import type { NoExtraKeysStrict } from 'src/types/primitives2';
 import { assignByKey, expandFnMap } from './functions';
 import type {
   AddOptions_F,

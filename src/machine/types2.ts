@@ -37,6 +37,7 @@ import type { EmittersMap } from 'src/emitters/types2';
 import type { PredicateS } from 'src/guards/types2';
 import type { PromiseFunction } from 'src/promises/types2';
 import type {
+  DeeperPartial,
   Describer,
   FnMap2,
   Identify,
@@ -415,8 +416,8 @@ export type GetPromisesFromFlat<
     C,
     E,
     A,
-    Pc,
-    Tc,
+    DeeperPartial<Pc>,
+    DeeperPartial<Tc>,
     PromiseReturn<key, A>
   >;
 };
@@ -649,7 +650,7 @@ export type MachineOptions<
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  Flat extends FlatMapN<C> = FlatMapN<C>,
+  Flat extends FlatMapN<C, false> = FlatMapN<C, false>,
 > = Partial<{
   actions: Partial<GetActionsFromFlat<C, Flat, E, A, Pc, Tc>>;
   predicates: Partial<GetGuardsFromFlat<C, Flat, E, A, Pc, Tc>>;

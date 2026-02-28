@@ -183,7 +183,7 @@ export const machine2 = createMachine(
     promises: {
       fetch: async ({ context }) => {
         return fakeDB
-          .filter(item => item.name.includes(context?.input))
+          .filter(item => item.name.includes(context!.input!))
           .map(item => item.name);
       },
     },
@@ -274,7 +274,7 @@ export const _machine2 = createMachine(
       promises: {
         fetch: async ({ context }) => {
           return fakeDB
-            .filter(item => item.name.includes(context?.input))
+            .filter(item => item.name.includes(context!.input!))
             .map(item => item.name);
         },
       },

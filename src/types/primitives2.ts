@@ -354,7 +354,7 @@ type _FnMap<
   else?: FnR<C, E, A, Pc, Tc, R>;
 };
 
-type _FnMapR<
+type _FnMapReduced<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
@@ -384,7 +384,9 @@ export type FnMapR<
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = FnReduced<C, E, A, Tc, R> | _FnMapR<C, E, A, Tc, R, ToEvents2<E, A>>;
+> =
+  | FnReduced<C, E, A, Tc, R>
+  | _FnMapReduced<C, E, A, Tc, R, ToEvents2<E, A>>;
 
 /**
  * A type that represents a record with string keys and values of type {@linkcode T}.
