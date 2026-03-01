@@ -23,10 +23,6 @@ describe('Machine1', () => {
       1,
     );
 
-  afterEach(() => {
-    console.warn('iterator', service1.select('iterator'));
-  });
-
   test(...useContext());
   test(...start());
   test(...useIterator(0));
