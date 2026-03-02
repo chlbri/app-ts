@@ -11,7 +11,7 @@ describe('Machine 23 -> Tests for inner machines', () => {
   });
 
   describe('#01 => Integration', () => {
-    const TEXT = '#01 => Machine 23 inner machines integration test';
+    const TEXT = '#01 => Machine23 inner machines integration test';
 
     describe(TEXT, () => {
       // #region Config
