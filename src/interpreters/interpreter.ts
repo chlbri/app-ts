@@ -23,6 +23,7 @@ import {
   type ToEventsR2,
 } from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
+import { getEntries, getExits } from '#machine';
 import {
   getByKey,
   getTags,
@@ -78,7 +79,6 @@ import {
 import sleep from '@bemedev/sleep';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
-import { getEntries, getExits } from '#machine';
 import { isDescriber, type RecordS } from '~types';
 import type {
   _Send_F,
@@ -116,8 +116,10 @@ import type {
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { toObservable } from '#emitters';
-import type { AnyMachine } from 'src/machine/machine.types';
 import type { Machine } from '#machine';
+import type { FinallyConfig, PromiseeResult } from '#promises';
+import { createPausable } from '@bemedev/rx-pausable';
+import type { AnyMachine } from 'src/machine/machine.types';
 import type {
   ActorsMapFrom,
   ExtractTagsFromConfig,
@@ -125,10 +127,8 @@ import type {
   MachineOptions,
   SimpleMachineOptions2,
 } from 'src/machine/types';
-import type { FinallyConfig, PromiseeResult } from '#promises';
-import { createSubscriber, type SubscriberClass } from './subscriber';
-import { createPausable } from '@bemedev/rx-pausable';
 import { Scheduler } from './scheduler';
+import { createSubscriber, type SubscriberClass } from './subscriber';
 
 // TODO: Reuse my custom event loop
 /**
@@ -241,12 +241,12 @@ export class Interpreter<
   /**
    * The previous {@linkcode State} of this {@linkcode Interpreter} service.
    */
-  #previousState!: State<C, Tc, ToEvents2<E, A>, A>;
+  #previousState!: State<C, Tc, ToEvents2<E, A>>;
 
   /**
    * The current {@linkcode State} of this {@linkcode Interpreter} service.
    */
-  #state!: State<C, Tc, ToEvents2<E, A>, A>;
+  #state!: State<C, Tc, ToEvents2<E, A>>;
 
   /**
    * All {@linkcode AnyInterpreter} service subscribers of this {@linkcode Interpreter} service.
@@ -354,7 +354,6 @@ export class Interpreter<
       event: INIT_EVENT,
       value: this.#value,
       tags: this.tags,
-      children: {} as any,
     };
     this.#collectServices();
     this.#collectEmitters();
@@ -439,7 +438,7 @@ export class Interpreter<
    * @see {@linkcode SubscriberClass}
    * @see {@linkcode SubscriberClass}
    */
-  #performStates = (parts?: Partial<State<C, Tc, ToEvents2<E, A>, A>>) => {
+  #performStates = (parts?: Partial<State<C, Tc, ToEvents2<E, A>>>) => {
     this.#previousState = cloneDeep(this.#state);
     this.#state = { ...this.#state, ...parts };
     const check = !equal(this.#previousState, this.#state);
@@ -798,7 +797,7 @@ export class Interpreter<
     this.#selfTransitionsCounter = 0;
   };
 
-  get #cloneState(): StateExtended<C, Pc, Tc, ToEvents2<E, A>, A> {
+  get #cloneState(): StateExtended<C, Pc, Tc, ToEvents2<E, A>> {
     const pContext = cloneDeep(this.#pContext);
     return structuredClone({ pContext, ...this.#state });
   }
@@ -1622,8 +1621,7 @@ export class Interpreter<
       };
       const si = service as SI;
       si.__subscribe(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        ({ children, ...payload }) => {
+        payload => {
           const type = eventToType(payload.event);
 
           const event = {
@@ -1631,13 +1629,6 @@ export class Interpreter<
             payload,
           } satisfies EventObject;
 
-          const tempState: any = {
-            children: {
-              [id]: payload,
-            },
-          };
-
-          this.#performStates(tempState);
           this.#changeEvent(_any(event));
           const transitions = toArray<TransitionConfig>(on?.[type]);
           this.__performTransitions(...transitions);

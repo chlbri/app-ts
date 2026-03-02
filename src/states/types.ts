@@ -1,16 +1,10 @@
 import type {
   Keys,
-  NotUndefined,
   PrimitiveObject,
   SoA,
   UnionToIntersection,
 } from '#bemedev/globals/types';
-import type {
-  _EventsR,
-  ActorsConfigMap,
-  AllEvent,
-  EventsMap,
-} from '#events';
+import type { ActorsConfigMap, AllEvent, EventsMap } from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
 import type { Transitions, TransitionsConfig } from '#transitions';
 import type {
@@ -156,46 +150,24 @@ export type State<
   C extends Config = Config,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends AllEvent = AllEvent,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Ch extends NotUndefined<A['children']> = NotUndefined<A['children']>,
 > = {
   context: Tc;
   status: WorkingStatus;
   value: StateValue;
   event: E;
   tags?: SoA<ExtractTagsFromConfig<C>>;
-  children: {
-    [key in keyof Ch]: {
-      context: any;
-      status: WorkingStatus;
-      value: StateValue;
-      event: _EventsR<Ch[key]>;
-      tags?: SoA<string>;
-    };
-  };
 };
 
 export type StateP<
   C extends Config = Config,
   Tc extends PrimitiveObject = PrimitiveObject,
   E = any,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Ch extends NotUndefined<A['children']> = NotUndefined<A['children']>,
 > = {
   context: Tc;
   status: WorkingStatus;
   value: StateValue;
   payload: E;
   tags?: SoA<ExtractTagsFromConfig<C>>;
-  children: {
-    [key in keyof Ch]: {
-      context: any;
-      status: WorkingStatus;
-      value: StateValue;
-      event: _EventsR<Ch[key]>;
-      tags?: SoA<string>;
-    };
-  };
 };
 
 export type StateExtended<
@@ -203,20 +175,18 @@ export type StateExtended<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends AllEvent = AllEvent,
-  A extends ActorsConfigMap = ActorsConfigMap,
 > = {
   pContext: Pc;
-} & State<C, Tc, E, A>;
+} & State<C, Tc, E>;
 
 export type StatePextended<
   C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   E = any,
-  A extends ActorsConfigMap = ActorsConfigMap,
 > = {
   pContext: Pc;
-} & StateP<C, Tc, E, A>;
+} & StateP<C, Tc, E>;
 // #endregion
 
 type FlatMapNodeConfig<

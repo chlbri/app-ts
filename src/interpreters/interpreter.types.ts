@@ -246,10 +246,10 @@ type _FnMapR<
   TT extends ToEventsR2<E, A> = ToEventsR2<E, A>,
 > = {
   [key in TT['type']]?: (
-    state: StateP<C, Tc, Extract<TT, { type: key }>['payload'], A>,
+    state: StateP<C, Tc, Extract<TT, { type: key }>['payload']>,
   ) => R;
 } & {
-  else?: (state: State<C, Tc, ToEvents2<E, A>, A>) => R;
+  else?: (state: State<C, Tc, ToEvents2<E, A>>) => R;
 };
 
 export type FnSubReduced<
@@ -259,7 +259,7 @@ export type FnSubReduced<
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
 > =
-  | ((state: State<C, Tc, ToEvents2<E, A>, A>) => R)
+  | ((state: State<C, Tc, ToEvents2<E, A>>) => R)
   | _FnMapR<C, E, A, Tc, R, ToEventsR2<E, A>>;
 
 export type AddSubscriber_F<

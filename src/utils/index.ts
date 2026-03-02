@@ -6,6 +6,7 @@ export * from './merge';
 export * from './nothing';
 export * from './objects';
 export * from './reduceFnMap';
+export * from './reduceDescriber';
 export * from './resolve';
 export * from './strings';
 export * from './toFunction';

@@ -153,7 +153,7 @@ export type ByKey_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = <
-  S extends StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>,
+  S extends StateExtended<C, Pc, Tc, ToEvents2<E, A>>,
   D = Decompose<S, { object: 'both'; start: false; sep: '.' }>,
   K extends keyof D & string = keyof D & string,
 >(
