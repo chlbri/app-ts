@@ -47,7 +47,7 @@ export const config3 = createConfig({
         },
         '/state1/state11',
       ],
-      promises: [
+      actors: [
         {
           src: 'promise1',
           then: { actions: 'action1' },
@@ -88,8 +88,10 @@ export const config3 = createConfig({
       ],
     },
   },
-  machines: {
-    machine1: { description: 'A beautiful machine', name: 'machine1' },
+  actors: {
+    id: 'machine1',
+    src: 'machine1',
+    on: {},
   },
 });
 
@@ -101,9 +103,25 @@ export const machine3 = createMachine(
       EVENT2: 'boolean',
       EVENT3: { login: 'string', pwd: 'string' },
     },
-    promiseesMap: {},
     pContext: { data: 'string' },
     context: { age: 'number' },
+    actorsMap: {
+      children: {
+        machine1: {
+          NEXT: 'boolean',
+        },
+      },
+      promisees: {
+        promise1: {
+          then: 'string',
+          catch: 'primitive',
+        },
+        promise2: {
+          then: 'string',
+          catch: 'primitive',
+        },
+      },
+    },
   }),
 );
 

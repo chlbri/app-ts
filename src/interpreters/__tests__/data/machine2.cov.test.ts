@@ -17,10 +17,6 @@ describe('machine coverage', () => {
       // #region Config
 
       const service = interpret(_machine2, {
-        pContext: {
-          iterator: 0,
-        },
-        context: { iterator: 0, input: '', data: [] },
         exact: true,
       });
 
@@ -48,7 +44,9 @@ describe('machine coverage', () => {
 
       const INPUT = 'a';
 
-      const FAKES = fakeDB.filter(({ name }) => name.includes(INPUT));
+      const FAKES = fakeDB
+        .filter(({ name }) => name.includes(INPUT))
+        .map(({ name }) => name);
 
       const strings: (string | string[])[] = [];
 
@@ -92,13 +90,13 @@ describe('machine coverage', () => {
         const inviteStrict = `#02 => Check strict data`;
 
         const strict = () => {
-          expect(service.context.data).toStrictEqual(datas);
+          expect(service.context?.data).toStrictEqual(datas);
         };
 
         const inviteLength = `#01 => Length of data is ${datas.length}`;
 
         const length = () => {
-          expect(service.context.data.length).toBe(datas.length);
+          expect(service.context?.data?.length).toBe(datas.length);
         };
 
         const invite = `#${index < 10 ? '0' + index : index} => Check data`;

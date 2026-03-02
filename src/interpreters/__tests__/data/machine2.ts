@@ -1,6 +1,6 @@
 import { interpret } from '#interpreters';
 import { notU, typings } from '#utils';
-import { createConfig } from 'src/machine/functions/create2';
+import { createConfig } from 'src/machine/functions/create';
 import { createMachine } from '#machine';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
@@ -104,13 +104,11 @@ export const machine2 = createMachine(
   {
     actors: {
       id: 'machine1',
-      src: 'machine11',
+      src: 'machine1',
       contexts: {
         '': '',
       },
-      on: {
-        NEXT: '/working',
-      },
+      on: {},
     },
     ...config2,
   },
@@ -131,9 +129,7 @@ export const machine2 = createMachine(
     },
     actorsMap: {
       children: {
-        machine11: {
-          NEXT: 'boolean',
-        },
+        machine1: {},
       },
       promisees: {
         fetch: {
@@ -188,7 +184,7 @@ export const machine2 = createMachine(
       },
     },
     children: {
-      machine11: interpret(machine1, {}),
+      machine1: interpret(machine1),
     },
   },
   delays: {
@@ -197,7 +193,16 @@ export const machine2 = createMachine(
   },
 }));
 
-const _config2 = createConfig({ ...config2, entry: 'debounce' });
+const _config2 = createConfig({
+  ...config2,
+  states: {
+    ...config2.states,
+    idle: {
+      entry: 'debounce',
+      ...config2.states.idle,
+    },
+  },
+});
 
 export const _machine2 = createMachine(
   _config2,

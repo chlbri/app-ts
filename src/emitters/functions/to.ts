@@ -1,13 +1,14 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventsMap } from '#events';
-import type { SimpleMachineOptions } from 'src/machine/types';
+import type { Config, SimpleMachineOptions } from '#machines';
 import type { Emitter } from '../types';
-import { toEmitterSrc } from './src';
+import { toObservable } from './src';
 import { toArray } from '@bemedev/basifun';
 import type { EmitterConfig } from '#actor';
 import { toTransition } from '#transitions';
 
 export type ToEmitter_F = <
+  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -17,7 +18,7 @@ export type ToEmitter_F = <
   actorsMap: A,
   emitter: EmitterConfig,
   options?: SimpleMachineOptions<E, A, Pc, TC>,
-) => Emitter<E, A, Pc, TC>;
+) => Emitter<C, E, A, Pc, TC>;
 
 /**
  * Converts an emitter config to an emitter object with a source and transitions.
@@ -27,7 +28,7 @@ export type ToEmitter_F = <
  * @param emitters of type {@linkcode SimpleMachineOptions}, the machine options.
  * @returns an emitter object with a source and transitions.
  *
- * @see {@linkcode toEmitterSrc} for converting the source.
+ * @see {@linkcode toObservable} for converting the source.
  * @see {@linkcode toTransition} for converting transitions.
  * @see {@linkcode toArray.typed} for the type of the context.
  * @see {@linkcode ToEmitter_F} for more details
@@ -38,7 +39,7 @@ export const toEmitter: ToEmitter_F = (
   emitter,
   options,
 ) => {
-  const src = toEmitterSrc(emitter.src, options?.actors?.emitters);
+  const src = toObservable(emitter.src, options?.actors?.emitters);
 
   const next = toArray
     .typed(emitter.next)

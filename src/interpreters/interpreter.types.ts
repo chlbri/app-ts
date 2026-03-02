@@ -56,6 +56,7 @@ import type {
 import type { FnR } from '~types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
+import { Observable } from 'rxjs';
 
 export type WorkingStatus =
   | 'idle'
@@ -335,7 +336,7 @@ export interface AnyInterpreter<
   ) => PromiseFunction<Config, E, A, Pc, Tc> | undefined;
   toDelayFn: (delay: string) => Delay<Config, E, A, Pc, Tc> | undefined;
   toChild: (machine: string) => AnyInterpreter | undefined;
-  toEmitter: (emitter: string) => Pausable | undefined;
+  toObservable: (emitter: string) => Observable<unknown> | undefined;
   id?: string;
   from?: string;
 
@@ -365,7 +366,12 @@ export type DiffNext = {
   diffExits: ActionConfig[];
 };
 
-export type CollectedEmitter = NOmit<EmitterConfig, 'src'> & {
+export type CollectedObservable = NOmit<EmitterConfig, 'src'> & {
+  from: string;
+  observable: Observable<any>;
+};
+
+export type CollectedEmitter = Pick<EmitterConfig, 'id'> & {
   from: string;
   emitter: Pausable;
 };

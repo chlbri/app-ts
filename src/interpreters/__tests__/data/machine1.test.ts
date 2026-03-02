@@ -5,7 +5,7 @@ import { machine1 } from './machine1';
 
 vi.useFakeTimers();
 
-describe('Machine1', () => {
+describe('src/interpreters/__tests__/data/machine1.test.ts', () => {
   const service1 = interpret(machine1);
 
   const { useContext, useIterator, useWaiter, start, stop, dispose } =

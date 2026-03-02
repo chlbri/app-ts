@@ -8,18 +8,15 @@ import { machine23 } from './machine23';
 describe('Machine 23 -> Tests for inner machines', () => {
   beforeAll(() => vi.useFakeTimers());
 
-  const service = interpret(machine23, {
-    pContext: {
-      iterator: 0,
-    },
-    context: { iterator: 0, input: '', data: [] },
-  });
+  const service = interpret(machine23);
 
   type SE = Parameters<typeof service.send>[0];
 
   const INPUT = 'a';
 
-  const FAKES = fakeDB.filter(({ name }) => name.includes(INPUT));
+  const FAKES = fakeDB
+    .filter(({ name }) => name.includes(INPUT))
+    .map(({ name }) => name);
 
   // #region Hooks
 
@@ -60,7 +57,7 @@ describe('Machine 23 -> Tests for inner machines', () => {
   const useInput = (input: string, index: number) => {
     const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
     return tupleOf(invite, async () => {
-      expect(service.context.input).toBe(input);
+      expect(service.context?.input).toBe(input);
     });
   };
 
@@ -68,13 +65,13 @@ describe('Machine 23 -> Tests for inner machines', () => {
     const inviteStrict = `#02 => Check strict data`;
 
     const strict = () => {
-      expect(service.context.data).toStrictEqual(datas);
+      expect(service.context?.data).toStrictEqual(datas);
     };
 
     const inviteLength = `#01 => Length of data is ${datas.length}`;
 
     const length = () => {
-      expect(service.context.data.length).toBe(datas.length);
+      expect(service.context?.data?.length).toBe(datas.length);
     };
 
     const invite = `#${index < 10 ? '0' + index : index} => Check data`;

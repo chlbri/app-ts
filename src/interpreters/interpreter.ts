@@ -86,6 +86,7 @@ import type {
   AnyInterpreter,
   Collected0,
   CollectedEmitter,
+  CollectedObservable,
   CollectedService,
   CreateInterval2_F,
   DiffNext,
@@ -114,7 +115,7 @@ import type {
   NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
-import { toEmitterSrc } from '#emitters';
+import { toObservable } from '#emitters';
 import type { AnyMachine } from 'src/machine/machine.types';
 import type { Machine } from '#machine';
 import type {
@@ -124,8 +125,9 @@ import type {
   MachineOptions,
   SimpleMachineOptions2,
 } from 'src/machine/types';
-import type { PromiseeResult } from '#promises';
+import type { FinallyConfig, PromiseeResult } from '#promises';
 import { createSubscriber, type SubscriberClass } from './subscriber';
+import { createPausable } from '@bemedev/rx-pausable';
 /**
  * The `Interpreter` class is responsible for interpreting and managing the state of a machine.
  * It provides methods to start, stop, pause, and resume the machine, as well as to send events
@@ -336,8 +338,8 @@ export class Interpreter<
       tags: this.tags,
       children: {} as any,
     };
-    this.#collectEmitters();
     this.#collectServices();
+    this.#collectEmitters();
 
     this.#throwing();
   }
@@ -587,7 +589,7 @@ export class Interpreter<
    */
 
   get select(): Selector_F<NotUndefined<Tc>> {
-    const check = this.isReady && isPrimitive(this.#state.context ?? {});
+    const check = this.isReady && isPrimitive(this.#context);
     if (check) return undefined as any;
     const out: any = (path: string) => getByKey(this.#state.context, path);
     return out;
@@ -605,10 +607,10 @@ export class Interpreter<
    *
    * @see {@linkcode getByKey} for retrieving values by key.
    */
-  get _pSelect(): Selector_F<Pc> {
+  get _pSelect(): Selector_F<NotUndefined<Pc>> {
     if (IS_TEST) {
+      const check = this.isReady && isPrimitive(this.#pContext);
       const pContext = this.#pContext;
-      const check = isPrimitive(pContext);
       if (check) return undefined as any;
       if (pContext) {
         const out: any = (path: string) => getByKey(pContext, path);
@@ -773,11 +775,9 @@ export class Interpreter<
     if (!scheduled) return;
     const { data, ms: timeout, id } = scheduled;
     const callback = () => this.#mergeContexts(data);
-
     this.#timeoutActions.filter(f => f.id === id).forEach(this.#dispose);
     this.#timeoutActions = this.#timeoutActions.filter(f => f.id !== id);
     const timer = createTimeout({ callback, timeout, id });
-
     this.#timeoutActions.push(timer);
     timer.start();
   };
@@ -1101,7 +1101,7 @@ export class Interpreter<
     return promise(this.#cloneState);
   };
 
-  #performFinally = (_finally?: PromiseeConfig['finally']) => {
+  #performFinally = (_finally?: FinallyConfig) => {
     const check1 = _finally === undefined;
     if (check1) return;
 
@@ -1377,34 +1377,34 @@ export class Interpreter<
     );
   }
 
-  #collectEmitters() {
+  get #observables() {
     const entriesFlat = Object.entries(this.#machine.flat);
     const entries: [from: string, ...machines: EmitterConfig[]][] = [];
 
     entriesFlat.forEach(([from, node]) => {
-      const _emitters = toArray
+      const _observables = toArray
         .typed(node.actors)
         .filter(actor => 'next' in actor);
 
-      const len = _emitters.length;
+      const len = _observables.length;
       if (len > 0) {
-        entries.push([from, ..._emitters]);
+        entries.push([from, ..._observables]);
       }
     });
 
-    type Check = (value: any) => value is CollectedEmitter;
+    type Check = (value: any) => value is CollectedObservable;
 
     const out = entries
-      .map(([from, ...emitters]) => {
-        return emitters.map(emitter => ({ ...emitter, from }));
+      .map(([from, ...obervables]) => {
+        return obervables.map(observable => ({ ...observable, from }));
       })
       .flat()
       .map(({ src, ...rest }) => {
-        return { emitter: this.toEmitter(src), ...rest };
+        return { observable: this.toObservable(src), ...rest };
       })
-      .filter((value => !!value.emitter) as Check);
+      .filter((value => !!value.observable) as Check);
 
-    return this.#emitters.push(...out);
+    return out;
   }
 
   get #currentEmitters() {
@@ -1610,11 +1610,13 @@ export class Interpreter<
         ({ context }) => {
           const entries = Object.entries(contexts ?? {});
           entries.forEach(([key, path]) => {
-            assignByKey.low(
-              this.#pContext,
-              path,
-              getByKey.low(context, key),
-            );
+            const _context =
+              key === '.'
+                ? structuredClone(context)
+                : getByKey.low(context, key);
+
+            if (path === '.') return (this.#pContext = _context);
+            assignByKey.low(this.#pContext, path, _context);
           });
         },
         {
@@ -1631,6 +1633,39 @@ export class Interpreter<
           },
         },
       );
+    }
+  };
+
+  #collectEmitters = () => {
+    for (const { observable, next, error, id, complete, from } of this
+      .#observables) {
+      const emitter = createPausable(observable, {
+        next: payload => {
+          const event = {
+            type: `${id}::next`,
+            payload,
+          } satisfies EventObject;
+
+          this.#changeEvent(_any(event));
+          const transitions = toArray<TransitionConfig>(next);
+          this.__performTransitions(...transitions);
+        },
+        error: payload => {
+          const event = {
+            type: `${id}::error`,
+            payload,
+          } satisfies EventObject;
+
+          this.#changeEvent(_any(event));
+          const transitions = toArray<TransitionConfig>(error);
+          this.__performTransitions(...transitions);
+        },
+        complete: () => {
+          this.#performFinally(complete);
+        },
+      });
+
+      this.#emitters.push({ emitter, id, from });
     }
   };
 
@@ -2205,11 +2240,11 @@ export class Interpreter<
     );
   };
 
-  toEmitter = (emitter: string) => {
+  toObservable = (emitter: string) => {
     const emitters = this.#machine.emitters;
 
     return this.#returnWithWarning(
-      toEmitterSrc(emitter, emitters),
+      toObservable(emitter, emitters),
       `Emitter (${reduceAction(emitter)}) is not defined`,
     );
   };

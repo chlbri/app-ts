@@ -5,9 +5,14 @@ import { machine2 } from './machine2';
 // #region machine23
 export const machine23 = createMachine(
   {
-    initial: 'idle',
-    entry: 'debounce',
+    initial: 'initialize',
     states: {
+      initialize: {
+        always: {
+          target: '/idle',
+          actions: 'initialize',
+        },
+      },
       idle: {
         activities: {
           DELAY: 'inc',
@@ -17,6 +22,7 @@ export const machine23 = createMachine(
         },
       },
       working: {
+        entry: 'debounce',
         type: 'parallel',
         activities: {
           DELAY2: 'inc2',
@@ -40,7 +46,7 @@ export const machine23 = createMachine(
                 },
               },
               fetch: {
-                promises: {
+                actors: {
                   src: 'fetch',
                   then: {
                     actions: {
@@ -64,10 +70,11 @@ export const machine23 = createMachine(
                     target: '/working/ui/input',
                   },
                 },
-                machines: {
-                  machine1: {
-                    name: 'machine1',
-                    description: 'A beautiful machine',
+                actors: {
+                  src: 'machine1',
+                  id: 'machine1',
+                  contexts: {
+                    iterator: 'iterator',
                   },
                 },
               },
@@ -101,7 +108,7 @@ export const machine23 = createMachine(
     eventsMap: machine2.eventsMap,
     context: machine2.context,
     pContext: machine2.pContext,
-    promiseesMap: machine2.promiseesMap,
+    actorsMap: machine2.actorsMap,
   },
 )
   .provideOptions(toFunction<any>(machine2.options))
