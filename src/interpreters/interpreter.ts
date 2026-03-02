@@ -128,6 +128,8 @@ import type {
 import type { FinallyConfig, PromiseeResult } from '#promises';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 import { createPausable } from '@bemedev/rx-pausable';
+
+// TODO: Reuse my custom event loop
 /**
  * The `Interpreter` class is responsible for interpreting and managing the state of a machine.
  * It provides methods to start, stop, pause, and resume the machine, as well as to send events
