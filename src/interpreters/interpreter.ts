@@ -1661,7 +1661,10 @@ export class Interpreter<
                 : getByKey.low(context, key);
 
             if (path === '.') return this.#mergeContexts({ pContext });
-            assignByKey.low(this.#pContext, path, pContext);
+            const cb = () => {
+              return assignByKey.low(this.#pContext, path, pContext);
+            };
+            this.#schedulerContexts.schedule(cb);
           });
         },
         {
