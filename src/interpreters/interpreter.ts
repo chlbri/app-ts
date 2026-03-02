@@ -128,6 +128,7 @@ import type {
 import type { FinallyConfig, PromiseeResult } from '#promises';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 import { createPausable } from '@bemedev/rx-pausable';
+import { Scheduler } from './scheduler';
 
 // TODO: Reuse my custom event loop
 /**
@@ -253,6 +254,7 @@ export class Interpreter<
   #children: CollectedService[] = [];
 
   #emitters: CollectedEmitter[] = [];
+  #sent = false;
 
   /**
    * Public getter of the service subscribers of this {@linkcode Interpreter} service.
@@ -313,6 +315,11 @@ export class Interpreter<
     return getTags<ExtractTagsFromConfig<C>>(this.#config);
   }
 
+  readonly #schedulerValue: Scheduler;
+  readonly #schedulerContexts: Scheduler;
+  readonly #schedulerEvent: Scheduler;
+  readonly #schedulerStatus: Scheduler;
+
   /**
    * Where everything is initialized
    * @param machine, the {@linkcode Machine} to interpret.
@@ -324,6 +331,15 @@ export class Interpreter<
     mode: Mode = 'strict',
     exact = true,
   ) {
+    // #region Build the schedulers first
+
+    this.#schedulerValue = new Scheduler();
+    this.#schedulerContexts = new Scheduler();
+    this.#schedulerEvent = new Scheduler();
+    this.#schedulerStatus = new Scheduler();
+
+    // #endregion
+
     this.#machine = machine.renew;
 
     this.#config = this.#initialConfig = this.#machine.initialConfig;
@@ -359,6 +375,23 @@ export class Interpreter<
   get isNormal() {
     return this.#mode === 'normal';
   }
+
+  get #schedulers() {
+    return [
+      this.#schedulerValue,
+      this.#schedulerContexts,
+      this.#schedulerEvent,
+      this.#schedulerStatus,
+    ];
+  }
+
+  #startSchedulers = () => {
+    this.#schedulers.forEach(this.#start);
+  };
+
+  #stopSchedulers = () => {
+    this.#schedulers.forEach(this.#stop);
+  };
 
   /**
    * Use to manage internal errors and warnings.
@@ -418,12 +451,10 @@ export class Interpreter<
    */
   protected _performConfig = () => {
     const value = nodeToValue(this.#config as any);
-    this.#value = value;
-
+    const cb = () => (this.#value = value);
+    this.#schedulerValue.schedule(cb, this.#sent);
     this.#node = this.#resolveNode(this.#config);
-
     const configForFlat = _unknown<NodeConfig>(this.#config);
-
     this.#flat = _any(flatMap(configForFlat));
   };
 
@@ -628,7 +659,10 @@ export class Interpreter<
    * Set the current {@linkcode WorkingStatus} private context of this {@linkcode Interpreter} service.
    * @returns 'started'.
    */
-  #startStatus = (): WorkingStatus => this.#setStatus('started');
+  #startStatus = (): WorkingStatus => {
+    this.#setStatus('started');
+    return 'started';
+  };
 
   /**
    * Helper to format inner errors and warnings.
@@ -684,6 +718,7 @@ export class Interpreter<
    * Start this {@linkcode Interpreter} service.
    */
   start = async () => {
+    this.#startSchedulers();
     this.#throwing();
     this.#startStatus();
     this.#subscribeChildren();
@@ -946,10 +981,14 @@ export class Interpreter<
   };
 
   #mergeContexts: DirectMerge_F<Pc, Tc> = result => {
-    this.#pContext = (result?.pContext as any) ?? this.#pContext;
-    const context = (result?.context as any) ?? this.#context;
-    this.#context = context;
-    return this.#performStates({ context });
+    const cb = () => {
+      this.#pContext = (result?.pContext as any) ?? this.#pContext;
+      const context = (result?.context as any) ?? this.#context;
+      this.#context = context;
+      return this.#performStates({ context });
+    };
+
+    return this.#schedulerContexts.schedule(cb, this.#sent);
   };
 
   #executeActivities: ExecuteActivities_F = (from, _activities) => {
@@ -1089,12 +1128,12 @@ export class Interpreter<
   private __performTransitions: PerformTransitions_F = (
     ...transitions
   ) => {
-    // let transition: ReturnType<PerformTransition_F<Pc, Tc>> = false;
     for (const _transition of transitions) {
       const transition = this.#performTransition(_transition);
       const check1 = typeof transition === 'string';
       if (check1) return transition;
     }
+
     return false;
   };
 
@@ -1512,8 +1551,12 @@ export class Interpreter<
    * @param event - the {@linkcode ToEventsR2} event to change the current {@linkcode Interpreter} service state.
    */
   #changeEvent = (event: ToEventsR2<E, A>) => {
-    this.#performStates({ event });
-    this.#event = event;
+    const cb = () => {
+      this.#performStates({ event });
+      this.#event = event;
+    };
+
+    return this.#schedulerEvent.schedule(cb, this.#sent);
   };
 
   get #collectedSelfTransitions() {
@@ -1612,13 +1655,13 @@ export class Interpreter<
         ({ context }) => {
           const entries = Object.entries(contexts ?? {});
           entries.forEach(([key, path]) => {
-            const _context =
+            const pContext =
               key === '.'
                 ? structuredClone(context)
                 : getByKey.low(context, key);
 
-            if (path === '.') return (this.#pContext = _context);
-            assignByKey.low(this.#pContext, path, _context);
+            if (path === '.') return this.#mergeContexts({ pContext });
+            assignByKey.low(this.#pContext, path, pContext);
           });
         },
         {
@@ -1710,9 +1753,7 @@ export class Interpreter<
   #close = this.#mapperFn('close');
 
   #resume = this.#mapperFn('resume');
-
   #unsubscribe = this.#mapperFn('unsubscribe');
-
   #stop = this.#mapperFn('stop');
   #dispose = this.#mapperFn('dispose');
 
@@ -1751,19 +1792,26 @@ export class Interpreter<
     this.#timeoutActions.forEach(this.#stop);
     this.#stopEmitters();
     this.#setStatus('stopped');
+    this.#stopSchedulers();
   };
 
   #makeBusy = (): WorkingStatus => {
-    return this.#setStatus('busy');
+    this.#setStatus('busy');
+    return 'busy';
   };
 
   #setStatus = (status: WorkingStatus) => {
-    this.#performStates({ status });
-    return (this.#status = status);
+    const cb = () => {
+      this.#performStates({ status });
+      return (this.#status = status);
+    };
+
+    return this.#schedulerStatus.schedule(cb, this.#sent);
   };
 
   #startingStatus = (): WorkingStatus => {
-    return this.#setStatus('starting');
+    this.#setStatus('starting');
+    return 'starting';
   };
 
   /**
@@ -1960,6 +2008,7 @@ export class Interpreter<
   };
 
   protected _send: _Send_F<E, A> = event => {
+    this.#sent = true;
     this.#changeEvent(event);
     this.#setStatus('sending');
     let sv = this.#value;
@@ -1985,6 +2034,7 @@ export class Interpreter<
       falsy: initialConfig(this.#machine.valueToConfig(sv)),
     });
 
+    this.#sent = false;
     return next;
   };
 
