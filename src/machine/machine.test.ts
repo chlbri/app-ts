@@ -14,7 +14,7 @@ import {
   defaultC,
   defaultT,
   fakeWaiter,
-} from '../interpreters/__tests__/fixtures';
+} from '../interpreters/__tests__/fixtures/fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => {

@@ -1,5 +1,5 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
-import { fakeWaiter } from '#fixtures';
+import { fakeWaiter } from 'src/interpreters/__tests__/fixtures/fixtures';
 import { DELAY } from '#fixturesData';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';

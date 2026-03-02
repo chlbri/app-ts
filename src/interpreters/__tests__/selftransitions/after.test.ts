@@ -10,7 +10,7 @@ import {
   constructWaiter,
   defaultC,
   defaultT,
-} from '../fixtures';
+} from '../fixtures/fixtures';
 
 const DELAY = 1000;
 

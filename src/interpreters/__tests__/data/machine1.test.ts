@@ -5,13 +5,13 @@ import { machine1 } from './machine1';
 
 vi.useFakeTimers();
 
-describe('src/interpreters/__tests__/data/machine1.test.ts', () => {
+describe('machine1', () => {
   const service1 = interpret(machine1);
 
   const { useContext, useIterator, useWaiter, start, stop, dispose } =
     constructTests(
       service1,
-      ({ constructContexts, constructWaiter }) => ({
+      ({ contexts: constructContexts, waiter: constructWaiter }) => ({
         useWaiter: constructWaiter(DELAY),
         useContext: constructContexts(({ context }) => context),
 

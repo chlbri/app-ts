@@ -40,7 +40,7 @@
         "src/types/index.ts"
       ],
       "#fixtures": [
-        "src/interpreters/__tests__/fixtures.ts"
+        "src/interpreters/__tests__/fixtures/fixtures.ts"
       ],
       "#fixturesData": [
         "src/interpreters/__tests__/data/index.ts"

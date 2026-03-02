@@ -1,7 +1,7 @@
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
-import { constructSend, constructStateValue } from './fixtures';
+import { constructSend, constructStateValue } from './fixtures/fixtures';
 
 describe('Filter and Erase actions', () => {
   describe('#01 => Filter action', () => {

@@ -8,7 +8,7 @@ import {
   constructStateValue,
   defaultC,
   defaultT,
-} from '../fixtures';
+} from '../fixtures/fixtures';
 
 const DELAY = 1000;
 const useWaiter = createFakeWaiter.withDefaultDelay(vi, DELAY);

@@ -1,12 +1,15 @@
-import _any from '#bemedev/features/common/castings/any';
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
+import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
+import { _unknown } from '#bemedev/globals/utils/_unknown';
 import { DEFAULT_NOTHING } from '#constants';
 import type {
   ActorsConfigMap,
   EventArg,
+  EventArgT,
   EventObject,
   EventsMap,
+  ToEventsR2,
 } from '#events';
 import type { Interpreter } from '#interpreter';
 import type { AnyInterpreter } from '#interpreters';
@@ -21,7 +24,10 @@ import type {
   MachineOptions,
   SimpleMachineOptions2,
 } from 'src/machine/types';
-import { _unknown } from '#bemedev/globals/utils/_unknown';
+import { buildIndex } from './invite';
+import { expandFn } from '#bemedev/globals/utils/expandFn';
+
+export * from './invite';
 
 type TestArr = readonly [string, () => void];
 
@@ -167,8 +173,11 @@ export const mockConsole = () => {
 };
 
 type ConstructWaiter2_F = (
-  DELAY?: number,
-) => (times?: number) => readonly [string, () => Promise<void>];
+  DELAY: number,
+) => (
+  times?: number,
+  index?: number,
+) => readonly [string, () => Promise<void>];
 
 type ConstructContexts2_F<
   Pc = any,
@@ -176,11 +185,46 @@ type ConstructContexts2_F<
 > = <R = { context: Tc; pContext: Pc }>(
   selector?: (result: { context: Tc; pContext: Pc }) => R,
   name?: string,
-) => (value?: R) => readonly [string, () => void];
+) => (value?: R, index?: number) => readonly [string, () => void];
 
-type Option<Pc = any, Tc extends PrimitiveObject = PrimitiveObject> = {
-  constructWaiter: ConstructWaiter2_F;
-  constructContexts: ConstructContexts2_F<Pc, Tc>;
+type Option<
+  C extends Config = Config,
+  E extends EventsMap = GetEventsFromConfig<C>,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  waiter: ConstructWaiter2_F;
+  contexts: ConstructContexts2_F<Pc, Tc>;
+  index: (_index?: number) => string;
+
+  sender: {
+    <T extends EventArgT<E>>(
+      type: T,
+    ): (
+      ...data: Extract<
+        ToEventsR2<E, A>,
+        { type: T }
+      >['payload'] extends infer P
+        ? object extends P
+          ? []
+          : [payload: P]
+        : []
+    ) => TestArr;
+
+    index: <T extends EventArgT<E>>(
+      type: T,
+    ) => (
+      ...data: Extract<
+        ToEventsR2<E, A>,
+        { type: T }
+      >['payload'] extends infer P
+        ? object extends P
+          ? [index: number]
+          : [index: number, payload: P]
+        : [index: number]
+    ) => TestArr;
+  };
 };
 
 type ConstructTestsResult<
@@ -190,58 +234,63 @@ type ConstructTestsResult<
 > = T &
   Record<
     'start' | 'stop' | 'dispose' | 'pause' | 'resume',
-    () => TestArr
+    (index?: number) => TestArr
   > & {
-    send: (_event: EventArg<E>) => TestArr;
-    useStateValue: (value: StateValue) => TestArr;
+    send: (_event: EventArg<E>, index?: number) => TestArr;
+    useStateValue: (value: StateValue, index?: number) => TestArr;
   } & (ExtractTagsFromConfig<C> extends infer Tags
     ? never extends Tags
       ? EmptyObject
       : {
           useTags: (...tags: Tags[]) => TestArr;
+          useTagsWithIndex: (index: number, ...tags: string[]) => TestArr;
         }
     : EmptyObject);
 
 type ConstructTestsResult2 = Record<
   'start' | 'stop' | 'dispose' | 'pause' | 'resume',
-  () => TestArr
+  (index?: number) => TestArr
 > & {
-  send: (_event: EventObject) => TestArr;
-  useStateValue: (value: StateValue) => TestArr;
-  useTags: (...tags: string[]) => TestArr;
+  send: (_event: EventObject, index?: number) => TestArr;
+  useStateValue: (value: StateValue, index?: number) => TestArr;
+  useTags: {
+    (...tags: string[]): TestArr;
+    index: (index: number, ...tags: string[]) => TestArr;
+  };
 };
 
 export const constructTests = <
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  E extends EventsMap = GetEventsFromConfig<C>,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  const E extends EventsMap = GetEventsFromConfig<C>,
+  const A extends ActorsConfigMap = ActorsConfigMap,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
   T extends object = object,
 >(
   service: Interpreter<C, Pc, Tc, E, A, Mo>,
-  helper: (option: Option<Pc, Tc>) => T,
+  helper: (option: Option<C, E, A, Pc, Tc>) => T,
   startIndex = 0,
 ): ConstructTestsResult<C, E, T> => {
-  let index = startIndex;
-  const _index = () => {
-    const out = index < 10 ? '0' + index : index;
-    index++;
+  let _index = startIndex;
+  const index = (__index?: number) => {
+    if (__index !== undefined) return __index + '';
+    const out = buildIndex(_index, 100);
+    _index++;
     return out;
   };
 
   const out: ConstructTestsResult2 = {
     ...helper({
-      constructWaiter: (DELAY = 150) => {
-        return (times = 1) => {
-          const invite = `#${_index()} => Wait ${times} times ${DELAY}ms`;
+      waiter: (DELAY = 150) => {
+        return (times = 1, _index) => {
+          const invite = `#${index(_index)} => Wait ${times} times ${DELAY}ms`;
 
           return tupleOf(invite, () => fakeWaiter(DELAY, times));
         };
       },
 
-      constructContexts: (selector, name) => value => {
+      contexts: (selector, name) => (value, _index) => {
         const isNo = value === undefined || value === null;
         const _defaultSelector = (value: any) => value;
         const _selector = selector ?? _defaultSelector;
@@ -251,7 +300,7 @@ export const constructTests = <
           : JSON.stringify(value).substring(0, 15);
 
         const _name = name ?? 'context';
-        const invite = `#${_index()} => ${_name} equal : ${_value}`;
+        const invite = `#${index(_index)} => ${_name} equal : ${_value}`;
 
         return tupleOf(invite, () => {
           const received = _selector({
@@ -262,57 +311,106 @@ export const constructTests = <
           expect(received).toEqual(value);
         });
       },
+
+      index,
+
+      sender: expandFn(
+        type => {
+          return (...___payload: any[]) => {
+            const __payload = _any(___payload);
+
+            const _payload = JSON.stringify(__payload[0]).substring(0, 15);
+            const invite = `#${index()} => send ${type} event with payload : ${_payload}`;
+            const payload = __payload[0] ?? {};
+            const event = { type, payload } as EventArg<E>;
+            return tupleOf(invite, () => service.send(event));
+          };
+        },
+        {
+          index: (type: string) => {
+            return (...___payload: any[]) => {
+              const __payload = _any(___payload);
+
+              const _payload = JSON.stringify(__payload[1]).substring(
+                0,
+                15,
+              );
+              const _index =
+                __payload[0] < 10 ? '0' + __payload[0] : __payload[0];
+              const invite = `#${index(_index)} => send ${type} event with payload : ${_payload}`;
+              const payload = __payload[1] ?? {};
+              const event = { type, payload } as EventArg<E>;
+              return tupleOf(invite, () => service.send(event));
+            };
+          },
+        },
+      ),
     }),
 
-    useStateValue: value => {
+    useStateValue: (value, _index) => {
       const _value = JSON.stringify(value);
-      const invite = `#${_index()} => current value is :${_value}`;
+      const invite = `#${index(_index)} => current value is :${_value}`;
 
       return tupleOf(invite, () => {
         expect(service.value).toEqual(value);
       });
     },
 
-    send: _event => {
+    send: (_event, _index) => {
       const event = JSON.stringify(_event);
-      const invite = `#${_index()}=> send ${event}`;
+      const invite = `#${index(_index)}=> send ${event}`;
 
       return tupleOf(invite, () => {
         return service.send(_any(_event));
       });
     },
 
-    start: () => {
-      const invite = `#${_index()} => Start the service`;
+    start: _index => {
+      const invite = `#${index(_index)} => Start the service`;
       return tupleOf(invite, service.start);
     },
 
-    stop: () => {
-      const invite = `#${_index()} => Stop the service`;
+    stop: _index => {
+      const invite = `#${index(_index)} => Stop the service`;
       return tupleOf(invite, service.stop);
     },
 
-    dispose: () => {
-      const invite = `#${_index()} => Dispose the service`;
+    dispose: _index => {
+      const invite = `#${index(_index)} => Dispose the service`;
       return tupleOf(invite, service.stop);
     },
 
-    pause: () => {
-      const invite = `#${_index()} => Pause the service`;
+    pause: _index => {
+      const invite = `#${index(_index)} => Pause the service`;
       return tupleOf(invite, service.pause);
     },
 
-    resume: () => {
-      const invite = `#${_index()} => Resume the service`;
+    resume: _index => {
+      const invite = `#${index(_index)} => Resume the service`;
       return tupleOf(invite, service.resume);
     },
 
-    useTags: (...tags) => {
-      const invite = `#${_index()} => Tags are : ${tags.join(', ')}`;
-      return tupleOf(invite, () => {
-        expect(service.tags).toEqual(expect.arrayContaining(tags as any));
-      });
-    },
+    useTags: expandFn(
+      (...tags) => {
+        const invite = `#${index()} => Tags are : ${tags.join(', ')}`;
+        return tupleOf(invite, () => {
+          expect(service.tags).toEqual(
+            expect.arrayContaining(tags as any),
+          );
+        });
+      },
+      {
+        index: (index: number, ...tags: any[]) => {
+          const _index = index < 10 ? '0' + index : index;
+          const invite = `#${_index} => Tags are : ${tags.join(', ')}`;
+          return tupleOf(invite, () => {
+            expect(service.tags).toEqual(
+              expect.arrayContaining(tags as any),
+            );
+          });
+        },
+      },
+    ),
   };
 
   return _unknown<ConstructTestsResult<C, E, T>>(out);
