@@ -1,9 +1,9 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
-import { fakeWaiter } from 'src/interpreters/__tests__/fixtures/fixtures';
 import { DELAY } from '#fixturesData';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { notU, typings } from '#utils';
+import { fakeWaiter } from 'src/interpreters/__tests__/fixtures';
 
 beforeAll(() => {
   vi.useFakeTimers();

@@ -1,4 +1,4 @@
-import { reduceAction, toAction, type ActionConfig } from '#actions';
+import { toAction, type ActionConfig } from '#actions';
 import _any from '#bemedev/features/common/castings/any';
 import isPrimitive from '#bemedev/features/common/castings/primitive/is';
 import {
@@ -58,7 +58,12 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '#transitions';
-import { IS_TEST, isStringEmpty, replaceAll } from '#utils';
+import {
+  IS_TEST,
+  isStringEmpty,
+  reduceDescriber,
+  replaceAll,
+} from '#utils';
 import {
   anyPromises,
   asyncfy,
@@ -454,7 +459,7 @@ export class Interpreter<
     this.#schedulerValue.schedule(cb, this.#sent);
     this.#node = this.#resolveNode(this.#config);
     const configForFlat = _unknown<NodeConfig>(this.#config);
-    this.#flat = _any(flatMap(configForFlat));
+    this.#flat = _any(flatMap(configForFlat, true));
   };
 
   /**
@@ -753,10 +758,10 @@ export class Interpreter<
     this.#performActivities();
     this.#pauseEmitters(({ from }) => !this.#isInsideValue(from));
     this.#pauseChildren(({ from }) => !this.#isInsideValue(from));
-    this.#resumeChildren();
     this.#startChildren();
-    this.#resumeEmitters();
+    this.#resumeChildren();
     this.#startEmitters();
+    this.#resumeEmitters();
 
     this.#abortablePromisees
       .filter(({ from }) => {
@@ -1412,9 +1417,7 @@ export class Interpreter<
   };
 
   get #currentChildren() {
-    return this.#children.filter(
-      ({ from }) => !from || this.#isInsideValue(from),
-    );
+    return this.#children.filter(({ from }) => this.#isInsideValue(from));
   }
 
   get #observables() {
@@ -1440,7 +1443,7 @@ export class Interpreter<
       })
       .flat()
       .map(({ src, ...rest }) => {
-        return { observable: this.toObservable(src), ...rest };
+        return { observable: this.toObservable(src), ...rest, src };
       })
       .filter((value => !!value.observable) as Check);
 
@@ -1448,9 +1451,7 @@ export class Interpreter<
   }
 
   get #currentEmitters() {
-    return this.#emitters.filter(({ from }) => {
-      return this.#isInsideValue(from);
-    });
+    return this.#emitters.filter(({ from }) => this.#isInsideValue(from));
   }
 
   get #currentActivities() {
@@ -1475,30 +1476,25 @@ export class Interpreter<
   #startEmitters = () => {
     this.#currentEmitters
       .filter(({ id }) => !this.#startedEmitterIDs.has(id))
-      .forEach(({ emitter: instance, id }) => {
-        instance.start();
+      .forEach(({ emitter, id }) => {
+        emitter.start();
         this.#startedEmitterIDs.add(id);
       });
   };
 
   #resumeEmitters = () => {
-    this.#currentEmitters
-      .filter(({ id }) => !this.#startedEmitterIDs.has(id))
-      .forEach(({ emitter: instance, id }) => {
-        instance.resume();
-        this.#startedEmitterIDs.add(id);
-      });
+    this.#currentEmitters.forEach(({ emitter, from }) => {
+      emitter.resume();
+    });
   };
 
   #startedEmitterIDs: Set<string> = new Set();
 
   #stopEmitters = () => {
-    this.#emitters
-      // .filter(({ id }) => this.#startedEmitterIDs.has(id))
-      .forEach(({ emitter: instance, id }) => {
-        instance.stop();
-        this.#startedEmitterIDs.delete(id);
-      });
+    this.#emitters.forEach(({ emitter: instance, id }) => {
+      instance.stop();
+      this.#startedEmitterIDs.delete(id);
+    });
   };
 
   #pauseEmitters = (
@@ -1507,9 +1503,8 @@ export class Interpreter<
     this.#emitters
       .filter(({ id }) => this.#startedEmitterIDs.has(id))
       .filter(filter)
-      .forEach(({ emitter, id }) => {
+      .forEach(({ emitter }) => {
         emitter.pause();
-        this.#startedEmitterIDs.delete(id);
       });
   };
 
@@ -1676,12 +1671,12 @@ export class Interpreter<
   };
 
   #collectEmitters = () => {
-    for (const { observable, next, error, id, complete, from } of this
+    for (const { observable, next, error, src, id, complete, from } of this
       .#observables) {
       const emitter = createPausable(observable, {
         next: payload => {
           const event = {
-            type: `${id}::next`,
+            type: `${src}::next`,
             payload,
           } satisfies EventObject;
 
@@ -1691,7 +1686,7 @@ export class Interpreter<
         },
         error: payload => {
           const event = {
-            type: `${id}::error`,
+            type: `${src}::error`,
             payload,
           } satisfies EventObject;
 
@@ -2189,11 +2184,14 @@ export class Interpreter<
    * @returns true if the value is inside the current state value, false otherwise.
    */
   #isInsideValue = (value: string) => {
-    return this.#isInsideValue2(this.#value, value);
+    const out = this.#isInsideValue2(this.#value, value);
+    return out;
   };
 
   #isInsideValue2 = (sv: StateValue, value: string) => {
-    if (value === DEFAULT_DELIMITER) return true;
+    if (value === DEFAULT_DELIMITER) {
+      return true;
+    }
     const values = decomposeSV(sv);
     const entry = value.substring(1);
     const state = replaceAll({
@@ -2236,7 +2234,7 @@ export class Interpreter<
 
     return this.#returnWithWarning(
       toAction<C, E, A, Pc, Tc>(events, actorsMap, action, actions),
-      `Action (${reduceAction(action)}) is not defined`,
+      `Action (${reduceDescriber(action)}) is not defined`,
     );
   };
 
@@ -2282,7 +2280,7 @@ export class Interpreter<
 
     return this.#returnWithWarning(
       toChildSrc(machine, machines),
-      `Machine (${reduceAction(machine)}) is not defined`,
+      `Machine (${reduceDescriber(machine)}) is not defined`,
     );
   };
 
@@ -2291,7 +2289,7 @@ export class Interpreter<
 
     return this.#returnWithWarning(
       toObservable(emitter, emitters),
-      `Emitter (${reduceAction(emitter)}) is not defined`,
+      `Emitter (${reduceDescriber(emitter)}) is not defined`,
     );
   };
 

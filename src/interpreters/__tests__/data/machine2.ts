@@ -195,6 +195,14 @@ export const machine2 = createMachine(
 
 const _config2 = createConfig({
   ...config2,
+  actors: {
+    id: 'machine1',
+    src: 'machine1',
+    contexts: {
+      iterator: 'iterator',
+    },
+    on: {},
+  },
   states: {
     ...config2.states,
     idle: {
@@ -220,6 +228,9 @@ export const _machine2 = createMachine(
       data: ['string'],
     },
     actorsMap: {
+      children: {
+        machine1: {},
+      },
       promisees: {
         fetch: { then: ['string'], catch: 'primitive' },
       },
@@ -282,6 +293,9 @@ export const _machine2 = createMachine(
             .filter(item => item.name.includes(context!.input!))
             .map(item => item.name);
         },
+      },
+      children: {
+        machine1: interpret(machine1),
       },
     },
     delays: {

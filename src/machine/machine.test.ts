@@ -1,25 +1,21 @@
-import { reduceAction } from '#actions';
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
-import { DELAY, fakeDB, machine2 } from '#fixturesData';
+import { _machine2, DELAY, fakeDB, machine2 } from '#fixturesData';
 import { interpret } from '#interpreters';
 import { createMachine, getEntries } from '#machine';
 import type { StateValue } from '#states';
-import { nothing } from '#utils';
+import { nothing, reduceDescriber } from '#utils';
 import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
 import path from 'path';
 import {
   constructSend,
   constructStateValue,
-  defaultC,
   defaultT,
   fakeWaiter,
-} from '../interpreters/__tests__/fixtures/fixtures';
+} from '../interpreters/__tests__/fixtures';
 
 describe('machine coverage', () => {
-  beforeAll(() => {
-    vi.useFakeTimers();
-  });
+  beforeAll(() => vi.useFakeTimers());
 
   describe('#01 => Integration', () => {
     const TEXT = 'Activities Integration Test from perform';
@@ -31,14 +27,7 @@ describe('machine coverage', () => {
     describe(TEXT, () => {
       // #region Config
 
-      const service = interpret(machine2, {
-        pContext: {
-          iterator: 0,
-        },
-        context: { iterator: 0, input: '', data: [] },
-        exact: true,
-      });
-
+      const service = interpret(_machine2);
       const subscriber = service.subscribe(
         {
           WRITE: ({ payload: { value } }) =>
@@ -57,7 +46,9 @@ describe('machine coverage', () => {
 
       const INPUT = 'a';
 
-      const FAKES = fakeDB.filter(({ name }) => name.includes(INPUT));
+      const FAKES = fakeDB
+        .filter(({ name }) => name.includes(INPUT))
+        .map(({ name }) => name);
 
       const strings: (string | string[])[] = [];
 
@@ -107,7 +98,7 @@ describe('machine coverage', () => {
       const useInput = (input: string, index: number) => {
         const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
         return tupleOf(invite, async () => {
-          expect(service.context.input).toBe(input);
+          expect(service.context?.input).toBe(input);
         });
       };
 
@@ -115,13 +106,13 @@ describe('machine coverage', () => {
         const inviteStrict = `#02 => Check strict data`;
 
         const strict = () => {
-          expect(service.context.data).toStrictEqual(datas);
+          expect(service.context?.data).toStrictEqual(datas);
         };
 
         const inviteLength = `#01 => Length of data is ${datas.length}`;
 
         const length = () => {
-          expect(service.context.data.length).toBe(datas.length);
+          expect(service.context?.data?.length).toBe(datas.length);
         };
 
         const invite = `#${index < 10 ? '0' + index : index} => Check data`;
@@ -174,7 +165,12 @@ describe('machine coverage', () => {
           test(...useState('idle', 1));
           test(...useIterator(6, 2));
           test(...useIteratorC(6, 3));
-          describe(...useConsole(4));
+          const array = [
+            ...Array(13).fill('nothing call nothing'),
+            'Debounced action executed',
+            ...Array(17).fill('nothing call nothing'),
+          ];
+          describe(...useConsole(4, ...array));
         });
 
         test(...useSend('NEXT', 3));
@@ -195,7 +191,13 @@ describe('machine coverage', () => {
           test(...useIterator(6, 2));
           test(...useIteratorC(6, 3));
 
-          describe(...useConsole(4, 'NEXT time, you will see!!'));
+          describe(
+            ...useConsole(
+              4,
+              'NEXT time, you will see!!',
+              ...Array(6).fill('nothing call nothing'),
+            ),
+          );
         });
 
         test(...useWaiter(6, 5));
@@ -203,7 +205,14 @@ describe('machine coverage', () => {
         describe('#06 => Check the service', () => {
           test(...useIterator(18, 1));
           test(...useIteratorC(12, 2));
-          describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
+          const array = [
+            'sendPanelToUser',
+            ...Array(2).fill('nothing call nothing'),
+            ...Array(5)
+              .fill(['sendPanelToUser', 'nothing call nothing'])
+              .flat(),
+          ];
+          describe(...useConsole(3, ...array));
         });
 
         test('#07 => pause', service.pause.bind(service));
@@ -267,8 +276,15 @@ describe('machine coverage', () => {
 
           test(...useIterator(42, 2));
           test(...useIteratorC(24, 3));
-
-          describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
+          const array = [
+            ...Array(4).fill('nothing call nothing'),
+            'sendPanelToUser',
+            ...Array(2).fill('nothing call nothing'),
+            ...Array(11)
+              .fill(['sendPanelToUser', 'nothing call nothing'])
+              .flat(),
+          ];
+          describe(...useConsole(4, ...array));
         });
 
         test(...useWrite('', 14));
@@ -289,7 +305,11 @@ describe('machine coverage', () => {
           test(...useIterator(42, 2));
           test(...useIteratorC(24, 3));
           test(...useInput('', 4));
-          describe(...useConsole(5, ['WRITE with', ':', '""']));
+          const array = [
+            ['WRITE with', ':', '""'],
+            ...Array(6).fill('nothing call nothing'),
+          ];
+          describe(...useConsole(5, ...array));
         });
 
         test(...useWaiter(12, 16));
@@ -310,18 +330,20 @@ describe('machine coverage', () => {
           test(...useIterator(66, 2));
           test(...useIteratorC(36, 3));
           test(...useInput('', 4));
+          const array = [
+            'sendPanelToUser',
+            'Input, please !!',
+            ...Array(2).fill('nothing call nothing'),
+            ...Array(11)
+              .fill([
+                'sendPanelToUser',
+                'Input, please !!',
+                'nothing call nothing',
+              ])
+              .flat(),
+          ];
 
-          describe(
-            ...useConsole(
-              5,
-              ...Array(24)
-                .fill(0)
-                .map((_, index) => {
-                  const isEven = index % 2 === 0;
-                  return isEven ? 'sendPanelToUser' : 'Input, please !!';
-                }),
-            ),
-          );
+          describe(...useConsole(5, ...array));
         });
 
         test(...useWrite(INPUT, 18));
@@ -342,13 +364,11 @@ describe('machine coverage', () => {
           test(...useIterator(66, 2));
           test(...useIteratorC(36, 3));
           test(...useInput('', 4));
-          describe(
-            ...useConsole(
-              5,
-
-              ['WRITE with', ':', `"${INPUT}"`],
-            ),
-          );
+          const array = [
+            ['WRITE with', ':', `"${INPUT}"`],
+            ...Array(6).fill('nothing call nothing'),
+          ];
+          describe(...useConsole(5, ...array));
         });
 
         test(...useWaiter(12, 20));
@@ -369,7 +389,14 @@ describe('machine coverage', () => {
           test(...useIterator(90, 2));
           test(...useIteratorC(48, 3));
           test(...useInput('', 4));
-          describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
+          const array = [
+            'sendPanelToUser',
+            ...Array(2).fill('nothing call nothing'),
+            ...Array(11)
+              .fill(['sendPanelToUser', 'nothing call nothing'])
+              .flat(),
+          ];
+          describe(...useConsole(5, ...array));
         });
 
         test(
@@ -494,8 +521,8 @@ describe('machine coverage', () => {
               expect(log).toBeCalledTimes(strings.length);
             });
 
-            test('#02 => Log is called "78" times', () => {
-              expect(log).toBeCalledTimes(69);
+            test('#02 => Log is called "168" times', () => {
+              expect(log).toBeCalledTimes(168);
             });
           });
 
@@ -523,13 +550,12 @@ describe('machine coverage', () => {
       '__stateP',
       '__statePextended',
       '__guardKey',
-      '__predictate',
+      '__predicate',
       '__delayKey',
       '__delay',
       '__definedValue',
       '__src',
       '__promise',
-      '__childKey',
       '__machine',
     ] as const;
 
@@ -544,9 +570,17 @@ describe('machine coverage', () => {
   describe('#03 => Getters', () => {
     test('#01 => config', () => {
       const expected = {
-        machines: { machine1: 'machine1' },
-        initial: 'idle',
+        actors: {
+          contexts: {
+            '': '',
+          },
+          id: 'machine1',
+          on: {},
+          src: 'machine1',
+        },
+        initial: 'initialize',
         states: {
+          final: {},
           idle: {
             activities: {
               DELAY: 'inc',
@@ -555,8 +589,13 @@ describe('machine coverage', () => {
               NEXT: '/working',
             },
           },
+          initialize: {
+            always: {
+              actions: 'initialize',
+              target: '/idle',
+            },
+          },
           working: {
-            type: 'parallel',
             activities: {
               DELAY2: 'inc2',
             },
@@ -565,7 +604,21 @@ describe('machine coverage', () => {
             },
             states: {
               fetch: {
+                initial: 'idle',
                 states: {
+                  fetch: {
+                    actors: {
+                      catch: '/working/fetch/idle',
+                      src: 'fetch',
+                      then: {
+                        actions: {
+                          description: 'Database insert',
+                          name: 'insertData',
+                        },
+                        target: '/working/fetch/idle',
+                      },
+                    },
+                  },
                   idle: {
                     activities: {
                       DELAY: 'sendPanelToUser',
@@ -577,24 +630,12 @@ describe('machine coverage', () => {
                       },
                     },
                   },
-                  fetch: {
-                    promises: {
-                      src: 'fetch',
-                      then: {
-                        actions: {
-                          name: 'insertData',
-                          description: 'Database insert',
-                        },
-                        target: '/working/fetch/idle',
-                      },
-                      catch: '/working/fetch/idle',
-                    },
-                  },
                 },
-                initial: 'idle',
               },
               ui: {
+                initial: 'idle',
                 states: {
+                  final: {},
                   idle: {
                     on: {
                       WRITE: {
@@ -606,28 +647,26 @@ describe('machine coverage', () => {
                   input: {
                     activities: {
                       DELAY: {
-                        guards: 'isInputEmpty',
                         actions: 'askUsertoInput',
+                        guards: 'isInputEmpty',
                       },
                     },
                     on: {
                       WRITE: [
                         {
-                          guards: 'isInputNotEmpty',
                           actions: 'write',
+                          guards: 'isInputNotEmpty',
                           target: '/working/ui/idle',
                         },
                         '/working/ui/idle',
                       ],
                     },
                   },
-                  final: {},
                 },
-                initial: 'idle',
               },
             },
+            type: 'parallel',
           },
-          final: {},
         },
       };
 
@@ -637,9 +676,17 @@ describe('machine coverage', () => {
     test('#02 => flat', () => {
       const expected = {
         '/': {
-          machines: { machine1: 'machine1' },
-          initial: 'idle',
+          actors: {
+            contexts: {
+              '': '',
+            },
+            id: 'machine1',
+            on: {},
+            src: 'machine1',
+          },
+          initial: 'initialize',
           states: {
+            final: {},
             idle: {
               activities: {
                 DELAY: 'inc',
@@ -648,8 +695,13 @@ describe('machine coverage', () => {
                 NEXT: '/working',
               },
             },
+            initialize: {
+              always: {
+                actions: 'initialize',
+                target: '/idle',
+              },
+            },
             working: {
-              type: 'parallel',
               activities: {
                 DELAY2: 'inc2',
               },
@@ -658,7 +710,21 @@ describe('machine coverage', () => {
               },
               states: {
                 fetch: {
+                  initial: 'idle',
                   states: {
+                    fetch: {
+                      actors: {
+                        catch: '/working/fetch/idle',
+                        src: 'fetch',
+                        then: {
+                          actions: {
+                            name: 'insertData',
+                            description: 'Database insert',
+                          },
+                          target: '/working/fetch/idle',
+                        },
+                      },
+                    },
                     idle: {
                       activities: {
                         DELAY: 'sendPanelToUser',
@@ -670,24 +736,12 @@ describe('machine coverage', () => {
                         },
                       },
                     },
-                    fetch: {
-                      promises: {
-                        src: 'fetch',
-                        then: {
-                          actions: {
-                            name: 'insertData',
-                            description: 'Database insert',
-                          },
-                          target: '/working/fetch/idle',
-                        },
-                        catch: '/working/fetch/idle',
-                      },
-                    },
                   },
-                  initial: 'idle',
                 },
                 ui: {
+                  initial: 'idle',
                   states: {
+                    final: {},
                     idle: {
                       on: {
                         WRITE: {
@@ -699,8 +753,8 @@ describe('machine coverage', () => {
                     input: {
                       activities: {
                         DELAY: {
-                          guards: 'isInputEmpty',
                           actions: 'askUsertoInput',
+                          guards: 'isInputEmpty',
                         },
                       },
                       on: {
@@ -714,15 +768,14 @@ describe('machine coverage', () => {
                         ],
                       },
                     },
-                    final: {},
                   },
-                  initial: 'idle',
                 },
               },
+              type: 'parallel',
             },
-            final: {},
           },
         },
+        '/final': {},
         '/idle': {
           activities: {
             DELAY: 'inc',
@@ -731,8 +784,13 @@ describe('machine coverage', () => {
             NEXT: '/working',
           },
         },
+        '/initialize': {
+          always: {
+            actions: 'initialize',
+            target: '/idle',
+          },
+        },
         '/working': {
-          type: 'parallel',
           activities: {
             DELAY2: 'inc2',
           },
@@ -741,7 +799,21 @@ describe('machine coverage', () => {
           },
           states: {
             fetch: {
+              initial: 'idle',
               states: {
+                fetch: {
+                  actors: {
+                    catch: '/working/fetch/idle',
+                    src: 'fetch',
+                    then: {
+                      actions: {
+                        description: 'Database insert',
+                        name: 'insertData',
+                      },
+                      target: '/working/fetch/idle',
+                    },
+                  },
+                },
                 idle: {
                   activities: {
                     DELAY: 'sendPanelToUser',
@@ -753,24 +825,12 @@ describe('machine coverage', () => {
                     },
                   },
                 },
-                fetch: {
-                  promises: {
-                    src: 'fetch',
-                    then: {
-                      actions: {
-                        name: 'insertData',
-                        description: 'Database insert',
-                      },
-                      target: '/working/fetch/idle',
-                    },
-                    catch: '/working/fetch/idle',
-                  },
-                },
               },
-              initial: 'idle',
             },
             ui: {
+              initial: 'idle',
               states: {
+                final: {},
                 idle: {
                   on: {
                     WRITE: {
@@ -782,29 +842,42 @@ describe('machine coverage', () => {
                 input: {
                   activities: {
                     DELAY: {
-                      guards: 'isInputEmpty',
                       actions: 'askUsertoInput',
+                      guards: 'isInputEmpty',
                     },
                   },
                   on: {
                     WRITE: [
                       {
-                        guards: 'isInputNotEmpty',
                         actions: 'write',
+                        guards: 'isInputNotEmpty',
                         target: '/working/ui/idle',
                       },
                       '/working/ui/idle',
                     ],
                   },
                 },
-                final: {},
               },
-              initial: 'idle',
             },
           },
+          type: 'parallel',
         },
         '/working/fetch': {
+          initial: 'idle',
           states: {
+            fetch: {
+              actors: {
+                catch: '/working/fetch/idle',
+                src: 'fetch',
+                then: {
+                  actions: {
+                    description: 'Database insert',
+                    name: 'insertData',
+                  },
+                  target: '/working/fetch/idle',
+                },
+              },
+            },
             idle: {
               activities: {
                 DELAY: 'sendPanelToUser',
@@ -816,21 +889,20 @@ describe('machine coverage', () => {
                 },
               },
             },
-            fetch: {
-              promises: {
-                src: 'fetch',
-                then: {
-                  actions: {
-                    name: 'insertData',
-                    description: 'Database insert',
-                  },
-                  target: '/working/fetch/idle',
-                },
-                catch: '/working/fetch/idle',
+          },
+        },
+        '/working/fetch/fetch': {
+          actors: {
+            catch: '/working/fetch/idle',
+            src: 'fetch',
+            then: {
+              actions: {
+                description: 'Database insert',
+                name: 'insertData',
               },
+              target: '/working/fetch/idle',
             },
           },
-          initial: 'idle',
         },
         '/working/fetch/idle': {
           activities: {
@@ -843,21 +915,10 @@ describe('machine coverage', () => {
             },
           },
         },
-        '/working/fetch/fetch': {
-          promises: {
-            src: 'fetch',
-            then: {
-              actions: {
-                name: 'insertData',
-                description: 'Database insert',
-              },
-              target: '/working/fetch/idle',
-            },
-            catch: '/working/fetch/idle',
-          },
-        },
         '/working/ui': {
+          initial: 'idle',
           states: {
+            final: {},
             idle: {
               on: {
                 WRITE: {
@@ -869,25 +930,24 @@ describe('machine coverage', () => {
             input: {
               activities: {
                 DELAY: {
-                  guards: 'isInputEmpty',
                   actions: 'askUsertoInput',
+                  guards: 'isInputEmpty',
                 },
               },
               on: {
                 WRITE: [
                   {
-                    guards: 'isInputNotEmpty',
                     actions: 'write',
+                    guards: 'isInputNotEmpty',
                     target: '/working/ui/idle',
                   },
                   '/working/ui/idle',
                 ],
               },
             },
-            final: {},
           },
-          initial: 'idle',
         },
+        '/working/ui/final': {},
         '/working/ui/idle': {
           on: {
             WRITE: {
@@ -899,30 +959,28 @@ describe('machine coverage', () => {
         '/working/ui/input': {
           activities: {
             DELAY: {
-              guards: 'isInputEmpty',
               actions: 'askUsertoInput',
+              guards: 'isInputEmpty',
             },
           },
           on: {
             WRITE: [
               {
-                guards: 'isInputNotEmpty',
                 actions: 'write',
+                guards: 'isInputNotEmpty',
                 target: '/working/ui/idle',
               },
               '/working/ui/idle',
             ],
           },
         },
-        '/working/ui/final': {},
-        '/final': {},
       };
 
       expect(machine2.flat).toStrictEqual(expected);
     });
 
     test('#03 => initialValue', () => {
-      expect(machine2.initialValue).toStrictEqual('idle');
+      expect(machine2.initialValue).toStrictEqual('initialize');
     });
   });
 
@@ -959,7 +1017,7 @@ describe('machine coverage', () => {
       { ...defaultT, eventsMap: { NEXT: {} } },
     );
 
-    const service = interpret(machine, defaultC);
+    const service = interpret(machine);
     const useValue = constructStateValue(service);
     const useSendNEXT = (index: number) => {
       const func = constructSend(service);
@@ -971,7 +1029,6 @@ describe('machine coverage', () => {
     });
 
     test(...useValue('idle', 1));
-
     test(...useSendNEXT(2));
 
     test(
@@ -1080,17 +1137,21 @@ describe('machine coverage', () => {
       const idM = 'machineNotDefined';
       const machineT = createMachine(
         {
-          machines: { idM },
           initial: 'idle',
           states: {
             idle: {},
           },
+          actors: {
+            id: idM,
+            src: idM,
+            on: {},
+          },
         },
-        defaultT,
+        defaultT as any,
         // defaultI,
       );
 
-      const service = interpret(machineT, defaultC);
+      const service = interpret(machineT);
 
       test('#00 => start', service.start.bind(service));
 
@@ -1109,6 +1170,7 @@ describe('machine coverage', () => {
 
           test(`#02 => contains warning for machine : "${idM}"`, () => {
             const expected = `Machine (${idM}) is not defined`;
+            console.warn('oui', service._warningsCollector);
             expect(service._warningsCollector).toContain(expected);
           });
         });
@@ -1122,17 +1184,21 @@ describe('machine coverage', () => {
       };
       const machineT = createMachine(
         {
-          machines: { idM },
           initial: 'idle',
           states: {
             idle: {},
           },
+          actors: {
+            id: idM.name,
+            src: idM.name,
+            on: {},
+          },
         },
-        defaultT,
+        defaultT as any,
         // defaultI,
       );
 
-      const service = interpret(machineT, defaultC);
+      const service = interpret(machineT);
 
       test('#00 => start', service.start.bind(service));
 
@@ -1149,8 +1215,8 @@ describe('machine coverage', () => {
             expect(actual).toHaveLength(1);
           });
 
-          test(`#02 => contains warning for machine : "${reduceAction(idM)}"`, () => {
-            const expected = `Machine (${reduceAction(idM)}) is not defined`;
+          test(`#02 => contains warning for machine : "${reduceDescriber(idM)}"`, () => {
+            const expected = `Machine (${reduceDescriber(idM)}) is not defined`;
             expect(service._warningsCollector).toContain(expected);
           });
         });

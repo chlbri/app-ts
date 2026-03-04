@@ -275,7 +275,7 @@ export type FnR<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = (state: StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>) => R;
+> = (state: StateExtended<C, Pc, Tc, ToEvents2<E, A>>) => R;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -295,7 +295,7 @@ export type FnReduced<
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = (state: State<C, Tc, ToEvents2<E, A>, A>) => R;
+> = (state: State<C, Tc, ToEvents2<E, A>>) => R;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -318,7 +318,7 @@ export type FnMap2<
   TT extends ToEventsR2<E, A> = ToEventsR2<E, A>,
 > = {
   [key in TT['type']]?: (
-    state: StateP<C, Tc, Extract<TT, { type: key }>['payload'], A>,
+    state: StateP<C, Tc, Extract<TT, { type: key }>['payload']>,
   ) => R;
 } & {
   else?: FnReduced<C, E, A, Tc, R>;
@@ -346,8 +346,7 @@ type _FnMap<
       C,
       Pc,
       Tc,
-      Extract<TT, { type: key }>['payload'],
-      A
+      Extract<TT, { type: key }>['payload']
     >,
   ) => R;
 } & {
@@ -363,7 +362,7 @@ type _FnMapReduced<
   TT extends ToEvents2<E, A> = ToEvents2<E, A>,
 > = {
   [key in EventToType<TT>]?: (
-    state: StateP<C, Tc, Extract<TT, { type: key }>['payload'], A>,
+    state: StateP<C, Tc, Extract<TT, { type: key }>['payload']>,
   ) => R;
 } & {
   else?: FnReduced<C, E, A, Tc, R>;

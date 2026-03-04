@@ -2,6 +2,7 @@ import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import { _unknown } from '#bemedev/globals/utils/_unknown';
+import { expandFn } from '#bemedev/globals/utils/expandFn';
 import { DEFAULT_NOTHING } from '#constants';
 import type {
   ActorsConfigMap,
@@ -12,7 +13,6 @@ import type {
   ToEventsR2,
 } from '#events';
 import type { Interpreter } from '#interpreter';
-import type { AnyInterpreter } from '#interpreters';
 import type { StateValue } from '#states';
 import { IS_TEST } from '#utils';
 import type { EmptyObject } from '@bemedev/decompose';
@@ -25,7 +25,6 @@ import type {
   SimpleMachineOptions2,
 } from 'src/machine/types';
 import { buildIndex } from './invite';
-import { expandFn } from '#bemedev/globals/utils/expandFn';
 
 export * from './invite';
 
@@ -35,7 +34,11 @@ export const defaultC = { pContext: {}, context: {} } as const;
 export const defaultT = {
   ...defaultC,
   eventsMap: {},
-  promiseesMap: {},
+  actorsMap: {
+    children: {},
+    emitters: {},
+    promisees: {},
+  },
 } as const;
 export const defaultI = { initials: { '/': 'idle' } } as const;
 
@@ -66,8 +69,15 @@ type _ConstructStateValue_F = (
   index: number,
 ) => readonly [string, () => void];
 
-type ConstructStateValue_F = (
-  service: AnyInterpreter,
+type ConstructStateValue_F = <
+  const C extends Config = Config,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  E extends EventsMap = GetEventsFromConfig<C>,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
+>(
+  service: Interpreter<C, Pc, Tc, E, A, Mo>,
 ) => _ConstructStateValue_F;
 
 export const constructStateValue: ConstructStateValue_F = service => {

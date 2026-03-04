@@ -236,7 +236,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __stateExtended() {
-    return _unknown<StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>>();
+    return _unknown<StateExtended<C, Pc, Tc, ToEvents2<E, A>>>();
   }
 
   /**
@@ -340,7 +340,7 @@ class Machine<
    * @see {@linkcode Pc}
    * @see {@linkcode Tc}
    */
-  get __predictate() {
+  get __predicate() {
     return _unknown<PredicateS<C, E, A, Pc, Tc>>();
   }
 
@@ -1144,7 +1144,7 @@ class Machine<
   };
 
   #cloneStateExtended = (
-    state: StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>,
+    state: StateExtended<C, Pc, Tc, ToEvents2<E, A>>,
   ) => {
     return structuredClone(state);
   };

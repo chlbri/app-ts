@@ -5,7 +5,7 @@ import { machineEmitter2, WAITERS } from './machines';
 
 vi.useFakeTimers();
 describe('#01 => Emitter Machine1', () => {
-  const service = interpret(machineEmitter2, { context: 0 });
+  const service = interpret(machineEmitter2);
   const waiter = createFakeWaiter.withDefaultDelay(vi, WAITERS.short);
 
   const useContext = (num: number, index: number) => {
@@ -20,6 +20,7 @@ describe('#01 => Emitter Machine1', () => {
 
   describe('TESTS', () => {
     test('#0 => start', service.start);
+    test(...useContext(0, 2));
     test(...waiter(1));
     test(...useContext(5, 2));
     test(...useNext(3));
@@ -37,24 +38,13 @@ describe('#01 => Emitter Machine1', () => {
     test(...useContext(50, 15));
     test('#16 => Resume', service.resume);
     test(...waiter(17, 1));
-    test(...useContext(55, 18));
+    test(...useContext(75, 18));
     test(...useNext(19));
     test(...waiter(20));
-    test(...useContext(65, 21));
-    test(...useNext(22));
-    test(...waiter(23));
-    test(...useContext(80, 24));
-    test(...useNext(25));
-    test(...waiter(26));
-    test(...useContext(100, 27));
-    test(...useNext(28));
-    test(...waiter(29));
-    test(...useContext(125, 30));
-    test(...useNext(31));
-    test(...waiter(32, 10));
-    test(...useContext(125, 33));
+    test(...useContext(75, 21));
     test('#34 => Resume', service.resume);
     test(...waiter(35, 5));
+    test(...useContext(75, 21));
     test('#36 => Stop', service.stop);
   });
 });

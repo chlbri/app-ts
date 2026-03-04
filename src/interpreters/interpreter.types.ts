@@ -366,7 +366,7 @@ export type DiffNext = {
   diffExits: ActionConfig[];
 };
 
-export type CollectedObservable = NOmit<EmitterConfig, 'src'> & {
+export type CollectedObservable = EmitterConfig & {
   from: string;
   observable: Observable<any>;
 };

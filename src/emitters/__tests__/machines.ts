@@ -1,9 +1,9 @@
 import { createMachine } from '#machine';
-import { typings } from '#utils';
+import { notU, typings } from '#utils';
+import { createPausable } from '@bemedev/rx-pausable';
 import { interval } from 'rxjs/internal/observable/interval';
 import { map } from 'rxjs/internal/operators/map';
 import { take } from 'rxjs/internal/operators/take';
-import createPausable from '@bemedev/rx-pausable';
 
 export const WAITERS = {
   short: 200,
@@ -13,12 +13,22 @@ export const WAITERS = {
 
 export const machineEmitter1 = createMachine(
   {
-    initial: 'inactive',
-    emitters: {
-      interval1: 'interval',
+    initial: 'initialize',
+    actors: {
+      src: 'interval',
+      id: 'interval',
+      next: {
+        actions: ['assigN'],
+      },
     },
 
     states: {
+      initialize: {
+        always: {
+          actions: ['initialize'],
+          target: '/inactive',
+        },
+      },
       inactive: {
         on: {
           NEXT: '/active',
@@ -35,33 +45,47 @@ export const machineEmitter1 = createMachine(
     context: 'number',
     eventsMap: {
       NEXT: 'primitive',
+    },
+    actorsMap: {
+      emitters: {
+        interval: { next: 'number', error: 'primitive' },
+      },
     },
   }),
 );
 
-export const machineEmitter2 = machineEmitter1.provideOptions(() => ({
-  emitters: {
-    interval: ({ merge, selector }) => {
-      const ctx = selector(({ context }) => context);
-      const TAKE_COUNT = 5;
-
-      return createPausable(
-        interval(WAITERS.short).pipe(
-          take(TAKE_COUNT),
+export const machineEmitter2 = machineEmitter1.provideOptions(
+  ({ assign }) => ({
+    actions: {
+      assigN: assign('context', {
+        'interval::next': ({ payload, context }) =>
+          notU(context) + payload,
+      }),
+      initialize: assign('context', () => 0),
+    },
+    actors: {
+      emitters: {
+        interval: interval(WAITERS.short).pipe(
+          take(5),
           map(v => v + 1),
           map(v => v * 5),
         ),
-        value => merge({ context: ctx() + value }),
-      );
+      },
     },
-  },
-}));
+  }),
+);
 
 export const machineEmitter3 = createMachine(
   {
-    initial: 'inactive',
+    initial: 'initialize',
 
     states: {
+      initialize: {
+        always: {
+          actions: ['initialize'],
+          target: '/inactive',
+        },
+      },
       inactive: {
         on: {
           NEXT: '/active',
@@ -71,8 +95,12 @@ export const machineEmitter3 = createMachine(
         on: {
           NEXT: '/inactive',
         },
-        emitters: {
-          interval1: 'interval',
+        actors: {
+          src: 'interval',
+          id: 'interval1',
+          next: {
+            actions: ['assigN'],
+          },
         },
       },
     },
@@ -82,21 +110,28 @@ export const machineEmitter3 = createMachine(
     eventsMap: {
       NEXT: 'primitive',
     },
+    actorsMap: {
+      emitters: {
+        interval: { next: 'number', error: 'primitive' },
+      },
+    },
   }),
-).provideOptions(() => ({
-  emitters: {
-    interval: ({ merge, selector }) => {
-      const ctx = selector(({ context }) => context);
-      const TAKE_COUNT = 5;
-
-      return createPausable(
-        interval(WAITERS.short).pipe(
-          take(TAKE_COUNT),
-          map(v => v + 1),
-          map(v => v * 5),
-        ),
-        value => merge({ context: ctx() + value }),
-      );
+).provideOptions(({ assign }) => ({
+  actions: {
+    assigN: assign('context', {
+      'interval::next': ({ payload, context }) => {
+        return notU(context) + payload;
+      },
+    }),
+    initialize: assign('context', () => 0),
+  },
+  actors: {
+    emitters: {
+      interval: interval(WAITERS.short).pipe(
+        take(5),
+        map(v => v + 1),
+        map(v => v * 5),
+      ),
     },
   },
 }));

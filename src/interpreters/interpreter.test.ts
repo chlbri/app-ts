@@ -5,7 +5,11 @@ import {
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MIN_ACTIVITY_TIME,
 } from '#constants';
-import { defaultC, defaultT, fakeWaiter } from 'src/interpreters/__tests__/fixtures/fixtures';
+import {
+  defaultC,
+  defaultT,
+  fakeWaiter,
+} from 'src/interpreters/__tests__/fixtures/fixtures';
 import {
   DELAY,
   fakeDB,
