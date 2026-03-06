@@ -14,8 +14,14 @@ describe('Covers all inner actions', () => {
   describe('#01 => Performs activities on events', () => {
     const machine101 = createMachine(
       {
-        initial: 'idle',
+        initial: 'initialize',
         states: {
+          initialize: {
+            always: {
+              target: '/idle',
+              actions: ['initialize'],
+            },
+          },
           idle: {
             activities: {
               DELAY: 'inc',
@@ -42,6 +48,7 @@ describe('Covers all inner actions', () => {
     ).provideOptions(
       ({ assign, pauseActivity, resumeActivity, stopActivity }) => ({
         actions: {
+          initialize: assign('context', () => ({ iterator: 0 })),
           inc: assign(
             'context.iterator',
             ({ context }) => notU(context?.iterator) + 1,
@@ -132,11 +139,17 @@ describe('Covers all inner actions', () => {
     test('#22 => Dispose', service.dispose);
   });
 
-  describe('#02 => Performs activities on events', () => {
+  describe('#02 => Pause activities on events', () => {
     const machine101 = createMachine(
       {
-        initial: 'idle',
+        initial: 'initialize',
         states: {
+          initialize: {
+            always: {
+              target: '/idle',
+              actions: 'initialize',
+            },
+          },
           idle: {
             entry: 'inc',
             on: {
@@ -160,7 +173,7 @@ describe('Covers all inner actions', () => {
         },
 
         promiseesMap: 'primitive',
-        pContext: 'primitive',
+        // pContext: 'primitive',
 
         context: {
           iterator: 'number',
@@ -169,6 +182,7 @@ describe('Covers all inner actions', () => {
     ).provideOptions(
       ({ assign, pauseTimer, resumeTimer, stopTimer, debounce }) => ({
         actions: {
+          initialize: assign('context', () => ({ iterator: 0 })),
           inc: debounce(
             assign(
               'context.iterator',
@@ -342,9 +356,6 @@ describe('Covers all inner actions', () => {
           NEXT: 'primitive',
         },
 
-        promiseesMap: 'primitive',
-        pContext: 'primitive',
-
         context: typings.partial({
           iterator: 'number',
         }),
@@ -356,11 +367,15 @@ describe('Covers all inner actions', () => {
           ({ context }) => notU(context?.iterator) + 1,
         ),
 
-        init: assign('context.iterator', () => 0),
+        init: assign('context', () => ({
+          iterator: 0,
+        })),
+
         dec: assign(
           'context.iterator',
           ({ context }) => notU(context?.iterator) - 1,
         ),
+
         forceSendInc: forceSend('INCREMENT'),
         sendDec: resend('DECREMENT'),
       },
@@ -475,13 +490,16 @@ describe('Covers all inner actions', () => {
 
           return iterator + 1;
         }),
+
         dec: assign('context.iterator', ({ context }) => {
           const iterator = notU(context?.iterator);
           if (iterator === undefined) return;
           return iterator - 1;
         }),
 
-        init: assign('context.iterator', () => 0),
+        init: assign('context', () => ({
+          iterator: 0,
+        })),
 
         forceSendInc: forceSend('INCREMENT'),
         sendDec: resend('DECREMENT'),

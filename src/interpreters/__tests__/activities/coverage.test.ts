@@ -32,7 +32,15 @@ describe('Interpreter integration ofr activities coverage', () => {
         },
       },
     },
-    { ...defaultC, eventsMap: { NEXT: {} }, promiseesMap: {} },
+    {
+      ...defaultC,
+      eventsMap: { NEXT: {} },
+      actorsMap: {
+        children: {},
+        emitters: {},
+        promisees: {},
+      },
+    },
   );
 
   describe('#01 => delay is not defined', () => {

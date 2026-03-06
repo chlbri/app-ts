@@ -626,7 +626,8 @@ export class Interpreter<
    */
 
   get select(): Selector_F<NotUndefined<Tc>> {
-    const check = this.isReady && isPrimitive(this.#context);
+    if (!this.isReady) return undefined as any;
+    const check = isPrimitive(this.#context);
     if (check) return undefined as any;
     const out: any = (path: string) => getByKey(this.#state.context, path);
     return out;
@@ -1483,7 +1484,7 @@ export class Interpreter<
   };
 
   #resumeEmitters = () => {
-    this.#currentEmitters.forEach(({ emitter, from }) => {
+    this.#currentEmitters.forEach(({ emitter }) => {
       emitter.resume();
     });
   };

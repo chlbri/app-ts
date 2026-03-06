@@ -1,6 +1,5 @@
 import { createMachine } from '#machine';
 import { notU, typings } from '#utils';
-import { createPausable } from '@bemedev/rx-pausable';
 import { interval } from 'rxjs/internal/observable/interval';
 import { map } from 'rxjs/internal/operators/map';
 import { take } from 'rxjs/internal/operators/take';

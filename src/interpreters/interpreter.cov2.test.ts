@@ -1,16 +1,22 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { typings } from '#utils';
+import { notU, typings } from '#utils';
 
 describe('Coverage of interpretr #2', () => {
   describe('#01 => Cov select and pSelect for primitive units', () => {
     const machine = createMachine(
       {
-        initial: 'idle',
+        initial: 'initialize',
         states: {
+          initialize: {
+            always: {
+              target: '/idle',
+              actions: ['initialize'],
+            },
+          },
           idle: {
-            entry: 'inc',
+            entry: ['inc'],
             on: {
               INC: { actions: 'inc' },
               'INC.PRIVATE': { actions: 'incPrivate' },
@@ -33,16 +39,21 @@ describe('Coverage of interpretr #2', () => {
         context: 'number',
         pContext: 'number',
       }),
-    ).provideOptions(({ assign }) => ({
+    ).provideOptions(({ assign, batch }) => ({
       actions: {
-        inc: assign('context', ({ context }) => context + 1),
-        incPrivate: assign('pContext', ({ pContext }) => pContext + 1),
+        initialize: batch(
+          assign('context', () => 0),
+          assign('pContext', () => 0),
+        ),
+        inc: assign('context', ({ context }) => notU(context) + 1),
+        incPrivate: assign(
+          'pContext',
+          ({ pContext }) => notU(pContext) + 1,
+        ),
       },
     }));
 
     const service = interpret(machine, {
-      context: 0,
-      pContext: 0,
       exact: true,
     });
 
