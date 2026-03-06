@@ -31,10 +31,10 @@ export default defineConfig({
     logHeapUsage: true,
     setupFiles: ['./vitest.setup.ts'],
 
-    // typecheck: {
-    //   enabled: true,
-    //   ignoreSourceErrors: true,
-    // },
+    typecheck: {
+      enabled: true,
+      ignoreSourceErrors: true,
+    },
     coverage: {
       enabled: true,
       reportsDirectory: '.coverage',

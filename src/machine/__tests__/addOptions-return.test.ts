@@ -2,8 +2,8 @@ import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 
-describe('Interpreter addOptions return', () => {
-  test('#01 => should return the options object from service.addOptions', () => {
+describe('Machine addOptions return', () => {
+  test('#01 => should return the options object from machine.addOptions', () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -25,9 +25,7 @@ describe('Interpreter addOptions return', () => {
       }),
     );
 
-    const service = interpret(machine, { context: 0 });
-
-    const result = service.addOptions(({ assign }) => ({
+    const result = machine.addOptions(({ assign }) => ({
       actions: {
         increment: assign('context', ({ context }) => context + 1),
       },
@@ -53,9 +51,7 @@ describe('Interpreter addOptions return', () => {
       }),
     );
 
-    const service = interpret(machine, { context: 0 });
-
-    const result = service.addOptions(() => undefined as any);
+    const result = machine.addOptions(() => undefined as any);
 
     expect(result).toBeUndefined();
   });
@@ -86,9 +82,7 @@ describe('Interpreter addOptions return', () => {
       }),
     );
 
-    const service = interpret(machine, { context: 0 });
-
-    const result = service.addOptions(({ assign }) => ({
+    const result = machine.addOptions(({ assign }) => ({
       actions: {
         setZero: assign('context', () => 0),
       } as any,
@@ -106,7 +100,7 @@ describe('Interpreter addOptions return', () => {
     expect(result?.delays).toBeDefined();
   });
 
-  test('#04 => should still add options to service even when capturing return value', () => {
+  test('#04 => should still add options to machine even when capturing return value', () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -128,9 +122,7 @@ describe('Interpreter addOptions return', () => {
       }),
     );
 
-    const service = interpret(machine, { context: 0 });
-
-    const result = service.addOptions(({ assign }) => ({
+    const result = machine.addOptions(({ assign }) => ({
       actions: {
         increment: assign('context', ({ context }) => context + 1),
       },
@@ -138,64 +130,12 @@ describe('Interpreter addOptions return', () => {
 
     expect(result).toBeDefined();
 
-    // Verify the service actually has the options applied
+    // Verify the machine actually has the options applied
+    const service = interpret(machine, { context: 0 });
     service.start();
     expect(service.state.context).toBe(0);
 
     service.send('INCREMENT');
     expect(service.state.context).toBe(1);
-  });
-
-  test('#05 => should return consistent type across multiple addOptions calls', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              FIRST: { actions: 'first' },
-              SECOND: { actions: 'second' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          FIRST: 'primitive',
-          SECOND: 'primitive',
-        },
-        context: 'number',
-      }),
-    );
-
-    const service = interpret(machine, { context: 0 });
-
-    // First call
-    const result1 = service.addOptions(({ assign }) => ({
-      actions: {
-        first: assign('context', ({ context }) => context + 1),
-      },
-    }));
-
-    // Second call
-    const result2 = service.addOptions(({ assign }) => ({
-      actions: {
-        second: assign('context', ({ context }) => context + 10),
-      },
-    }));
-
-    expect(result1).toBeDefined();
-    expect(result1?.actions?.first).toBeDefined();
-
-    expect(result2).toBeDefined();
-    expect(result2?.actions?.second).toBeDefined();
-
-    // Verify both work
-    service.start();
-    service.send('FIRST');
-    expect(service.state.context).toBe(1);
-
-    service.send('SECOND');
-    expect(service.state.context).toBe(11);
   });
 });

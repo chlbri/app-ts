@@ -214,10 +214,11 @@ export const machine = createMachine(
 ).provideOptions(({ assign, batch, voidAction, erase }) => ({
   actions: {
     mount: assign('pContext.mount', {
-      MOUNT: ({ pContext: { mount }, payload: { id, ...rest } }) => ({
-        ...mount,
-        [id]: rest,
-      }),
+      MOUNT: ({ pContext: { mount }, payload: { id, ...rest } }) =>
+        ({
+          ...mount,
+          [id]: rest,
+        }) as any,
     }),
 
     addInitialEdges: assign('context.edges', {
@@ -225,14 +226,13 @@ export const machine = createMachine(
         payload.edges?.map(edge => ({
           ...edge,
           active: true,
-        })),
+        })) as any,
     }),
 
     addInitialNodes: assign('context.nodes', {
       CONFIGURE: ({ payload }) =>
-        payload.nodes?.map(node => ({ ...node, selected: false })) ?? [
-          INTIAL_NODE,
-        ],
+        payload.nodes?.map(node => ({ ...node, selected: false })) ??
+        ([INTIAL_NODE] as any),
     }),
 
     addChild: batch(
@@ -324,7 +324,7 @@ export const machine = createMachine(
             },
           };
 
-          return [...edges, newEdge];
+          return [...edges, newEdge] as any;
         },
       }),
 
@@ -349,7 +349,7 @@ export const machine = createMachine(
             content: `This is node ${nodes.length}`,
           };
 
-          return [...nodes, newNode];
+          return [...nodes, newNode] as any;
         },
       }),
     ),
