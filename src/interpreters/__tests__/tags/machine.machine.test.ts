@@ -3,7 +3,7 @@ import type { SoA } from '#bemedev/globals/types';
 import { interpret } from '#interpreter';
 import type { StateValue } from '#states';
 import { toArray } from '@bemedev/basifun';
-import { buildInvite } from '../fixtures/invite';
+import { buildInvite } from '../../../fixtures/invite';
 import { machine } from './machine.machine';
 
 describe('Machine Tag Interpreter', () => {

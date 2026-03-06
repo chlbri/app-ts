@@ -27,19 +27,10 @@ import type {
 import { buildIndex } from './invite';
 
 export * from './invite';
+export * from './constants';
 
 type TestArr = readonly [string, () => void];
 
-export const defaultC = { pContext: {}, context: {} } as const;
-export const defaultT = {
-  ...defaultC,
-  eventsMap: {},
-  actorsMap: {
-    children: {},
-    emitters: {},
-    promisees: {},
-  },
-} as const;
 export const defaultI = { initials: { '/': 'idle' } } as const;
 
 export const fakeWaiter = async (ms = 0, times = 1) => {
@@ -279,7 +270,7 @@ export const constructTests = <
   T extends object = object,
 >(
   service: Interpreter<C, Pc, Tc, E, A, Mo>,
-  helper: (option: Option<C, E, A, Pc, Tc>) => T,
+  helper?: (option: Option<C, E, A, Pc, Tc>) => T,
   startIndex = 0,
 ): ConstructTestsResult<C, E, T> => {
   let _index = startIndex;
@@ -291,7 +282,7 @@ export const constructTests = <
   };
 
   const out: ConstructTestsResult2 = {
-    ...helper({
+    ...helper?.({
       waiter: (DELAY = 150) => {
         return (times = 1, _index) => {
           const invite = `#${index(_index)} => Wait ${times} times ${DELAY}ms`;
@@ -328,8 +319,9 @@ export const constructTests = <
         type => {
           return (...___payload: any[]) => {
             const __payload = _any(___payload);
+            const data = __payload[0] ?? 'no payload';
 
-            const _payload = JSON.stringify(__payload[0]).substring(0, 15);
+            const _payload = JSON.stringify(data).substring(0, 15);
             const invite = `#${index()} => send ${type} event with payload : ${_payload}`;
             const payload = __payload[0] ?? {};
             const event = { type, payload } as EventArg<E>;

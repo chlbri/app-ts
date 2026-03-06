@@ -3,7 +3,7 @@ import { _machine2, DELAY, fakeDB } from '#fixturesData';
 import { interpret } from '#interpreters';
 import { nothing } from '#utils';
 import equal from 'fast-deep-equal';
-import { fakeWaiter } from '../fixtures/fixtures';
+import { fakeWaiter } from '../../../fixtures/fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => {

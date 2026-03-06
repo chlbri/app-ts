@@ -1,5 +1,5 @@
 import { interpret } from '#interpreter';
-import { constructTests } from '../fixtures';
+import { constructTests } from '../../../fixtures';
 import { DELAY } from './constants';
 import { machine1 } from './machine1';
 

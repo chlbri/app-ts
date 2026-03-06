@@ -1,7 +1,7 @@
 import { interpret } from '#interpreter';
-import { machineEmitter1 } from './machines';
+import { machineEmitter1 } from './data';
 
-describe('Tests not defined emitters', () => {
+describe('Tests not defined emitters -> Machine1', () => {
   const service = interpret(machineEmitter1, { context: 0 });
 
   const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);

@@ -6,7 +6,7 @@ import {
   constructWaiter,
   defaultC,
   defaultT,
-} from '../fixtures/fixtures';
+} from '../../../fixtures/fixtures';
 
 describe('Integration testing for interpret, Children', () => {
   beforeAll(() => {

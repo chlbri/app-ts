@@ -53,7 +53,7 @@ import type {
   PromiseFunction,
   PromiseFunction2,
 } from '#promises';
-import type { FnR } from '~types';
+import type { FnR, OptionalDefinition } from '~types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
 import { Observable } from 'rxjs';
@@ -70,6 +70,9 @@ export type WorkingStatus =
 
 export type Mode = 'normal' | 'strict';
 
+export type OptionalDefinitions<P, C> = OptionalDefinition<P, 'pContext'> &
+  OptionalDefinition<C, 'context'>;
+
 export type InterpreterOptions<
   M extends AnyMachine,
   P extends PrivateContextFrom<M> = PrivateContextFrom<M>,
@@ -77,10 +80,7 @@ export type InterpreterOptions<
 > = {
   mode?: Mode;
   exact?: boolean;
-} & (Equals<P, Partial<P>> extends true
-  ? { pContext?: P }
-  : { pContext: P }) &
-  (Equals<C, Partial<C>> extends true ? { context?: C } : { context: C });
+} & OptionalDefinitions<P, C>;
 
 export type InterpretArgs<M extends AnyMachine> =
   Equals<
@@ -91,11 +91,7 @@ export type InterpretArgs<M extends AnyMachine> =
     : [machine: M, config: InterpreterOptions<M>];
 
 export type Interpreter_F = <M extends AnyMachine>(
-  machine: M,
-  args?: {
-    mode?: Mode;
-    exact?: boolean;
-  },
+  ...args: InterpretArgs<M>
 ) => InterpreterFrom<M>;
 
 export type ToAction_F<

@@ -3,7 +3,7 @@ import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { EVENTS_FULL } from '#machines';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { defaultC, defaultT } from './fixtures';
+import { defaultC, defaultT } from '../../fixtures';
 
 describe('Integration testing for interpret, Children', () => {
   beforeAll(() => {

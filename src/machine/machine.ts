@@ -46,7 +46,7 @@ import { ActorsConfigMap } from '../events/types';
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
 import type { PredicateS } from 'src/guards/types';
-import type { DeeperPartial, NoExtraKeysStrict } from '~types';
+import type { NoExtraKeysStrict } from '~types';
 import { assignByKey, expandFnMap } from './functions';
 import type {
   AddOptions_F,
@@ -1208,8 +1208,8 @@ export type CreateMachine_F = <
 ) => Machine<
   C,
   // No need to be instanciated, they will be instanciated inside
-  DeeperPartial<Pc>,
-  DeeperPartial<Tc>,
+  Pc,
+  Tc,
   EventM,
   A,
   Mo

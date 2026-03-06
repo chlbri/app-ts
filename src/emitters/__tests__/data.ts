@@ -12,7 +12,7 @@ export const WAITERS = {
 
 export const machineEmitter1 = createMachine(
   {
-    initial: 'initialize',
+    initial: 'inactive',
     actors: {
       src: 'interval',
       id: 'interval',
@@ -20,14 +20,7 @@ export const machineEmitter1 = createMachine(
         actions: ['assigN'],
       },
     },
-
     states: {
-      initialize: {
-        always: {
-          actions: ['initialize'],
-          target: '/inactive',
-        },
-      },
       inactive: {
         on: {
           NEXT: '/active',
@@ -60,7 +53,6 @@ export const machineEmitter2 = machineEmitter1.provideOptions(
         'interval::next': ({ payload, context }) =>
           notU(context) + payload,
       }),
-      initialize: assign('context', () => 0),
     },
     actors: {
       emitters: {
@@ -76,15 +68,8 @@ export const machineEmitter2 = machineEmitter1.provideOptions(
 
 export const machineEmitter3 = createMachine(
   {
-    initial: 'initialize',
-
+    initial: 'inactive',
     states: {
-      initialize: {
-        always: {
-          actions: ['initialize'],
-          target: '/inactive',
-        },
-      },
       inactive: {
         on: {
           NEXT: '/active',
@@ -122,7 +107,6 @@ export const machineEmitter3 = createMachine(
         return notU(context) + payload;
       },
     }),
-    initialize: assign('context', () => 0),
   },
   actors: {
     emitters: {

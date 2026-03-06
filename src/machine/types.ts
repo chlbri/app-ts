@@ -7,6 +7,7 @@ import type {
 import type { EmitterDef } from '#emitters';
 import type { ActorsConfigMap, EventsMap, PromiseeDef } from '#events';
 import type { AnyInterpreter } from '#interpreters';
+import type { PromiseFunction } from '#promises';
 import type {
   ActivityConfig,
   BaseConfig,
@@ -35,9 +36,7 @@ import type { Action, FromActionConfig } from 'src/actions/types';
 import type { Delay } from 'src/delays/types';
 import type { EmittersMap } from 'src/emitters/types';
 import type { PredicateS } from 'src/guards/types';
-import type { PromiseFunction } from '#promises';
 import type {
-  DeeperPartial,
   Describer,
   FnMap2,
   Identify,
@@ -416,8 +415,8 @@ export type GetPromisesFromFlat<
     C,
     E,
     A,
-    DeeperPartial<Pc>,
-    DeeperPartial<Tc>,
+    Pc,
+    Tc,
     PromiseReturn<key, A>
   >;
 };

@@ -1,3 +1,3 @@
-import { mockConsole } from './src/interpreters/__tests__/fixtures';
+import { mockConsole } from './src/fixtures';
 
 mockConsole();

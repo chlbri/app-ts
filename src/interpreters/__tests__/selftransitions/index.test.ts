@@ -1,6 +1,6 @@
 import { createMachine } from '#machine';
 import { interpret } from '../../interpreter';
-import { defaultT } from '../fixtures/fixtures';
+import { defaultT } from '../../../fixtures/fixtures';
 
 beforeAll(() => {
   vi.useFakeTimers();

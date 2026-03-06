@@ -2363,8 +2363,11 @@ export type InterpreterFrom<M extends AnyMachine> = Interpreter<
  *
  * @see {@linkcode MachineConfig}
  */
-export const interpret: Interpreter_F = (machine, args) => {
-  const { mode, exact } = args ?? {};
-  const out = new Interpreter(machine, mode, exact);
-  return out as any;
+export const interpret: Interpreter_F = (..._args) => {
+  const [machine, args] = _args;
+  const { mode, exact, pContext, context } = args ?? {};
+  const out: any = new Interpreter(machine, mode, exact);
+  out._providePrivateContext(pContext);
+  out._provideContext(context);
+  return out;
 };

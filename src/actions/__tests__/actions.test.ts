@@ -1,6 +1,6 @@
+import { constructTests, defaultC, defaultT } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { constructSend, constructStateValue, defaultC } from './fixtures';
 
 describe('Interpret for actions', () => {
   const action1 = vi.fn().mockReturnValue(defaultC);
@@ -23,24 +23,17 @@ describe('Interpret for actions', () => {
         },
       },
       {
-        ...defaultC,
+        ...defaultT,
         eventsMap: {
           NEXT: {},
         },
-        promiseesMap: {},
       },
     );
 
     const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
-    const useSendNext = (index: number) =>
-      constructSend(service)('NEXT', index);
-
-    test('#01 => Start', () => {
-      service.start();
-    });
-
-    test(...useValue('state2', 2));
+    const { send, useStateValue, start } = constructTests(service);
+    test(...start());
+    test(...useStateValue('state2'));
 
     describe('#03 => Check the warnings', () => {
       test('#01 => Length of warnings', () => {
@@ -62,7 +55,7 @@ describe('Interpret for actions', () => {
       }));
     });
 
-    test(...useSendNext(5));
+    test(...send('NEXT', 5));
 
     describe('#05 => Check the action', () => {
       test('#01 => Called one time', () => {
@@ -108,26 +101,19 @@ describe('Interpret for actions', () => {
         },
       },
       {
-        ...defaultC,
+        ...defaultT,
         eventsMap: {
           NEXT: {},
         },
-        promiseesMap: {},
       },
     );
 
     const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
-    const useSendNext = (index: number) =>
-      constructSend(service)('NEXT', index);
+    const { send, useStateValue, start } = constructTests(service);
+    test(...start());
+    test(...useStateValue('state2'));
 
-    test('#01 => Start', () => {
-      service.start();
-    });
-
-    test(...useValue('state2', 2));
-
-    describe('#03 => Check the warnings', () => {
+    describe('#02 => Check the warnings', () => {
       test('#01 => Length of warnings', () => {
         expect(service._warningsCollector?.size).toBe(1);
       });
@@ -139,7 +125,7 @@ describe('Interpret for actions', () => {
       });
     });
 
-    test('#04 => add action', () => {
+    test('#03 => add action', () => {
       service.addOptions(() => ({
         actions: {
           action1,
@@ -147,7 +133,7 @@ describe('Interpret for actions', () => {
       }));
     });
 
-    test(...useSendNext(5));
+    test(...send('NEXT', 4));
 
     describe('#05 => Check the action', () => {
       test('#01 => Called one time', () => {

@@ -7,7 +7,7 @@ import {
   constructStateValue,
   defaultC,
   defaultT,
-} from './fixtures/fixtures';
+} from '../../fixtures/fixtures';
 
 describe('Interpret for guards', () => {
   const guard1 = vi.fn().mockReturnValue(defaultC);

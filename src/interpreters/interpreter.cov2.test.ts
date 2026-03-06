@@ -1,20 +1,14 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { notU, typings } from '#utils';
+import { typings } from '#utils';
 
 describe('Coverage of interpretr #2', () => {
   describe('#01 => Cov select and pSelect for primitive units', () => {
     const machine = createMachine(
       {
-        initial: 'initialize',
+        initial: 'idle',
         states: {
-          initialize: {
-            always: {
-              target: '/idle',
-              actions: ['initialize'],
-            },
-          },
           idle: {
             entry: ['inc'],
             on: {
@@ -39,22 +33,17 @@ describe('Coverage of interpretr #2', () => {
         context: 'number',
         pContext: 'number',
       }),
-    ).provideOptions(({ assign, batch }) => ({
+    ).provideOptions(({ assign }) => ({
       actions: {
-        initialize: batch(
-          assign('context', () => 0),
-          assign('pContext', () => 0),
-        ),
-        inc: assign('context', ({ context }) => notU(context) + 1),
-        incPrivate: assign(
-          'pContext',
-          ({ pContext }) => notU(pContext) + 1,
-        ),
+        inc: assign('context', ({ context }) => context + 1),
+        incPrivate: assign('pContext', ({ pContext }) => pContext + 1),
       },
     }));
 
     const service = interpret(machine, {
       exact: true,
+      context: 0,
+      pContext: 0,
     });
 
     type SE = Parameters<typeof service.send>[0];

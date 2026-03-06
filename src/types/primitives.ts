@@ -1,6 +1,7 @@
 import type {
   _UnionToIntersection2,
   DeepPartial,
+  Equals,
   Fn,
   NOmit,
   NotUndefined,
@@ -23,6 +24,7 @@ import type {
   StatePextended,
 } from '#states';
 import { checkKeys } from '#utils';
+import { AnyArray } from '@bemedev/vitest-extended/bemedev/globals/types';
 
 export type IsString_F = (value: unknown) => value is string;
 
@@ -622,3 +624,15 @@ export type FilterArray<
   : [];
 
 export type DeeperPartial<T> = DeepPartial<T> | undefined;
+
+export type OptionalDefinition<P, V extends string> = undefined extends P
+  ? { [K in V]?: P }
+  : P extends AnyArray
+    ? { [K in V]: P }
+    : P extends object
+      ? Equals<P, Partial<P>> extends true
+        ? { [K in V]?: P }
+        : { [K in V]: P }
+      : { [K in V]: P };
+
+type TT = OptionalDefinition<string, 'value'>;
