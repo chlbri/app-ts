@@ -8,6 +8,7 @@ import type {
   EmitterDef,
   EmitterFunction,
   EmitterReturn,
+  EmittersMap,
 } from '#emitters';
 import type {
   ActorsConfigMap,
@@ -17,7 +18,7 @@ import type {
   ToEventObject,
   ToEvents2,
 } from '#events';
-import type { AnyInterpreter } from '#interpreters';
+import type { PredicateS } from '#guards';
 import type { PromiseFunction } from '#promises';
 import type {
   ActivityConfig,
@@ -45,8 +46,6 @@ import type { Decompose } from '@bemedev/decompose';
 import type { Observable } from 'rxjs';
 import type { Action, FromActionConfig } from 'src/actions/types';
 import type { DelayFunction } from 'src/delays/types';
-import type { EmittersMap } from '#emitters';
-import type { PredicateS } from '#guards';
 import type {
   Describer,
   FnMap,
