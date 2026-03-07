@@ -58,7 +58,7 @@ export const machine = createMachine(
         },
       },
       checking: {
-        promises: [
+        actors: [
           {
             src: 'checkOnline',
             description: 'Check if we are online',
@@ -117,7 +117,7 @@ export const machine = createMachine(
             },
           },
           adding: {
-            promises: [
+            actors: [
               {
                 src: 'checkOnline',
                 description: 'Check if we are online',
@@ -164,6 +164,7 @@ export const machine = createMachine(
       ADD_INTERMEDIARY: intermediary,
       RESET: 'primitive',
     },
+
     context: typings.partial({
       asset,
       intermediaries: typings.array(intermediary),
@@ -177,18 +178,21 @@ export const machine = createMachine(
         },
       }),
     }),
-    promiseesMap: {
-      checkOnline: {
-        then: 'boolean',
-        catch: 'boolean',
-      },
-      getIntermediaries: {
-        then: [intermediary],
-        catch: [],
-      },
-      addIntermediary: {
-        then: intermediary,
-        catch: 'undefined',
+
+    actorsMap: {
+      promisees: {
+        checkOnline: {
+          then: 'boolean',
+          catch: 'boolean',
+        },
+        getIntermediaries: {
+          then: typings.array(intermediary),
+          catch: 'primitive',
+        },
+        addIntermediary: {
+          then: intermediary,
+          catch: 'primitive',
+        },
       },
     },
   }),

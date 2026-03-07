@@ -649,7 +649,7 @@ export type MachineOptions<
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  Flat extends FlatMapN<C, false> = FlatMapN<C, false>,
+  Flat extends FlatMapN<C, true> = FlatMapN<C, true>,
 > = Partial<{
   actions: Partial<GetActionsFromFlat<C, Flat, E, A, Pc, Tc>>;
   predicates: Partial<GetGuardsFromFlat<C, Flat, E, A, Pc, Tc>>;

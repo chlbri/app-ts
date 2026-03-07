@@ -42,4 +42,5 @@ export type Emitter<
   complete: Transition<C, E, A, Pc, Tc>[];
 };
 
+
 export type EmittersMap = RecordS<Observable<any>>;

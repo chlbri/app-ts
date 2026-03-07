@@ -354,8 +354,8 @@ export type AddOptions_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
-> = <T extends Mo>(
-  option: AddOptionsParam_F<C, E, A, Pc, Tc, NoExtraKeysStrict<T, Mo>>,
+> = <T extends NoExtraKeysStrict<Mo, Mo>>(
+  option: AddOptionsParam_F<C, E, A, Pc, Tc, T>,
 ) => T;
 
 /**

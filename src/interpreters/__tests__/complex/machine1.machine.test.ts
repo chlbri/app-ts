@@ -10,31 +10,33 @@ import {
 } from './machine1.machine.fixtures';
 
 const waiter = createFakeWaiter(vi);
-
 vi.useFakeTimers();
 
 describe('Complex machine 1', () => {
-  const service = interpret(machine);
+  const service = interpret(machine, {
+    context: {},
+  });
 
   afterAll(service.stop);
-
   test('#00 => start the machine', service.start);
 
   test('#01 => service add options', () => {
     service.addOptions(() => ({
-      promises: {
-        checkOnline: async () => {
-          await sleep(100); // Simulation réseau
-          return true;
-        },
-        getIntermediaries: async () => {
-          await sleep(200);
-          return [];
-        },
-        addIntermediary: {
-          ADD_INTERMEDIARY: async ({ payload }) => {
-            await sleep(100); // Simulation blockchain
-            return payload;
+      actors: {
+        promises: {
+          checkOnline: async () => {
+            await sleep(100); // Simulation réseau
+            return true;
+          },
+          getIntermediaries: async () => {
+            await sleep(200);
+            return [];
+          },
+          addIntermediary: {
+            ADD_INTERMEDIARY: async ({ payload }) => {
+              await sleep(100); // Simulation blockchain
+              return payload;
+            },
           },
         },
       },

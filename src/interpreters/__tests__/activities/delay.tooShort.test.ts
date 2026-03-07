@@ -16,7 +16,7 @@ describe('Delay is too long', () => {
     },
   }));
 
-  const service = interpret(machine, defaultC);
+  const service = interpret(machine);
   const { useStateValue, start } = constructTests(service);
 
   test(...start());

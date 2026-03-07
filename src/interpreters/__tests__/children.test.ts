@@ -31,12 +31,25 @@ describe('Integration testing for interpret, Children', () => {
     const parent = createMachine(
       {
         initial: 'idle',
-        machines: { child: 'child' },
+        actors: {
+          src: 'child',
+          id: 'child',
+          contexts: {},
+        },
         states: {
           idle: {},
         },
       },
-      { ...defaultT, pContext: typings.type },
+      {
+        ...defaultT,
+        pContext: typings.type,
+        actorsMap: {
+          ...defaultT.actorsMap,
+          children: {
+            child: {},
+          },
+        },
+      },
     ).provideOptions(({ createChild }) => ({
       machines: {
         child: createChild(

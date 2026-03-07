@@ -12,7 +12,7 @@ describe('delay is not defined', () => {
     },
   }));
 
-  const service = interpret(machine, defaultC);
+  const service = interpret(machine);
   const { send, useStateValue, start, waiter } = constructTests(
     service,
     ({ waiter }) => ({ waiter: waiter(DELAY) }),
@@ -57,8 +57,7 @@ describe('delay is not defined', () => {
 
     test('#02 => activity1 is called with correct params', () => {
       expect(activity).toHaveBeenCalledWith({
-        pContext: {},
-        context: {},
+        ...defaultC,
         event: { type: 'NEXT', payload: {} },
         status: 'busy',
         tags: undefined,

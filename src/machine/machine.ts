@@ -768,7 +768,9 @@ class Machine<
    * @param option a function that provides options for the machine.
    * Options can include actions, predicates, delays, promises, and child machines.
    */
-  addOptions: AddOptions_F<C, E, A, Pc, Tc, Mo> = helper => {
+  addOptions = <T extends Mo>(
+    helper: AddOptionsParam_F<C, E, A, Pc, Tc, T>,
+  ) => {
     const out = this.createOptions(helper);
 
     this.#addActions(out?.actions);
@@ -784,15 +786,15 @@ class Machine<
   /**
    * Provides options for the machine.
    *
-   * @param option a function that provides options for the machine.
+   * @param helper a function that provides options for the machine.
    * Options can include actions, predicates, delays, promises, and child machines.
    * @returns a new instance of the machine with the provided options applied.
    */
   provideOptions = <T extends Mo>(
-    option: AddOptionsParam_F<C, E, A, Pc, Tc, NoExtraKeysStrict<T, Mo>>,
+    helper: AddOptionsParam_F<C, E, A, Pc, Tc, T>,
   ) => {
     const out = this.renew;
-    out.addOptions(option);
+    out.addOptions(helper);
 
     return out;
   };
@@ -939,6 +941,7 @@ class Machine<
   addContext = (context: Tc) => {
     this.#context = context;
   };
+
   /**
    * @deprecated
    * @remarks used internally

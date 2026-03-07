@@ -1,7 +1,6 @@
 import type {
   _UnionToIntersection2,
   DeepPartial,
-  Equals,
   Fn,
   NOmit,
   NotUndefined,
@@ -24,7 +23,7 @@ import type {
   StatePextended,
 } from '#states';
 import { checkKeys } from '#utils';
-import { AnyArray } from '@bemedev/vitest-extended/bemedev/globals/types';
+import { EmptyObject } from '@bemedev/decompose';
 
 export type IsString_F = (value: unknown) => value is string;
 
@@ -377,7 +376,7 @@ export type FnMap<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> = FnR<C, E, A, Pc, Tc, R> | _FnMap<C, E, A, Pc, Tc, R, ToEvents2<E, A>>;
+> = FnR<C, E, A, Pc, Tc, R> | _FnMap<C, E, A, Pc, Tc, R>;
 
 export type FnMapR<
   C extends Config = Config,
@@ -385,9 +384,7 @@ export type FnMapR<
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   R = any,
-> =
-  | FnReduced<C, E, A, Tc, R>
-  | _FnMapReduced<C, E, A, Tc, R, ToEvents2<E, A>>;
+> = FnReduced<C, E, A, Tc, R> | _FnMapReduced<C, E, A, Tc, R>;
 
 /**
  * A type that represents a record with string keys and values of type {@linkcode T}.
@@ -627,12 +624,6 @@ export type DeeperPartial<T> = DeepPartial<T> | undefined;
 
 export type OptionalDefinition<P, V extends string> = undefined extends P
   ? { [K in V]?: P }
-  : P extends AnyArray
-    ? { [K in V]: P }
-    : P extends object
-      ? Equals<P, Partial<P>> extends true
-        ? { [K in V]?: P }
-        : { [K in V]: P }
-      : { [K in V]: P };
+  : { [K in V]: P };
 
-type TT = OptionalDefinition<string, 'value'>;
+type TT = OptionalDefinition<undefined, 'value'>;

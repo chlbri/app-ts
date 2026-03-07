@@ -36,9 +36,6 @@ describe('cov => Performs send to itself actions', () => {
         NEXT: 'primitive',
       },
 
-      promiseesMap: 'primitive',
-      pContext: 'primitive',
-
       context: typings.partial({
         iterator: 'number',
       }),
@@ -69,6 +66,7 @@ describe('cov => Performs send to itself actions', () => {
 
   const service = interpret(machine101, {
     exact: true,
+    context: {},
   });
 
   type SE = Parameters<typeof service.send>[0];

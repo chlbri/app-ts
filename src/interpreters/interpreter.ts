@@ -626,11 +626,10 @@ export class Interpreter<
    */
 
   get select(): Selector_F<NotUndefined<Tc>> {
-    if (!this.isReady) return undefined as any;
     const check = isPrimitive(this.#context);
     if (check) return undefined as any;
-    const out: any = (path: string) => getByKey(this.#state.context, path);
-    return out;
+    const out = (path: string) => getByKey(this.#state.context, path);
+    return out as any;
   }
 
   /**

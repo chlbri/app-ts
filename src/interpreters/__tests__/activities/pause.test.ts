@@ -3,10 +3,10 @@ import { DELAY } from '#fixturesData';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
-import { fakeWaiter } from 'src/fixtures';
+import { fakeWaiter } from '#fixtures';
 
 vi.useFakeTimers();
-describe('#02 => Pause activities on events', () => {
+describe('Pause activities on events', () => {
   const machine101 = createMachine(
     {
       initial: 'idle',
@@ -34,7 +34,6 @@ describe('#02 => Pause activities on events', () => {
       },
 
       promiseesMap: 'primitive',
-      // pContext: 'primitive',
 
       context: {
         iterator: 'number',

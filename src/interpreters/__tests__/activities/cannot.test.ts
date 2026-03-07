@@ -11,7 +11,7 @@ describe('Cannot perform Activity', () => {
     delays: { DELAY: () => DELAY * 2 },
   }));
 
-  const service = interpret(machine, defaultC);
+  const service = interpret(machine);
   const { useStateValue, start, waiter, send } = constructTests(
     service,
     ({ waiter }) => ({
@@ -38,8 +38,7 @@ describe('Cannot perform Activity', () => {
 
     it('#02 => activity1 is called with correct params', () => {
       expect(activity1).toHaveBeenCalledWith({
-        pContext: {},
-        context: {},
+        ...defaultC,
         event: { type: 'NEXT', payload: {} },
         status: 'busy',
         tags: undefined,

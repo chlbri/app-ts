@@ -19,10 +19,10 @@ export const intermediary = typings.intersection(
     wallet: 'string',
     sacrifice: typings.maybe('number'),
     contacts: typings.any({
-      phoneNumbers: [pphoneNumber],
-      emails: typings.maybe(['string']),
-      socials: typings.maybe([social]),
-      websites: typings.maybe(['string']),
+      phoneNumbers: typings.array(pphoneNumber),
+      emails: typings.maybe(typings.array('string')),
+      socials: typings.maybe(typings.array(social)),
+      websites: typings.maybe(typings.array('string')),
     }),
   },
   typings.discriminatedUnion(
@@ -68,8 +68,8 @@ export const asset = typings.any({
   location: typings.maybe(location),
 
   medias: typings.partial({
-    photos: ['string'],
-    videos: ['string'],
-    documents: ['string'],
+    photos: typings.array('string'),
+    videos: typings.array('string'),
+    documents: typings.array('string'),
   }),
 });
