@@ -1,5 +1,5 @@
 import type { DeepPartial, PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, AllEvent, EventsMap } from '#events';
+import type { ActorsConfigMap, EventObject, EventsMap } from '#events';
 import type { FnMap, FnR } from 'src/types/primitives';
 import type { Describer, FromDescriber } from '~types';
 
@@ -37,7 +37,7 @@ export type ActionResult<
 }>;
 
 export type Action<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -53,14 +53,14 @@ export type Action<
  * @returns a partial record where each key is a string and each value is an {@linkcode Action}.
  */
 export type ActionMap<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = Partial<Record<string, Action<E, Pc, Tc, T>>>;
 
 export type Action2<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,

@@ -1,13 +1,13 @@
-import { DELAY } from '#fixturesData';
-import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { notU, typings } from '#utils';
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
-import { fakeWaiter } from 'src/interpreters/__tests__/fixtures/fixtures';
 import {
   DEFAULT_MAX_TIME_PROMISE,
   DEFAULT_MIN_ACTIVITY_TIME,
 } from '#constants';
+import { fakeWaiter } from '#fixtures';
+import { DELAY } from '#fixturesData';
+import { interpret } from '#interpreter';
+import { createMachine } from '#machine';
+import { typings } from '#utils';
 
 vi.useFakeTimers();
 
@@ -40,7 +40,6 @@ describe('DELAYS', () => {
     typings({
       eventsMap: { NEXT: 'primitive' },
       promiseesMap: {},
-      pContext: 'primitive',
       context: {
         iterator: 'number',
       },
@@ -49,7 +48,7 @@ describe('DELAYS', () => {
     actions: {
       inc: assign(
         'context.iterator',
-        ({ context }) => notU(context?.iterator) + 1,
+        ({ context }) => context.iterator + 1,
       ),
     },
     delays: {
@@ -57,7 +56,8 @@ describe('DELAYS', () => {
     },
   }));
 
-  const buildService = () => interpret(machine1);
+  const buildService = () =>
+    interpret(machine1, { context: { iterator: 0 } });
 
   const hook = () => {
     const service = buildService();

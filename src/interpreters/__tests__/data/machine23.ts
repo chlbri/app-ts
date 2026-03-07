@@ -5,14 +5,8 @@ import { machine2 } from './machine2';
 // #region machine23
 export const machine23 = createMachine(
   {
-    initial: 'initialize',
+    initial: 'idle',
     states: {
-      initialize: {
-        always: {
-          target: '/idle',
-          actions: 'initialize',
-        },
-      },
       idle: {
         activities: {
           DELAY: 'inc',

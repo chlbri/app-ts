@@ -1,29 +1,37 @@
 import { toAction } from '#actions';
 import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, ActorsConfigMap } from '#events';
-import type { Config, SimpleMachineOptions } from 'src/machine/types';
+import { toEmitter } from '#emitters';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
+import { toChild } from '#machines';
 import { toPromise } from '#promises';
 import { toTransition } from '#transitions';
 import { toArray } from '@bemedev/basifun';
 import { identify } from '@bemedev/basifun/objects/identify';
+import type { SimpleMachineOptions } from 'src/machine/types';
 import type { Node, NodeConfig } from '../types';
 import { stateType } from './stateType';
-import { toEmitter } from '#emitters';
-import { toChild } from '#machines';
 
 export type ResolveNode_F = <
-  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
   config: NodeConfig,
-  options?: SimpleMachineOptions<E, A, Pc, Tc>,
-) => Node<C, E, A, Pc, Tc>;
+  options?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
+) => Node<Eo, Pc, Tc, T>;
 
 /**
  * Resolves a node configuration into a full node with all functions.

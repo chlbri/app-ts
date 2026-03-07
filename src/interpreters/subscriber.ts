@@ -1,14 +1,18 @@
 import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap, ToEvents2 } from '#events';
+import type {
+  ActorsConfigMap,
+  AllEvent,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import type { State } from '#states';
 import { nothing, toEventsMap } from '#utils';
 import type { TimerState } from '@bemedev/interval2';
 import equal from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
-import { isFunction } from '../types/primitives';
-import type { FnSubReduced } from './interpreter.types';
-import type { Config } from 'src/machine/types';
+import { FnMapR, isFunction } from '../types/primitives';
 
 /**
  * Subscriber class that manages the subscription state and provides methods
@@ -21,15 +25,17 @@ import type { Config } from 'src/machine/types';
  *
  */
 class SubscriberClass<
-  C extends Config,
-  E extends EventsMap,
+  E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
+  St extends State<Eo, Tc, T> = State<Eo, Tc, T>,
 > {
-  #subscriber: FnSubReduced<C, E, A, Tc, void>;
-
+  #subscriber: FnMapR<Eo, Tc, T, void>;
   #eventsMap: E;
-
   #actorsMap: A;
 
   #state: TimerState = 'idle';
@@ -39,10 +45,7 @@ class SubscriberClass<
    * @param previous of type {@linkcode State} - First state to compare
    * @param next of type {@linkcode State} - Second state to compare
    */
-  #equals: (
-    previous: State<C, Tc, ToEvents2<E, A>, A>,
-    next: State<C, Tc, ToEvents2<E, A>, A>,
-  ) => boolean;
+  #equals: (previous: St, next: St) => boolean;
 
   get id() {
     return this._id;
@@ -63,11 +66,8 @@ class SubscriberClass<
   constructor(
     eventsMap: E,
     actorsMap: A,
-    subscriber: FnSubReduced<C, E, A, Tc, void>,
-    equals: (
-      a: State<C, Tc, ToEvents2<E, A>, A>,
-      b: State<C, Tc, ToEvents2<E, A>, A>,
-    ) => boolean = equal,
+    subscriber: FnMapR<Eo, Tc, T, void>,
+    equals: (a: St, b: St) => boolean = equal,
     private _id = nanoid(),
   ) {
     this.#subscriber = subscriber;
@@ -96,7 +96,7 @@ class SubscriberClass<
     const map = toEventsMap(this.#eventsMap, this.#actorsMap);
     const keys = Object.keys(map);
 
-    return ({ event, ...rest }: State<C, Tc, ToEvents2<E, A>, A>) => {
+    return ({ event, ...rest }: St) => {
       const check5 = typeof event === 'string';
       const _else = sub.else ?? nothing;
       if (check5) return _any(_else({ event, ...rest }));
@@ -131,10 +131,7 @@ class SubscriberClass<
    * and if they are not equal, it calls the subscriber with the next state.
    * If the states are equal or if the subscriber cannot perform its action,
    */
-  fn = (
-    previous: State<C, Tc, ToEvents2<E, A>, A>,
-    next: State<C, Tc, ToEvents2<E, A>, A>,
-  ) => {
+  fn = (previous: St, next: St) => {
     if (this.#cannotPerform) return;
 
     const _equals = this.#equals(previous, next);
@@ -165,24 +162,28 @@ class SubscriberClass<
 export type { SubscriberClass };
 
 export type SubscriberOptions<
-  C extends Config = Config,
+  E extends AllEvent = AllEvent,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
   id?: string;
-  equals?: (a: State<C, Tc>, b: State<C, Tc>) => boolean;
+  equals?: (a: State<E, Tc, T>, b: State<E, Tc, T>) => boolean;
 };
 
 type CreateSubscriber_F = <
-  C extends Config,
-  E extends EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventsMap = EventsMap,
+  const A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  const Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   eventsMap: E,
   actorsMap: A,
-  subscriber: FnSubReduced<C, E, A, Tc, void>,
-  options?: SubscriberOptions<C, Tc>,
-) => SubscriberClass<C, E, A, Tc>;
+  subscriber: FnMapR<Eo, Tc, T, void>,
+  options?: SubscriberOptions<Eo, Tc, T>,
+) => SubscriberClass<E, A, Tc, T, Eo>;
 
 /**
  * Creates a new instance of SubscriberMapClass.

@@ -6,24 +6,22 @@ import { machine1 } from './machine1';
 vi.useFakeTimers();
 
 describe('machine1', () => {
-  const service1 = interpret(machine1);
+  const service1 = interpret(machine1, { context: { iterator: 0 } });
 
-  const { useContext, useIterator, useWaiter, start, stop, dispose } =
-    constructTests(
-      service1,
-      ({ contexts: constructContexts, waiter: constructWaiter }) => ({
-        useWaiter: constructWaiter(DELAY),
-        useContext: constructContexts(({ context }) => context),
+  const { useIterator, useWaiter, start, stop, dispose } = constructTests(
+    service1,
+    ({ contexts: constructContexts, waiter: constructWaiter }) => ({
+      useWaiter: constructWaiter(DELAY),
+      useContext: constructContexts(({ context }) => context),
 
-        useIterator: constructContexts(
-          ({ context }) => context?.iterator,
-          'iterator',
-        ),
-      }),
-      1,
-    );
+      useIterator: constructContexts(
+        ({ context }) => context?.iterator,
+        'iterator',
+      ),
+    }),
+    1,
+  );
 
-  test(...useContext());
   test(...start());
   test(...useIterator(0));
   test(...useWaiter());

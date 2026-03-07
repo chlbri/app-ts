@@ -1,27 +1,30 @@
-import type {
-  NotUndefined,
-  PrimitiveObject,
-} from '#bemedev/globals/types';
-import type { EventsMap } from '#events';
-import type { Config, SimpleMachineOptions } from 'src/machine/types';
+import type { PrimitiveObject } from '#bemedev/globals/types';
+import {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import { reduceFnMap } from '#utils';
-import type { PromiseFunction2 } from '../types';
-import type { ActorsConfigMap } from '#events';
+import type { SimpleMachineOptions } from 'src/machine/types';
+import type { PromiseFunction2, PromisesMap } from '../types';
 
 export type ToPromiseSrc_F = <
-  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
-  TC extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   promisees: A,
   src: string,
-  promises?: NotUndefined<
-    SimpleMachineOptions<E, A, Pc, TC>['actors']
-  >['promises'],
-) => PromiseFunction2<C, E, A, Pc, TC> | undefined;
+  promises?: PromisesMap<Eo, Pc, Tc, T>,
+) => PromiseFunction2<Eo, Pc, Tc, T, R> | undefined;
 
 /**
  * Converts a source string to a function that can be used to retrieve the promise.

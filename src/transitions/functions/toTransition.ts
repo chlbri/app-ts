@@ -1,23 +1,34 @@
 import { toAction } from '#actions';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap } from '#events';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
-import type { SimpleMachineOptions2 } from 'src/machine/types';
+import type { SimpleMachineOptions } from '#machines';
 import type { Transition, TransitionConfig } from '#transitions';
 import { toArray } from '@bemedev/basifun';
-import type { ActorsConfigMap } from '#events';
 
 export type ToTransition_F = <
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
   config: TransitionConfig,
-  options?: Pick<SimpleMachineOptions2, 'actions' | 'predicates'>,
-) => Transition<E, A, Pc, Tc>;
+  options?: Pick<
+    SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
+    'actions' | 'predicates'
+  >,
+) => Transition<Eo, Pc, Tc, T>;
 
 /**
  * Converts a transition configuration to a structured transition object with all functions.

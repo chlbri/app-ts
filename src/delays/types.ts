@@ -1,7 +1,7 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { ActorsConfigMap, AllEvent, EventsMap } from '#events';
-import type { Config } from 'src/machine/types';
-import type { FnMap } from 'src/types/primitives';
+import type { Config } from '#machines';
+import type { FnMap, FnR } from '~types';
 
 /**
  * Delay type definition.
@@ -18,6 +18,13 @@ export type DelayFunction<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = number | FnMap<E, Pc, Tc, T, number>;
+
+export type DelayFunction2<
+  E extends AllEvent = AllEvent,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = number | FnR<E, Pc, Tc, T, number>;
 
 /**
  * Delay configuration map.

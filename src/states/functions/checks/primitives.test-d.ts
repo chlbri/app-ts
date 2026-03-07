@@ -240,7 +240,7 @@ type ValidNested = NoExtraKeys<
   },
   NestedSchema
 >;
-expectTypeOf<ValidNested>().toMatchTypeOf<{
+expectTypeOf<ValidNested>().toEqualTypeOf<{
   id: 'abc';
   config: { enabled: true; options: { timeout: 1000 } };
 }>();
@@ -270,7 +270,7 @@ type ValidDeepOptional = NoExtraKeys<
   },
   NestedSchema
 >;
-expectTypeOf<ValidDeepOptional['config']['options']>().toMatchTypeOf<
+expectTypeOf<ValidDeepOptional['config']['options']>().toEqualTypeOf<
   | {
       timeout: 500;
       retries: 3;
@@ -294,7 +294,7 @@ type ValidDeep = NoExtraKeys<
   },
   DeepSchema
 >;
-expectTypeOf<ValidDeep>().toMatchTypeOf<{
+expectTypeOf<ValidDeep>().toEqualTypeOf<{
   targets: 'idle | active';
   initial: 'idle';
   states: {
@@ -320,7 +320,7 @@ type ValidDeepNested = NoExtraKeys<
   },
   DeepSchema
 >;
-expectTypeOf<ValidDeepNested['states']>().toMatchTypeOf<
+expectTypeOf<ValidDeepNested['states']>().toEqualTypeOf<
   | {
       parent: {
         targets: 'child1 | child2';
@@ -369,7 +369,7 @@ type ValidStrict = NoExtraKeysStrict<
   { name: 'test'; value: 42 },
   BasicSchema
 >;
-expectTypeOf<ValidStrict>().toMatchTypeOf<{ name: 'test'; value: 42 }>();
+expectTypeOf<ValidStrict>().toEqualTypeOf<{ name: 'test'; value: 42 }>();
 
 // NoExtraKeysStrict requires T to extend Schema
 // This should fail at compile time if uncommented:
@@ -391,7 +391,7 @@ type ValidRecord = NoExtraKeysRecord<
   },
   StateSchema
 >;
-expectTypeOf<ValidRecord>().toMatchTypeOf<{
+expectTypeOf<ValidRecord>().toEqualTypeOf<{
   idle: { target: 'active' };
   active: { target: 'idle'; initial: 'sub' };
 }>();
@@ -410,7 +410,7 @@ expectTypeOf<InvalidRecord['idle']['extra']>().toEqualTypeOf<never>();
 // #region NoExtraKeysFor tests
 
 type ValidFor = NoExtraKeysFor<BasicSchema, { name: 'partial' }>;
-expectTypeOf<ValidFor>().toMatchTypeOf<{ name: 'partial' }>();
+expectTypeOf<ValidFor>().toEqualTypeOf<{ name: 'partial' }>();
 
 type InvalidFor = NoExtraKeysFor<BasicSchema, { name: 'test'; extra: 1 }>;
 expectTypeOf<InvalidFor['extra']>().toEqualTypeOf<never>();
@@ -422,7 +422,7 @@ expectTypeOf<InvalidFor['extra']>().toEqualTypeOf<never>();
 // Empty object
 type EmptySchema = NonNullable<object>;
 type EmptyObj = NoExtraKeys<NonNullable<object>, EmptySchema>;
-expectTypeOf<EmptyObj>().toMatchTypeOf<NonNullable<object>>();
+expectTypeOf<EmptyObj>().toEqualTypeOf<NonNullable<object>>();
 
 // Schema with array (arrays should not be recursively processed)
 type ArraySchema = {
@@ -433,7 +433,7 @@ type ValidArray = NoExtraKeys<
   { items: [1, 2, 3]; nested: { values: ['a', 'b'] } },
   ArraySchema
 >;
-expectTypeOf<ValidArray>().toMatchTypeOf<{
+expectTypeOf<ValidArray>().toEqualTypeOf<{
   items: [1, 2, 3];
   nested: { values: ['a', 'b'] };
 }>();
@@ -447,7 +447,7 @@ type ValidFn = NoExtraKeys<
   { handler: () => {}; config: { callback: (x: number) => 'test' } },
   FnSchema
 >;
-expectTypeOf<ValidFn['handler']>().toMatchTypeOf<() => void>();
+expectTypeOf<ValidFn['handler']>().toEqualTypeOf<() => void>();
 
 // Schema with Date (Date should not be recursively processed)
 type DateSchema = {
@@ -458,7 +458,7 @@ type ValidDate = NoExtraKeys<
   { createdAt: Date; meta: { updatedAt: Date } },
   DateSchema
 >;
-expectTypeOf<ValidDate['createdAt']>().toMatchTypeOf<Date>();
+expectTypeOf<ValidDate['createdAt']>().toEqualTypeOf<Date>();
 
 // Schema with Map/Set (should not be recursively processed)
 type CollectionSchema = {
@@ -469,10 +469,10 @@ type ValidCollection = NoExtraKeys<
   { map: Map<string, number>; set: Set<string> },
   CollectionSchema
 >;
-expectTypeOf<ValidCollection['map']>().toMatchTypeOf<
+expectTypeOf<ValidCollection['map']>().toEqualTypeOf<
   Map<string, number>
 >();
-expectTypeOf<ValidCollection['set']>().toMatchTypeOf<Set<string>>();
+expectTypeOf<ValidCollection['set']>().toEqualTypeOf<Set<string>>();
 
 // #endregion Edge cases
 

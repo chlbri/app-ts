@@ -63,7 +63,9 @@ describe('Performs send to itself actions', () => {
     },
   }));
 
-  const service = interpret(machine101);
+  const service = interpret(machine101, {
+    context: {},
+  });
   const { useIterator, start, dispose, useStateValue, send } =
     constructTests(
       service,

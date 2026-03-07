@@ -16,7 +16,10 @@ describe('Machine 23 -> Tests for inner machines', () => {
     describe(TEXT, () => {
       // #region Config
 
-      const service = interpret(machine23);
+      const service = interpret(machine23, {
+        context: { data: [], input: '', iterator: 0 },
+        pContext: { iterator: 0 },
+      });
 
       const INPUT = 'a';
 
@@ -152,7 +155,7 @@ describe('Machine 23 -> Tests for inner machines', () => {
 
       describe('#21 => Check the service', () => {
         test(...useIterator(90, 1));
-        test(...useIteratorC(30, 2));
+        test(...useIteratorC(12, 2));
         test(...useInput('', 3));
       });
 
@@ -160,7 +163,7 @@ describe('Machine 23 -> Tests for inner machines', () => {
 
       describe('#23 => Check the service', () => {
         test(...useIterator(90, 1));
-        test(...useIteratorC(30, 2));
+        test(...useIteratorC(12, 2));
         test(...useInput(INPUT, 3));
       });
 
@@ -168,7 +171,7 @@ describe('Machine 23 -> Tests for inner machines', () => {
 
       describe('#25 => Check the service', () => {
         test(...useIterator(102, 1));
-        test(...useIteratorC(30, 2));
+        test(...useIteratorC(12, 2));
         test(...useInput(INPUT, 3));
         describe(...useData(4));
       });
@@ -177,7 +180,7 @@ describe('Machine 23 -> Tests for inner machines', () => {
 
       describe('#27 => Check the service', () => {
         test(...useIterator(102, 1));
-        test(...useIteratorC(30, 2));
+        test(...useIteratorC(12, 2));
         test(...useInput(INPUT, 3));
         describe(...useData(4, ...FAKES));
       });
@@ -186,7 +189,7 @@ describe('Machine 23 -> Tests for inner machines', () => {
 
       describe('#29 => Check the service', () => {
         test(...useIterator(114, 1));
-        test(...useIteratorC(30, 2));
+        test(...useIteratorC(12, 2));
         test(...useInput(INPUT, 3));
         describe(...useData(4, ...FAKES));
       });

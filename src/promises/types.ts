@@ -8,8 +8,8 @@ import type {
 import type {
   ActorsConfigMap,
   AllEvent,
+  EventObject,
   EventsMap,
-  ToEvents2,
 } from '#events';
 import type {
   ExtractActionsFromTransition,
@@ -19,7 +19,12 @@ import type {
   TransitionConfigMapA,
 } from '#transitions';
 import type { PromiseeConfig } from 'src/actor';
-import type { FnMap, FnR, SingleOrArrayL } from 'src/types/primitives';
+import type {
+  FnMap,
+  FnR,
+  RecordS,
+  SingleOrArrayL,
+} from 'src/types/primitives';
 
 export type PromiseReturn<
   K extends string,
@@ -75,6 +80,13 @@ export type PromiseFunction2<
   T extends string = string,
   R = any,
 > = FnR<E, Pc, Tc, T, Promise<R>>;
+
+export type PromisesMap<
+  E extends AllEvent = AllEvent,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = RecordS<PromiseFunction<E, Pc, Tc, T>>;
 
 /**
  * The finally part of a promise configuration.
@@ -203,8 +215,9 @@ export type Promisee<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
+  R = any,
 > = {
-  src: PromiseFunction2<E, Pc, Tc, T>;
+  src: PromiseFunction2<E, Pc, Tc, T, R>;
   description?: string;
   then: Transition<E, Pc, Tc, T>[];
   catch: Transition<E, Pc, Tc, T>[];
@@ -222,10 +235,7 @@ export type Promisee<
  * @see {@linkcode ToEvents} for converting events and promisees to a unified event type.
  * @see {@linkcode ActionResult} for the type of action results.
  */
-export type PromiseeResult<
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-> = {
-  event: ToEvents2<E, A>;
+export type PromiseeResult<E extends EventObject> = {
+  event: E;
   target: string | false;
 };

@@ -38,7 +38,6 @@ describe('cov => Performs send to itself actions', () => {
       },
 
       promiseesMap: 'primitive',
-      pContext: 'primitive',
 
       context: typings.partial({
         iterator: 'number',
@@ -70,6 +69,7 @@ describe('cov => Performs send to itself actions', () => {
 
   const service = interpret(machine101, {
     exact: true,
+    context: {},
   });
 
   const { useIterator, start, dispose, useStateValue, send } =

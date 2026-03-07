@@ -4,7 +4,7 @@ import type {
   SoA,
   UnionToIntersection,
 } from '#bemedev/globals/types';
-import type { AllEvent } from '#events';
+import type { AllEvent, EventObject } from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
 import type { Transitions, TransitionsConfig } from '#transitions';
 import type {
@@ -151,7 +151,7 @@ export type ExtractTagsFromFlat<Flat extends FlatMapN> = {
     tags: SingleOrArrayL<string>;
   }
     ? ReduceArray<S['tags']>
-    : never;
+    : string;
 }[keyof Flat];
 
 export type ExtractTagsFromConfig<T extends Config> = ExtractTagsFromFlat<
@@ -241,7 +241,7 @@ export type EndWithAlways<T extends Keys> = Extract<T, AlwaysEnd>;
 export type EndwA<T extends Keys> = EndWithAlways<T>;
 
 export type Node<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,

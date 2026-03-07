@@ -8,7 +8,7 @@ import { machine1 } from './machine1';
 // #region machine2
 
 export const config2 = createConfig({
-  initial: 'initialize',
+  initial: 'idle',
   states: {
     initialize: {
       always: {
@@ -125,15 +125,15 @@ export const machine2 = createMachine(
     context: {
       iterator: 'number',
       input: 'string',
-      data: ['string'],
+      data: typings.array('string'),
     },
     actorsMap: {
       children: {
-        machine1: {},
+        machine1: 'primitive',
       },
       promisees: {
         fetch: {
-          then: ['string'],
+          then: typings.array('string'),
           catch: 'primitive',
         },
       },
@@ -184,7 +184,7 @@ export const machine2 = createMachine(
       },
     },
     children: {
-      machine1: interpret(machine1),
+      machine1: () => interpret(machine1, { context: { iterator: 0 } }),
     },
   },
   delays: {
@@ -225,14 +225,14 @@ export const _machine2 = createMachine(
     context: {
       iterator: 'number',
       input: 'string',
-      data: ['string'],
+      data: typings.array('string'),
     },
     actorsMap: {
       children: {
         machine1: {},
       },
       promisees: {
-        fetch: { then: ['string'], catch: 'primitive' },
+        fetch: { then: typings.array('string'), catch: 'primitive' },
       },
     },
   }),
@@ -246,14 +246,6 @@ export const _machine2 = createMachine(
     batch,
   }) => ({
     actions: {
-      initialize: batch(
-        assign('context', () => ({
-          iterator: 0,
-          input: '',
-          data: [],
-        })),
-        assign('pContext', () => ({ iterator: 0 })),
-      ),
       inc: assign(
         'context.iterator',
         ({ context }) => notU(context?.iterator) + 1,
@@ -295,7 +287,7 @@ export const _machine2 = createMachine(
         },
       },
       children: {
-        machine1: interpret(machine1),
+        machine1: () => interpret(machine1, { context: { iterator: 0 } }),
       },
     },
     delays: {

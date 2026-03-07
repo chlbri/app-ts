@@ -9,7 +9,7 @@ import { getChildren } from './getChildren';
 import { getParents } from './getParents';
 import { recomposeConfig } from './recompose';
 
-export type ValueToNode_F = <T extends StateValue>(
+export type ValueToNodeConfig_F = <T extends StateValue>(
   body: NodeConfig,
   from: T,
   initial?: boolean,
@@ -23,7 +23,7 @@ export type ValueToNode_F = <T extends StateValue>(
  * @param initial - Optional flag to indicate if the initial state should be included.
  * @returns A node configuration object that represents the state value.
  *
- * @see {@linkcode ValueToNode_F} for more details
+ * @see {@linkcode ValueToNodeConfig_F} for more details
  * @see {@linkcode flatMap} for flattening the node configuration
  * @see {@linkcode getChildren} for retrieving child states
  * @see {@linkcode getParents} for retrieving parent states
@@ -32,7 +32,7 @@ export type ValueToNode_F = <T extends StateValue>(
  * @see {@linkcode replaceAll} for replacing substrings in the state value
  * @see {@linkcode DEFAULT_DELIMITER} for the default delimiter used in state paths
  */
-export const valueToNode: ValueToNode_F = (body, from) => {
+export const valueToNodeConfig: ValueToNodeConfig_F = (body, from) => {
   const flatBody = flatMap(body as NodeConfig, false);
   const keysFlatBody = Object.keys(flatBody);
   const fromIsString = isString(from);

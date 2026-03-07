@@ -16,6 +16,8 @@ describe('machine coverage', () => {
 
       const service = interpret(_machine2, {
         exact: true,
+        context: { iterator: 0, input: '', data: [] },
+        pContext: { iterator: 0 },
       });
 
       const {

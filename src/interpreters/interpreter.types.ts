@@ -9,18 +9,13 @@ import type {
 import type {
   ActorsConfigMap,
   EventArg,
+  EventObject,
   EventsMap,
+  ToEventObject,
   ToEvents2,
-  ToEventsR2,
 } from '#events';
-import type {
-  ActivityConfig,
-  Node,
-  NodeConfig,
-  State,
-  StateP,
-  StateValue,
-} from '#states';
+import type { PromiseeResult, PromiseFunction2 } from '#promises';
+import type { ActivityConfig, NodeConfig, StateValue } from '#states';
 import type {
   AlwaysConfig,
   DelayedTransitions,
@@ -30,33 +25,19 @@ import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { Pausable } from '@bemedev/rx-pausable';
+import { Observable } from 'rxjs';
 import type {
-  Action,
   Action2,
   ActionConfig,
   ActionResult,
 } from 'src/actions/types';
-import type { DelayFunction } from 'src/delays/types';
-import type {
-  GuardConfig,
-  PredicateS,
-  PredicateS2,
-} from 'src/guards/types';
+import type { DelayFunction2 } from 'src/delays/types';
+import type { GuardConfig, PredicateS2 } from 'src/guards/types';
 import type { AnyMachine } from 'src/machine/machine.types';
-import type {
-  Config,
-  ContextFrom,
-  PrivateContextFrom,
-} from 'src/machine/types';
-import type {
-  PromiseeResult,
-  PromiseFunction,
-  PromiseFunction2,
-} from '#promises';
-import type { FnR, OptionalDefinition } from '~types';
+import type { ContextFrom, PrivateContextFrom } from 'src/machine/types';
+import type { FnMapR, OptionalDefinition } from '~types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
-import { Observable } from 'rxjs';
 
 export type WorkingStatus =
   | 'idle'
@@ -95,68 +76,60 @@ export type Interpreter_F = <M extends AnyMachine>(
 ) => InterpreterFrom<M>;
 
 export type ToAction_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (action?: ActionConfig) => Action2<C, E, A, Pc, Tc>;
+  T extends string = string,
+> = (action?: ActionConfig) => Action2<E, Pc, Tc, T>;
 
 export type PerformActionLater_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (action: Action2<C, E, A, Pc, Tc>) => ActionResult<Pc, Tc>;
+  T extends string = string,
+> = (action: Action2<E, Pc, Tc, T>) => ActionResult<Pc, Tc>;
 
 export type PerformAction_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (action: Action2<C, E, A, Pc, Tc>) => void;
+  T extends string = string,
+> = (action: Action2<E, Pc, Tc, T>) => void;
 
 export type ToPredicate_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (predicate?: GuardConfig) => PredicateS2<C, E, A, Pc, Tc>;
+  T extends string = string,
+> = (predicate?: GuardConfig) => PredicateS2<E, Pc, Tc, T>;
 
 export type PerformPredicate_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (predicate: PredicateS2<C, E, A, Pc, Tc>) => boolean;
+  T extends string = string,
+> = (predicate: PredicateS2<E, Pc, Tc, T>) => boolean;
 
 export type ToDelay_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (delay?: string) => FnR<C, E, A, Pc, Tc, number> | undefined;
+  T extends string = string,
+> = (delay?: string) => DelayFunction2<E, Pc, Tc, T> | undefined;
 
 export type PerformDelay_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (delay: FnR<C, E, A, Pc, Tc, number>) => number;
+  T extends string = string,
+> = (delay: DelayFunction2<E, Pc, Tc, T>) => number;
 
 export type PerformPromise_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (promise: PromiseFunction2<C, E, A, Pc, Tc>) => Promise<any>;
+  T extends string = string,
+> = (promise: PromiseFunction2<E, Pc, Tc, T>) => Promise<any>;
 
 export type ExecuteActivities_F = (
   from: string,
@@ -180,30 +153,23 @@ export type TransitionAfterResult<
 
 export type PerformAlway_F = (always: AlwaysConfig) => string | false;
 
-export type Collected0<
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-> = {
+export type Collected0<E extends EventObject> = {
   after?: TimeoutPromise<string | false>;
-  promisee?: () => Promise<(PromiseeResult<E, A> | undefined)[]>;
+  promisee?: () => Promise<(PromiseeResult<E> | undefined)[]>;
   always?: () => string | false;
 };
 
 export type ToPromiseSrc_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (promise: string) => PromiseFunction2<C, E, A, Pc, Tc>;
+  T extends string = string,
+> = (promise: string) => PromiseFunction2<E, Pc, Tc, T>;
 
-export type PerformPromisee_F<
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-> = (
+export type PerformPromisee_F<E extends EventObject> = (
   from: string,
   ...promisees: PromiseeConfig[]
-) => (() => Promise<(PromiseeResult<E, A> | undefined)[]>) | undefined;
+) => (() => Promise<(PromiseeResult<E> | undefined)[]>) | undefined;
 
 export type Contexts<
   Pc = any,
@@ -228,54 +194,35 @@ export type SleepContexts_F = <
   ms?: number,
 ) => Promise<ActionResult<Pc, Tc>>;
 
-export type _Send_F<
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-> = (event: ToEventsR2<E, A>) => NodeConfig | undefined;
-
-type _FnMapR<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  R = any,
-  TT extends ToEventsR2<E, A> = ToEventsR2<E, A>,
-> = {
-  [key in TT['type']]?: (
-    state: StateP<C, Tc, Extract<TT, { type: key }>['payload']>,
-  ) => R;
-} & {
-  else?: (state: State<C, Tc, ToEvents2<E, A>>) => R;
-};
-
-export type FnSubReduced<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  R = any,
-> =
-  | ((state: State<C, Tc, ToEvents2<E, A>>) => R)
-  | _FnMapR<C, E, A, Tc, R, ToEventsR2<E, A>>;
+export type _Send_F<E extends EventObject> = (
+  event: E,
+) => NodeConfig | undefined;
 
 export type AddSubscriber_F<
-  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 > = (
-  subscriber: FnSubReduced<C, E, A, Tc>,
-  options?: SubscriberOptions<C, Tc>,
-) => SubscriberClass<C, E, A, Tc>;
+  subscriber: FnMapR<Eo, Tc, T, void>,
+  options?: SubscriberOptions<Eo, Tc, T>,
+) => SubscriberClass<E, A, Tc, T, Eo>;
 
 export type Subscribe_F<
-  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 > = (
-  subscriber: FnSubReduced<C, E, A, Tc>,
-) => SubscriberClass<C, E, A, Tc>;
+  subscriber: FnMapR<Eo, Tc, T, void>,
+  options?: SubscriberOptions<Eo, Tc, T>,
+) => SubscriberClass<E, A, Tc, T, Eo>;
 
 export type Selector_F<T = any> = T extends Primitive
   ? undefined
@@ -295,12 +242,12 @@ export interface AnyInterpreter<
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > {
   mode: Mode;
-  event: ToEvents2<E, A>;
   eventsMap: EventsMap;
-  initialNode: Node<Config, E, A, Pc, Tc>;
-  node: Node<Config, E, A, Pc, Tc>;
+  initialNode: any;
+  node: any;
 
   makeStrict: () => void;
   status: WorkingStatus;
@@ -318,23 +265,15 @@ export interface AnyInterpreter<
   _ppC: (pContext: Pc) => AnyMachine<E, A, Pc, Tc>;
   _provideContext: (context: Tc) => AnyMachine<E, A, Pc, Tc>;
 
-  subscribe: AddSubscriber_F<Config, E, A, Tc>;
+  subscribe: AddSubscriber_F<E, A, Tc, T>;
 
   send: (event: EventArg<E>) => void;
-  toActionFn: (
-    action: ActionConfig,
-  ) => Action<Config, E, A, Pc, Tc> | undefined;
-  toPredicateFn: (
-    guard: GuardConfig,
-  ) => PredicateS<Config, E, A, Pc, Tc> | undefined;
-  toPromiseSrcFn: (
-    src: string,
-  ) => PromiseFunction<Config, E, A, Pc, Tc> | undefined;
-  toDelayFn: (
-    delay: string,
-  ) => DelayFunction<Config, E, A, Pc, Tc> | undefined;
-  toChild: (machine: string) => AnyInterpreter | undefined;
-  toObservable: (emitter: string) => Observable<unknown> | undefined;
+  toActionFn: (action: ActionConfig) => any;
+  toPredicateFn: (guard: GuardConfig) => any;
+  toPromiseSrcFn: (src: string) => any;
+  toDelayFn: (delay: string) => any;
+  toChildFunction: (machine: string) => any;
+  toObservable: (emitter: string) => any;
   id?: string;
   from?: string;
 
@@ -369,12 +308,14 @@ export type CollectedObservable = EmitterConfig & {
   observable: Observable<any>;
 };
 
-export type CollectedEmitter = Pick<EmitterConfig, 'id'> & {
+export type CollectedPausable = Pick<EmitterConfig, 'id'> & {
   from: string;
-  emitter: Pausable;
+  pausable: Pausable;
+  id: string;
 };
 
 export type CollectedService = NOmit<ChildConfig, 'src'> & {
   from: string;
   service: AnyInterpreter;
+  id: string;
 };

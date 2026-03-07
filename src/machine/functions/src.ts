@@ -8,7 +8,7 @@ import {
 import { reduceFnMap } from '#utils';
 import type { ChildFunction2, ChildrenMap } from '../types';
 
-export type ToChildSrc_F<
+export type ToChildSrc_F = <
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -18,11 +18,11 @@ export type ToChildSrc_F<
     ToEvents2<E, A>
   >,
   R extends { eventsMap: any } = { eventsMap: any },
-> = (
+>(
   events: E,
   actorsMap: A,
-  emitter: string,
-  emitters?: ChildrenMap<Eo, Pc, Tc, T>,
+  child: string,
+  children?: ChildrenMap<Eo, Pc, Tc, T>,
 ) => ChildFunction2<Eo, Pc, Tc, T, R> | undefined;
 
 /**
@@ -42,5 +42,5 @@ export const toChildSrc: ToChildSrc_F = (
 ) => {
   const fn = children?.[child];
   const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
-  return func;
+  return func as any;
 };

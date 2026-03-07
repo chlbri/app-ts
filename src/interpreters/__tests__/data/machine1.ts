@@ -1,20 +1,13 @@
-import { notU, typings } from '#utils';
 import { createMachine } from '#machine';
+import { typings } from '#utils';
 import { DELAY } from './constants';
 
 // #region machine1
 export const machine1 = createMachine(
   {
-    initial: 'initialize',
+    initial: 'idle',
 
     states: {
-      initialize: {
-        always: {
-          actions: ['initializeContext', 'initializeIterator'],
-          target: '/idle',
-        },
-      },
-
       idle: {
         activities: { DELAY: 'inc' },
         on: { NEXT: { description: 'Next', target: '/final' } },
@@ -32,13 +25,7 @@ export const machine1 = createMachine(
 
 machine1.addOptions(({ assign }) => ({
   actions: {
-    inc: assign(
-      'context.iterator',
-      ({ context }) => notU(context?.iterator) + 1,
-    ),
-
-    initializeIterator: assign('context.iterator', () => 0),
-    initializeContext: assign('context', () => ({})),
+    inc: assign('context.iterator', ({ context }) => context.iterator + 1),
   },
 
   delays: { DELAY },

@@ -1,24 +1,33 @@
+import type { PromiseeConfig } from '#actor';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap } from '#events';
-import type { Config, SimpleMachineOptions } from 'src/machine/types';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import { toTransition } from '#transitions';
 import { toArray } from '@bemedev/basifun';
+import type { SimpleMachineOptions } from 'src/machine/types';
 import type { Promisee } from '../types';
 import { toPromiseSrc } from './src';
-import type { PromiseeConfig } from '#actor';
 
 export type ToPromise_F = <
-  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
-  TC extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
   src: PromiseeConfig,
-  promises?: SimpleMachineOptions<E, A, Pc, TC>,
-) => Promisee<C, E, A, Pc, TC>;
+  promises?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
+) => Promisee<Eo, Pc, Tc, T, R>;
 
 /**
  * Converts a promise config to a promisee object with a source and transitions.

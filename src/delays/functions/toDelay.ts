@@ -6,7 +6,7 @@ import type {
   ToEvents2,
 } from '#events';
 import { reduceFnMap } from '#utils';
-import type { DelayFunction, DelayMap } from '../types';
+import type { DelayFunction2, DelayMap } from '../types';
 
 export type ToDelay_F = <
   E extends EventsMap = EventsMap,
@@ -22,7 +22,7 @@ export type ToDelay_F = <
   actorsMap: A,
   delay: string,
   delays?: DelayMap<Eo, Pc, Tc, T>,
-) => DelayFunction<Eo, Pc, Tc, T> | undefined;
+) => DelayFunction2<Eo, Pc, Tc, T> | undefined;
 
 /**
  * Converts a delay configuration to a function that returns the delay in milliseconds.

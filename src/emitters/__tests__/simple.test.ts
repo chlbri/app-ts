@@ -6,12 +6,20 @@ vi.useFakeTimers();
 describe('Simple Machine2 (from Machine1)', () => {
   const service = interpret(machineEmitter2, { context: 0 });
 
-  const { useContext, waiter, useNext, start, resume, pause, stop } =
-    constructTests(service, ({ contexts, sender, waiter }) => ({
-      useContext: contexts(({ context }) => context),
-      useNext: sender('NEXT'),
-      waiter: waiter(WAITERS.short),
-    }));
+  const {
+    useContext,
+    waiter,
+    useNext,
+    start,
+    resume,
+    pause,
+    stop,
+    useStateValue,
+  } = constructTests(service, ({ contexts, sender, waiter }) => ({
+    useContext: contexts(({ context }) => context),
+    useNext: sender('NEXT'),
+    waiter: waiter(WAITERS.short),
+  }));
 
   test(...start());
   test(...useContext(0));
@@ -33,11 +41,15 @@ describe('Simple Machine2 (from Machine1)', () => {
   test(...resume());
   test(...waiter());
   test(...useContext(75));
+  test(...useStateValue('inactive'));
   test(...useNext());
-  test(...waiter(20));
+  test(...useStateValue('active'));
   test(...useContext(75));
+  test(...waiter(2));
+  test(...useContext(90));
+  //Resume without pause, no effect
   test(...resume());
   test(...waiter(50));
-  test(...useContext(75));
+  test(...useContext(150));
   test(...stop());
 });

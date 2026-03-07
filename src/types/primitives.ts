@@ -11,14 +11,10 @@ import type {
 import type { DEFAULT_DELIMITER } from '#constants';
 import type {
   ActorsConfigMap,
-  AllEvent,
   EventObject,
   EventsMap,
-  ToEventObject,
   ToEvents2,
-  ToEventsR2,
 } from '#events';
-import type { Config } from '#machines';
 import type {
   State,
   StateExtended,
@@ -272,7 +268,7 @@ export type ToArray<T> = T extends readonly unknown[]
  * @see {@linkcode ToEvents2} for converting events and promisees to a map.
  */
 export type FnR<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -292,7 +288,7 @@ export type FnR<
  * @see {@linkcode ToEvents2} for converting events and promisees to a map.
  */
 export type FnReduced<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
@@ -307,7 +303,7 @@ export type EventToType<T extends string | { type: string }> = T extends {
     : never;
 
 type _FnMap<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -317,7 +313,7 @@ type _FnMap<
    * @deprecated
    * Used internally
    */
-  TT extends ToEventObject<E, Ex> = ToEventObject<E, Ex>,
+  TT extends Exclude<E, Ex> = Exclude<E, Ex>,
 > = {
   [key in EventToType<TT>]?: (
     state: StatePextended<
@@ -332,7 +328,7 @@ type _FnMap<
 };
 
 type _FnMapReduced<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
@@ -341,7 +337,7 @@ type _FnMapReduced<
    * @deprecated
    * Used internally
    */
-  TT extends ToEventObject<E, Ex> = ToEventObject<E, Ex>,
+  TT extends Exclude<E, Ex> = Exclude<E, Ex>,
 > = {
   [key in TT['type']]?: (
     state: StateP<Extract<TT, { type: key }>['payload'], Tc, T>,
@@ -351,7 +347,7 @@ type _FnMapReduced<
 };
 
 export type FnMap<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -372,7 +368,7 @@ export type FnMap<
  * @see {@linkcode Extract}
  */
 export type FnMapR<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,

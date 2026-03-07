@@ -30,7 +30,7 @@ import {
   isAtomic,
   isCompound,
   nodeToValue,
-  valueToNode,
+  valueToNodeConfig,
   type FlatMapN,
   type NodeConfig,
   type StateValue,
@@ -988,10 +988,10 @@ class Machine<
    * @param from the {@linkcode StateValue} to convert.
    * @returns the converted {@linkcode NodeConfigWithInitials}.
    *
-   * @see {@linkcode valueToNode}
+   * @see {@linkcode valueToNodeConfig}
    */
   valueToConfig = (from: StateValue) => {
-    return valueToNode(this.#config, from);
+    return valueToNodeConfig(this.#config, from);
   };
 
   /**

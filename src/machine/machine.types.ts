@@ -16,7 +16,7 @@ import type {
 } from '#bemedev/globals/types';
 import type {
   ActorsConfigMap,
-  AllEvent,
+  EventObject,
   EventArg,
   EventArgAll,
   EventsMap,
@@ -105,7 +105,7 @@ export interface AnyMachine<
 }
 
 export type AssignAction_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -124,28 +124,28 @@ export type AssignAction_F<
 ) => Action2<E, Pc, Tc, T>;
 
 export type ResendAction_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = (event: EventArgAll<E>) => Action2<E, Pc, Tc, T>;
 
 export type TimeAction_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = (id: string) => Action2<E, Pc, Tc, T>;
 
 export type VoidAction_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = (fn?: FnMap<E, Pc, Tc, T, void>) => Action2<E, Pc, Tc, T>;
 
 export type ByKey_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -158,7 +158,7 @@ export type ByKey_F<
 ) => D[K];
 
 export type FilterAction_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -183,7 +183,7 @@ export type FilterAction_F<
 ) => Action2<E, Pc, Tc, T>;
 
 export type EraseAction_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -210,7 +210,7 @@ export type DirectMerge_F<
 > = Fn<[result?: ActionResult<Pc, Tc>], void>;
 
 export type SendAction_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -227,7 +227,7 @@ export type SendAction_F<
 ) => Action2<E, Pc, Tc, T>;
 
 export type ValueCheckerGuard_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -237,21 +237,21 @@ export type ValueCheckerGuard_F<
 ) => FnR<E, Pc, Tc, T, boolean>;
 
 export type DefineGuard_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = (path: DefinedValue<Pc, Tc>) => FnR<E, Pc, Tc, T, boolean>;
 
 export type AllActions_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = AssignAction_F<E, Pc, Tc, T> | VoidAction_F<E, Pc, Tc, T>;
 
 export type DebounceAction_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -264,7 +264,7 @@ export type DebounceAction_F<
 ) => Action2<E, Pc, Tc, T>;
 
 export type BatchAction_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -285,7 +285,7 @@ export type LegacyOptions<
 }>;
 
 export type AddOption<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -317,7 +317,7 @@ export type AddOption<
 };
 
 export type AddOptionsParam_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -334,7 +334,7 @@ export type AddOptionsParam_F<
 ) => Mo;
 
 export type AddOptions_F<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,

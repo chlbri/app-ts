@@ -8,4 +8,4 @@ export * from './nodeToValue';
 export * from './recompose';
 export * from './resolveNode';
 export * from './stateType';
-export * from './valueToNode';
+export * from './valueToNodeConfig';

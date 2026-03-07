@@ -56,11 +56,12 @@ export const machineEmitter2 = machineEmitter1.provideOptions(
     },
     actors: {
       emitters: {
-        interval: interval(WAITERS.short).pipe(
-          take(5),
-          map(v => v + 1),
-          map(v => v * 5),
-        ),
+        interval: () =>
+          interval(WAITERS.short).pipe(
+            take(5),
+            map(v => v + 1),
+            map(v => v * 5),
+          ),
       },
     },
   }),
@@ -110,11 +111,12 @@ export const machineEmitter3 = createMachine(
   },
   actors: {
     emitters: {
-      interval: interval(WAITERS.short).pipe(
-        take(5),
-        map(v => v + 1),
-        map(v => v * 5),
-      ),
+      interval: () =>
+        interval(WAITERS.short).pipe(
+          take(5),
+          map(v => v + 1),
+          map(v => v * 5),
+        ),
     },
   },
 }));

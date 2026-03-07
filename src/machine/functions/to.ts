@@ -26,7 +26,7 @@ export type ToChild_F = <
 >(
   events: E,
   actorsMap: A,
-  emitter: ChildConfig,
+  child: ChildConfig,
   options?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
 ) => Child<Eo, Pc, Tc, T, R>;
 

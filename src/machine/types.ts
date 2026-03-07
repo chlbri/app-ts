@@ -12,14 +12,14 @@ import type {
 } from '#emitters';
 import type {
   ActorsConfigMap,
-  AllEvent,
+  EventObject,
   EventsMap,
   PromiseeDef,
   ToEventObject,
   ToEvents2,
 } from '#events';
 import type { PredicateS } from '#guards';
-import type { PromiseFunction } from '#promises';
+import type { PromiseFunction, PromiseReturn } from '#promises';
 import type {
   ActivityConfig,
   BaseConfig,
@@ -94,7 +94,7 @@ export type ChildEvents<
   : never;
 
 export type ChildFunction<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -102,7 +102,7 @@ export type ChildFunction<
 > = FnMap<E, Pc, Tc, T, R, `${string}::on::${string}`>;
 
 export type ChildFunction2<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -110,7 +110,7 @@ export type ChildFunction2<
 > = FnR<E, Pc, Tc, T, R>;
 
 export type ChildrenMap<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -301,7 +301,7 @@ type _GetDelayKeysFromFlat<Flat extends FlatMapN> = {
  */
 export type GetActionsFromFlat<
   Flat extends FlatMapN,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -320,7 +320,7 @@ export type GetActionsFromFlat<
  */
 export type GetGuardsFromFlat<
   Flat extends FlatMapN,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -328,7 +328,7 @@ export type GetGuardsFromFlat<
 
 export type GetPromiseSrcsFromFlat<
   Flat extends FlatMapN,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -372,7 +372,7 @@ export type GetEmitterSrcsKeyFromFlat<
  */
 export type GetDelaysFromFlat<
   Flat extends FlatMapN,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -431,7 +431,7 @@ export type GetPromiseesSrcKeyFromFlat<Flat extends FlatMapN> = Record<
 
 export type GetPromisesFromFlat<
   Flat extends FlatMapN,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -442,7 +442,7 @@ export type GetPromisesFromFlat<
     Pc,
     Tc,
     T,
-    EmitterReturn<key, A>
+    PromiseReturn<key, A>
   >;
 };
 
@@ -479,7 +479,7 @@ export type GetEmittersSrcKeyFromFlat<Flat extends FlatMapN> = Record<
 
 export type GetEmittersSrcFromFlat<
   Flat extends FlatMapN,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -529,7 +529,7 @@ export type GetChildrenSrcKeyFromFlat<
 
 export type GetChildrenSrcFromFlat<
   Flat extends FlatMapN,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -575,7 +575,7 @@ export type GetChildrenSrcFromMachine<T extends KeyU<'config'>> =
 
 export type GetActorsFromFlat<
   Flat extends FlatMapN,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -588,7 +588,7 @@ export type GetActorsFromFlat<
 
 export type GetActorsFromConfig<
   C extends Config,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -597,7 +597,7 @@ export type GetActorsFromConfig<
 
 export type GetActorsFromMachine<
   M extends KeyU<'config'>,
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
@@ -628,7 +628,7 @@ export type ChildConfigDef = EventsMap;
 export type ChildConfigMap = RecordS<ChildConfigDef>;
 
 export type Child<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -651,7 +651,7 @@ export type FnMapFrom<
   R = any,
   Ex extends string = string,
 > = FnMapR<
-  Extract<T['__events'], AllEvent>,
+  Extract<T['__events'], EventObject>,
   ContextFrom<T>,
   Extract<T['__tag'], string>,
   R,
