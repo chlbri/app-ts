@@ -64,8 +64,7 @@ describe('Interpret for actions', () => {
 
       test('#02 => Called with the correct arguments', () => {
         expect(action1).toHaveBeenCalledWith({
-          pContext: {},
-          context: {},
+          ...defaultC,
           event: { type: 'NEXT', payload: {} },
           status: 'busy',
           tags: undefined,
@@ -142,8 +141,7 @@ describe('Interpret for actions', () => {
 
       test('#02 => Called with the correct arguments', () => {
         expect(action1).toHaveBeenCalledWith({
-          pContext: {},
-          context: {},
+          ...defaultC,
           event: { type: 'NEXT', payload: {} },
           status: 'busy',
           tags: undefined,
