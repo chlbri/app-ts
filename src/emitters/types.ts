@@ -2,7 +2,7 @@ import type {
   NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
-import type { ActorsConfigMap, AllEvent } from '#events';
+import type { ActorsConfigMap, EventObject } from '#events';
 import type { Transition } from '#transitions';
 import type { Observable } from 'rxjs';
 import type { Describer, FnMap, FnR, RecordS } from '~types';
@@ -30,7 +30,7 @@ export type EmitterDef = {
 export type EmitterConfigMap = RecordS<EmitterDef>;
 
 export type Emitter<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -53,7 +53,7 @@ export type EmitterReturn<
   : never;
 
 export type EmitterFunction<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -61,7 +61,7 @@ export type EmitterFunction<
 > = FnMap<E, Pc, Tc, T, Observable<R>, `${string}::${'next' | 'error'}`>;
 
 export type EmitterFunction2<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -69,7 +69,7 @@ export type EmitterFunction2<
 > = FnR<E, Pc, Tc, T, Observable<R>>;
 
 export type EmittersMap<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,

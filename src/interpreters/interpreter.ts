@@ -261,16 +261,14 @@ export class Interpreter<
   /**
    * All {@linkcode AnyInterpreter} service subscribers of this {@linkcode Interpreter} service.
    */
-  #children: CollectedService[] = [];
 
-  #emitters: CollectedPausable[] = [];
   #sent = false;
 
   /**
    * Public getter of the service subscribers of this {@linkcode Interpreter} service.
    */
   get children() {
-    return this.#children;
+    return this.#collectedChildren;
   }
 
   /**
@@ -741,7 +739,6 @@ export class Interpreter<
     this.#startSchedulers();
     this.#throwing();
     this.#startStatus();
-    this.#subscribeChildren();
     this.#startPausables();
     this.#flush();
     this.#startInitialEntries();
@@ -1433,8 +1430,6 @@ export class Interpreter<
     this.#collectedPausables.forEach(({ pausable }) => pausable.resume());
   };
 
-  #startedEmitterIDs: Set<string> = new Set();
-
   #stopPausables = (
     filter: (value: CollectedPausable) => boolean = () => true,
   ) => {
@@ -1555,67 +1550,6 @@ export class Interpreter<
     return out;
   }
 
-  #subscribeChildren = () => {
-    for (const { service, on, contexts, id } of this.#children) {
-      type SI = AnyInterpreter & {
-        __subscribe: AddSubscriber_F<E, A, Tc, Ta, Eo>;
-      };
-      const si = service as SI;
-      si.__subscribe(
-        payload => {
-          const type = eventToType(payload.event);
-
-          const event = {
-            type: `${id}::on::${type}`,
-            payload,
-          } satisfies EventObject;
-
-          this.#changeEvent(_any(event));
-          const transitions = toArray<TransitionConfig>(on?.[type]);
-          this.__performTransitions(...transitions);
-        },
-        {
-          equals: (_, b) => {
-            const keys = Object.keys(on ?? {});
-            const key = eventToType(b.event);
-            return keys.includes(key);
-          },
-        },
-      );
-
-      si.__subscribe(
-        ({ context }) => {
-          const entries = Object.entries(contexts ?? {});
-          entries.forEach(([key, path]) => {
-            const pContext =
-              key === '.'
-                ? structuredClone(context)
-                : getByKey.low(context, key);
-
-            if (path === '.') return this.#mergeContexts({ pContext });
-            const cb = () => {
-              return assignByKey.low(this.#pContext, path, pContext);
-            };
-            this.#schedulerContexts.schedule(cb);
-          });
-        },
-        {
-          equals: (a, b) => {
-            const keys = Object.keys(contexts ?? {});
-
-            for (const key of keys) {
-              const _a = getByKey.low(a.context, key);
-              const _b = getByKey.low(b.context, key);
-              if (!equal(_a, _b)) return false;
-            }
-
-            return true;
-          },
-        },
-      );
-    }
-  };
-
   #collectedEmitterConfigs: [
     from: string,
     ...promisees: EmitterConfig[],
@@ -1710,12 +1644,7 @@ export class Interpreter<
                 const transitions = toArray<TransitionConfig>(error);
                 this.__performTransitions(...transitions);
               },
-              complete: () => {
-                this.#performFinally(complete);
-                this.#collectedPausables = this.#collectedPausables.filter(
-                  col => col.from === from && col.id === id,
-                );
-              },
+              complete: () => this.#performFinally(complete),
             });
 
             return {
