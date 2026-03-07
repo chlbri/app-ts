@@ -3,7 +3,8 @@ import type { PrimitiveObject } from '#bemedev/globals/types';
 import type {
   ActorsConfigMap,
   EventsMap,
-  PromiseeMap,
+  ToEventObject,
+  ToEvents2,
   ToEventsR2,
 } from '#events';
 import {
@@ -12,9 +13,8 @@ import {
   type FnMapR,
   type FnR,
   type FnReduced,
-} from 'src/types/primitives';
+} from '~types';
 import { nothing } from './nothing';
-import type { Config } from 'src/machine/types';
 
 type ToEventMap_F = <
   E extends EventsMap,
@@ -57,17 +57,20 @@ export const toEventsMap: ToEventMap_F = (events, _actors) => {
 };
 
 export type ReduceFnMap_F = <
-  C extends Config,
-  E extends EventsMap,
+  E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
-  fn: FnMap<C, E, A, Pc, Tc, R>,
-) => FnR<C, E, A, Pc, Tc, R>;
+  fn: FnMap<Eo, Pc, Tc, T, R>,
+) => FnR<Eo, Pc, Tc, T, R>;
 
 /**
  * Reduces a function map to a single function that processes events.
@@ -109,16 +112,19 @@ export const reduceFnMap: ReduceFnMap_F = (events, actors, fn) => {
 };
 
 export type ReduceFnMap2_F = <
-  C extends Config,
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
-  promisees: P,
-  fn: FnMapR<C, E, P, Tc, R>,
-) => FnReduced<C, E, P, Tc, R>;
+  actorsMap: A,
+  fn: FnMapR<Eo, Tc, T, R>,
+) => FnReduced<Eo, Tc, T, R>;
 
 /**
  * Reduces a function map to a single function that processes events with a context.

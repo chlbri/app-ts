@@ -36,7 +36,7 @@ import type {
   ActionConfig,
   ActionResult,
 } from 'src/actions/types';
-import type { Delay } from 'src/delays/types';
+import type { DelayFunction } from 'src/delays/types';
 import type {
   GuardConfig,
   PredicateS,
@@ -330,7 +330,9 @@ export interface AnyInterpreter<
   toPromiseSrcFn: (
     src: string,
   ) => PromiseFunction<Config, E, A, Pc, Tc> | undefined;
-  toDelayFn: (delay: string) => Delay<Config, E, A, Pc, Tc> | undefined;
+  toDelayFn: (
+    delay: string,
+  ) => DelayFunction<Config, E, A, Pc, Tc> | undefined;
   toChild: (machine: string) => AnyInterpreter | undefined;
   toObservable: (emitter: string) => Observable<unknown> | undefined;
   id?: string;

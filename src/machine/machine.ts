@@ -40,13 +40,12 @@ import { partialCall, toArray } from '@bemedev/basifun';
 import { decompose, getByKey, type Decompose } from '@bemedev/decompose';
 
 import type { Action } from 'src/actions/types';
-import type { Delay } from 'src/delays/types';
-import { ActorsConfigMap } from '../events/types';
+import type { DelayFunction } from 'src/delays/types';
+import { ActorsConfigMap, ToEventObject } from '../events/types';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
 import type { PredicateS } from 'src/guards/types';
-import type { NoExtraKeysStrict } from '~types';
 import { assignByKey, expandFnMap } from './functions';
 import type {
   AddOptions_F,
@@ -62,6 +61,7 @@ import type {
 import type {
   Config,
   ConfigDef,
+  ExtractTagsFromConfig,
   GetActorKeysFromConfig,
   GetEventsFromConfig,
   MachineOptions,
@@ -92,6 +92,10 @@ class Machine<
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
+  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 > implements AnyMachine<E, A, Pc, Tc> {
   /**
    * The configuration of the machine for this {@linkcode Machine}.
@@ -188,7 +192,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __actionFn() {
-    return _unknown<Action<C, E, A, Pc, Tc>>();
+    return _unknown<Action<Eo, Pc, Tc, Ta>>();
   }
 
   /**
@@ -236,7 +240,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __stateExtended() {
-    return _unknown<StateExtended<C, Pc, Tc, ToEvents2<E, A>>>();
+    return _unknown<StateExtended<Eo, Pc, Tc, Ta>>();
   }
 
   /**
@@ -255,7 +259,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __state() {
-    return _unknown<State<C, Tc, ToEventsR2<E, A>>>();
+    return _unknown<State<Eo, Tc, Ta>>();
   }
 
   /**
@@ -275,7 +279,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __stateP() {
-    return _unknown<StateP<C, Tc, ToEventsR2<E, A>['payload']>>();
+    return _unknown<StateP<Eo, Tc, Ta>>();
   }
 
   /**
@@ -295,9 +299,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __statePextended() {
-    return _unknown<
-      StatePextended<C, Pc, Tc, ToEventsR2<E, A>['payload']>
-    >();
+    return _unknown<StatePextended<Eo, Pc, Tc, Ta>>();
   }
 
   #typingsByKey = <
@@ -341,7 +343,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __predicate() {
-    return _unknown<PredicateS<C, E, A, Pc, Tc>>();
+    return _unknown<PredicateS<Eo, Pc, Tc, Ta>>();
   }
 
   /**
@@ -362,7 +364,7 @@ class Machine<
    *
    * @remarks Used for typing purposes only.
    *
-   * @see {@linkcode Delay}
+   * @see {@linkcode DelayFunction}
    * @see {@linkcode ToEvents}
    * @see {@linkcode ActorsConfigMap}
    * @see {@linkcode PrimitiveObject}
@@ -372,7 +374,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __delay() {
-    return _unknown<Delay<C, E, A, Pc, Tc>>();
+    return _unknown<DelayFunction<Eo, Pc, Tc, Ta>>();
   }
 
   /**
@@ -419,7 +421,7 @@ class Machine<
    * @see {@linkcode Tc}
    */
   get __promise() {
-    return _unknown<PromiseFunction<C, E, A, Pc, Tc>>();
+    return _unknown<PromiseFunction<Eo, Pc, Tc, Ta>>();
   }
 
   /**
@@ -431,6 +433,10 @@ class Machine<
    */
   get __machine() {
     return _unknown<this>();
+  }
+
+  get __tag() {
+    return _unknown<ExtractTagsFromConfig<C>>();
   }
   // #endregion
 
@@ -614,7 +620,7 @@ class Machine<
    *
    * Remark: Used for typings, when you're outside the Machine class.
    */
-  createOptions: AddOptions_F<C, E, A, Pc, Tc, Mo> = helper => {
+  createOptions: AddOptions_F<Eo, Pc, Tc, Ta, Mo> = helper => {
     const isValue = this.#isValue;
     const isNotValue = this.#isNotValue;
     const isDefined = this.#isDefined;
@@ -769,7 +775,7 @@ class Machine<
    * Options can include actions, predicates, delays, promises, and child machines.
    */
   addOptions = <T extends Mo>(
-    helper: AddOptionsParam_F<C, E, A, Pc, Tc, T>,
+    helper: AddOptionsParam_F<Eo, Pc, Tc, Ta, T>,
   ) => {
     const out = this.createOptions(helper);
 
@@ -791,10 +797,10 @@ class Machine<
    * @returns a new instance of the machine with the provided options applied.
    */
   provideOptions = <T extends Mo>(
-    helper: AddOptionsParam_F<C, E, A, Pc, Tc, T>,
+    helper: AddOptionsParam_F<Eo, Pc, Tc, Ta, T>,
   ) => {
     const out = this.renew;
-    out.addOptions(helper);
+    out.addOptions<T>(helper);
 
     return out;
   };
@@ -860,7 +866,7 @@ class Machine<
    *
    *  {@linkcode Config} , {@linkcode C} , {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode types} , {@linkcode Tc} , {@linkcode SimpleMachineOptions2} , {@linkcode MachineOptions} , {@linkcode Mo}
    */
-  #renew = (): Machine<C, Pc, Tc, E, A, Mo> => {
+  #renew = (): this => {
     const {
       config,
       pContext,
@@ -888,7 +894,7 @@ class Machine<
     out.#addChildren(actors?.children);
     out.#addEmitters(actors?.emitters);
 
-    return out;
+    return out as any;
   };
 
   /**
@@ -1038,7 +1044,7 @@ class Machine<
    * @see {@linkcode isValue}
    */
   get #isValue() {
-    return isValue<C, E, A, Pc, Tc>;
+    return isValue<Eo, Pc, Tc, Ta>;
   }
 
   /**
@@ -1046,12 +1052,12 @@ class Machine<
    *
    * @see type inferences :
    *
-   * {@linkcode GetEventsFromConfig} , {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
+   *  {@linkcode E} , {@linkcode PromiseeMap} , {@linkcode GetPromiseesSrcFromConfig} , {@linkcode A} , {@linkcode Pc} , {@linkcode PrimitiveObject} , {@linkcode Tc}
    *
    * @see {@linkcode isNotValue}
    */
   get #isNotValue() {
-    return isNotValue<C, E, A, Pc, Tc>;
+    return isNotValue<Eo, Pc, Tc, Ta>;
   }
 
   /**
@@ -1064,7 +1070,7 @@ class Machine<
    * @see {@linkcode isDefinedS}
    */
   get #isDefined() {
-    return isDefinedS<C, E, A, Pc, Tc>;
+    return isDefinedS<Eo, Pc, Tc, Ta>;
   }
 
   /**
@@ -1076,7 +1082,7 @@ class Machine<
    * @see {@linkcode isDefinedS}
    */
   get #isNotDefined() {
-    return isNotDefinedS<C, E, A, Pc, Tc>;
+    return isNotDefinedS<Eo, Pc, Tc, Ta>;
   }
 
   // #merge = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {};
@@ -1092,7 +1098,7 @@ class Machine<
    *
    * @see {@linkcode reduceFnMap}
    */
-  #sendTo: SendAction_F<C, E, A, Pc, Tc> = <T extends AnyMachine>(
+  #sendTo: SendAction_F<Eo, Pc, Tc, Ta> = <T extends AnyMachine>(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _?: T,
   ) => {
@@ -1124,7 +1130,7 @@ class Machine<
    *
    * @see {@linkcode VoidAction_F}
    */
-  #voidAction: VoidAction_F<C, E, A, Pc, Tc> = fn => {
+  #voidAction: VoidAction_F<Eo, Pc, Tc, Ta> = fn => {
     return ({ context, pContext, ...rest }) => {
       if (fn) {
         const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
@@ -1139,16 +1145,14 @@ class Machine<
     };
   };
 
-  #timeAction = (name: string): TimeAction_F<C, E, A, Pc, Tc> => {
+  #timeAction = (name: string): TimeAction_F<Eo, Pc, Tc, Ta> => {
     return id =>
       ({ context, pContext }) => {
         return _any({ context, pContext, [name]: id });
       };
   };
 
-  #cloneStateExtended = (
-    state: StateExtended<C, Pc, Tc, ToEvents2<E, A>>,
-  ) => {
+  #cloneStateExtended = (state: StateExtended<Eo, Pc, Tc, Ta>) => {
     return structuredClone(state);
   };
 }

@@ -1,27 +1,34 @@
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
+import { reduceFnMap } from '#utils';
+import type {
+  Action2,
   ActionConfig,
   ActionMap,
   ActionResult,
 } from 'src/actions/types';
-import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap } from '#events';
-import { reduceFnMap } from '#utils';
-import type { FnR } from 'src/types/primitives';
 import { isDescriber } from '~types';
-import type { Config } from 'src/machine/types';
 
 export type ToAction_F = <
-  C extends Config,
-  E extends EventsMap,
+  E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
   action: ActionConfig,
-  actions?: ActionMap<C, E, A, Pc, Tc>,
-) => FnR<C, E, A, Pc, Tc, ActionResult<Pc, Tc>> | undefined;
+  actions?: ActionMap<Eo, Pc, Tc, T>,
+) => Action2<Eo, Pc, Tc, T> | undefined;
 
 /**
  * Converts an ActionConfig to a function that can be executed with the provided eventsMap and promisees.

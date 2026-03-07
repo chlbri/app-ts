@@ -126,21 +126,40 @@ export type ToEventsR<E extends EventsMap, P extends PromiseeMap> =
  * @template : {@linkcode ActorsConfigMap} [A], the configuration map for actors which includes children, emitters, and promisees.
  * @returns A union type of events, promisee-events, emitter-events, and child-events.
  */
-export type ToEventsR2<E extends EventsMap, A extends ActorsConfigMap> =
+export type ToEventsR2<
+  E extends EventsMap,
+  A extends ActorsConfigMap,
+  Ex extends string = never,
+> =
   | _EventsR<E>
   | _PromiseesR<NotUndefined<A['promisees']>>
   | _EmitterConfigR<NotUndefined<A['emitters']>>
-  | _ChildConfigR<NotUndefined<A['children']>>;
+  | _ChildConfigR<NotUndefined<A['children']>> extends infer U extends
+  EventObject
+  ? never extends Ex
+    ? U
+    : Exclude<U, { type: Ex }>
+  : never;
 
 export type ToEvents<E extends EventsMap, P extends PromiseeMap> =
   | ToEventsR<E, P>
   | InitEvent
   | MaxExceededEvent;
 
-export type ToEvents2<E extends EventsMap, A extends ActorsConfigMap> =
-  | ToEventsR2<E, A>
-  | InitEvent
-  | MaxExceededEvent;
+export type ToEvents2<
+  E extends EventsMap,
+  A extends ActorsConfigMap,
+  Ex extends string = never,
+> = ToEventsR2<E, A, Ex> | InitEvent | MaxExceededEvent;
+
+export type EventArgObject<E extends EventObject> =
+  object extends E['payload'] ? E['type'] | E : E;
+
+export type EventArgAll<E extends AllEvent> = E extends string
+  ? E
+  : E extends EventObject
+    ? EventArgObject<E>
+    : never;
 
 /**
  * Transforms an event map into arguments to send to the machine.
@@ -149,14 +168,7 @@ export type ToEvents2<E extends EventsMap, A extends ActorsConfigMap> =
  * @see {@linkcode _EventsR} for the utility type that transforms the map into a union type.
  * @see {@linkcode EventObject} for the structure of the event object.
  */
-export type EventArg<E extends EventsMap> =
-  _EventsR<E> extends infer To
-    ? To extends EventObject
-      ? object extends To['payload']
-        ? To['type'] | To
-        : To
-      : never
-    : never;
+export type EventArg<E extends EventsMap> = EventArgObject<_EventsR<E>>;
 
 /**
  * Extracts the type of the event from the event map.
@@ -167,3 +179,23 @@ export type EventArg<E extends EventsMap> =
  */
 export type EventArgT<E extends EventsMap> =
   _EventsR<E> extends infer To extends EventObject ? To['type'] : never;
+
+export type ToEventObject<
+  T extends AllEvent,
+  Ex extends string = never,
+> = Exclude<
+  T extends string ? { type: T; payload: never } : T,
+  { type: Ex }
+>;
+
+export type EventToType<
+  T extends AllEvent,
+  Ex extends string = never,
+> = Exclude<
+  T extends {
+    type: infer U extends string;
+  }
+    ? U
+    : T,
+  Ex
+>;

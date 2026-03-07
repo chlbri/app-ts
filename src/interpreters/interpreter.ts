@@ -21,6 +21,7 @@ import {
   type InitEvent,
   type ToEvents2,
   type ToEventsR2,
+  type ToEventObject,
 } from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
 import { getEntries, getExits } from '#machine';
@@ -120,7 +121,7 @@ import type {
   NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
-import { toObservable } from '#emitters';
+import { toEmitterSrc } from '#emitters';
 import type { Machine } from '#machine';
 import type { FinallyConfig, PromiseeResult } from '#promises';
 import { createPausable } from '@bemedev/rx-pausable';
@@ -167,11 +168,15 @@ export class Interpreter<
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
   Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
+  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 > implements AnyInterpreter<E, A, Pc, Tc> {
   /**
    * The {@linkcode Machine} machine being interpreted.
    */
-  #machine: Machine<C, Pc, Tc, E, A, Mo>;
+  #machine: Machine<C, Pc, Tc, E, A, Mo, Eo>;
 
   /**
    * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.
@@ -2063,7 +2068,7 @@ export class Interpreter<
    */
   #send = (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
-    const next = this._send(event);
+    const next = this._send(event as any);
 
     if (isDefined(next)) {
       this.#config = next;
@@ -2288,7 +2293,7 @@ export class Interpreter<
     const emitters = this.#machine.emitters;
 
     return this.#returnWithWarning(
-      toObservable(emitter, emitters),
+      toEmitterSrc(emitter, emitters),
       `Emitter (${reduceDescriber(emitter)}) is not defined`,
     );
   };

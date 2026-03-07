@@ -1,24 +1,33 @@
-import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap } from '#events';
-import type { Config, SimpleMachineOptions } from '#machines';
-import type { Emitter } from '../types';
-import { toObservable } from './src';
-import { toArray } from '@bemedev/basifun';
 import type { EmitterConfig } from '#actor';
+import type { PrimitiveObject } from '#bemedev/globals/types';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
+import type { SimpleMachineOptions } from '#machines';
 import { toTransition } from '#transitions';
+import { toArray } from '@bemedev/basifun';
+import type { Emitter } from '../types';
+import { toEmitterSrc } from './src';
 
 export type ToEmitter_F = <
-  C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
-  TC extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
   emitter: EmitterConfig,
-  options?: SimpleMachineOptions<E, A, Pc, TC>,
-) => Emitter<C, E, A, Pc, TC>;
+  options?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
+) => Emitter<Eo, Pc, Tc, T, R>;
 
 /**
  * Converts an emitter config to an emitter object with a source and transitions.
@@ -28,7 +37,7 @@ export type ToEmitter_F = <
  * @param emitters of type {@linkcode SimpleMachineOptions}, the machine options.
  * @returns an emitter object with a source and transitions.
  *
- * @see {@linkcode toObservable} for converting the source.
+ * @see {@linkcode toEmitterSrc} for converting the source.
  * @see {@linkcode toTransition} for converting transitions.
  * @see {@linkcode toArray.typed} for the type of the context.
  * @see {@linkcode ToEmitter_F} for more details
@@ -39,7 +48,12 @@ export const toEmitter: ToEmitter_F = (
   emitter,
   options,
 ) => {
-  const src = toObservable(emitter.src, options?.actors?.emitters);
+  const src = toEmitterSrc(
+    events,
+    actorsMap,
+    emitter.src,
+    options?.actors?.emitters,
+  );
 
   const next = toArray
     .typed(emitter.next)

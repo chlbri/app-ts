@@ -1,25 +1,22 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap } from '#events';
-import type { DefinedValue } from 'src/guards/types';
-import type { FnR } from 'src/types/primitives';
+import type { AllEvent, EventsMap } from '#events';
+import { FnR } from '~types';
+import type { DefinedValue, PredicateS2 } from '../../types';
 import { isNotValue, isValue } from './value';
-import type { ActorsConfigMap } from '#events';
-import type { Config } from 'src/machine/types';
 
 export type IsDefinedS_F = <
-  C extends Config,
-  E extends EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 >(
   path: DefinedValue<Pc, Tc>,
-) => FnR<C, E, A, Pc, Tc, boolean>;
+) => FnR<E, Pc, Tc, T, boolean>;
 
 /**
  * Checks if the given path is defined (not undefined or null).
  * @param path : A {@linkcode DefinedValue}, the path to retrieve.
- * @returns A {@linkcode FnR} function that returns true if the path is defined, false otherwise.
+ * @returns A {@linkcode PredicateS2} function that returns true if the path is defined, false otherwise.
  *
  * @see {@linkcode isNotValue} for more details.
  * @see {@linkcode EventsMap}
@@ -34,7 +31,7 @@ export const isDefinedS: IsDefinedS_F = path => {
 /**
  * Checks if the given path is undefined or null.
  * @param path : A {@linkcode DefinedValue} , the path to retrieve.
- * @returns A {@linkcode FnR} function that returns true if the path is undefined or null, false otherwise.
+ * @returns A {@linkcode PredicateS2} function that returns true if the path is undefined or null, false otherwise.
  *
  * @see {@linkcode isValue} for more details.
  * @see {@linkcode EventsMap}

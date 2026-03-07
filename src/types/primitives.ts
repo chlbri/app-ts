@@ -11,7 +11,10 @@ import type {
 import type { DEFAULT_DELIMITER } from '#constants';
 import type {
   ActorsConfigMap,
+  AllEvent,
+  EventObject,
   EventsMap,
+  ToEventObject,
   ToEvents2,
   ToEventsR2,
 } from '#events';
@@ -23,7 +26,6 @@ import type {
   StatePextended,
 } from '#states';
 import { checkKeys } from '#utils';
-import { EmptyObject } from '@bemedev/decompose';
 
 export type IsString_F = (value: unknown) => value is string;
 
@@ -270,13 +272,12 @@ export type ToArray<T> = T extends readonly unknown[]
  * @see {@linkcode ToEvents2} for converting events and promisees to a map.
  */
 export type FnR<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
-> = (state: StateExtended<C, Pc, Tc, ToEvents2<E, A>>) => R;
+> = (state: StateExtended<E, Pc, Tc, T>) => R;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -291,39 +292,11 @@ export type FnR<
  * @see {@linkcode ToEvents2} for converting events and promisees to a map.
  */
 export type FnReduced<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
-> = (state: State<C, Tc, ToEvents2<E, A>>) => R;
-
-/**
- * A helper type to reduce a function signature to its context and events map.
- *
- * @template : {@linkcode EventsMap} [E] - The events map used in the function.
- * @template : {@linkcode ActorsConfigMap} [A] - The actors configuration map used in the function.
- * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
- * @template R - The return type of the function, defaults to any.
- *
- * @see {@linkcode ToEvents2} for converting events and promisees to a map.
- * @see {@linkcode FnReduced} for a more generic function signature.
- * @see {@linkcode Extract}
- */
-export type FnMap2<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  R = any,
-  TT extends ToEventsR2<E, A> = ToEventsR2<E, A>,
-> = {
-  [key in TT['type']]?: (
-    state: StateP<C, Tc, Extract<TT, { type: key }>['payload']>,
-  ) => R;
-} & {
-  else?: FnReduced<C, E, A, Tc, R>;
-};
+> = (state: State<E, Tc, T>) => R;
 
 export type EventToType<T extends string | { type: string }> = T extends {
   type: infer U extends string;
@@ -334,57 +307,77 @@ export type EventToType<T extends string | { type: string }> = T extends {
     : never;
 
 type _FnMap<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
-  TT extends ToEvents2<E, A> = ToEvents2<E, A>,
+  Ex extends string = string,
+  /**
+   * @deprecated
+   * Used internally
+   */
+  TT extends ToEventObject<E, Ex> = ToEventObject<E, Ex>,
 > = {
   [key in EventToType<TT>]?: (
     state: StatePextended<
-      C,
+      Extract<TT, { type: key }>['payload'],
       Pc,
       Tc,
-      Extract<TT, { type: key }>['payload']
+      T
     >,
   ) => R;
 } & {
-  else?: FnR<C, E, A, Pc, Tc, R>;
+  else?: FnR<E, Pc, Tc, T, R>;
 };
 
 type _FnMapReduced<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
-  TT extends ToEvents2<E, A> = ToEvents2<E, A>,
+  Ex extends string = string,
+  /**
+   * @deprecated
+   * Used internally
+   */
+  TT extends ToEventObject<E, Ex> = ToEventObject<E, Ex>,
 > = {
-  [key in EventToType<TT>]?: (
-    state: StateP<C, Tc, Extract<TT, { type: key }>['payload']>,
+  [key in TT['type']]?: (
+    state: StateP<Extract<TT, { type: key }>['payload'], Tc, T>,
   ) => R;
 } & {
-  else?: FnReduced<C, E, A, Tc, R>;
+  else?: FnReduced<E, Tc, T, R>;
 };
 
 export type FnMap<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
-> = FnR<C, E, A, Pc, Tc, R> | _FnMap<C, E, A, Pc, Tc, R>;
+  Ex extends string = string,
+> = FnR<E, Pc, Tc, T, R> | _FnMap<E, Pc, Tc, T, R, Ex>;
 
+/**
+ * A helper type to reduce a function signature to its context and events map.
+ *
+ * @template : {@linkcode AllEvent} [E] - All Events map used in the function.
+
+ * @template : {@linkcode PrimitiveObject} [Tc] - The context of the function, defaults to any object.
+ * @template R - The return type of the function, defaults to any.
+ *
+ * @see {@linkcode ToEvents2} for converting events and promisees to a map.
+ * @see {@linkcode FnReduced} for a more generic function signature.
+ * @see {@linkcode Extract}
+ */
 export type FnMapR<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
-> = FnReduced<C, E, A, Tc, R> | _FnMapReduced<C, E, A, Tc, R>;
+  Ex extends string = string,
+> = FnReduced<E, Tc, T, R> | _FnMapReduced<E, Tc, T, R, Ex>;
 
 /**
  * A type that represents a record with string keys and values of type {@linkcode T}.
@@ -625,5 +618,3 @@ export type DeeperPartial<T> = DeepPartial<T> | undefined;
 export type OptionalDefinition<P, V extends string> = undefined extends P
   ? { [K in V]?: P }
   : { [K in V]: P };
-
-type TT = OptionalDefinition<undefined, 'value'>;

@@ -1,6 +1,11 @@
 import type { ChildConfig } from '#actor';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap } from '#events';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import { toTransition } from '#transitions';
 import _any from '#bemedev/features/common/castings/any';
 import type { SimpleMachineOptions } from 'src/machine/types';
@@ -12,13 +17,18 @@ export type ToChild_F = <
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
-  TC extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R extends { eventsMap: any } = { eventsMap: any },
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
   emitter: ChildConfig,
-  options?: SimpleMachineOptions<E, A, Pc, TC>,
-) => Child<E, A, Pc, TC>;
+  options?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
+) => Child<Eo, Pc, Tc, T, R>;
 
 /**
  * Converts an emitter config to an emitter object with a source and transitions.
@@ -38,7 +48,12 @@ export const toChild: ToChild_F = (events, actorsMap, child, options) => {
     return toTransition(events, actorsMap, config, options);
   };
 
-  const src = toChildSrc(child.src, options?.actors?.emitters);
+  const src = toChildSrc(
+    events,
+    actorsMap,
+    child.src,
+    options?.actors?.children,
+  );
 
   const on = identify(child.on).map(tMapper);
   const contexts = Object.keys(child.contexts || {});

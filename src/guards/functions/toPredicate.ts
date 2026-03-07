@@ -1,46 +1,54 @@
 import isDefined from '#bemedev/features/common/castings/is/defined';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import { GUARD_TYPE } from '#constants';
-import type { ActorsConfigMap, EventsMap, ToEvents2 } from '#events';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import type { GuardConfig } from '#guards';
+import type { StateExtended } from '#states';
 import { reduceFnMap } from '#utils';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
 import { isDescriber, isString } from '~types';
 import type { PredicateMap, PredicateS2 } from '../types';
-import type { StateExtended } from '#states';
-import type { Config } from '#machines';
 
 export type _ToPredicateF = <
-  C extends Config,
-  E extends EventsMap,
+  E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
   guard: GuardConfig,
-  predicates?: PredicateMap<C, E, A, Pc, Tc>,
+  predicates?: PredicateMap<Eo, Pc, Tc, T>,
 ) => {
-  func?:
-    | GuardDefUnion<[StateExtended<C, Pc, Tc, ToEvents2<E, A>, A>]>
-    | undefined;
+  func?: GuardDefUnion<[StateExtended<Eo, Pc, Tc, T>]> | undefined;
   errors: string[];
 };
 
 export type ToPredicate_F = <
-  C extends Config,
-  E extends EventsMap,
+  E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
   guard: GuardConfig,
-  predicates?: PredicateMap<C, E, A, Pc, Tc>,
+  predicates?: PredicateMap<Eo, Pc, Tc, T>,
 ) => {
-  predicate?: PredicateS2<C, E, A, Pc, Tc> | undefined;
+  predicate?: PredicateS2<Eo, Pc, Tc, T> | undefined;
   errors: string[];
 };
 
@@ -54,6 +62,7 @@ const _toPredicate: _ToPredicateF = (
 
   if (isDescriber(guard)) {
     const fn = predicates?.[guard.name];
+    if (typeof fn === 'boolean') return { func: () => fn, errors };
     const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
     if (!func) errors.push(`Predicate (${guard.name}) is not defined`);
     return { func, errors };
@@ -61,6 +70,7 @@ const _toPredicate: _ToPredicateF = (
 
   if (isString(guard)) {
     const fn = predicates?.[guard];
+    if (typeof fn === 'boolean') return { func: () => fn, errors };
     const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
     if (!func) errors.push(`Predicate (${guard}) is not defined`);
     return { func, errors };

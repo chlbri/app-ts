@@ -1,16 +1,16 @@
-import type { EventObject } from '../types';
+import type { AllEvent, EventObject } from '../types';
 
-export type TypeToEvent_F = (event: EventObject | string) => EventObject;
+export type TypeToEvent_F = (event: AllEvent) => EventObject;
 
 /**
  * Converts an event to its type.
  * If the event is a string, it returns an object with the type property set to the string.
  * If the event is an object, it returns the object itself.
- * @param event of type {@linkcode EventObject} or string
+ * @param event of type {@linkcode AllEvent} or string
  * @returns {@linkcode EventObject} representing the event
  */
 export const typeToEvent: TypeToEvent_F = event => {
   const check = typeof event === 'string';
-  if (check) return { type: event, payload: {} };
+  if (check) return { type: event, payload: undefined };
   return event;
 };

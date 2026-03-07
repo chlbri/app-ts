@@ -4,9 +4,8 @@ import type {
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import type { GUARD_TYPE } from '#constants';
-import type { ActorsConfigMap, EventsMap } from '#events';
+import type { AllEvent, EventsMap } from '#events';
 import type { KeysMatching } from '@bemedev/decompose';
-import type { Config } from 'src/machine/types';
 import type { FnMap, FnR } from 'src/types/primitives';
 import type { RecordS, ReduceArray } from '~types';
 
@@ -52,50 +51,45 @@ export type FromGuard<T extends GuardConfig> = T extends ActionConfig
       : never;
 
 export type PredicateS<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<C, E, A, Pc, Tc, boolean>;
+  T extends string = string,
+> = boolean | FnMap<E, Pc, Tc, T, boolean>;
 
 export type PredicateS2<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<C, E, A, Pc, Tc, boolean>;
+  T extends string = string,
+> = boolean | FnR<E, Pc, Tc, T, boolean>;
 
 export type PredicateUnion<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > =
-  | PredicateS<C, E, A, Pc, Tc>
-  | PredicateAnd<C, E, A, Pc, Tc>
-  | PredicateOr<C, E, A, Pc, Tc>;
+  | PredicateS<E, Pc, Tc, T>
+  | PredicateAnd<E, Pc, Tc, T>
+  | PredicateOr<E, Pc, Tc, T>;
 
 export type PredicateAnd<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
-  and: PredicateUnion<C, E, A, Pc, Tc>[];
+  and: PredicateUnion<E, Pc, Tc, T>[];
 };
 
 export type PredicateOr<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
-  or: PredicateUnion<C, E, A, Pc, Tc>[];
+  or: PredicateUnion<E, Pc, Tc, T>[];
 };
 
 /**
@@ -112,15 +106,14 @@ export type PredicateOr<
  * @see {@linkcode PredicateOr} for combining multiple predicates with OR logic.
  */
 export type Predicate<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > =
-  | PredicateS2<C, E, A, Pc, Tc>
-  | PredicateAnd<C, E, A, Pc, Tc>
-  | PredicateOr<C, E, A, Pc, Tc>;
+  | PredicateS2<E, Pc, Tc, T>
+  | PredicateAnd<E, Pc, Tc, T>
+  | PredicateOr<E, Pc, Tc, T>;
 
 /**
  * Represents a map of predicates, where each key is a string and each value is a {@linkcode Predicate}.
@@ -135,12 +128,11 @@ export type Predicate<
  * @see {@linkcode RecordS} for single predicate function.
  */
 export type PredicateMap<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<RecordS<PredicateS<C, E, A, Pc, Tc>>>;
+  T extends string = string,
+> = Partial<RecordS<PredicateS<E, Pc, Tc, T>>>;
 
 type _DefinedValue<
   Pc = any,

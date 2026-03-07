@@ -1,9 +1,11 @@
-import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap } from '#events';
+import type {
+  NotUndefined,
+  PrimitiveObject,
+} from '#bemedev/globals/types';
+import type { ActorsConfigMap, AllEvent } from '#events';
 import type { Transition } from '#transitions';
 import type { Observable } from 'rxjs';
-import type { Config } from 'src/machine/types';
-import type { Describer, RecordS } from '~types';
+import type { Describer, FnMap, FnR, RecordS } from '~types';
 
 export type Subscriber = {
   unsubscribe: () => void;
@@ -28,18 +30,47 @@ export type EmitterDef = {
 export type EmitterConfigMap = RecordS<EmitterDef>;
 
 export type Emitter<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
 > = {
-  src: Observable<R>;
+  src: EmitterFunction2<E, Pc, Tc, T, R>;
   description?: string;
-  next: Transition<C, E, A, Pc, Tc>[];
-  error: Transition<C, E, A, Pc, Tc>[];
-  complete: Transition<C, E, A, Pc, Tc>[];
+  next: Transition<E, Pc, Tc, T>[];
+  error: Transition<E, Pc, Tc, T>[];
+  complete: Transition<E, Pc, Tc, T>[];
 };
 
-export type EmittersMap = RecordS<Observable<any>>;
+export type EmitterReturn<
+  K extends string,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = NotUndefined<A['emitters']>[K]['next'] extends infer P
+  ? unknown extends P
+    ? never
+    : P
+  : never;
+
+export type EmitterFunction<
+  E extends AllEvent = AllEvent,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
+> = FnMap<E, Pc, Tc, T, Observable<R>, `${string}::${'next' | 'error'}`>;
+
+export type EmitterFunction2<
+  E extends AllEvent = AllEvent,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
+> = FnR<E, Pc, Tc, T, Observable<R>>;
+
+export type EmittersMap<
+  E extends AllEvent = AllEvent,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = RecordS<EmitterFunction<E, Pc, Tc, T>>;

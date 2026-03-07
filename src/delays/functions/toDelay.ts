@@ -1,22 +1,28 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap } from '#events';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import { reduceFnMap } from '#utils';
-import type { FnR } from 'src/types/primitives';
-import type { DelayMap } from '../types';
-import type { Config } from 'src/machine/types';
+import type { DelayFunction, DelayMap } from '../types';
 
 export type ToDelay_F = <
-  C extends Config,
-  E extends EventsMap,
-  A extends ActorsConfigMap,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
   actorsMap: A,
   delay: string,
-  delays?: DelayMap<C, E, A, Pc, Tc>,
-) => FnR<C, E, A, Pc, Tc, number> | undefined;
+  delays?: DelayMap<Eo, Pc, Tc, T>,
+) => DelayFunction<Eo, Pc, Tc, T> | undefined;
 
 /**
  * Converts a delay configuration to a function that returns the delay in milliseconds.

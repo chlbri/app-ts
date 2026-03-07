@@ -6,7 +6,15 @@ import type {
   Require,
   SoA,
 } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap, PromiseeMap } from '#events';
+import type { AllEvent, EventsMap, PromiseeMap } from '#events';
+import type {
+  ExtractActionsFromFinally,
+  ExtractActionsFromPromisee,
+  ExtractGuardsFromPromise,
+  ExtractMaxFromPromisee,
+  GetEventKeysFromPromisee,
+  Promisee,
+} from '#promises';
 import type { Observable } from 'rxjs';
 import type {
   Action,
@@ -21,17 +29,9 @@ import type {
   PromiseeConfig,
 } from 'src/actor';
 import type { FromGuard, GuardConfig, Predicate } from 'src/guards/types';
-import type {
-  ExtractActionsFromFinally,
-  ExtractActionsFromPromisee,
-  ExtractGuardsFromPromise,
-  ExtractMaxFromPromisee,
-  GetEventKeysFromPromisee,
-  Promisee,
-} from '#promises';
 
 import type { Emitter } from 'src/emitters/types';
-import type { Child, Config } from 'src/machine/types';
+import type { Child } from 'src/machine/types';
 import type {
   Identify,
   RecordS,
@@ -419,30 +419,28 @@ export type ExtractChildKeysFromTransitions<T extends TransitionsConfig> =
  * @see {@linkcode Predicate} for the structure of guards in the transition.
  */
 export type Transition<
-  C extends Config,
-  E extends EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
   readonly target?: string;
-  readonly actions: Action<C, E, A, Pc, Tc>[];
-  readonly guards: Predicate<C, E, A, Pc, Tc>[];
+  readonly actions: Action<E, Pc, Tc, T>[];
+  readonly guards: Predicate<E, Pc, Tc, T>[];
   readonly description?: string;
 };
 
 export type Emiter4<
-  C extends Config,
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
   src: Observable<any>;
   description?: string;
-  then: Transition<C, E, P, Pc, Tc>[];
-  catch: Transition<C, E, P, Pc, Tc>[];
-  finally: Transition<C, E, P, Pc, Tc>[];
+  then: Transition<E, Pc, Tc, T>[];
+  catch: Transition<E, Pc, Tc, T>[];
+  finally: Transition<E, Pc, Tc, T>[];
 };
 
 /**
@@ -458,16 +456,15 @@ export type Emiter4<
  * @see {@linkcode Identify} for identifying properties in the transitions.
  */
 export type Transitions<
-  C extends Config,
-  E extends EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
-  on: Identify<Transition<C, E, A, Pc, Tc>>[];
-  always: Transition<C, E, A, Pc, Tc>[];
-  after: Identify<Transition<C, E, A, Pc, Tc>>[];
-  promises: Promisee<C, E, A, Pc, Tc>[];
-  emitters: Emitter<C, E, A, Pc, Tc>[];
-  children: Child<C, E, A, Pc, Tc>[];
+  on: Identify<Transition<E, Pc, Tc, T>>[];
+  always: Transition<E, Pc, Tc, T>[];
+  after: Identify<Transition<E, Pc, Tc, T>>[];
+  promises: Promisee<E, Pc, Tc, T>[];
+  emitters: Emitter<E, Pc, Tc, T>[];
+  children: Child<E, Pc, Tc, T>[];
 };

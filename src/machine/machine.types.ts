@@ -1,7 +1,7 @@
 import type {
   ActionConfig,
   ActionResult,
-  ActionResultFn,
+  Action2,
 } from 'src/actions/types';
 
 import type { DefinedValue } from 'src/guards/types';
@@ -16,7 +16,9 @@ import type {
 } from '#bemedev/globals/types';
 import type {
   ActorsConfigMap,
+  AllEvent,
   EventArg,
+  EventArgAll,
   EventsMap,
   ToEvents2,
 } from '#events';
@@ -103,11 +105,10 @@ export interface AnyMachine<
 }
 
 export type AssignAction_F<
-  C extends Config,
-  E extends EventsMap,
-  A extends ActorsConfigMap,
-  Pc,
-  Tc extends PrimitiveObject,
+  E extends AllEvent = AllEvent,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = <
   D = Decompose<
     {
@@ -119,41 +120,37 @@ export type AssignAction_F<
   K extends keyof D = keyof D,
 >(
   key: K,
-  fn: FnMap<C, E, A, Pc, Tc, D[K]>,
-) => ActionResultFn<C, E, A, Pc, Tc>;
+  fn: FnMap<E, Pc, Tc, T, D[K]>,
+) => Action2<E, Pc, Tc, T>;
 
 export type ResendAction_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (event: EventArg<E>) => ActionResultFn<C, E, A, Pc, Tc>;
+  T extends string = string,
+> = (event: EventArgAll<E>) => Action2<E, Pc, Tc, T>;
 
 export type TimeAction_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (id: string) => ActionResultFn<C, E, A, Pc, Tc>;
+  T extends string = string,
+> = (id: string) => Action2<E, Pc, Tc, T>;
 
 export type VoidAction_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (fn?: FnMap<C, E, A, Pc, Tc, void>) => ActionResultFn<C, E, A, Pc, Tc>;
+  T extends string = string,
+> = (fn?: FnMap<E, Pc, Tc, T, void>) => Action2<E, Pc, Tc, T>;
 
 export type ByKey_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = <
-  S extends StateExtended<C, Pc, Tc, ToEvents2<E, A>>,
+  S extends StateExtended<E, Pc, Tc, T>,
   D = Decompose<S, { object: 'both'; start: false; sep: '.' }>,
   K extends keyof D & string = keyof D & string,
 >(
@@ -161,11 +158,10 @@ export type ByKey_F<
 ) => D[K];
 
 export type FilterAction_F<
-  C extends Config,
-  E extends EventsMap,
-  A extends ActorsConfigMap,
-  Pc,
-  Tc extends PrimitiveObject,
+  E extends AllEvent = AllEvent,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = <
   D = Decompose<
     {
@@ -184,14 +180,13 @@ export type FilterAction_F<
         ? (value: ValuesOf<D[K]>, all: D[K]) => boolean
         : never
     : never,
-) => ActionResultFn<C, E, A, Pc, Tc>;
+) => Action2<E, Pc, Tc, T>;
 
 export type EraseAction_F<
-  C extends Config,
-  E extends EventsMap,
-  A extends ActorsConfigMap,
-  Pc,
-  Tc extends PrimitiveObject,
+  E extends AllEvent = AllEvent,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = <
   D extends object = Extract<
     Decompose<
@@ -207,7 +202,7 @@ export type EraseAction_F<
   K extends keyof DD & string = keyof DD & string,
 >(
   key: K,
-) => ActionResultFn<C, E, A, Pc, Tc>;
+) => Action2<E, Pc, Tc, T>;
 
 export type DirectMerge_F<
   Pc = any,
@@ -215,74 +210,67 @@ export type DirectMerge_F<
 > = Fn<[result?: ActionResult<Pc, Tc>], void>;
 
 export type SendAction_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = <T extends AnyMachine>(
-  _?: T,
+  T extends string = string,
+> = <M extends AnyMachine>(
+  _?: M,
 ) => (
   fn: FnMap<
-    C,
     E,
-    A,
     Pc,
     Tc,
-    { to: string; event: EventArg<EventsMapFrom<T>> }
+    T,
+    { to: string; event: EventArg<EventsMapFrom<M>> }
   >,
-) => ActionResultFn<C, E, A, Pc, Tc>;
+) => Action2<E, Pc, Tc, T>;
 
 export type ValueCheckerGuard_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = (
   path: DefinedValue<Pc, Tc>,
   ...values: any[]
-) => FnR<C, E, A, Pc, Tc, boolean>;
+) => FnR<E, Pc, Tc, T, boolean>;
 
 export type DefineGuard_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (path: DefinedValue<Pc, Tc>) => FnR<C, E, A, Pc, Tc, boolean>;
+  T extends string = string,
+> = (path: DefinedValue<Pc, Tc>) => FnR<E, Pc, Tc, T, boolean>;
 
 export type AllActions_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = AssignAction_F<C, E, A, Pc, Tc> | VoidAction_F<C, E, A, Pc, Tc>;
+  T extends string = string,
+> = AssignAction_F<E, Pc, Tc, T> | VoidAction_F<E, Pc, Tc, T>;
 
 export type DebounceAction_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = <T extends ActionResultFn<C, E, A, Pc, Tc>>(
-  fn: T,
+  T extends string = string,
+> = <A extends Action2<E, Pc, Tc, T>>(
+  fn: A,
   options: {
     ms?: number;
     id: string;
   },
-) => ActionResultFn<C, E, A, Pc, Tc>;
+) => Action2<E, Pc, Tc, T>;
 
 export type BatchAction_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = <T extends ActionResultFn<C, E, A, Pc, Tc> | undefined>(
-  ...fns: T[]
-) => ActionResultFn<C, E, A, Pc, Tc>;
+  T extends string = string,
+> = <A extends Action2<E, Pc, Tc, T>[]>(
+  ...fns: A
+) => Action2<E, Pc, Tc, T>;
 
 /**
  * Type for the _legacy parameter containing previously defined options.
@@ -297,47 +285,45 @@ export type LegacyOptions<
 }>;
 
 export type AddOption<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
-  isDefined: DefineGuard_F<C, E, A, Pc, Tc>;
-  isNotDefined: DefineGuard_F<C, E, A, Pc, Tc>;
-  isValue: ValueCheckerGuard_F<C, E, A, Pc, Tc>;
-  isNotValue: ValueCheckerGuard_F<C, E, A, Pc, Tc>;
-  assign: AssignAction_F<C, E, A, Pc, Tc>;
-  batch: BatchAction_F<C, E, A, Pc, Tc>;
-  filter: FilterAction_F<C, E, A, Pc, Tc>;
-  erase: EraseAction_F<C, E, A, Pc, Tc>;
-  voidAction: VoidAction_F<C, E, A, Pc, Tc>;
-  sendTo: SendAction_F<C, E, A, Pc, Tc>;
-  debounce: DebounceAction_F<C, E, A, Pc, Tc>;
-  resend: ResendAction_F<C, E, A, Pc, Tc>;
+  isDefined: DefineGuard_F<E, Pc, Tc, T>;
+  isNotDefined: DefineGuard_F<E, Pc, Tc, T>;
+  isValue: ValueCheckerGuard_F<E, Pc, Tc, T>;
+  isNotValue: ValueCheckerGuard_F<E, Pc, Tc, T>;
+  assign: AssignAction_F<E, Pc, Tc, T>;
+  batch: BatchAction_F<E, Pc, Tc, T>;
+  filter: FilterAction_F<E, Pc, Tc, T>;
+  erase: EraseAction_F<E, Pc, Tc, T>;
+  voidAction: VoidAction_F<E, Pc, Tc, T>;
+  sendTo: SendAction_F<E, Pc, Tc, T>;
+  debounce: DebounceAction_F<E, Pc, Tc, T>;
+  resend: ResendAction_F<E, Pc, Tc, T>;
   /**
    * Force send action, performs the action regardless of the current state.
    */
-  forceSend: ResendAction_F<C, E, A, Pc, Tc>;
-  pauseActivity: TimeAction_F<C, E, A, Pc, Tc>;
-  resumeActivity: TimeAction_F<C, E, A, Pc, Tc>;
-  stopActivity: TimeAction_F<C, E, A, Pc, Tc>;
-  pauseTimer: TimeAction_F<C, E, A, Pc, Tc>;
-  resumeTimer: TimeAction_F<C, E, A, Pc, Tc>;
-  stopTimer: TimeAction_F<C, E, A, Pc, Tc>;
+  forceSend: ResendAction_F<E, Pc, Tc, T>;
+  pauseActivity: TimeAction_F<E, Pc, Tc, T>;
+  resumeActivity: TimeAction_F<E, Pc, Tc, T>;
+  stopActivity: TimeAction_F<E, Pc, Tc, T>;
+  pauseTimer: TimeAction_F<E, Pc, Tc, T>;
+  resumeTimer: TimeAction_F<E, Pc, Tc, T>;
+  stopTimer: TimeAction_F<E, Pc, Tc, T>;
   // merge: DirectMerge_F<Pc, Tc>;
   // emitter: Emitter<E, P, Pc, Tc>;
 };
 
 export type AddOptionsParam_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = (
-  option: AddOption<C, E, A, Pc, Tc>,
+  option: AddOption<E, Pc, Tc, T>,
   /**
    * Access to previously defined options from previous addOptions or provideOptions calls.
    * Provides actions, predicates, emitters, machines, promises, and delays.
@@ -348,15 +334,14 @@ export type AddOptionsParam_F<
 ) => Mo;
 
 export type AddOptions_F<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
-> = <T extends NoExtraKeysStrict<Mo, Mo>>(
-  option: AddOptionsParam_F<C, E, A, Pc, Tc, T>,
-) => T;
+> = <O extends NoExtraKeysStrict<Mo, Mo>>(
+  option: AddOptionsParam_F<E, Pc, Tc, T, O>,
+) => O;
 
 /**
  * Represents a scheduled action with its data and execution time.

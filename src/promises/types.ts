@@ -5,7 +5,12 @@ import type {
   ReduceArray,
   Require,
 } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventsMap, ToEvents2 } from '#events';
+import type {
+  ActorsConfigMap,
+  AllEvent,
+  EventsMap,
+  ToEvents2,
+} from '#events';
 import type {
   ExtractActionsFromTransition,
   ExtractGuardKeysFromDelayed,
@@ -14,8 +19,16 @@ import type {
   TransitionConfigMapA,
 } from '#transitions';
 import type { PromiseeConfig } from 'src/actor';
-import type { Config } from 'src/machine/types';
 import type { FnMap, FnR, SingleOrArrayL } from 'src/types/primitives';
+
+export type PromiseReturn<
+  K extends string,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = NotUndefined<A['promisees']>[K]['then'] extends infer P
+  ? unknown extends P
+    ? never
+    : P
+  : never;
 
 /**
  * A function type that represents a promise function with map.
@@ -30,13 +43,19 @@ import type { FnMap, FnR, SingleOrArrayL } from 'src/types/primitives';
  * @see {@linkcode PromiseFunction2} for a reduced version with a context.
  */
 export type PromiseFunction<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   R = any,
-> = FnMap<C, E, A, Pc, Tc, Promise<R>>;
+> = FnMap<
+  E,
+  Pc,
+  Tc,
+  T,
+  Promise<R>,
+  `${string}::${'then' | 'catch' | 'finally'}`
+>;
 
 /**
  * A reduced version of {@linkcode PromiseFunction} that takes a context.
@@ -50,12 +69,12 @@ export type PromiseFunction<
  * @see {@linkcode Promise}
  */
 export type PromiseFunction2<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<C, E, A, Pc, Tc, Promise<any>>;
+  T extends string = string,
+  R = any,
+> = FnR<E, Pc, Tc, T, Promise<R>>;
 
 /**
  * The finally part of a promise configuration.
@@ -180,17 +199,16 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
  * @see {@linkcode Transition} for the type of transitions.
  */
 export type Promisee<
-  C extends Config = Config,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  E extends AllEvent = AllEvent,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
-  src: PromiseFunction2<C, E, A, Pc, Tc>;
+  src: PromiseFunction2<E, Pc, Tc, T>;
   description?: string;
-  then: Transition<C, E, A, Pc, Tc>[];
-  catch: Transition<C, E, A, Pc, Tc>[];
-  finally: Transition<C, E, A, Pc, Tc>[];
+  then: Transition<E, Pc, Tc, T>[];
+  catch: Transition<E, Pc, Tc, T>[];
+  finally: Transition<E, Pc, Tc, T>[];
 };
 
 /**

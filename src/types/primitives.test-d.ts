@@ -559,3 +559,18 @@ expectTypeOf<FA19>().toEqualTypeOf<[true, true]>();
 type FA20 = FilterArray<_FA, 1 | 2 | true | 'string'>;
 expectTypeOf<FA20>().toEqualTypeOf<[1, 2, 'string', true, true]>();
 // #endregion
+
+type ExS1 = Exclude<
+  | 'START'
+  | 'HELP'
+  | 'getChildren::then'
+  | 'machine1::on::NEXT'
+  | 'machine1::on::ERROR'
+  | 'machine2::on::NEXT'
+  | 'machine2::on::ERROR',
+  `${string}::on::${string}`
+>;
+
+expectTypeOf<ExS1>().toEqualTypeOf<
+  'START' | 'HELP' | 'getChildren::then'
+>();
