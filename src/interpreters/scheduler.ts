@@ -101,7 +101,7 @@ export class Scheduler {
    *
    * @param callback of type {@linkcode Cb} The callback function to be executed immediately.
    */
-  processImmediate = (callback: Cb) => {
+  #processImmediate = (callback: Cb) => {
     callback();
     this.#performeds++;
     this.#currentStatus = 'available';
@@ -109,7 +109,7 @@ export class Scheduler {
 
   schedule = (callback: Cb, immediate = false) => {
     return immediate
-      ? this.processImmediate(callback)
+      ? this.#processImmediate(callback)
       : this.#schedule(callback);
   };
 
@@ -120,7 +120,7 @@ export class Scheduler {
 
     if (check) {
       this.#currentStatus = 'processing';
-      this.processImmediate(callback);
+      this.#processImmediate(callback);
     }
   };
 }
