@@ -102,7 +102,7 @@ describe('Integration testing for interpret, Children', () => {
           idle: {},
           working: {
             on: {
-              NEXT: '/idle', 
+              NEXT: '/idle',
             },
           },
         },

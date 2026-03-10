@@ -24,7 +24,7 @@ describe('machine coverage', () => {
       console.time(TEXT);
       log.mockClear();
     });
-    
+
     describe(TEXT, () => {
       // #region Config
 
@@ -580,7 +580,7 @@ describe('machine coverage', () => {
       const expected = {
         actors: {
           contexts: {
-            '': '',
+            iterator: 'iterator',
           },
           id: 'machine1',
           on: {},
@@ -680,7 +680,7 @@ describe('machine coverage', () => {
         '/': {
           actors: {
             contexts: {
-              '': '',
+              iterator: 'iterator',
             },
             id: 'machine1',
             on: {},
@@ -1165,7 +1165,6 @@ describe('machine coverage', () => {
 
           test(`#02 => contains warning for machine : "${idM}"`, () => {
             const expected = `Machine (${idM}) is not defined`;
-            console.warn('oui', service._warningsCollector);
             expect(service._warningsCollector).toContain(expected);
           });
         });

@@ -9,12 +9,7 @@ import type {
   UnionToIntersection,
 } from '#bemedev/globals/types';
 import type { DEFAULT_DELIMITER } from '#constants';
-import type {
-  ActorsConfigMap,
-  EventObject,
-  EventsMap,
-  ToEvents2,
-} from '#events';
+import type { EventObject } from '#events';
 import type {
   State,
   StateExtended,

@@ -1,4 +1,4 @@
-import type { PromiseeConfig } from '#actor';
+import type { PromiseeConfig } from 'src/actor.types';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type {
   ActorsConfigMap,

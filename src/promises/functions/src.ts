@@ -6,7 +6,6 @@ import {
   ToEvents2,
 } from '#events';
 import { reduceFnMap } from '#utils';
-import type { SimpleMachineOptions } from 'src/machine/types';
 import type { PromiseFunction2, PromisesMap } from '../types';
 
 export type ToPromiseSrc_F = <
@@ -31,7 +30,6 @@ export type ToPromiseSrc_F = <
  * @param events of type {@linkcode EventsMap}, the events map.
  * @param promisees of type {@linkcode ActorsConfigMap}, the actors config map.
  * @param src of type string, the source string to convert.
- * @param promises of type {@linkcode SimpleMachineOptions}, the machine options containing promises.
  * @returns a function that retrieves the promise or undefined if not found.
  *
  * @see {@linkcode reduceFnMap} for reducing the function map.

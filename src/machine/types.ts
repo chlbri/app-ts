@@ -1,11 +1,11 @@
-import type { Action, Action2, FromActionConfig } from '#actions';
+import type { Action2, FromActionConfig } from '#actions';
 import type {
   DeepRequired,
   NotUndefined,
   PrimitiveObject,
   Ru,
 } from '#bemedev/globals/types';
-import type { DelayFunction, DelayFunction2 } from '#delays';
+import type { DelayFunction2 } from '#delays';
 import type {
   EmitterDef,
   EmitterFunction2,
@@ -20,7 +20,7 @@ import type {
   ToEventObject,
   ToEvents2,
 } from '#events';
-import type { PredicateS, PredicateS2 } from '#guards';
+import type { PredicateS2 } from '#guards';
 import type {
   PromiseFunction,
   PromiseFunction2,
@@ -995,13 +995,13 @@ export type SimpleMachineOptions<
     ToEvents2<E, A>
   >,
 > = Partial<{
-  actions: Partial<RecordS<Action<Eo, Pc, Tc, T>>>;
-  predicates: Partial<RecordS<PredicateS<Eo, Pc, Tc, T>>>;
-  delays: Partial<RecordS<DelayFunction<Eo, Pc, Tc, T>>>;
+  actions: Partial<RecordS<Action2<Eo, Pc, Tc, T>>>;
+  predicates: Partial<RecordS<PredicateS2<Eo, Pc, Tc, T>>>;
+  delays: Partial<RecordS<DelayFunction2<Eo, Pc, Tc, T>>>;
   actors: Partial<{
-    children: RecordS<ChildFunction<Eo, Pc, Tc, T>>;
-    emitters: EmittersMap;
-    promises: RecordS<PromiseFunction<Eo, Pc, Tc, T>>;
+    children: RecordS<ChildFunction2<Eo, Pc, Tc, T>>;
+    emitters: EmittersMap<Eo, Pc, Tc, T>;
+    promises: RecordS<PromiseFunction2<Eo, Pc, Tc, T>>;
   }>;
 }>;
 

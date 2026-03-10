@@ -39,8 +39,6 @@ describe('machine coverage', () => {
         },
       );
 
-      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-
       beforeAll(() => {
         console.time(TEXT);
       });

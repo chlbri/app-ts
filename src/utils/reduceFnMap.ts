@@ -24,7 +24,7 @@ type ToEventMap_F = <
   actors: A,
 ) => ToEventsR2<E, A>;
 
-export const  toEventsMap: ToEventMap_F = (events, _actors) => {
+export const toEventsMap: ToEventMap_F = (events, _actors) => {
   const promisees = Object.entries(_actors.promisees || {}).reduce(
     (acc, [key, value]) => {
       acc[`${key}::then`] = value.then;

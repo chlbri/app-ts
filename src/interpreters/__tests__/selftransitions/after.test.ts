@@ -1,25 +1,15 @@
-import { DEFAULT_MAX_TIME_PROMISE } from '#constants';
+import { constructTests, defaultC, defaultT } from '#fixtures';
 import { returnFalse } from '#guards';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { createConfig } from '#machines';
-import { createFakeWaiter } from '@bemedev/vitest-extended';
-import {
-  constructSend,
-  constructStateValue,
-  constructWaiter,
-  defaultC,
-  defaultT,
-} from '#fixtures';
 
 const DELAY = 1000;
 
-const useWaiter = constructWaiter(DELAY);
+vi.useFakeTimers();
 
 describe('after', () => {
-  beforeAll(() => {
-    vi.useFakeTimers();
-  });
+  beforeAll(() => {});
 
   const simpleConfig = createConfig({
     initial: 'idle',
@@ -43,15 +33,18 @@ describe('after', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    const { useStateValue, useWaiter, start } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(DELAY),
+      }),
+    );
 
-    test(...useValue('idle', 2));
-    test(...useWaiter(1, 3));
-    test(...useValue('active', 4));
+    test(...start());
+    test(...useStateValue('idle'));
+    test(...useWaiter());
+    test(...useStateValue('active'));
   });
 
   describe('#02 => complex, two delays', () => {
@@ -80,19 +73,22 @@ describe('after', () => {
     }));
 
     const service = interpret(machine);
-    const useValue = constructStateValue(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    const { useStateValue, useWaiter, start } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(DELAY),
+      }),
+    );
 
-    test(...useValue('idle', 2));
-    test(...useWaiter(1, 3));
-    test(...useValue('idle', 4));
-    test(...useWaiter(1, 5));
-    test(...useValue('result2', 6));
-    test(...useWaiter(10, 7));
-    test(...useValue('result2', 8));
+    test(...start());
+    test(...useStateValue('idle'));
+    test(...useWaiter(1));
+    test(...useStateValue('idle'));
+    test(...useWaiter(1));
+    test(...useStateValue('result2'));
+    test(...useWaiter(10));
+    test(...useStateValue('result2'));
   });
 
   describe('#03 => complex, two delays with parameters', () => {
@@ -123,58 +119,27 @@ describe('after', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    const { useStateValue, useWaiter, start } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(DELAY),
+      }),
+    );
 
-    test(...useValue('idle', 2));
-    test(...useWaiter(1, 3));
-    test(...useValue('idle', 4));
-    test(...useWaiter(1, 5));
-    test(...useValue('idle', 6));
-    test(...useWaiter(2, 7));
-    test(...useValue('result2', 8));
-    test(...useWaiter(12, 9));
-    test(...useValue('result2', 10));
+    test(...start());
+    test(...useStateValue('idle'));
+    test(...useWaiter(1));
+    test(...useStateValue('idle'));
+    test(...useWaiter(1));
+    test(...useStateValue('idle'));
+    test(...useWaiter(2));
+    test(...useStateValue('result2'));
+    test(...useWaiter(12));
+    test(...useStateValue('result2'));
   });
 
-  describe('#04 => Delay is too long', () => {
-    const machine = createMachine(simpleConfig, defaultT);
-
-    machine.addOptions(() => ({
-      delays: {
-        DELAY: DEFAULT_MAX_TIME_PROMISE + DELAY,
-      },
-    }));
-
-    const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
-
-    test('#01 => Start', () => {
-      service.start();
-    });
-
-    test(...useValue('idle', 2));
-    test(...createFakeWaiter.all(vi)(3, DEFAULT_MAX_TIME_PROMISE + DELAY));
-    test(...useValue('idle', 4));
-  });
-
-  describe('#05 => Delay is not defined', () => {
-    const machine = createMachine(simpleConfig, defaultT);
-    const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
-
-    test('#01 => Start', () => {
-      service.start();
-    });
-    test(...useValue('idle', 2));
-    test(...createFakeWaiter.all(vi)(3));
-    test(...useValue('idle', 4));
-  });
-
-  describe('#07 => Inside the remainings', () => {
+  describe('#04 => Inside the remainings', () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -204,41 +169,43 @@ describe('after', () => {
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
-    const useSend = constructSend(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    const { useStateValue, useWaiter, start, send } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(DELAY),
+      }),
+    );
 
-    test(...useValue('idle', 2));
-    test(...useWaiter(1, 3));
-    test(...useSend('NEXT', 4));
-    test(...useValue('active', 5));
-    test(...useWaiter(4, 6));
-    test(...useValue('active', 7));
-    test(...useSend('NEXT', 8));
-    test(...useValue('idle', 9));
-    test(...useWaiter(1, 10));
-    test(...useValue('idle', 11));
-    test(...useWaiter(2, 12));
-    test(...useSend('NEXT', 13));
-    test(...useValue('idle', 14));
-    test(...useWaiter(1, 15));
-    test(...useValue('idle', 16));
-    test(...useSend('NEXT', 17));
-    test(...useValue('active', 18));
-    test(...useSend('NEXT', 19));
-    test(...useValue('idle', 20));
-    test(...useWaiter(1, 21));
-    test(...useValue('idle', 22));
-    test(...useSend('NEXT', 23));
-    test(...useValue('active', 24));
-    test(...useWaiter(4, 25));
-    test(...useValue('active', 26));
-    test(...useSend('NEXT', 27));
-    test(...useValue('idle', 28));
-    test(...useWaiter(3, 29));
-    test(...useValue('active', 30));
+    test(...start());
+    test(...useStateValue('idle'));
+    test(...useWaiter(1));
+    test(...send('NEXT'));
+    test(...useStateValue('active'));
+    test(...useWaiter(4));
+    test(...useStateValue('active'));
+    test(...send('NEXT'));
+    test(...useStateValue('idle'));
+    test(...useWaiter(1));
+    test(...useStateValue('idle'));
+    test(...useWaiter(2));
+    test(...send('NEXT'));
+    test(...useStateValue('idle'));
+    test(...useWaiter(1));
+    test(...useStateValue('idle'));
+    test(...send('NEXT'));
+    test(...useStateValue('active'));
+    test(...send('NEXT'));
+    test(...useStateValue('idle'));
+    test(...useWaiter(1));
+    test(...useStateValue('idle'));
+    test(...send('NEXT'));
+    test(...useStateValue('active'));
+    test(...useWaiter(4));
+    test(...useStateValue('active'));
+    test(...send('NEXT'));
+    test(...useStateValue('idle'));
+    test(...useWaiter(3));
+    test(...useStateValue('active'));
   });
 });

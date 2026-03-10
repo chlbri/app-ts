@@ -1,4 +1,8 @@
-import type { ChildConfig, EmitterConfig, PromiseeConfig } from '#actor';
+import type {
+  ChildConfig,
+  EmitterConfig,
+  PromiseeConfig,
+} from 'src/actor.types';
 import type {
   Equals,
   NOmit,

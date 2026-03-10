@@ -73,4 +73,4 @@ export type EmittersMap<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = RecordS<EmitterFunction<E, Pc, Tc, T>>;
+> = RecordS<EmitterFunction2<E, Pc, Tc, T>>;

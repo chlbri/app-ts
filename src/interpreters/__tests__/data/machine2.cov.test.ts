@@ -174,10 +174,6 @@ describe('machine coverage', () => {
 
       describe('#15 => Check the service', () => {
         test(...useIterator(42, 1));
-        test('cfjdfd', () => {
-          console.warn('State value', service.value);
-          console.warn('State input', service.context?.input);
-        });
         test(...useInput('', 2));
         // describe(...useConsole(3, ['WRITE with', ':', '""']));
       });

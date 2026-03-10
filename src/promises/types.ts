@@ -1,16 +1,12 @@
 import type { ActionConfig, FromActionConfig } from '#actions';
+import { PromiseeConfig } from '#actor';
 import type {
   NotUndefined,
   PrimitiveObject,
   ReduceArray,
   Require,
 } from '#bemedev/globals/types';
-import type {
-  ActorsConfigMap,
-  AllEvent,
-  EventObject,
-  EventsMap,
-} from '#events';
+import type { ActorsConfigMap, EventObject } from '#events';
 import type {
   ExtractActionsFromTransition,
   ExtractGuardKeysFromDelayed,
@@ -18,13 +14,7 @@ import type {
   Transition,
   TransitionConfigMapA,
 } from '#transitions';
-import type { PromiseeConfig } from 'src/actor';
-import type {
-  FnMap,
-  FnR,
-  RecordS,
-  SingleOrArrayL,
-} from 'src/types/primitives';
+import type { FnMap, FnR, RecordS, SingleOrArrayL } from '~types';
 
 export type PromiseReturn<
   K extends string,
@@ -38,7 +28,7 @@ export type PromiseReturn<
 /**
  * A function type that represents a promise function with map.
  *
- * @template : {@linkcode EventsMap} [E] - The events map.
+ * @template : {@linkcode EventObject} [E] - The events map.
  * @template : {@linkcode ActorsConfigMap} [A] - The actors configuration map.
  * @template Pc - The context type, defaults to `any`.
  * @template : {@linkcode PrimitiveObject} [Tc] - The primitive object type, defaults to `PrimitiveObject`.
@@ -48,7 +38,7 @@ export type PromiseReturn<
  * @see {@linkcode PromiseFunction2} for a reduced version with a context.
  */
 export type PromiseFunction<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -74,7 +64,7 @@ export type PromiseFunction<
  * @see {@linkcode Promise}
  */
 export type PromiseFunction2<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -82,11 +72,11 @@ export type PromiseFunction2<
 > = FnR<E, Pc, Tc, T, Promise<R>>;
 
 export type PromisesMap<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = RecordS<PromiseFunction<E, Pc, Tc, T>>;
+> = RecordS<PromiseFunction2<E, Pc, Tc, T>>;
 
 /**
  * The finally part of a promise configuration.
@@ -211,7 +201,7 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
  * @see {@linkcode Transition} for the type of transitions.
  */
 export type Promisee<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,

@@ -1,4 +1,4 @@
-import type { ChildConfig } from '#actor';
+import type { ChildConfig } from 'src/actor.types';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type {
   ActorsConfigMap,

@@ -7,5 +7,6 @@
     "dev"
   ],
   "demoTime.defaultFileType": "json",
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.colorDecorators": false
 }

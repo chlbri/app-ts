@@ -1,11 +1,16 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { AllEvent, EventsMap } from '#events';
+import type { EventObject } from '#events';
 import { FnR } from '~types';
-import type { DefinedValue, PredicateS2 } from '../../types';
+import type {
+  DefinedValue,
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  PredicateS2,
+} from '../../types';
 import { isNotValue, isValue } from './value';
 
 export type IsDefinedS_F = <
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -19,7 +24,7 @@ export type IsDefinedS_F = <
  * @returns A {@linkcode PredicateS2} function that returns true if the path is defined, false otherwise.
  *
  * @see {@linkcode isNotValue} for more details.
- * @see {@linkcode EventsMap}
+ * @see {@linkcode EventObject}
  * @see {@linkcode PromiseeMap}
  * @see {@linkcode PrimitiveObject}
  *
@@ -34,7 +39,7 @@ export const isDefinedS: IsDefinedS_F = path => {
  * @returns A {@linkcode PredicateS2} function that returns true if the path is undefined or null, false otherwise.
  *
  * @see {@linkcode isValue} for more details.
- * @see {@linkcode EventsMap}
+ * @see {@linkcode EventObject}
  * @see {@linkcode PromiseeMap}
  * @see {@linkcode PrimitiveObject}
  */

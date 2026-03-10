@@ -61,7 +61,7 @@
         "src/delays/index.ts"
       ],
       "#actor": [
-        "src/actor.ts"
+        "src/actor.types.ts"
       ],
       "#states": [
         "src/states/index.ts"

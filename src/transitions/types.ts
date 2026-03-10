@@ -6,7 +6,7 @@ import type {
   Require,
   SoA,
 } from '#bemedev/globals/types';
-import type { AllEvent, EventsMap, PromiseeMap } from '#events';
+import type { EventObject } from '#events';
 import type {
   ExtractActionsFromFinally,
   ExtractActionsFromPromisee,
@@ -27,7 +27,7 @@ import type {
   EmitterConfig,
   ExtractSrcFromActor,
   PromiseeConfig,
-} from 'src/actor';
+} from 'src/actor.types';
 import type { FromGuard, GuardConfig, Predicate } from 'src/guards/types';
 
 import type { Emitter } from 'src/emitters/types';
@@ -419,7 +419,7 @@ export type ExtractChildKeysFromTransitions<T extends TransitionsConfig> =
  * @see {@linkcode Predicate} for the structure of guards in the transition.
  */
 export type Transition<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -431,7 +431,7 @@ export type Transition<
 };
 
 export type Emiter4<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -456,7 +456,7 @@ export type Emiter4<
  * @see {@linkcode Identify} for identifying properties in the transitions.
  */
 export type Transitions<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,

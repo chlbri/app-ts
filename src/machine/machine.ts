@@ -41,7 +41,7 @@ import { decompose, getByKey, type Decompose } from '@bemedev/decompose';
 
 import type { Action } from 'src/actions/types';
 import type { DelayFunction } from 'src/delays/types';
-import { ActorsConfigMap, ToEventObject } from '../events/types';
+import { ActorsConfigMap, ToEventObject, _EventsR } from '#events';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import cloneDeep from 'clone-deep';
@@ -67,7 +67,6 @@ import type {
   MachineOptions,
   NoExtraKeysConfig,
   NoExtraKeysConfigDef,
-  SimpleMachineOptions2,
   TransformConfigDef,
 } from './types';
 
@@ -79,7 +78,7 @@ import type {
  * @template Pc : The private context type of the machine.
  * @template : {@linkcode PrimitiveObject} [Pc] - The context type of the machine.
  * @template : {@linkcode GetEventsFromConfig}<{@linkcode C}> [E] - The events map type derived from the configuration.
- * @template : {@linkcode PromiseeMap} [P] - The promisees map type derived from the configuration. Defaults to {@linkcode GetPromiseesSrcFromConfig}<{@linkcode C}>.
+ * @template : {@linkcode PromiseeMap} [P] - The promisees map type derived from the configuration.
  * @template : {@linkcode SimpleMachineOptions2} [Mo] - The options type for the machine, which includes actions, predicates, delays, promises, and machines. Defaults to {@linkcode MachineOptions}<[{@linkcode C} , {@linkcode E} , {@linkcode A} , {@linkcode Pc} , {@linkcode Tc} ]>.
  *
  * @implements {@linkcode AnyMachine}<{@linkcode E} , {@linkcode A} , {@linkcode Pc} , {@linkcode Tc} >
@@ -91,7 +90,13 @@ class Machine<
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
+  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<
+    C,
+    E,
+    A,
+    Pc,
+    Tc
+  >,
   Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
     ToEvents2<E, A>
   >,
@@ -174,7 +179,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    */
   get __events() {
-    return _unknown<ToEvents2<E, A>>();
+    return _unknown<_EventsR<E>>();
   }
 
   /**
@@ -422,6 +427,17 @@ class Machine<
   /**
    * @deprecated
    *
+   * This property provides any child key for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   */
+  get __childKey() {
+    return this.#typingsByKey('children');
+  }
+
+  /**
+   * @deprecated
+   *
    * This property provides the promise function for this {@linkcode Machine} as a type.
    *
    * @remarks Used for typing purposes only.
@@ -564,7 +580,7 @@ class Machine<
     return this.#delays;
   }
 
-  get promises() {
+  get promises(): NotUndefined<Mo['actors']>['promises'] {
     return this.#actors?.promises;
   }
 

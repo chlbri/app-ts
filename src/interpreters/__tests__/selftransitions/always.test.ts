@@ -1,12 +1,7 @@
+import { constructTests, defaultC, defaultT } from '#fixtures';
 import { returnFalse } from '#guards';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machines';
-import {
-  constructStateValue,
-  constructWaiter,
-  defaultC,
-  defaultT,
-} from '#fixtures';
 
 describe('Integration testing for interpret, Children', () => {
   beforeAll(() => {
@@ -14,8 +9,6 @@ describe('Integration testing for interpret, Children', () => {
   });
 
   const DELAY = 1000;
-
-  const useWaiter = constructWaiter(DELAY);
 
   describe('#01 => With delay', () => {
     const machine = createMachine(
@@ -44,15 +37,18 @@ describe('Integration testing for interpret, Children', () => {
       ezre: {},
     }));
     const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    const { useStateValue, useWaiter, start } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(DELAY),
+      }),
+    );
 
-    test(...useValue('active', 2));
-    test(...useWaiter(10, 3));
-    test(...useValue('active', 4));
+    test(...start());
+    test(...useStateValue('active'));
+    test(...useWaiter(10));
+    test(...useStateValue('active'));
   });
 
   describe('#01 => With delay, but cannot reach caused by guard', () => {
@@ -78,19 +74,22 @@ describe('Integration testing for interpret, Children', () => {
       predicates: { returnFalse },
     }));
     const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    const { useStateValue, useWaiter, start } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(DELAY),
+      }),
+    );
 
-    test(...useValue('idle', 2));
-    test(...useWaiter(1, 3));
-    test(...useValue('idle', 4));
-    test(...useWaiter(2, 5));
-    test(...useValue('notActive', 6));
-    test(...useWaiter(10, 7));
-    test(...useValue('notActive', 8));
+    test(...start());
+    test(...useStateValue('idle'));
+    test(...useWaiter(1));
+    test(...useStateValue('idle'));
+    test(...useWaiter(2));
+    test(...useStateValue('notActive'));
+    test(...useWaiter(10));
+    test(...useStateValue('notActive'));
   });
 
   describe('#02 => complex, two always with parameters', () => {
@@ -114,18 +113,22 @@ describe('Integration testing for interpret, Children', () => {
     );
 
     // machine.addPredicates({ returnFalse });
-    machine.addOptions(({ isNotDefined }) => ({
-      predicates: { returnFalse: isNotDefined('pContext') },
+    machine.addOptions(({ isDefined }) => ({
+      predicates: { returnFalse: isDefined('pContext') },
     }));
-    const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    const service = interpret(machine);
 
-    test(...useValue('result2', 2));
-    test(...useWaiter(10, 3));
-    test(...useValue('result2', 4));
+    const { useStateValue, useWaiter, start } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(DELAY),
+      }),
+    );
+
+    test(...start());
+    test(...useStateValue('result2'));
+    test(...useWaiter(10));
+    test(...useStateValue('result2'));
   });
 });

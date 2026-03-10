@@ -1,11 +1,11 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { AllEvent, EventsMap } from '#events';
+import type { EventObject } from '#events';
 import { getByKey } from '#machines';
 import type { FnR } from 'src/types/primitives';
 import type { DefinedValue } from '../../types';
 
 export type IsValueS_F = <
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -35,7 +35,7 @@ export type IsValueS_F = <
  * console.log(result); // true
  * ```
  *
- * @see {@linkcode EventsMap} for the type of the events map.
+ * @see {@linkcode EventObject} for the type of the events map.
  * @see {@linkcode PromiseeMap} for the type of the promisees map.
  * @see {@linkcode PrimitiveObject} for the type of the context.
  * @see {@linkcode getByKey} for retrieving values by key.
@@ -94,7 +94,7 @@ export const isValue: IsValueS_F = (path, ...values) => {
  * console.log(result); // false
  * ```
  *
- * @see {@linkcode EventsMap} for the type of the events map.
+ * @see {@linkcode EventObject} for the type of the events map.
  * @see {@linkcode PromiseeMap} for the type of the promisees map.
  * @see {@linkcode PrimitiveObject} for the type of the context.
  * @see {@linkcode getByKey} for retrieving values by key.

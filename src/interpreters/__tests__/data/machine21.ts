@@ -171,9 +171,10 @@ export const machine21 = createMachine(
         },
       },
       children: {
-        machine1: () => interpret(machine1, {
-          context: { iterator: 0 },
-        }),
+        machine1: () =>
+          interpret(machine1, {
+            context: { iterator: 0 },
+          }),
       },
     },
     delays: {

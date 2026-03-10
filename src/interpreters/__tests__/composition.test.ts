@@ -5,7 +5,7 @@ import {
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MIN_ACTIVITY_TIME,
 } from '#constants';
-import { defaultC, defaultT, fakeWaiter } from '#fixtures';
+import { constructTests, defaultC, defaultT, fakeWaiter } from '#fixtures';
 import { DELAY, fakeDB, machine21, machine3 } from '#fixturesData';
 import { createMachine } from '#machine';
 import type { StateValue } from '#states';
@@ -293,14 +293,19 @@ describe('Composition', () => {
 
     const error = `Too much self transitions, exceeded ${DEFAULT_MAX_SELF_TRANSITIONS} transitions`;
 
-    test('#01 => Start the service', async () => {
-      vi.advanceTimersByTimeAsync(TIME_TO_RINIT_SELF_COUNTER);
-      await service.start();
-    });
+    const { start, useWaiter, useErrors } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(TIME_TO_RINIT_SELF_COUNTER),
+      }),
+    );
 
-    describe('#02 => Error is throwing', () => {
-      describe('#01 => console.error', () => {
-        test('#01 => called one time', () => {
+    test(...start());
+    test(...useWaiter());
+
+    describe('#002 => Error is throwing', () => {
+      describe('#001 => console.error', () => {
+        test('#001 => called one time', () => {
           expect(fn).toBeCalledTimes(1);
         });
 
@@ -309,15 +314,7 @@ describe('Composition', () => {
         });
       });
 
-      describe('#02 => collector', () => {
-        test('#01 => collector has one element', () => {
-          expect(service._errorsCollector).toHaveLength(1);
-        });
-
-        test('#02 => collector has the error', () => {
-          expect(service._errorsCollector).toContain(error);
-        });
-      });
+      describe(...useErrors(error));
     });
   });
 

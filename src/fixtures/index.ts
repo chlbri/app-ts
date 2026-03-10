@@ -24,7 +24,7 @@ import type {
   MachineOptions,
   SimpleMachineOptions2,
 } from 'src/machine/types';
-import { buildIndex } from './invite';
+import { buildIndex, buildInvite } from './invite';
 
 export * from './invite';
 export * from './constants';
@@ -239,6 +239,14 @@ type ConstructTestsResult<
   > & {
     send: (_event: EventArg<E>, index?: number) => TestArr;
     useStateValue: (value: StateValue, index?: number) => TestArr;
+    useWarnings: {
+      (...warnings: string[]): TestArr;
+      index: (index: number, ...warnings: string[]) => TestArr;
+    };
+    useErrors: {
+      (...warnings: string[]): TestArr;
+      index: (index: number, ...warnings: string[]) => TestArr;
+    };
   } & (ExtractTagsFromConfig<C> extends infer Tags
     ? string extends Tags
       ? EmptyObject
@@ -256,6 +264,14 @@ type ConstructTestsResult2 = Record<
 > & {
   send: (_event: EventObject, index?: number) => TestArr;
   useStateValue: (value: StateValue, index?: number) => TestArr;
+  useWarnings: {
+    (...warnings: string[]): TestArr;
+    index: (index: number, ...warnings: string[]) => TestArr;
+  };
+  useErrors: {
+    (...warnings: string[]): TestArr;
+    index: (index: number, ...warnings: string[]) => TestArr;
+  };
   useTags: {
     (...tags: string[]): TestArr;
     index: (index: number, ...tags: string[]) => TestArr;
@@ -281,6 +297,68 @@ export const constructTests = <
     const out = buildIndex(_index, 100);
     _index++;
     return out;
+  };
+
+  const errorsOrWarnings = (
+    type: '_errorsCollector' | '_warningsCollector',
+  ) => {
+    const str = type === '_errorsCollector' ? 'errors' : 'warnings';
+    return expandFn(
+      (...warnings: string[]) => {
+        const invite = `#${index()} => Expect ${str} : ${warnings.join(', ')}`;
+        return tupleOf(invite, () => {
+          const cases = warnings.map(
+            (warning, index) =>
+              [
+                buildInvite(
+                  `${warning} should be in service.${type}`,
+                  index,
+                  Math.max(100, warnings.length),
+                ),
+                warning,
+              ] as const,
+          );
+
+          test.each([...cases])('%s', (_, warning) => {
+            expect(service[type]).toContain(warning);
+          });
+        });
+      },
+      {
+        index: (_index: number, ...warnings: string[]) => {
+          const invite = `#${index(_index)} => Expect ${str} : ${warnings.join(', ')}`;
+          return tupleOf(invite, () => {
+            const cases = warnings.map(
+              (warning, index) =>
+                [
+                  buildInvite(
+                    `${warning} should be in service.${type}`,
+                    index + 1,
+                    Math.max(100, warnings.length + 1),
+                  ),
+                  warning,
+                ] as const,
+            );
+
+            test(
+              buildInvite(
+                `Length of ${str} should be ${warnings.length}`,
+                0,
+                Math.max(100, warnings.length + 1),
+              ),
+              () => {
+                expect(service[type]?.values()?.toArray()?.length).toBe(
+                  warnings.length,
+                );
+              },
+            );
+            test.each([...cases])('%s', (_, warning) => {
+              expect(service[type]).toContain(warning);
+            });
+          });
+        },
+      },
+    );
   };
 
   const out: ConstructTestsResult2 = {
@@ -350,6 +428,9 @@ export const constructTests = <
         },
       ),
     }),
+
+    useWarnings: errorsOrWarnings('_warningsCollector'),
+    useErrors: errorsOrWarnings('_errorsCollector'),
 
     useStateValue: (value, _index) => {
       const _value = JSON.stringify(value);

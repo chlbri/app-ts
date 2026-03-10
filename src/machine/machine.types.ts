@@ -20,7 +20,6 @@ import type {
   EventArgAll,
   EventObject,
   EventsMap,
-  ToEvents2,
 } from '#events';
 import type { FnMap, FnR } from 'src/types/primitives';
 import type { ValuesOf } from '~types';
@@ -29,7 +28,6 @@ import type {
   EventsMapFrom,
   SimpleMachineOptions2,
 } from './types';
-
 /**
  * Types for all meaningful elements of the machine.
  *
@@ -72,7 +70,6 @@ export type GetIO_F = (
  * @template :  any [Pc] - type of the private context
  * @template :  {@linkcode PrimitiveObject} [Tc] - type of the context
  *
- * @see {@linkcode ToEvents2} for converting events and actors maps to a unified event type.
  * @see {@linkcode NodeConfigWithInitials}  for the structure of node configurations with initials.
  * @see {@linkcode StateValue} for the type of state values.
  * @see {@linkcode Fn} for creating functions
@@ -91,7 +88,7 @@ export interface AnyMachine<
   pContext: Pc;
   eventsMap: E;
   actorsMap: A;
-  __events: ToEvents2<E, A>;
+  __events: any;
   __state: any;
   actions: any;
   predicates: any;

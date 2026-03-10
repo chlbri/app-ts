@@ -7,7 +7,7 @@ expectTypeOf<O<string | undefined>>().toEqualTypeOf<{ value?: string }>();
 expectTypeOf<O<number>>().toEqualTypeOf<{ value: number }>();
 
 expectTypeOf<O<Partial<{ name: string; age: number }>>>().toEqualTypeOf<{
-  value?: Partial<{
+  value: Partial<{
     name: string;
     age: number;
   }>;
@@ -43,7 +43,7 @@ expectTypeOf<
 expectTypeOf<
   O<{ name?: string; age?: number; sex?: string }>
 >().toEqualTypeOf<{
-  value?: {
+  value: {
     name?: string;
     age?: number;
     sex?: string;

@@ -1,4 +1,4 @@
-import type { EmitterConfig } from '#actor';
+import type { EmitterConfig } from 'src/actor.types';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type {
   ActorsConfigMap,

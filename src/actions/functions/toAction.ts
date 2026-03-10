@@ -10,6 +10,7 @@ import type {
   Action2,
   ActionConfig,
   ActionMap,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ActionResult,
 } from 'src/actions/types';
 import { isDescriber } from '~types';

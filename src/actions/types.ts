@@ -1,5 +1,5 @@
 import type { DeepPartial, PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventObject, EventsMap } from '#events';
+import type { EventObject } from '#events';
 import type { FnMap, FnR } from 'src/types/primitives';
 import type { Describer, FromDescriber } from '~types';
 
@@ -46,8 +46,7 @@ export type Action<
 /**
  * Represents a collection of actions, where each action is identified by a string key.
  *
- * @template : type {@linkcode EventsMap}  [E], the events Map.
- * @template : type {@linkcode ActorsConfigMap} [A], the actors configuration map.
+ * @template : type {@linkcode EventObject}  [E], all events.
  * @template : [Pc], the type of the private context.
  * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
  * @returns a partial record where each key is a string and each value is an {@linkcode Action}.

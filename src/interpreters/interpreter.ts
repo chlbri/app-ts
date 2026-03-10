@@ -111,7 +111,11 @@ import type {
   WorkingStatus,
 } from './interpreter.types';
 
-import type { ChildConfig, EmitterConfig, PromiseeConfig } from '#actor';
+import type {
+  ChildConfig,
+  EmitterConfig,
+  PromiseeConfig,
+} from 'src/actor.types';
 import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
   AllowedNames,
@@ -127,7 +131,6 @@ import type {
   ExtractTagsFromConfig,
   GetActorKeysFromConfig,
   MachineOptions,
-  SimpleMachineOptions2,
 } from '#machines';
 import type { FinallyConfig, PromiseeResult } from '#promises';
 import { createPausable } from '@bemedev/rx-pausable';
@@ -166,7 +169,13 @@ export class Interpreter<
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
+  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<
+    C,
+    E,
+    A,
+    Pc,
+    Tc
+  >,
   Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
     ToEvents2<E, A>
   >,
@@ -353,8 +362,6 @@ export class Interpreter<
       tags: this.tags,
     };
 
-    console.warn('value, state', this.#value);
-
     this.#collectEmitterConfigs();
     this.#collectChildrenConfig();
     this.#throwing();
@@ -501,7 +508,7 @@ export class Interpreter<
       events,
       actorsMap,
       config,
-      options,
+      options as any,
     );
   };
 
@@ -733,10 +740,8 @@ export class Interpreter<
     this.#flush();
     this.#startInitialEntries();
     this.#startChildren();
-    // this.#performEmitters();
     this.#throwing();
-
-    return this._next();
+    this._next();
   };
 
   /**
@@ -792,7 +797,6 @@ export class Interpreter<
         this.#selfTransitionsCounter >= DEFAULT_MAX_SELF_TRANSITIONS;
       if (checkCounter) return this.#throwMaxCounter();
       this.#throwing();
-
       await this.#next();
 
       const currentValue = this.#value;
@@ -1214,7 +1218,6 @@ export class Interpreter<
             );
 
             this.#performFinally(_finally);
-
             return { event: this.#event, target };
           };
 
@@ -1285,7 +1288,6 @@ export class Interpreter<
       const check0 = !isDefined(delayF);
       if (check0) return;
       const delay = this.#executeDelay(delayF);
-      console.warn('delay', delay);
 
       const check1 = delay > DEFAULT_MAX_TIME_PROMISE;
       if (check1) {
@@ -1321,8 +1323,6 @@ export class Interpreter<
 
       promises.push(promise);
     });
-
-    console.warn('promises', promises.length);
 
     const check5 = promises.length < 1;
     if (check5) return;
@@ -1498,12 +1498,10 @@ export class Interpreter<
         }
 
         const promises: TimeoutPromise<void>[] = [];
-        console.warn('has after', !!after);
         if (after) {
           const _after = async () => {
             await after()
               .then(transition => {
-                console.warn('transition after', transition);
                 if (transition !== false)
                   return this.#performConfig(transition);
               })
@@ -2321,7 +2319,7 @@ export class Interpreter<
     const actorsMap = this.#machine.actorsMap;
     const predicates = this.#machine.predicates;
 
-    const { predicate, errors } = toPredicate<E, A, Pc, Tc, Ta, Eo>(
+    const { predicate, errors } = toPredicate<E, A, Pc, Tc, Ta>(
       events,
       actorsMap,
       guard,
@@ -2337,7 +2335,12 @@ export class Interpreter<
     const promises = this.#machine.promises;
 
     return this.#returnWithWarning(
-      toPromiseSrc<E, A, Pc, Tc, Ta, Eo>(events, actorsMap, src, promises),
+      toPromiseSrc<E, A, Pc, Tc, Ta>(
+        events,
+        actorsMap,
+        src,
+        promises as any,
+      ),
       `Promise (${src}) is not defined`,
     );
   };
@@ -2359,11 +2362,11 @@ export class Interpreter<
     const machines = this.#machine.children;
 
     return this.#returnWithWarning(
-      toChildSrc<E, A, Pc, Tc, Ta, Eo>(
+      toChildSrc<E, A, Pc, Tc, Ta>(
         events,
         actorsMap,
         machine,
-        machines,
+        machines as any,
       ),
       `Machine (${reduceDescriber(machine)}) is not defined`,
     );
@@ -2375,7 +2378,12 @@ export class Interpreter<
     const emitters = this.#machine.emitters;
 
     return this.#returnWithWarning(
-      toEmitterSrc(events, actorsMap, emitter, emitters),
+      toEmitterSrc<E, A, Pc, Tc, Ta>(
+        events,
+        actorsMap,
+        emitter,
+        emitters as any,
+      ),
       `Emitter (${reduceDescriber(emitter)}) is not defined`,
     );
   };
