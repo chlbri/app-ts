@@ -1498,10 +1498,12 @@ export class Interpreter<
         }
 
         const promises: TimeoutPromise<void>[] = [];
+        console.warn('has after', !!after);
         if (after) {
           const _after = async () => {
             await after()
               .then(transition => {
+                console.warn('transition after', transition);
                 if (transition !== false)
                   return this.#performConfig(transition);
               })
@@ -1788,7 +1790,6 @@ export class Interpreter<
     const state2 = structuredClone(this.#state);
     const check = !equal(state1, state2);
     if (check) this.#flush();
-
     this.#makeWork();
   };
 

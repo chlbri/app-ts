@@ -2,7 +2,7 @@ import { defaultT } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 
-const DELAY = 500;
+const DELAY = 300;
 
 const machine = createMachine(
   {

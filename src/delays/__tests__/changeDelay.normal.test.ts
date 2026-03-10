@@ -13,6 +13,7 @@ describe('TESTS', () => {
   it(...waiter(10));
   it(...useIterator(10));
   it(...useNext());
+  it(...useIterator(10));
   it(...waiter(10));
   it(...useIterator(20));
   it(...useNext());
