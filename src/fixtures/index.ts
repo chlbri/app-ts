@@ -294,7 +294,7 @@ export const constructTests = <
   let _index = startIndex;
   const index = (__index?: number) => {
     if (__index !== undefined) return __index + '';
-    const out = buildIndex(_index, 100);
+    const out = buildIndex(_index, Math.max(100, _index + 5));
     _index++;
     return out;
   };

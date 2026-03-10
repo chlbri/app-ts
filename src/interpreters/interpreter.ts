@@ -1631,6 +1631,8 @@ export class Interpreter<
                   payload,
                 } satisfies EventObject;
 
+                console.warn('ok build', event);
+
                 this.#changeEvent(_any(event));
                 const transitions = toArray<TransitionConfig>(error);
                 this.__performTransitions(...transitions);

@@ -1,14 +1,25 @@
+import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 import { Subject } from 'rxjs';
-import { machineEmitter2, WAITERS } from './data';
 
 vi.useFakeTimers();
 describe('Error transitions testing)', () => {
   describe('#001 => string target', () => {
-    const sub = () => new Subject<number>();
+    const sub = new Subject<number>();
+    const mock = vi.fn();
+    const DELAY = 100;
+    sub.subscribe({
+      next: value => {
+        console.warn('Next received in subject subscription:', value);
+      },
+      error: value => {
+        console.warn('Error received in subject subscription:', value);
+      },
+      complete: () => console.warn('Subject completed'),
+    });
 
     const machine = createMachine(
       {
@@ -33,66 +44,76 @@ describe('Error transitions testing)', () => {
             sub1: { next: 'number', error: 'number' },
           },
         },
+        context: 'number',
       }),
-    ).provideOptions(() => ({
-      actors: {
-        emitters: {
-          sub1: sub,
-        },
+    ).provideOptions(({ assign, voidAction }) => ({
+      actors: { emitters: { sub1: () => sub } },
+
+      actions: {
+        assigN: assign('context', {
+          'sub1::next': ({ payload, context }) => context + payload,
+        }),
+
+        signals: voidAction({
+          'sub1::error': ({ payload }) => {
+            mock('Error received:', payload);
+            console.warn('Error received:', payload);
+          },
+          'sub1::next': ({ payload }) => {
+            mock('NEXT received:', payload);
+            console.warn('Next received:', payload);
+          },
+        }),
       },
     }));
 
-    const service = interpret(machine);
+    const service = interpret(machine, { context: 0 });
 
-    const {} = constructTests(service, () => ({}));
+    const { useNext, useError, useContext, /* useMock, */ start, waiter } =
+      constructTests(service, ({ index, contexts, waiter }) => ({
+        useNext: (value: number) => {
+          const invite = `#${index()} => sub1.next(${value})`;
+          return tupleOf(invite, () => {
+            const [, fn] = waiter(DELAY)();
+            fn().then(() => sub.next(value));
+          });
+        },
+
+        useError: (value: number) => {
+          const invite = `#${index()} => sub1.error(${value})`;
+          return tupleOf(invite, () => () => {
+            const [, fn] = waiter(DELAY)();
+            fn().then(() => {
+              sub.error(value);
+              console.warn('RRRR received:', value);
+            });
+          });
+        },
+
+        useMock: (payload: number) => {
+          const invite = `#${index()} => mock('Error received:', ${payload})`;
+
+          return tupleOf(invite, () => {
+            expect(mock).toHaveBeenCalledWith('Error received:', payload);
+          });
+        },
+
+        useContext: contexts(({ context }) => context),
+        waiter: waiter(DELAY),
+      }));
+
+    test(...start());
+    test(...useContext(0));
+    test(...useNext(5));
+    test(...useContext(0));
+    test(...waiter());
+    test(...useNext(10));
+    test(...useContext(5));
+    test(...waiter());
+    test(...useContext(15));
+    test(...useError(20));
+    test(...waiter(45));
+    // test(...useMock(20));
+    test(...useContext(15));
   });
-
-  const service = interpret(machineEmitter2, { context: 0 });
-
-  const {
-    useContext,
-    waiter,
-    useNext,
-    start,
-    resume,
-    pause,
-    stop,
-    useStateValue,
-  } = constructTests(service, ({ contexts, sender, waiter }) => ({
-    useContext: contexts(({ context }) => context),
-    useNext: sender('NEXT'),
-    waiter: waiter(WAITERS.short),
-  }));
-
-  test(...start());
-  test(...useContext(0));
-  test(...waiter());
-  test(...useContext(5));
-  test(...useNext());
-  test(...waiter());
-  test(...useContext(15));
-  test(...useNext());
-  test(...waiter());
-  test(...useContext(30));
-  test(...useNext());
-  test(...waiter());
-  test(...useContext(50));
-  test(...useNext());
-  test(...pause());
-  test(...waiter());
-  test(...useContext(50));
-  test(...resume());
-  test(...waiter());
-  test(...useContext(75));
-  test(...useStateValue('inactive'));
-  test(...useNext());
-  test(...useStateValue('active'));
-  test(...useContext(75));
-  test(...waiter(2));
-  test(...useContext(90));
-  //Resume without pause, no effect
-  test(...resume());
-  test(...waiter(50));
-  test(...useContext(150));
-  test(...stop());
 });
