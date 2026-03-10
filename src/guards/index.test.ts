@@ -7,7 +7,7 @@ import {
   constructStateValue,
   defaultC,
   defaultT,
-} from '../../fixtures/fixtures';
+} from '#fixtures';
 
 describe('Interpret for guards', () => {
   const guard1 = vi.fn().mockReturnValue(defaultC);
@@ -30,7 +30,7 @@ describe('Interpret for guards', () => {
 
     machine.addOptions(({ isDefined }) => ({
       predicates: {
-        guard1: isDefined('events.type'),
+        guard1: isDefined('events.payload'),
       },
     }));
 
@@ -63,11 +63,10 @@ describe('Interpret for guards', () => {
         },
       },
       {
-        ...defaultC,
+        ...defaultT,
         eventsMap: {
           NEXT: {},
         },
-        promiseesMap: {},
       },
     );
 
@@ -111,8 +110,7 @@ describe('Interpret for guards', () => {
 
       test('#02 => Called with the correct arguments', () => {
         expect(guard1).toHaveBeenCalledWith({
-          pContext: {},
-          context: {},
+          ...defaultC,
           event: { type: 'NEXT', payload: {} },
           status: 'busy',
           tags: undefined,
@@ -145,11 +143,10 @@ describe('Interpret for guards', () => {
         },
       },
       {
-        ...defaultC,
+        ...defaultT,
         eventsMap: {
           NEXT: {},
         },
-        promiseesMap: {},
       },
     );
 
@@ -193,8 +190,7 @@ describe('Interpret for guards', () => {
 
       test('#02 => Called with the correct arguments', () => {
         expect(guard1).toHaveBeenCalledWith({
-          pContext: {},
-          context: {},
+          ...defaultC,
           event: { type: 'NEXT', payload: {} },
           status: 'busy',
           tags: undefined,

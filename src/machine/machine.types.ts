@@ -1,12 +1,12 @@
 import type {
+  Action2,
   ActionConfig,
   ActionResult,
-  Action2,
 } from 'src/actions/types';
 
-import type { DefinedValue } from 'src/guards/types';
 import type { NodeConfig, StateExtended, StateValue } from '#states';
 import type { Decompose } from '@bemedev/decompose';
+import type { DefinedValue } from 'src/guards/types';
 
 import type {
   Fn,
@@ -16,16 +16,19 @@ import type {
 } from '#bemedev/globals/types';
 import type {
   ActorsConfigMap,
-  EventObject,
   EventArg,
   EventArgAll,
+  EventObject,
   EventsMap,
   ToEvents2,
 } from '#events';
 import type { FnMap, FnR } from 'src/types/primitives';
-import type { NoExtraKeysStrict, ValuesOf } from '~types';
-import type { Config, EventsMapFrom } from './types';
-import type { SimpleMachineOptions2 } from './types';
+import type { ValuesOf } from '~types';
+import type {
+  Config,
+  EventsMapFrom,
+  SimpleMachineOptions2,
+} from './types';
 
 /**
  * Types for all meaningful elements of the machine.
@@ -268,7 +271,7 @@ export type BatchAction_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = <A extends Action2<E, Pc, Tc, T>[]>(
+> = <A extends (Action2<E, Pc, Tc, T> | undefined)[]>(
   ...fns: A
 ) => Action2<E, Pc, Tc, T>;
 
@@ -331,7 +334,7 @@ export type AddOptionsParam_F<
   legacyOptions: {
     _legacy: LegacyOptions<Mo>;
   },
-) => Mo;
+) => Mo | undefined;
 
 export type AddOptions_F<
   E extends EventObject = EventObject,
@@ -339,9 +342,7 @@ export type AddOptions_F<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
-> = <O extends NoExtraKeysStrict<Mo, Mo>>(
-  option: AddOptionsParam_F<E, Pc, Tc, T, O>,
-) => O;
+> = (option: AddOptionsParam_F<E, Pc, Tc, T, Mo>) => Mo | undefined;
 
 /**
  * Represents a scheduled action with its data and execution time.

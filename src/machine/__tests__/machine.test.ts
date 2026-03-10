@@ -12,7 +12,7 @@ import {
   constructStateValue,
   defaultT,
   fakeWaiter,
-} from '../fixtures';
+} from '../../fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => vi.useFakeTimers());
@@ -24,10 +24,19 @@ describe('machine coverage', () => {
       console.time(TEXT);
       log.mockClear();
     });
+    
     describe(TEXT, () => {
       // #region Config
 
-      const service = interpret(_machine2);
+      const service = interpret(_machine2, {
+        context: {
+          input: '',
+          data: [],
+          iterator: 0,
+        },
+
+        pContext: { iterator: 0 },
+      });
       const subscriber = service.subscribe(
         {
           WRITE: ({ payload: { value } }) =>
@@ -166,9 +175,8 @@ describe('machine coverage', () => {
           test(...useIterator(6, 2));
           test(...useIteratorC(6, 3));
           const array = [
-            ...Array(13).fill('nothing call nothing'),
             'Debounced action executed',
-            ...Array(17).fill('nothing call nothing'),
+            ...Array(16).fill('nothing call nothing'),
           ];
           describe(...useConsole(4, ...array));
         });
@@ -521,8 +529,8 @@ describe('machine coverage', () => {
               expect(log).toBeCalledTimes(strings.length);
             });
 
-            test('#02 => Log is called "168" times', () => {
-              expect(log).toBeCalledTimes(168);
+            test('#02 => Log is called "154" times', () => {
+              expect(log).toBeCalledTimes(154);
             });
           });
 
@@ -578,7 +586,7 @@ describe('machine coverage', () => {
           on: {},
           src: 'machine1',
         },
-        initial: 'initialize',
+        initial: 'idle',
         states: {
           final: {},
           idle: {
@@ -587,12 +595,6 @@ describe('machine coverage', () => {
             },
             on: {
               NEXT: '/working',
-            },
-          },
-          initialize: {
-            always: {
-              actions: 'initialize',
-              target: '/idle',
             },
           },
           working: {
@@ -684,7 +686,7 @@ describe('machine coverage', () => {
             on: {},
             src: 'machine1',
           },
-          initial: 'initialize',
+          initial: 'idle',
           states: {
             final: {},
             idle: {
@@ -693,12 +695,6 @@ describe('machine coverage', () => {
               },
               on: {
                 NEXT: '/working',
-              },
-            },
-            initialize: {
-              always: {
-                actions: 'initialize',
-                target: '/idle',
               },
             },
             working: {
@@ -775,25 +771,17 @@ describe('machine coverage', () => {
             },
           },
         },
+
         '/final': {},
+
         '/idle': {
-          activities: {
-            DELAY: 'inc',
-          },
+          activities: { DELAY: 'inc' },
           on: {
             NEXT: '/working',
           },
         },
-        '/initialize': {
-          always: {
-            actions: 'initialize',
-            target: '/idle',
-          },
-        },
         '/working': {
-          activities: {
-            DELAY2: 'inc2',
-          },
+          activities: { DELAY2: 'inc2' },
           on: {
             FINISH: '/final',
           },
@@ -862,6 +850,7 @@ describe('machine coverage', () => {
           },
           type: 'parallel',
         },
+
         '/working/fetch': {
           initial: 'idle',
           states: {
@@ -891,6 +880,7 @@ describe('machine coverage', () => {
             },
           },
         },
+
         '/working/fetch/fetch': {
           actors: {
             catch: '/working/fetch/idle',
@@ -904,6 +894,7 @@ describe('machine coverage', () => {
             },
           },
         },
+
         '/working/fetch/idle': {
           activities: {
             DELAY: 'sendPanelToUser',
@@ -915,6 +906,7 @@ describe('machine coverage', () => {
             },
           },
         },
+
         '/working/ui': {
           initial: 'idle',
           states: {
@@ -947,7 +939,9 @@ describe('machine coverage', () => {
             },
           },
         },
+
         '/working/ui/final': {},
+
         '/working/ui/idle': {
           on: {
             WRITE: {
@@ -956,6 +950,7 @@ describe('machine coverage', () => {
             },
           },
         },
+
         '/working/ui/input': {
           activities: {
             DELAY: {
@@ -980,7 +975,7 @@ describe('machine coverage', () => {
     });
 
     test('#03 => initialValue', () => {
-      expect(machine2.initialValue).toStrictEqual('initialize');
+      expect(machine2.initialValue).toStrictEqual('idle');
     });
   });
 

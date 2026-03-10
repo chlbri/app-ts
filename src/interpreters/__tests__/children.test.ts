@@ -1,7 +1,6 @@
 import typings from '#bemedev/features/numbers/typings';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { EVENTS_FULL } from '#machines';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { defaultC, defaultT } from '../../fixtures';
 
@@ -34,7 +33,9 @@ describe('Integration testing for interpret, Children', () => {
         actors: {
           src: 'child',
           id: 'child',
-          contexts: {},
+          contexts: {
+            '.': '.',
+          },
         },
         states: {
           idle: {},
@@ -50,18 +51,11 @@ describe('Integration testing for interpret, Children', () => {
           },
         },
       },
-    ).provideOptions(({ createChild }) => ({
-      machines: {
-        child: createChild(
-          child,
-          {
-            context: 0,
-            pContext: {},
-          },
-          {
-            events: EVENTS_FULL,
-          },
-        ),
+    ).provideOptions(() => ({
+      actors: {
+        children: {
+          child: () => interpret(child, { context: 0 }),
+        },
       },
     }));
 
@@ -97,12 +91,18 @@ describe('Integration testing for interpret, Children', () => {
     const parent = createMachine(
       {
         initial: 'idle',
-        machines: { child: 'child' },
+        actors: {
+          src: 'child',
+          id: 'child',
+          contexts: {
+            '.': 'iterator',
+          },
+        },
         states: {
           idle: {},
           working: {
             on: {
-              NEXT: '/idle',
+              NEXT: '/idle', 
             },
           },
         },
@@ -111,20 +111,18 @@ describe('Integration testing for interpret, Children', () => {
         ...defaultT,
         pContext: { iterator: typings.type },
         eventsMap: { NEXT: {} },
+        actorsMap: {
+          ...defaultT.actorsMap,
+          children: {
+            child: {},
+          },
+        },
       },
-    ).provideOptions(({ createChild }) => ({
-      machines: {
-        child: createChild(
-          child,
-          {
-            context: 0,
-            pContext: {},
-          },
-          {
-            events: EVENTS_FULL,
-            contexts: 'iterator',
-          },
-        ),
+    ).provideOptions(() => ({
+      actors: {
+        children: {
+          child: () => interpret(child, { context: 0 }),
+        },
       },
     }));
 

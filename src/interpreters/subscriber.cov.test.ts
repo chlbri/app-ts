@@ -2,7 +2,8 @@ import { machine1, type Machine1 } from '#fixturesData';
 import type { StatePFrom } from '#machines';
 import { describe, expect, test, vi } from 'vitest';
 import { interpret } from './interpreter';
-import type { State } from './interpreter.types';
+import type { State } from '#states';
+import type { EventObject } from '#events';
 
 describe('#01 => subscriberMap reduceFn coverage', () => {
   type TestContext = { iterator: number };
@@ -10,7 +11,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
   // Configuration de base pour l'interpréteur
   const baseConfig = {
     context: { iterator: 0 },
-    pContext: {},
+    pContext: undefined,
     mode: 'strict' as const,
     exact: true,
   };
@@ -34,7 +35,8 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
     test('#01.01.02 => should handle function subscriber with different states', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn(
-        (state: State<TestContext>) => `result-${state.context.iterator}`,
+        (state: State<EventObject, TestContext>) =>
+          `result-${state.context.iterator}`,
       );
 
       const subscriber = service.subscribe(mockFn);
@@ -131,7 +133,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
             return `next-${JSON.stringify(payload)}`;
           }
           return 'next-no-payload';
-        });
+        }) as any;
 
         const subscriber = service.subscribe({ NEXT: nextFn });
 
@@ -280,8 +282,10 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       const service = interpret(machine1, baseConfig);
       const mockFn = vi.fn(() => 'custom-equality');
       const customEquals = vi.fn(
-        (a: State<TestContext>, b: State<TestContext>) =>
-          a.context.iterator === b.context.iterator,
+        (
+          a: State<EventObject, TestContext>,
+          b: State<EventObject, TestContext>,
+        ) => a.context.iterator === b.context.iterator,
       );
 
       const subscriber = service.subscribe(mockFn, {
@@ -430,7 +434,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
   describe('#01.05 => integration with machine states', () => {
     test('#01.05.01 => should handle state transitions', () => {
       const service = interpret(machine1, baseConfig);
-      const mockFn = vi.fn((state: State<TestContext>) => {
+      const mockFn = vi.fn((state: State<EventObject, TestContext>) => {
         return `state-${state.value}`;
       });
 
@@ -450,7 +454,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
 
     test('#01.05.02 => should handle context changes', () => {
       const service = interpret(machine1, baseConfig);
-      const mockFn = vi.fn((state: State<TestContext>) => {
+      const mockFn = vi.fn((state: State<EventObject, TestContext>) => {
         return `iterator-${state.context.iterator}`;
       });
 
@@ -489,7 +493,7 @@ describe('#01 => subscriberMap reduceFn coverage', () => {
       expect(mockFn).toHaveBeenCalled();
       const sameStatus = {
         context: { iterator: 3 },
-        event: 'machine$$init',
+        event: { type: 'machine$$init', payload: undefined },
         status: 'idle',
         value: 'idle',
       } as const;

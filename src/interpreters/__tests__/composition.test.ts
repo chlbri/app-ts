@@ -5,32 +5,21 @@ import {
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MIN_ACTIVITY_TIME,
 } from '#constants';
-import {
-  defaultC,
-  defaultT,
-  fakeWaiter,
-} from 'src/interpreters/__tests__/fixtures/fixtures';
-import {
-  DELAY,
-  fakeDB,
-  machine1,
-  machine21,
-  machine3,
-} from '#fixturesData';
+import { defaultC, defaultT, fakeWaiter } from '#fixtures';
+import { DELAY, fakeDB, machine21, machine3 } from '#fixturesData';
 import { createMachine } from '#machine';
-import { EVENTS_FULL } from '#machines';
 import type { StateValue } from '#states';
-import { nothing, toFunction, typings } from '#utils';
+import { nothing, typings } from '#utils';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
-import { interpret, TIME_TO_RINIT_SELF_COUNTER } from './interpreter';
-import type { AnyInterpreter } from './interpreter.types';
+import { interpret, TIME_TO_RINIT_SELF_COUNTER } from '../interpreter';
+import type { AnyInterpreter } from '../interpreter.types';
 
 beforeAll(() => {
   vi.useFakeTimers();
 });
 
-describe('Interpreter', () => {
+describe('Composition', () => {
   const resultC = {
     pContext: { data: 'avion' },
     context: { age: 5 },
@@ -120,7 +109,16 @@ describe('Interpreter', () => {
       const node = {
         after: [],
         always: [],
+        children: [
+          {
+            contexts: [],
+            id: 'machine1',
+            on: [],
+            src: undefined,
+          },
+        ],
         description: 'cdd',
+        emitters: [],
         entry: [],
         exit: [],
         initial: 'state1',
@@ -131,6 +129,8 @@ describe('Interpreter', () => {
             __id: 'state1',
             after: [],
             always: [],
+            children: [],
+            emitters: [],
             entry: [],
             exit: [],
             initial: 'state11',
@@ -141,6 +141,8 @@ describe('Interpreter', () => {
                 __id: 'state11',
                 after: [],
                 always: [],
+                children: [],
+                emitters: [],
                 entry: [],
                 exit: [],
                 initial: 'state111',
@@ -151,6 +153,8 @@ describe('Interpreter', () => {
                     __id: 'state111',
                     after: [],
                     always: [],
+                    children: [],
+                    emitters: [],
                     entry: [],
                     exit: [],
                     on: [],
@@ -183,13 +187,12 @@ describe('Interpreter', () => {
 
     describe('#05 => config', () => {
       const _config = {
-        description: 'cdd',
-        machines: {
-          machine1: {
-            description: 'A beautiful machine',
-            name: 'machine1',
-          },
+        actors: {
+          id: 'machine1',
+          on: {},
+          src: 'machine1',
         },
+        description: 'cdd',
         initial: 'state1',
         states: {
           state1: {
@@ -255,8 +258,6 @@ describe('Interpreter', () => {
           ADD_CONDITION: 'primitive',
           REMOVE_CONDITION: 'primitive',
         },
-        promiseesMap: 'primitive',
-        pContext: 'primitive',
         context: {
           condition: 'boolean',
           iterator: 'number',
@@ -350,9 +351,12 @@ describe('Interpreter', () => {
       const expected = {
         status: 'working',
         value: 'idle',
-        context: {},
         tags: undefined,
-        event: 'machine$$init',
+        context: undefined,
+        event: {
+          payload: undefined,
+          type: 'machine$$init',
+        },
       };
 
       expect(actual).toStrictEqual(expected);
@@ -437,7 +441,7 @@ describe('Interpreter', () => {
   describe('#06 => Coverage getCollected0', () => {
     const inc = vi.fn().mockReturnValue({ pContext: {}, context: {} });
     const inc2 = vi.fn().mockReturnValue({ pContext: {}, context: {} });
-    const src = vi.fn(() => Promise.resolve());
+    const src = vi.fn(() => Promise.resolve(undefined));
 
     const machine = createMachine(
       {
@@ -447,7 +451,7 @@ describe('Interpreter', () => {
             after: {
               DELAY: { actions: 'inc2' },
             },
-            promises: {
+            actors: {
               src: 'src',
               then: { actions: 'inc' },
               catch: { actions: 'inc' },
@@ -455,7 +459,16 @@ describe('Interpreter', () => {
           },
         },
       },
-      { ...defaultT, context: { iterator: 0 } },
+      {
+        ...defaultT,
+        context: { iterator: 0 },
+        actorsMap: {
+          ...defaultT.actorsMap,
+          promisees: {
+            src: { then: undefined, catch: undefined },
+          },
+        },
+      },
     ).provideOptions(() => ({
       actions: {
         inc,
@@ -464,8 +477,10 @@ describe('Interpreter', () => {
       delays: {
         DELAY: 1000,
       },
-      promises: {
-        src,
+      actors: {
+        promises: {
+          src,
+        },
       },
     }));
 
@@ -544,7 +559,9 @@ describe('Interpreter', () => {
 
       type SE = Parameters<typeof service.send>[0];
       const INPUT = 'a';
-      const FAKES = fakeDB.filter(({ name }) => name.includes(INPUT));
+      const FAKES = fakeDB
+        .filter(({ name }) => name.includes(INPUT))
+        .map(({ name }) => name);
       const strings: (string | string[])[] = [];
 
       // #region Hooks
@@ -968,7 +985,7 @@ describe('Interpreter', () => {
 
       test('#33 => machine1.value', () => {
         const child = service.at('machine1');
-        expect(child?.value).toStrictEqual('idle');
+        expect(child?.service?.value).toStrictEqual('idle');
       });
 
       test(...useSend('SEND', 34));
@@ -977,24 +994,11 @@ describe('Interpreter', () => {
 
       test('#37 => machine1.value', () => {
         const child = service.at('machine1');
-        expect(child?.value).toStrictEqual('final');
+        expect(child?.service?.value).toStrictEqual('final');
       });
 
       test('#38 => Resend idSub', () => {
         service.subscribe(nothing, { id: 'idSub' });
-      });
-
-      test('#39 => Resend machine1', () => {
-        service.addChild('machine1', {
-          machine: machine1,
-          initials: toFunction({ context: { iterator: 0 }, pContext: {} }),
-          subscribers: {
-            events: EVENTS_FULL,
-            contexts: {
-              iterator: 'iterator',
-            },
-          },
-        });
       });
 
       describe('#40 => Close the service', async () => {
@@ -1011,7 +1015,7 @@ describe('Interpreter', () => {
         });
 
         test('#03', () => {
-          expect(dumbFn).toBeCalledTimes(6);
+          expect(dumbFn).toBeCalledTimes(128);
         });
 
         test('#04 => Log the time of all tests', () => {

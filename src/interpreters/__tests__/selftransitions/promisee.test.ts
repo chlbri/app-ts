@@ -8,7 +8,7 @@ import {
   constructStateValue,
   defaultC,
   defaultT,
-} from '../../../fixtures/fixtures';
+} from '#fixtures';
 
 const DELAY = 1000;
 const useWaiter = createFakeWaiter.withDefaultDelay(vi, DELAY);
@@ -24,7 +24,7 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
+            actors: {
               src: 'notDefined',
               then: '/active',
               catch: '/active',
@@ -53,7 +53,7 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
+            actors: {
               src: 'rejectPromise',
               then: '/active',
               catch: '/inactive',
@@ -88,7 +88,7 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
+            actors: {
               src: 'resolvePromise',
               then: '/active',
               catch: '/inactive',
@@ -123,7 +123,7 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
+            actors: {
               src: 'rejectPromise',
               then: '/active',
               catch: '/inactive',
@@ -171,7 +171,7 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
+            actors: {
               src: 'rejectPromise',
               then: '/active',
               catch: '/inactive',
@@ -269,7 +269,7 @@ describe('promisee', () => {
           initial: 'idle',
           states: {
             idle: {
-              promises: {
+              actors: {
                 src: 'rejectPromise',
                 then: '/active',
                 catch: '/inactive',

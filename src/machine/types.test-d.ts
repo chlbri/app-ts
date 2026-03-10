@@ -1,4 +1,4 @@
-import type { PrimitiveObject } from '#bemedev/globals/types';
+import type { Fn, PrimitiveObject } from '#bemedev/globals/types';
 import type { machine2 } from '#fixturesData';
 import type {
   Config,
@@ -7,16 +7,17 @@ import type {
   GetEventsFromMachine,
 } from './types';
 
-type TT2 = keyof FnMapFrom<typeof machine2>;
+type TT2 = keyof Exclude<FnMapFrom<typeof machine2>, Fn>;
 expectTypeOf<TT2>().toEqualTypeOf<
+  | 'machine$$init'
+  | 'machine$$exceeded'
   | 'NEXT'
   | 'FINISH'
   | 'FETCH'
   | 'WRITE'
-  | 'else'
-  | 'machine11::on::NEXT'
   | 'fetch::then'
   | 'fetch::catch'
+  | 'else'
 >;
 
 type GEFC2 = GetEventsFromMachine<typeof machine2>;

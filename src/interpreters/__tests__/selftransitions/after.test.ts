@@ -10,7 +10,7 @@ import {
   constructWaiter,
   defaultC,
   defaultT,
-} from '../../../fixtures/fixtures';
+} from '#fixtures';
 
 const DELAY = 1000;
 
@@ -79,7 +79,7 @@ describe('after', () => {
       },
     }));
 
-    const service = interpret(machine, defaultC);
+    const service = interpret(machine);
     const useValue = constructStateValue(service);
 
     test('#01 => Start', () => {

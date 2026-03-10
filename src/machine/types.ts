@@ -1,12 +1,14 @@
+import type { Action, Action2, FromActionConfig } from '#actions';
 import type {
   DeepRequired,
   NotUndefined,
   PrimitiveObject,
   Ru,
 } from '#bemedev/globals/types';
+import type { DelayFunction, DelayFunction2 } from '#delays';
 import type {
   EmitterDef,
-  EmitterFunction,
+  EmitterFunction2,
   EmitterReturn,
   EmittersMap,
 } from '#emitters';
@@ -18,8 +20,12 @@ import type {
   ToEventObject,
   ToEvents2,
 } from '#events';
-import type { PredicateS } from '#guards';
-import type { PromiseFunction, PromiseReturn } from '#promises';
+import type { PredicateS, PredicateS2 } from '#guards';
+import type {
+  PromiseFunction,
+  PromiseFunction2,
+  PromiseReturn,
+} from '#promises';
 import type {
   ActivityConfig,
   BaseConfig,
@@ -44,8 +50,6 @@ import type {
 } from '#transitions';
 import type { Decompose } from '@bemedev/decompose';
 import type { Observable } from 'rxjs';
-import type { Action, FromActionConfig } from 'src/actions/types';
-import type { DelayFunction } from 'src/delays/types';
 import type {
   Describer,
   FnMap,
@@ -305,7 +309,7 @@ export type GetActionsFromFlat<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = Record<_GetKeyActionsFromFlat<Flat>, Action<E, Pc, Tc, T>>;
+> = Record<_GetKeyActionsFromFlat<Flat>, Action2<E, Pc, Tc, T>>;
 
 /**
  * Provide a record of all guards by key and {@linkcode PredicateS} function.
@@ -324,7 +328,7 @@ export type GetGuardsFromFlat<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, Pc, Tc, T>>;
+> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS2<E, Pc, Tc, T>>;
 
 export type GetPromiseSrcsFromFlat<
   Flat extends FlatMapN,
@@ -376,7 +380,7 @@ export type GetDelaysFromFlat<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = Record<_GetDelayKeysFromFlat<Flat>, DelayFunction<E, Pc, Tc, T>>;
+> = Record<_GetDelayKeysFromFlat<Flat>, DelayFunction2<E, Pc, Tc, T>>;
 
 /**
  * Provide a record of all events by key and {@linkcode PrimitiveObject} payload.
@@ -437,7 +441,7 @@ export type GetPromisesFromFlat<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = {
-  [key in _GetPromiseeSrcKeysFromFlat<Flat>]?: PromiseFunction<
+  [key in _GetPromiseeSrcKeysFromFlat<Flat>]?: PromiseFunction2<
     E,
     Pc,
     Tc,
@@ -485,7 +489,7 @@ export type GetEmittersSrcFromFlat<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = {
-  [key in _GetEmitterSrcKeyFromFlat<Flat>]: EmitterFunction<
+  [key in _GetEmitterSrcKeyFromFlat<Flat>]: EmitterFunction2<
     E,
     Pc,
     Tc,
@@ -536,7 +540,7 @@ export type GetChildrenSrcFromFlat<
   T extends string = string,
   G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
 > = {
-  [key in G['src']]: ChildFunction<
+  [key in G['src']]: ChildFunction2<
     E,
     Pc,
     Tc,
@@ -646,12 +650,12 @@ export type Child<
  */
 export type FnMapFrom<
   T extends KeyU<
-    '__events' | 'pContext' | 'context' | 'actorsMap' | '__tag'
+    '__eventsO' | 'pContext' | 'context' | 'actorsMap' | '__tag'
   >,
   R = any,
   Ex extends string = string,
 > = FnMapR<
-  Extract<T['__events'], EventObject>,
+  Extract<T['__eventsO'], EventObject>,
   ContextFrom<T>,
   Extract<T['__tag'], string>,
   R,

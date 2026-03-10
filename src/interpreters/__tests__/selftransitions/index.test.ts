@@ -1,6 +1,7 @@
 import { createMachine } from '#machine';
 import { interpret } from '../../interpreter';
-import { defaultT } from '../../../fixtures/fixtures';
+import { defaultT } from '#fixtures';
+import { typings } from '#utils';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -30,10 +31,7 @@ describe('Self Transitions', () => {
       },
     }));
 
-    const service = interpret(machine, {
-      pContext: {},
-      context: {},
-    });
+    const service = interpret(machine);
 
     service.start();
     expect(service.value).toEqual('idle');
@@ -56,10 +54,7 @@ describe('Self Transitions', () => {
       defaultT,
     );
 
-    const service = interpret(machine, {
-      pContext: {},
-      context: {},
-    });
+    const service = interpret(machine);
 
     service.start();
     expect(service.value).toEqual('active');
@@ -71,7 +66,7 @@ describe('Self Transitions', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: [
+            actors: [
               {
                 src: 'resolvePromise',
                 then: '/active',
@@ -82,19 +77,27 @@ describe('Self Transitions', () => {
           active: {},
         },
       },
-      defaultT,
+      typings({
+        actorsMap: {
+          promisees: {
+            resolvePromise: {
+              then: 'primitive',
+              catch: 'primitive',
+            },
+          },
+        },
+      }),
     );
 
     machine.addOptions(() => ({
-      promises: {
-        resolvePromise: () => Promise.resolve({}),
+      actors: {
+        promises: {
+          resolvePromise: () => Promise.resolve({}),
+        },
       },
     }));
 
-    const service = interpret(machine, {
-      pContext: {},
-      context: {},
-    });
+    const service = interpret(machine);
 
     service.start();
     expect(service.value).toEqual('idle');

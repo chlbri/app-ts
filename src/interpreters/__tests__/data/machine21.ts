@@ -1,3 +1,4 @@
+import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { createConfig } from '#machines';
 import { notU, typings } from '#utils';
@@ -99,6 +100,9 @@ export const machine21 = createMachine(
       src: 'machine1',
       id: 'machine1',
       on: {},
+      contexts: {
+        iterator: 'iterator',
+      },
     },
     ...config21,
   },
@@ -112,7 +116,7 @@ export const machine21 = createMachine(
     context: {
       iterator: 'number',
       input: 'string',
-      data: ['string'],
+      data: typings.array('string'),
     },
     pContext: {
       iterator: 'number',
@@ -123,7 +127,7 @@ export const machine21 = createMachine(
       },
       promisees: {
         fetch: {
-          then: ['string'],
+          then: typings.array('string'),
           catch: 'primitive',
         },
       },
@@ -165,6 +169,11 @@ export const machine21 = createMachine(
             .filter(item => item.name.includes(input))
             .map(item => item.name);
         },
+      },
+      children: {
+        machine1: () => interpret(machine1, {
+          context: { iterator: 0 },
+        }),
       },
     },
     delays: {

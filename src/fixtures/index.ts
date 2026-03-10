@@ -240,11 +240,13 @@ type ConstructTestsResult<
     send: (_event: EventArg<E>, index?: number) => TestArr;
     useStateValue: (value: StateValue, index?: number) => TestArr;
   } & (ExtractTagsFromConfig<C> extends infer Tags
-    ? never extends Tags
+    ? string extends Tags
       ? EmptyObject
       : {
-          useTags: (...tags: Tags[]) => TestArr;
-          useTagsWithIndex: (index: number, ...tags: string[]) => TestArr;
+          useTags: {
+            (...tags: Tags[]): TestArr;
+            index: (index: number, ...tags: Tags[]) => TestArr;
+          };
         }
     : EmptyObject);
 

@@ -9,7 +9,7 @@ import type {
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
-import { type EventsMap, type ToEvents2, type ToEventsR2 } from '#events';
+import { type EventsMap, type ToEvents2 } from '#events';
 import {
   isDefinedS,
   isNotDefinedS,
@@ -175,6 +175,21 @@ class Machine<
    */
   get __events() {
     return _unknown<ToEvents2<E, A>>();
+  }
+
+  /**
+   * @deprecated
+   *
+   * This property provides the events map for this {@linkcode Machine} as a type.
+   *
+   * @see {@linkcode ToEvents2}
+   * @see {@linkcode E}
+   * @see {@linkcode A}
+   *
+   * @remarks Used for typing purposes only.
+   */
+  get __eventsO() {
+    return _unknown<Eo>();
   }
 
   /**
@@ -436,7 +451,7 @@ class Machine<
   }
 
   get __tag() {
-    return _unknown<ExtractTagsFromConfig<C>>();
+    return _unknown<Ta>();
   }
   // #endregion
 
@@ -774,10 +789,8 @@ class Machine<
    * @param option a function that provides options for the machine.
    * Options can include actions, predicates, delays, promises, and child machines.
    */
-  addOptions = <T extends Mo>(
-    helper: AddOptionsParam_F<Eo, Pc, Tc, Ta, T>,
-  ) => {
-    const out = this.createOptions(helper);
+  addOptions: AddOptions_F<Eo, Pc, Tc, Ta, Mo> = helper => {
+    const out = this.createOptions(helper as any);
 
     this.#addActions(out?.actions);
     this.#addPredicates(out?.predicates);
@@ -786,7 +799,7 @@ class Machine<
     this.#addChildren(out?.actors?.children);
     this.#addEmitters(out?.actors?.emitters);
 
-    return out;
+    return out as any;
   };
 
   /**
@@ -800,7 +813,7 @@ class Machine<
     helper: AddOptionsParam_F<Eo, Pc, Tc, Ta, T>,
   ) => {
     const out = this.renew;
-    out.addOptions<T>(helper);
+    out.addOptions(helper);
 
     return out;
   };

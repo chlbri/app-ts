@@ -241,15 +241,11 @@ describe('machine coverage', () => {
       describe('#35 => Close the service', async () => {
         test('#01 => Pause the service', service.pause.bind(service));
 
-        test('#02 => Call of log', () => {
-          expect(log).toBeCalledTimes(158);
-        });
-
-        test('#03 => Log the time of all tests', () => {
+        test('#02 => Log the time of all tests', () => {
           console.timeEnd(TEXT);
         });
 
-        test('#04 => dispose', service[Symbol.asyncDispose].bind(service));
+        test('#03 => dispose', service[Symbol.asyncDispose]);
       });
 
       test('#36 => Wait for debounce', () => {

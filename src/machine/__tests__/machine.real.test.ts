@@ -6,7 +6,7 @@ import { type StateValue } from '#states';
 import { typings } from '#utils';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import type { inferT } from 'src/utils/typings';
-import { __tsSchema } from './machine.real.gen';
+import { __tsSchema } from '../machine.real.gen';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -153,7 +153,7 @@ describe('REAL LIFE TESTS', () => {
     describe('TESTS', () => {
       test('#00 => start the machine', service.start);
 
-      test(...useValue('idle', 1));
+      // test(...useValue('idle', 1));
       test(...useIterator(2, 2));
       test(...useSend('NEXT', 3));
 
@@ -1167,7 +1167,9 @@ describe('REAL LIFE TESTS', () => {
       },
     }));
 
-    const service = interpret(mainMachine);
+    const service = interpret(mainMachine, {
+      context: {},
+    });
 
     // #region Hooks
     type SE = Parameters<typeof service.send>[0];

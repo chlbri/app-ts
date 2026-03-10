@@ -184,7 +184,7 @@ export type ToEventObject<
   T extends AllEvent,
   Ex extends string = never,
 > = Exclude<
-  T extends string ? { type: T; payload: never } : T,
+  T extends string ? { type: T; payload: undefined } : T,
   { type: Ex }
 >;
 

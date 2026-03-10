@@ -10,7 +10,6 @@ import {
 
 import { toDelay } from '#delays';
 import {
-  EventsMap,
   eventToType,
   INIT_EVENT,
   possibleEvents,
@@ -133,7 +132,7 @@ import type {
 import type { FinallyConfig, PromiseeResult } from '#promises';
 import { createPausable } from '@bemedev/rx-pausable';
 import type { AnyMachine } from 'src/machine/machine.types';
-import { Scheduler } from './scheduler';
+import { createScheduler } from '@bemedev/scheduler';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 // TODO: Reuse my custom event loop
@@ -196,7 +195,7 @@ export class Interpreter<
   /**
    * The current {@linkcode StateValue}> of this {@linkcode Interpreter} service.
    */
-  #value: StateValue = '/';
+  #value!: StateValue;
 
   /**
    * The {@linkcode Mode} of this {@linkcode Interpreter} service
@@ -323,10 +322,10 @@ export class Interpreter<
     return getTags<Ta>(this.#config);
   }
 
-  readonly #schedulerValue: Scheduler;
-  readonly #schedulerContexts: Scheduler;
-  readonly #schedulerEvent: Scheduler;
-  readonly #schedulerStatus: Scheduler;
+  readonly #schedulerValue = createScheduler();
+  readonly #schedulerContexts = createScheduler();
+  readonly #schedulerEvent = createScheduler();
+  readonly #schedulerStatus = createScheduler();
 
   /**
    * Where everything is initialized
@@ -339,17 +338,7 @@ export class Interpreter<
     mode: Mode = 'strict',
     exact = true,
   ) {
-    // #region Build the schedulers first
-
-    this.#schedulerValue = new Scheduler();
-    this.#schedulerContexts = new Scheduler();
-    this.#schedulerEvent = new Scheduler();
-    this.#schedulerStatus = new Scheduler();
-
-    // #endregion
-
     this.#machine = machine.renew;
-
     this.#config = this.#initialConfig = this.#machine.initialConfig;
     this.#initialNode = this.#resolveNode(this.#initialConfig);
     this.#mode = mode;
@@ -363,9 +352,11 @@ export class Interpreter<
       value: this.#value,
       tags: this.tags,
     };
+
+    console.warn('value, state', this.#value);
+
     this.#collectEmitterConfigs();
     this.#collectChildrenConfig();
-
     this.#throwing();
   }
 
@@ -392,9 +383,9 @@ export class Interpreter<
     ];
   }
 
-  #startSchedulers = () => {
-    this.#schedulers.forEach(this.#start);
-  };
+  // #startSchedulers = () => {
+  //   this.#schedulers.forEach(this.#start);
+  // };
 
   #stopSchedulers = () => {
     this.#schedulers.forEach(this.#stop);
@@ -736,7 +727,6 @@ export class Interpreter<
   start = async () => {
     this.#collectChildren();
     this.#collectPausables();
-    this.#startSchedulers();
     this.#throwing();
     this.#startStatus();
     this.#startPausables();
@@ -1293,10 +1283,9 @@ export class Interpreter<
     entries.forEach(([_delay, transition]) => {
       const delayF = this.toDelayFn(_delay);
       const check0 = !isDefined(delayF);
-
       if (check0) return;
-
       const delay = this.#executeDelay(delayF);
+      console.warn('delay', delay);
 
       const check1 = delay > DEFAULT_MAX_TIME_PROMISE;
       if (check1) {
@@ -1332,6 +1321,8 @@ export class Interpreter<
 
       promises.push(promise);
     });
+
+    console.warn('promises', promises.length);
 
     const check5 = promises.length < 1;
     if (check5) return;

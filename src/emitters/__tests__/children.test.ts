@@ -20,7 +20,7 @@ describe('#01 => Emitter Machine3 #1', () => {
     waiter: waiter(WAITERS.short),
   }));
 
-  test(...useStateValue('/'));
+  test(...useStateValue('inactive'));
   test(...start());
   test(...useStateValue('inactive'));
   test(...waiter());

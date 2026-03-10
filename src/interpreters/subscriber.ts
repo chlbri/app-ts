@@ -2,7 +2,7 @@ import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type {
   ActorsConfigMap,
-  AllEvent,
+  EventObject,
   EventsMap,
   ToEventObject,
   ToEvents2,
@@ -162,7 +162,7 @@ class SubscriberClass<
 export type { SubscriberClass };
 
 export type SubscriberOptions<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = {

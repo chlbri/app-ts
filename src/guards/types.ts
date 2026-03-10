@@ -4,8 +4,8 @@ import type {
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import type { GUARD_TYPE } from '#constants';
-import type { AllEvent, EventsMap } from '#events';
-import type { KeysMatching } from '@bemedev/decompose';
+import type { EventObject } from '#events';
+import type { EmptyObject, KeysMatching } from '@bemedev/decompose';
 import type { FnMap, FnR } from 'src/types/primitives';
 import type { RecordS, ReduceArray } from '~types';
 
@@ -51,21 +51,21 @@ export type FromGuard<T extends GuardConfig> = T extends ActionConfig
       : never;
 
 export type PredicateS<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = boolean | FnMap<E, Pc, Tc, T, boolean>;
 
 export type PredicateS2<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = boolean | FnR<E, Pc, Tc, T, boolean>;
 
 export type PredicateUnion<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -75,7 +75,7 @@ export type PredicateUnion<
   | PredicateOr<E, Pc, Tc, T>;
 
 export type PredicateAnd<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -84,7 +84,7 @@ export type PredicateAnd<
 };
 
 export type PredicateOr<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -94,7 +94,7 @@ export type PredicateOr<
 
 /**
  * Union of all predicate functions.
- * @template : type {@linkcode EventsMap} [E], the events map to use for resolving the predicate.
+ * @template : type {@linkcode EventObject} [E], the events map to use for resolving the predicate.
  * @template : type {@linkcode PromiseeMap} [P], the promisees map to use for resolving the predicate.
  * @template : [Pc], the type of the private context.
  * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
@@ -106,7 +106,7 @@ export type PredicateOr<
  * @see {@linkcode PredicateOr} for combining multiple predicates with OR logic.
  */
 export type Predicate<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -128,7 +128,7 @@ export type Predicate<
  * @see {@linkcode RecordS} for single predicate function.
  */
 export type PredicateMap<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
@@ -138,8 +138,10 @@ type _DefinedValue<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = KeysMatching<{
-  pContext: NotUndefined<Pc>;
-  context: NotUndefined<Tc>;
+  pContext: NotUndefined<Pc> extends never
+    ? EmptyObject
+    : NotUndefined<Pc>;
+  context: NotUndefined<Tc> extends never ? EmptyObject : NotUndefined<Tc>;
 }>;
 
 /**

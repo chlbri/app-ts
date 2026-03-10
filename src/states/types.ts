@@ -1,10 +1,11 @@
 import type {
+  Equals,
   Keys,
   PrimitiveObject,
   SoA,
   UnionToIntersection,
 } from '#bemedev/globals/types';
-import type { AllEvent, EventObject } from '#events';
+import type { EventObject } from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
 import type { Transitions, TransitionsConfig } from '#transitions';
 import type {
@@ -12,7 +13,6 @@ import type {
   ActionConfig,
   FromActionConfig,
 } from 'src/actions/types';
-import type { Config } from 'src/machine/types';
 import type {
   Identify,
   RecordS,
@@ -146,20 +146,25 @@ export type WorkingStatus =
   | 'stopped'
   | 'busy';
 
-export type ExtractTagsFromFlat<Flat extends FlatMapN> = {
+type _ExtractTagsFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]: Flat[key] extends infer S extends {
     tags: SingleOrArrayL<string>;
   }
     ? ReduceArray<S['tags']>
-    : string;
+    : never;
 }[keyof Flat];
 
-export type ExtractTagsFromConfig<T extends Config> = ExtractTagsFromFlat<
-  FlatMapN<T>
->;
+export type ExtractTagsFromFlat<Flat extends FlatMapN> =
+  _ExtractTagsFromFlat<Flat> extends infer Tags
+    ? Equals<Tags, never> extends true
+      ? string
+      : Equals<Tags, unknown> extends true
+        ? string
+        : Tags
+    : string;
 
 export type State<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = {
@@ -183,7 +188,7 @@ export type StateP<
 };
 
 export type StateExtended<
-  E extends AllEvent = AllEvent,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,

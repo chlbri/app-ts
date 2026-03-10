@@ -10,12 +10,6 @@ import { machine1 } from './machine1';
 export const config2 = createConfig({
   initial: 'idle',
   states: {
-    initialize: {
-      always: {
-        target: '/idle',
-        actions: 'initialize',
-      },
-    },
     idle: {
       activities: {
         DELAY: 'inc',
@@ -106,7 +100,7 @@ export const machine2 = createMachine(
       id: 'machine1',
       src: 'machine1',
       contexts: {
-        '': '',
+        iterator: 'iterator',
       },
       on: {},
     },

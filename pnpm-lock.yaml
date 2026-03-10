@@ -20,6 +20,9 @@ importers:
       '@bemedev/interval2':
         specifier: ^0.1.3
         version: 0.1.3
+      '@bemedev/scheduler':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@bemedev/sleep':
         specifier: ^0.2.1
         version: 0.2.1
@@ -186,6 +189,10 @@ packages:
   '@bemedev/rx-pausable@1.0.3':
     resolution: {integrity: sha512-thYkP4FhDLjca5OPQMK327LHrEVgfTpUedAvrFz/tdNEFywhv6m7EVn/jfeHN7Jy0vDGWbRydfjzzF4O8kXJxQ==}
     engines: {node: '>=22'}
+
+  '@bemedev/scheduler@0.1.0':
+    resolution: {integrity: sha512-VrfqgEG0XRUqmPFCqxvv20Pez4Uk+Zddpq+TILzErYllJgtL+ZgsPsx2091dSB9PE13bmcz5JG1nnHU+PRZcGw==}
+    engines: {node: '>=20'}
 
   '@bemedev/sleep@0.1.2':
     resolution: {integrity: sha512-GLbDKkDqPdbO1WldnXZs6Wi1Fhk6lfz2DhCEPWSiezhRym9IMvksyaqdfQyyWvYg3OS1umKjaHOAiEF6++HiTA==}
@@ -1879,6 +1886,10 @@ snapshots:
       - typescript
 
   '@bemedev/rx-pausable@1.0.3': {}
+
+  '@bemedev/scheduler@0.1.0':
+    dependencies:
+      '@bemedev/sleep': 0.2.1
 
   '@bemedev/sleep@0.1.2': {}
 
