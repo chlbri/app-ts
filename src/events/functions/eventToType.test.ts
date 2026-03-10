@@ -17,7 +17,7 @@ describe('eventToType', () => {
       },
       {
         invite: 'undefined payload',
-        parameters: { type: 'NEXT' },
+        parameters: { type: 'NEXT', payload: undefined },
         expected: 'NEXT',
       },
       {

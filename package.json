@@ -61,8 +61,6 @@
     "rm": "pnpx rimraf ./node_modules ./pnpm-lock.yaml",
     "rm:lib": "pnpx rimraf ./lib",
     "rollup": "rollup -c",
-    "test": "pnpm run build && pnpm run test:coverage --no-coverage",
-    "test:able:watch": "vitest --no-coverage src/interpreters/__tests__/data/machine1.test.ts src/interpreters/__tests__/data/machine2.cov.test.ts src/interpreters/__tests__/data/machine23.test.ts src/emitters/__tests__/machines.test.ts src/emitters/__tests__/machines.children.test.ts",
     "test:coverage": "vitest run && pnpm run posttest",
     "test:no-type": "pnpm run test:coverage -c \"vitest.config.notype.ts\" --no-coverage",
     "test:only": "pnpm run test:coverage --no-coverage",
