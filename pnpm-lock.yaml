@@ -21,14 +21,14 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
       '@bemedev/rx-pausable':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.1.0
+        version: 1.1.0
       '@bemedev/scheduler':
         specifier: ^0.1.0
         version: 0.1.0
       '@bemedev/sleep':
-        specifier: ^0.2.1
-        version: 0.2.1
+        specifier: ^0.2.2
+        version: 0.2.2
       clone-deep:
         specifier: ^4.0.1
         version: 4.0.1
@@ -51,6 +51,9 @@ importers:
       '@bemedev/rollup-config':
         specifier: ^0.2.2
         version: 0.2.2(glob@13.0.6)(rollup@4.59.0)(typescript@5.9.3)
+      '@bemedev/sequence':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@bemedev/vitest-alias':
         specifier: ^0.0.3
         version: 0.0.3(vitest@3.2.4)
@@ -186,21 +189,25 @@ packages:
       glob: ^11.0.1
       rollup: ^4.32.1
 
-  '@bemedev/rx-pausable@1.0.3':
-    resolution: {integrity: sha512-thYkP4FhDLjca5OPQMK327LHrEVgfTpUedAvrFz/tdNEFywhv6m7EVn/jfeHN7Jy0vDGWbRydfjzzF4O8kXJxQ==}
+  '@bemedev/rx-pausable@1.1.0':
+    resolution: {integrity: sha512-NKbuSDtuX9TEcFJY+Zoi7T77hkwwjFlj5ck9NTJv42PlMJ1VlrlLOjXnEVDoQOV0co4bvsE4LAO6QKCVbltbtg==}
     engines: {node: '>=22'}
 
   '@bemedev/scheduler@0.1.0':
     resolution: {integrity: sha512-VrfqgEG0XRUqmPFCqxvv20Pez4Uk+Zddpq+TILzErYllJgtL+ZgsPsx2091dSB9PE13bmcz5JG1nnHU+PRZcGw==}
     engines: {node: '>=20'}
 
+  '@bemedev/sequence@0.1.0':
+    resolution: {integrity: sha512-Q/vLbCdwlOOPQyMGqleOwGu9T1S+8Bv7x+R+ZZ/sI4OfFIx9n5VVTWGwKZoJ49AOzFx1eOMI1ADn/9sPcDiQcw==}
+    engines: {node: '>=20'}
+
   '@bemedev/sleep@0.1.2':
     resolution: {integrity: sha512-GLbDKkDqPdbO1WldnXZs6Wi1Fhk6lfz2DhCEPWSiezhRym9IMvksyaqdfQyyWvYg3OS1umKjaHOAiEF6++HiTA==}
     engines: {node: '>=12'}
 
-  '@bemedev/sleep@0.2.1':
-    resolution: {integrity: sha512-smZtDJXdxhi6EdQS9XGxm47RSr7EVys6KHIlYtsx1bRdqDZ01q22zzil0HIVPjNTaLfK/dCZ8C/R/cdtEB7ukA==}
-    engines: {node: '>=12'}
+  '@bemedev/sleep@0.2.2':
+    resolution: {integrity: sha512-FafP/yjsFQc33CRsMbmZvquD3wI7TP8b4ricb0hyHGwxbqvLKIYx2FmP3h5nKwYgKqewBjaQvxL965boMQWcCg==}
+    engines: {node: '>=22'}
 
   '@bemedev/types@0.4.2':
     resolution: {integrity: sha512-NMbZAIbjlHJ+GeQkvFi8vMUBI0kqArR73nx67rXwMjKdqQbOvc9nsQKgdAEPKaGxV6bWXKzzuEFqzsuQKKp2Yw==}
@@ -1885,15 +1892,19 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@bemedev/rx-pausable@1.0.3': {}
+  '@bemedev/rx-pausable@1.1.0': {}
 
   '@bemedev/scheduler@0.1.0':
     dependencies:
-      '@bemedev/sleep': 0.2.1
+      '@bemedev/sleep': 0.2.2
+
+  '@bemedev/sequence@0.1.0':
+    dependencies:
+      '@bemedev/sleep': 0.2.2
 
   '@bemedev/sleep@0.1.2': {}
 
-  '@bemedev/sleep@0.2.1': {}
+  '@bemedev/sleep@0.2.2': {}
 
   '@bemedev/types@0.4.2': {}
 

@@ -1,6 +1,6 @@
 import { interpret } from '#interpreter';
 import { decomposeSV } from '#utils';
-import sleep from '@bemedev/sleep';
+import { sleep } from '@bemedev/sleep';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { BLOCK_IMMO_INTERMEDIARY, machine } from './machine1.machine';
 import {

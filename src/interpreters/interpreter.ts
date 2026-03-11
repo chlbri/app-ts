@@ -81,7 +81,7 @@ import {
   type Interval2,
   type Timeout2,
 } from '@bemedev/interval2';
-import sleep from '@bemedev/sleep';
+import { sleep } from '@bemedev/sleep';
 import cloneDeep from 'clone-deep';
 import equal from 'fast-deep-equal';
 import { isDescriber, type RecordS } from '~types';

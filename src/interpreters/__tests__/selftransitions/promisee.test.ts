@@ -3,7 +3,7 @@ import { returnFalse, returnTrue } from '#guards';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
-import sleep from '@bemedev/sleep';
+import { sleep } from '@bemedev/sleep';
 
 const DELAY = 1000;
 

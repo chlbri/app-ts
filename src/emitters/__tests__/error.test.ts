@@ -69,7 +69,7 @@ describe('Error transitions testing)', () => {
 
     const service = interpret(machine, { context: 0 });
 
-    const { useNext, useError, useContext, /* useMock, */ start, waiter } =
+    const { useNext, useError, useContext, useMock, start, waiter } =
       constructTests(service, ({ index, contexts, waiter }) => ({
         useNext: (value: number) => {
           const invite = `#${index()} => sub1.next(${value})`;
@@ -81,17 +81,14 @@ describe('Error transitions testing)', () => {
 
         useError: (value: number) => {
           const invite = `#${index()} => sub1.error(${value})`;
-          return tupleOf(invite, () => () => {
+          return tupleOf(invite, () => {
             const [, fn] = waiter(DELAY)();
-            fn().then(() => {
-              sub.error(value);
-              console.warn('RRRR received:', value);
-            });
+            fn().then(() => sub.error(value));
           });
         },
 
-        useMock: (payload: number) => {
-          const invite = `#${index()} => mock('Error received:', ${payload})`;
+        useMock: (payload: number, fails = false) => {
+          const invite = `#${index()} => mock('Error received:', ${payload})${fails ? ' => (fails)' : ''}`;
 
           return tupleOf(invite, () => {
             expect(mock).toHaveBeenCalledWith('Error received:', payload);
@@ -112,8 +109,9 @@ describe('Error transitions testing)', () => {
     test(...waiter());
     test(...useContext(15));
     test(...useError(20));
+    test.fails(...useMock(20, true));
     test(...waiter(45));
-    // test(...useMock(20));
+    test(...useMock(20));
     test(...useContext(15));
   });
 });

@@ -16,7 +16,7 @@ import type { Interpreter } from '#interpreter';
 import type { StateValue } from '#states';
 import { IS_TEST } from '#utils';
 import type { EmptyObject } from '@bemedev/decompose';
-import sleep from '@bemedev/sleep';
+import {sleep} from '@bemedev/sleep';
 import type {
   Config,
   ExtractTagsFromConfig,

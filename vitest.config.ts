@@ -19,6 +19,7 @@ export default defineConfig({
         '**/libs/bemedev/**/*',
         '**/fixture.ts',
         '**/*.fixture.ts',
+        '**/test.ts',
       ],
     }),
   ],

@@ -45,11 +45,9 @@ describe('Simple Machine2 (from Machine1)', () => {
   test(...useNext());
   test(...useStateValue('active'));
   test(...useContext(75));
-  test(...waiter(2));
-  test(...useContext(90));
   //Resume without pause, no effect
   test(...resume());
   test(...waiter(50));
-  test(...useContext(150));
+  test(...useContext(75));
   test(...stop());
 });

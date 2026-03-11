@@ -1,7 +1,7 @@
 import { interpret } from '#interpreter';
 import { createMachine } from '#machines';
 import { typings } from '#utils';
-import sleep from '@bemedev/sleep';
+import { sleep } from '@bemedev/sleep';
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 
