@@ -216,8 +216,19 @@ describe('Interpret for guards', () => {
                 {
                   or: [
                     'returnFalse',
-                    { and: ['returnTrue', 'returnTrue2'] },
-                    'returnFalse2',
+                    {
+                      and: [
+                        {
+                          name: 'returnTrue',
+                          description: 'Just return TRUE',
+                        },
+                        'returnTrue2',
+                      ],
+                    },
+                    {
+                      name: 'returnFalse2',
+                      description: 'Just a guard',
+                    },
                   ],
                 },
               ],
@@ -242,7 +253,7 @@ describe('Interpret for guards', () => {
       predicates: {
         returnFalse: isNotDefined('events'),
         returnFalse2: isDefined('events.type'),
-        returnTrue: isDefined('context'),
+        returnTrue: true,
         returnTrue2: isDefined('pContext.data'),
       },
     }));

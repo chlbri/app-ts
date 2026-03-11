@@ -13,7 +13,7 @@ import type {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ActionResult,
 } from 'src/actions/types';
-import { isDescriber } from '~types';
+import { fromDescriber, isDescriber } from '~types';
 
 export type ToAction_F = <
   E extends EventsMap = EventsMap,
@@ -49,13 +49,8 @@ export const toAction: ToAction_F = (
   action,
   actions,
 ) => {
-  if (isDescriber(action)) {
-    const fn = actions?.[action.name];
-    const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
-    return func;
-  }
-
-  const fn = actions?.[action];
+  const name = fromDescriber(action);
+  const fn = actions?.[name];
   const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
   return func;
 };
