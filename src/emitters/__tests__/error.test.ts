@@ -25,13 +25,13 @@ describe('Error transitions testing)', () => {
       {
         initial: 'idle',
         actors: {
-          src: 'sub1',
-          id: 'interval',
-          next: {
-            actions: ['assigN'],
-          },
-          error: {
-            actions: ['signals'],
+          interval: {
+            next: {
+              actions: ['assigN'],
+            },
+            error: {
+              actions: ['signals'],
+            },
           },
         },
         states: {
@@ -41,25 +41,25 @@ describe('Error transitions testing)', () => {
       typings({
         actorsMap: {
           emitters: {
-            sub1: { next: 'number', error: 'number' },
+            interval: { next: 'number', error: 'number' },
           },
         },
         context: 'number',
       }),
     ).provideOptions(({ assign, voidAction }) => ({
-      actors: { emitters: { sub1: () => sub } },
+      actors: { emitters: { interval: () => sub } },
 
       actions: {
         assigN: assign('context', {
-          'sub1::next': ({ payload, context }) => context + payload,
+          'interval::next': ({ payload, context }) => context + payload,
         }),
 
         signals: voidAction({
-          'sub1::error': ({ payload }) => {
+          'interval::error': ({ payload }) => {
             mock('Error received:', payload);
             console.warn('Error received:', payload);
           },
-          'sub1::next': ({ payload }) => {
+          'interval::next': ({ payload }) => {
             mock('NEXT received:', payload);
             console.warn('Next received:', payload);
           },

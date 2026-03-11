@@ -47,9 +47,8 @@ export const config3 = createConfig({
         },
         '/state1/state11',
       ],
-      actors: [
-        {
-          src: 'promise1',
+      actors: {
+        promise1: {
           then: { actions: 'action1' },
           catch: [
             { guards: 'ert', actions: 'action14' },
@@ -67,8 +66,7 @@ export const config3 = createConfig({
             'action22',
           ],
         },
-        {
-          src: 'promise2',
+        promise2: {
           then: [
             { actions: 'action4', guards: 'guard2' },
             { actions: 'action3' },
@@ -85,13 +83,13 @@ export const config3 = createConfig({
             'action20',
           ],
         },
-      ],
+      },
     },
   },
   actors: {
-    id: 'machine1',
-    src: 'machine1',
-    on: {},
+    machine1: {
+      on: {},
+    },
   },
 });
 

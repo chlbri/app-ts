@@ -41,15 +41,16 @@ export const machine23 = createMachine(
               },
               fetch: {
                 actors: {
-                  src: 'fetch',
-                  then: {
-                    actions: {
-                      name: 'insertData',
-                      description: 'Database insert',
+                  fetch: {
+                    then: {
+                      actions: {
+                        name: 'insertData',
+                        description: 'Database insert',
+                      },
+                      target: '/working/fetch/idle',
                     },
-                    target: '/working/fetch/idle',
+                    catch: '/working/fetch/idle',
                   },
-                  catch: '/working/fetch/idle',
                 },
               },
             },
@@ -65,10 +66,10 @@ export const machine23 = createMachine(
                   },
                 },
                 actors: {
-                  src: 'machine1',
-                  id: 'machine1',
-                  contexts: {
-                    iterator: 'iterator',
+                  machine1: {
+                    contexts: {
+                      iterator: 'iterator',
+                    },
                   },
                 },
               },

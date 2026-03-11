@@ -112,7 +112,6 @@ describe('Composition', () => {
         children: [
           {
             contexts: [],
-            id: 'machine1',
             on: [],
             src: undefined,
           },
@@ -188,9 +187,9 @@ describe('Composition', () => {
     describe('#05 => config', () => {
       const _config = {
         actors: {
-          id: 'machine1',
-          on: {},
-          src: 'machine1',
+          machine1: {
+            on: {},
+          },
         },
         description: 'cdd',
         initial: 'state1',
@@ -351,7 +350,7 @@ describe('Composition', () => {
         tags: undefined,
         context: undefined,
         event: {
-          payload: undefined,
+          payload: {},
           type: 'machine$$init',
         },
       };
@@ -449,9 +448,10 @@ describe('Composition', () => {
               DELAY: { actions: 'inc2' },
             },
             actors: {
-              src: 'src',
-              then: { actions: 'inc' },
-              catch: { actions: 'inc' },
+              src: {
+                then: { actions: 'inc' },
+                catch: { actions: 'inc' },
+              },
             },
           },
         },

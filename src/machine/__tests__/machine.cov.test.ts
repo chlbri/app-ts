@@ -579,12 +579,12 @@ describe('machine coverage', () => {
     test('#01 => config', () => {
       const expected = {
         actors: {
-          contexts: {
-            iterator: 'iterator',
+          machine1: {
+            contexts: {
+              iterator: 'iterator',
+            },
+            on: {},
           },
-          id: 'machine1',
-          on: {},
-          src: 'machine1',
         },
         initial: 'idle',
         states: {
@@ -610,14 +610,15 @@ describe('machine coverage', () => {
                 states: {
                   fetch: {
                     actors: {
-                      catch: '/working/fetch/idle',
-                      src: 'fetch',
-                      then: {
-                        actions: {
-                          description: 'Database insert',
-                          name: 'insertData',
+                      fetch: {
+                        catch: '/working/fetch/idle',
+                        then: {
+                          actions: {
+                            description: 'Database insert',
+                            name: 'insertData',
+                          },
+                          target: '/working/fetch/idle',
                         },
-                        target: '/working/fetch/idle',
                       },
                     },
                   },
@@ -679,12 +680,12 @@ describe('machine coverage', () => {
       const expected = {
         '/': {
           actors: {
-            contexts: {
-              iterator: 'iterator',
+            machine1: {
+              contexts: {
+                iterator: 'iterator',
+              },
+              on: {},
             },
-            id: 'machine1',
-            on: {},
-            src: 'machine1',
           },
           initial: 'idle',
           states: {
@@ -710,14 +711,15 @@ describe('machine coverage', () => {
                   states: {
                     fetch: {
                       actors: {
-                        catch: '/working/fetch/idle',
-                        src: 'fetch',
-                        then: {
-                          actions: {
-                            name: 'insertData',
-                            description: 'Database insert',
+                        fetch: {
+                          catch: '/working/fetch/idle',
+                          then: {
+                            actions: {
+                              name: 'insertData',
+                              description: 'Database insert',
+                            },
+                            target: '/working/fetch/idle',
                           },
-                          target: '/working/fetch/idle',
                         },
                       },
                     },
@@ -791,14 +793,15 @@ describe('machine coverage', () => {
               states: {
                 fetch: {
                   actors: {
-                    catch: '/working/fetch/idle',
-                    src: 'fetch',
-                    then: {
-                      actions: {
-                        description: 'Database insert',
-                        name: 'insertData',
+                    fetch: {
+                      catch: '/working/fetch/idle',
+                      then: {
+                        actions: {
+                          name: 'insertData',
+                          description: 'Database insert',
+                        },
+                        target: '/working/fetch/idle',
                       },
-                      target: '/working/fetch/idle',
                     },
                   },
                 },
@@ -856,14 +859,15 @@ describe('machine coverage', () => {
           states: {
             fetch: {
               actors: {
-                catch: '/working/fetch/idle',
-                src: 'fetch',
-                then: {
-                  actions: {
-                    description: 'Database insert',
-                    name: 'insertData',
+                fetch: {
+                  catch: '/working/fetch/idle',
+                  then: {
+                    actions: {
+                      name: 'insertData',
+                      description: 'Database insert',
+                    },
+                    target: '/working/fetch/idle',
                   },
-                  target: '/working/fetch/idle',
                 },
               },
             },
@@ -883,14 +887,15 @@ describe('machine coverage', () => {
 
         '/working/fetch/fetch': {
           actors: {
-            catch: '/working/fetch/idle',
-            src: 'fetch',
-            then: {
-              actions: {
-                description: 'Database insert',
-                name: 'insertData',
+            fetch: {
+              catch: '/working/fetch/idle',
+              then: {
+                actions: {
+                  name: 'insertData',
+                  description: 'Database insert',
+                },
+                target: '/working/fetch/idle',
               },
-              target: '/working/fetch/idle',
             },
           },
         },
@@ -1137,9 +1142,9 @@ describe('machine coverage', () => {
             idle: {},
           },
           actors: {
-            id: idM,
-            src: idM,
-            on: {},
+            [idM]: {
+              on: {},
+            },
           },
         },
         defaultT as any,
@@ -1183,9 +1188,10 @@ describe('machine coverage', () => {
             idle: {},
           },
           actors: {
-            id: idM.name,
-            src: idM.name,
-            on: {},
+            [idM.name]: {
+              description: idM.description,
+              on: {},
+            },
           },
         },
         defaultT as any,

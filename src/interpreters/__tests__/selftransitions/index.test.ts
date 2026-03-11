@@ -66,13 +66,12 @@ describe('Self Transitions', () => {
         initial: 'idle',
         states: {
           idle: {
-            actors: [
-              {
-                src: 'resolvePromise',
+            actors: {
+              resolvePromise: {
                 then: '/active',
                 catch: '/active',
               },
-            ],
+            },
           },
           active: {},
         },

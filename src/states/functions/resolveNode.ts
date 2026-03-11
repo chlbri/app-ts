@@ -81,7 +81,7 @@ export const resolveNode: ResolveNode_F = (
   const on = identify(config.on).map(tMapper);
   const always = toArray.typed(config.always).map(tMapper);
   const after = identify(config.after).map(tMapper);
-  const actors = toArray.typed(config.actors);
+  const actors = identify(config.actors);
 
   const promises = actors
     .filter(actor => 'then' in actor)

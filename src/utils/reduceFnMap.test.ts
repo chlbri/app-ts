@@ -82,7 +82,7 @@ describe('#01 => reducers', () => {
       expect(result).toBe(directFn);
       expect(
         result({
-          event: { type: INIT_EVENT, payload: undefined },
+          event: { type: INIT_EVENT, payload: {} },
           context: {},
           pContext: {},
           status: 'active' as any,
@@ -305,7 +305,7 @@ describe('#01 => reducers', () => {
       expect(
         result({
           context: {},
-          event: { type: MAX_EXCEEDED_EVENT_TYPE, payload: undefined },
+          event: { type: MAX_EXCEEDED_EVENT_TYPE, payload: {} },
           status: 'active' as any,
           value: 'test',
           tags: [],

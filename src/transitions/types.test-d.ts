@@ -1,6 +1,8 @@
 import type {
   DelayedTransitions,
   ExtractChildKeysFromTransitions,
+  ExtractEmitterSrcKeyFromTransitions,
+  ExtractPromiseeSrcKeyFromTransitions,
   GetEventKeysFromDelayed,
   GetEventKeysFromTransitions,
   TransitionsConfig,
@@ -55,26 +57,21 @@ const ttest3 = {
     { guards: 'guard3', actions: 'build3', target: '/state' },
     { actions: 'f', target: '/state' },
   ],
-  actors: [
-    {
-      src: 'source1',
+  actors: {
+    source1: {
       then: [{ guards: 'guard4', actions: 'build4' }, { actions: 'g' }],
       catch: [{ guards: 'guard5', actions: 'build5' }, { actions: 'h' }],
       finally: [{ guards: 'guard6', actions: 'build6' }, { actions: 'i' }],
     },
-    {
-      src: 'source2',
+    source2: {
       then: [{ guards: 'guard7', actions: 'build7' }, { actions: 'j' }],
       catch: [{ guards: 'guard8', actions: 'build8' }, { actions: 'k' }],
       finally: [{ guards: 'guard9', actions: 'build9' }, { actions: 'l' }],
     },
-    {
-      src: 'emitter1',
+    em1: {
       next: '/dfdfd',
-      id: 'em1',
     },
-    {
-      src: 'machine1',
+    m1: {
       on: {
         EVENT1: { actions: 'action1' },
         EVENT34: [
@@ -82,9 +79,8 @@ const ttest3 = {
           { actions: 'e' },
         ],
       },
-      id: 'm1',
     },
-  ],
+  },
 } as const satisfies TransitionsConfig;
 
 type TTest3 = GetEventKeysFromTransitions<typeof ttest3>;
@@ -98,56 +94,92 @@ expectTypeOf<TTest3>().toEqualTypeOf<
   | 'after.END.[1]'
   | 'always.[0]'
   | 'always.[1]'
-  | 'actors.[0].then.[0]'
-  | 'actors.[0].then.[1]'
-  | 'actors.[0].catch.[0]'
-  | 'actors.[0].catch.[1]'
-  | 'actors.[1].then.[0]'
-  | 'actors.[1].then.[1]'
-  | 'actors.[1].catch.[0]'
-  | 'actors.[1].catch.[1]'
-  | 'actors.[2].next'
-  | 'actors.[2].error'
-  | 'actors.[3].on.EVENT1'
-  | 'actors.[3].on.EVENT34.[0]'
-  | 'actors.[3].on.EVENT34.[1]'
+  | 'actors.source1.then.[0]'
+  | 'actors.source1.then.[1]'
+  | 'actors.source1.catch.[0]'
+  | 'actors.source1.catch.[1]'
+  | 'actors.source2.then.[0]'
+  | 'actors.source2.then.[1]'
+  | 'actors.source2.catch.[0]'
+  | 'actors.source2.catch.[1]'
+  | 'actors.em1.next'
+  | 'actors.em1.error'
+  | 'actors.m1.on.EVENT1'
+  | 'actors.m1.on.EVENT34.[0]'
+  | 'actors.m1.on.EVENT34.[1]'
 >();
 // #endregion
 
 const transition1 = {
-  actors: [
-    {
-      id: 'machine111',
-      src: 'machine11',
+  actors: {
+    machine111: {
       contexts: {},
       on: {
         NEXT: '/working',
         PREVIOUS: '/idle',
       },
     },
-    {
-      id: 'machine122',
-      src: 'machine12',
+    promise2: {
+      then: '/',
+      catch: '/',
+    },
+    machine122: {
       contexts: {},
       on: {
         NEXT2: '/working',
         PREVIOUS2: '/idle',
       },
     },
-  ],
+  },
 } as const satisfies TransitionsConfig;
 
-type TTS = ExtractChildKeysFromTransitions<typeof transition1>;
+type TTS1 = ExtractChildKeysFromTransitions<typeof transition1>;
 
-expectTypeOf<TTS>().toEqualTypeOf<
+expectTypeOf<TTS1>().toEqualTypeOf<
   | {
-      src: 'machine11';
+      src: 'machine111';
       contexts: never;
       on: 'NEXT' | 'PREVIOUS';
     }
   | {
-      src: 'machine12';
+      src: 'machine122';
       contexts: never;
       on: 'NEXT2' | 'PREVIOUS2';
     }
 >();
+
+const transition2 = {
+  actors: {
+    machine111: {
+      contexts: {},
+      on: {
+        NEXT: '/working',
+        PREVIOUS: '/idle',
+      },
+    },
+    promise2: {
+      then: '/',
+      catch: '/',
+    },
+    promise3: {
+      then: '/',
+      catch: '/',
+    },
+    emitter1: {
+      next: '/',
+    },
+  },
+} as const satisfies TransitionsConfig;
+
+type TTS2 = ExtractPromiseeSrcKeyFromTransitions<typeof transition2>;
+expectTypeOf<TTS2>().toEqualTypeOf<'promise2' | 'promise3'>();
+
+type TTS3 = ExtractEmitterSrcKeyFromTransitions<typeof transition2>;
+expectTypeOf<TTS3>().toEqualTypeOf<'emitter1'>();
+
+type TTS4 = ExtractChildKeysFromTransitions<typeof transition2>;
+expectTypeOf<TTS4>().toEqualTypeOf<{
+  src: 'machine111';
+  contexts: never;
+  on: 'NEXT' | 'PREVIOUS';
+}>();

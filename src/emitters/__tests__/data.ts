@@ -14,13 +14,13 @@ export const machineEmitter1 = createMachine(
   {
     initial: 'inactive',
     actors: {
-      src: 'interval',
-      id: 'interval',
-      next: {
-        actions: ['assigN'],
-      },
-      complete: {
-        actions: ['mockCompleteAction'],
+      interval: {
+        next: {
+          actions: ['assigN'],
+        },
+        complete: {
+          actions: ['mockCompleteAction'],
+        },
       },
     },
     states: {
@@ -84,15 +84,15 @@ export const machineEmitter3 = createMachine(
           NEXT: '/inactive',
         },
         actors: {
-          src: 'interval',
-          id: 'interval1',
-          next: {
-            actions: ['assigN'],
-          },
-          description: 'Interval emitter for active state',
-          complete: {
-            name: 'mockCompleteAction',
-            description: 'Mock complete action',
+          interval1: {
+            next: {
+              actions: ['assigN'],
+            },
+            description: 'Interval emitter for active state',
+            complete: {
+              name: 'mockCompleteAction',
+              description: 'Mock complete action',
+            },
           },
         },
       },
@@ -105,21 +105,21 @@ export const machineEmitter3 = createMachine(
     },
     actorsMap: {
       emitters: {
-        interval: { next: 'number', error: 'primitive' },
+        interval1: { next: 'number', error: 'primitive' },
       },
     },
   }),
 ).provideOptions(({ assign }) => ({
   actions: {
     assigN: assign('context', {
-      'interval::next': ({ payload, context }) => {
+      'interval1::next': ({ payload, context }) => {
         return notU(context) + payload;
       },
     }),
   },
   actors: {
     emitters: {
-      interval: () =>
+      interval1: () =>
         interval(WAITERS.short).pipe(
           take(5),
           map(v => v + 1),

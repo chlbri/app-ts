@@ -61,7 +61,12 @@ expectTypeOf<TTE>().toEqualTypeOf<
     }
 >();
 
-type ActionKeys = ActionKeysFrom<Machine3>;
+type ActionKeys =
+  ActionKeysFrom<Machine3> extends infer P extends string
+    ? {
+        [K in P]: K;
+      }[P]
+    : never;
 expectTypeOf<ActionKeys>().branded.toEqualTypeOf<
   | 'deal'
   | 'deal17'

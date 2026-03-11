@@ -153,7 +153,7 @@ export type ExtractActionsFromFinally<T extends FinallyConfig> =
  * part of the promisee configuration.
  * @see {@linkcode NotUndefined} for handling undefined values in the promisee configuration.
  */
-export type ExtractActionsFromPromisee<T extends PromiseeConfig> =
+export type ExtractActionKeysFromPromisee<T extends PromiseeConfig> =
   | _ExtractActionsFromMap<T['then']>
   | _ExtractActionsFromMap<T['catch']>
   | ExtractActionsFromFinally<NotUndefined<T['finally']>>;
@@ -182,7 +182,7 @@ export type ExtractMaxFromPromisee<T extends { max: string }> = T['max'];
  *
  * @see {@linkcode ExtractGuardKeysFromDelayed} for extracting guards from a delayed part.
  */
-export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
+export type ExtractGuardKeysFromPromisee<T extends PromiseeConfig> =
   | ExtractGuardKeysFromDelayed<T['then']>
   | ExtractGuardKeysFromDelayed<T['catch']>
   | ExtractGuardKeysFromDelayed<T['finally']>;

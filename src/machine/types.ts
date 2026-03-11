@@ -20,7 +20,7 @@ import type {
   ToEventObject,
   ToEvents2,
 } from '#events';
-import type { PredicateS2 } from '#guards';
+import type { PredicateS, PredicateS2 } from '#guards';
 import type {
   PromiseFunction,
   PromiseFunction2,
@@ -91,11 +91,7 @@ export type Config = ConfigNode & {
 export type ChildEvents<
   K extends string,
   A extends ActorsConfigMap = ActorsConfigMap,
-> = NotUndefined<A['children']>[K] extends infer P
-  ? unknown extends P
-    ? never
-    : P
-  : never;
+> = NotUndefined<A['children']>[K] extends infer P ? P : never;
 
 export type ChildFunction<
   E extends EventObject = EventObject,
@@ -253,11 +249,7 @@ type _GetEmitterSrcKeyFromFlat<Flat extends FlatMapN> = {
 type _GetChildKeysFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]: ExtractChildKeysFromTransitions<
     Extract<Flat[key], TransitionsConfig>
-  > extends infer V
-    ? unknown extends V
-      ? never
-      : V
-    : never;
+  >;
 }[keyof Flat];
 
 /**
@@ -328,7 +320,7 @@ export type GetGuardsFromFlat<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS2<E, Pc, Tc, T>>;
+> = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, Pc, Tc, T>>;
 
 export type GetPromiseSrcsFromFlat<
   Flat extends FlatMapN,
@@ -546,7 +538,7 @@ export type GetChildrenSrcFromFlat<
     Tc,
     T,
     {
-      eventsMap: ChildEvents<key, A>;
+      eventsMap: ChildEvents<key & string, A>;
     }
   >;
 };

@@ -41,7 +41,7 @@ describe('Interpret for guards', () => {
       service.start();
     });
 
-    test(...useValue('state1', 2));
+    test(...useValue('state2', 2));
   });
 
   describe('#01 => string', () => {

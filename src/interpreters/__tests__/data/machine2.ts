@@ -43,15 +43,16 @@ export const config2 = createConfig({
             },
             fetch: {
               actors: {
-                src: 'fetch',
-                then: {
-                  actions: {
-                    name: 'insertData',
-                    description: 'Database insert',
+                fetch: {
+                  then: {
+                    actions: {
+                      name: 'insertData',
+                      description: 'Database insert',
+                    },
+                    target: '/working/fetch/idle',
                   },
-                  target: '/working/fetch/idle',
+                  catch: '/working/fetch/idle',
                 },
-                catch: '/working/fetch/idle',
               },
             },
           },
@@ -97,12 +98,12 @@ export const config2 = createConfig({
 export const machine2 = createMachine(
   {
     actors: {
-      id: 'machine1',
-      src: 'machine1',
-      contexts: {
-        iterator: 'iterator',
+      machine1: {
+        contexts: {
+          iterator: 'iterator',
+        },
+        on: {},
       },
-      on: {},
     },
     ...config2,
   },
@@ -123,7 +124,9 @@ export const machine2 = createMachine(
     },
     actorsMap: {
       children: {
-        machine1: 'primitive',
+        machine1: {
+          NEXT: 'primitive',
+        },
       },
       promisees: {
         fetch: {
@@ -190,12 +193,12 @@ export const machine2 = createMachine(
 const _config2 = createConfig({
   ...config2,
   actors: {
-    id: 'machine1',
-    src: 'machine1',
-    contexts: {
-      iterator: 'iterator',
+    machine1: {
+      contexts: {
+        iterator: 'iterator',
+      },
+      on: {},
     },
-    on: {},
   },
   states: {
     ...config2.states,
@@ -223,7 +226,9 @@ export const _machine2 = createMachine(
     },
     actorsMap: {
       children: {
-        machine1: {},
+        machine1: {
+          NEXT: 'primitive',
+        },
       },
       promisees: {
         fetch: { then: typings.array('string'), catch: 'primitive' },
@@ -290,4 +295,5 @@ export const _machine2 = createMachine(
     },
   }),
 );
+
 // #endregion

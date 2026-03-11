@@ -43,15 +43,16 @@ export const config21 = createConfig({
             },
             fetch: {
               actors: {
-                src: 'fetch',
-                then: {
-                  actions: {
-                    name: 'insertData',
-                    description: 'Database insert',
+                fetch: {
+                  then: {
+                    actions: {
+                      name: 'insertData',
+                      description: 'Database insert',
+                    },
+                    target: '/working/fetch/idle',
                   },
-                  target: '/working/fetch/idle',
+                  catch: '/working/fetch/idle',
                 },
-                catch: '/working/fetch/idle',
               },
             },
           },
@@ -97,11 +98,11 @@ export const config21 = createConfig({
 export const machine21 = createMachine(
   {
     actors: {
-      src: 'machine1',
-      id: 'machine1',
-      on: {},
-      contexts: {
-        iterator: 'iterator',
+      machine1: {
+        on: {},
+        contexts: {
+          iterator: 'iterator',
+        },
       },
     },
     ...config21,
@@ -123,7 +124,9 @@ export const machine21 = createMachine(
     },
     actorsMap: {
       children: {
-        machine1: {},
+        machine1: {
+          NEXT: 'primitive',
+        },
       },
       promisees: {
         fetch: {

@@ -183,10 +183,7 @@ export type EventArgT<E extends EventsMap> =
 export type ToEventObject<
   T extends AllEvent,
   Ex extends string = never,
-> = Exclude<
-  T extends string ? { type: T; payload: undefined } : T,
-  { type: Ex }
->;
+> = Exclude<T extends string ? { type: T; payload: {} } : T, { type: Ex }>;
 
 export type EventToType<
   T extends AllEvent,

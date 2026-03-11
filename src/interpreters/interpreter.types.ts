@@ -1,15 +1,11 @@
 import type {
-  ChildConfig,
-  EmitterConfig,
-  PromiseeConfig,
-} from 'src/actor.types';
-import type {
   Equals,
   NOmit,
   NotUndefined,
   Primitive,
   PrimitiveObject,
 } from '#bemedev/globals/types';
+import type { DelayFunction2, DelayFunction3 } from '#delays';
 import type {
   ActorsConfigMap,
   EventArg,
@@ -18,6 +14,8 @@ import type {
   ToEventObject,
   ToEvents2,
 } from '#events';
+import type { GuardConfig, PredicateS2, PredicateS3 } from '#guards';
+import type { ContextFrom, PrivateContextFrom } from '#machines';
 import type { PromiseeResult, PromiseFunction2 } from '#promises';
 import type { ActivityConfig, NodeConfig, StateValue } from '#states';
 import type {
@@ -35,10 +33,8 @@ import type {
   ActionConfig,
   ActionResult,
 } from 'src/actions/types';
-import type { DelayFunction2, DelayFunction3 } from '#delays';
-import type { GuardConfig, PredicateS2, PredicateS3 } from '#guards';
+import type { EmitterConfig, PromiseeConfig } from 'src/actor.types';
 import type { AnyMachine } from 'src/machine/machine.types';
-import type { ContextFrom, PrivateContextFrom } from '#machines';
 import type { FnMapR, OptionalDefinition } from '~types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
@@ -172,7 +168,7 @@ export type ToPromiseSrc_F<
 
 export type PerformPromisee_F<E extends EventObject> = (
   from: string,
-  ...promisees: PromiseeConfig[]
+  ...promisees: (PromiseeConfig & { id: string })[]
 ) => (() => Promise<(PromiseeResult<E> | undefined)[]>) | undefined;
 
 export type Contexts<
@@ -312,13 +308,13 @@ export type CollectedObservable = EmitterConfig & {
   observable: Observable<any>;
 };
 
-export type CollectedPausable = Pick<EmitterConfig, 'id'> & {
+export type CollectedPausable = {
   from: string;
   pausable: Pausable;
   id: string;
 };
 
-export type CollectedService = NOmit<ChildConfig, 'src'> & {
+export type CollectedService = {
   from: string;
   service: AnyInterpreter;
   id: string;

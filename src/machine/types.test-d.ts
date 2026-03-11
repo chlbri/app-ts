@@ -1,6 +1,7 @@
 import type { Fn, PrimitiveObject } from '#bemedev/globals/types';
 import type { machine2 } from '#fixturesData';
 import type {
+  ChildEvents,
   Config,
   FnMapFrom,
   GetActorKeysFromConfig,
@@ -12,12 +13,13 @@ expectTypeOf<TT2>().toEqualTypeOf<
   | 'machine$$init'
   | 'machine$$exceeded'
   | 'NEXT'
+  | 'else'
   | 'FINISH'
   | 'FETCH'
   | 'WRITE'
   | 'fetch::then'
   | 'fetch::catch'
-  | 'else'
+  | 'machine1::on::NEXT'
 >;
 
 type GEFC2 = GetEventsFromMachine<typeof machine2>;
@@ -30,34 +32,34 @@ expectTypeOf<GEFC2>().toEqualTypeOf<{
 
 const config = {
   actors: {
-    id: 'machine1',
-    src: 'machine11',
-    contexts: {},
-    on: {
-      NEXT: '/working',
-      PREVIOUS: '/idle',
+    machine11: {
+      contexts: {},
+      on: {
+        NEXT: '/working',
+        PREVIOUS: '/idle',
+      },
     },
   },
   initial: 'idle',
   states: {
     idle: {
       actors: {
-        id: 'machine122',
-        src: 'machine12',
-        contexts: {},
-        on: {
-          NEXT2: '/working',
-          PREVIOUS2: '/idle',
+        machine122: {
+          contexts: {},
+          on: {
+            NEXT2: '/working',
+            PREVIOUS2: '/idle',
+          },
         },
       },
     },
     working: {
       actors: {
-        id: 'machine122',
-        src: 'machine12',
-        contexts: {},
-        on: {
-          NEXT3: '/working',
+        machine122: {
+          contexts: {},
+          on: {
+            NEXT3: '/working',
+          },
         },
       },
     },
@@ -68,5 +70,25 @@ type GAK1 = GetActorKeysFromConfig<typeof config>['children'];
 
 expectTypeOf<GAK1>().toEqualTypeOf<{
   machine11: Record<'NEXT' | 'PREVIOUS', any>;
-  machine12: Record<'NEXT2' | 'PREVIOUS2' | 'NEXT3', any>;
+  machine122: Record<'NEXT2' | 'PREVIOUS2' | 'NEXT3', any>;
 }>();
+
+type CE1 = ChildEvents<
+  'str',
+  {
+    children: {
+      str: {
+        NEXT: {};
+        PREVIOUS: {};
+      };
+    };
+    promisees: {
+      data: {
+        then: '/';
+        catch: '/';
+      };
+    };
+  }
+>;
+
+expectTypeOf<CE1>().toEqualTypeOf<{ NEXT: {}; PREVIOUS: {} }>();

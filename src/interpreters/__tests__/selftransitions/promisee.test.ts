@@ -31,10 +31,11 @@ describe('promisee', () => {
         states: {
           idle: {
             actors: {
-              src: 'notDefined',
-              then: '/active',
-              catch: '/active',
-              description: 'notDefined',
+              notDefined: {
+                then: '/active',
+                catch: '/active',
+                description: 'notDefined',
+              },
             },
           },
           active: {},
@@ -64,9 +65,10 @@ describe('promisee', () => {
         states: {
           idle: {
             actors: {
-              src: 'rejectPromise',
-              then: '/active',
-              catch: '/inactive',
+              rejectPromise: {
+                then: '/active',
+                catch: '/inactive',
+              },
             },
           },
           active: {},
@@ -97,9 +99,10 @@ describe('promisee', () => {
         states: {
           idle: {
             actors: {
-              src: 'resolvePromise',
-              then: '/active',
-              catch: '/inactive',
+              resolvePromise: {
+                then: '/active',
+                catch: '/inactive',
+              },
             },
           },
           active: {},
@@ -130,9 +133,10 @@ describe('promisee', () => {
         states: {
           idle: {
             actors: {
-              src: 'rejectPromise',
-              then: '/active',
-              catch: '/inactive',
+              rejectPromise: {
+                then: '/active',
+                catch: '/inactive',
+              },
             },
             on: {
               NEXT: '/active2',
@@ -194,10 +198,11 @@ describe('promisee', () => {
         states: {
           idle: {
             actors: {
-              src: 'rejectPromise',
-              then: '/active',
-              catch: '/inactive',
-              max: 'DELAY',
+              rejectPromise: {
+                then: '/active',
+                catch: '/inactive',
+                max: 'DELAY',
+              },
             },
           },
           active: {},
@@ -301,10 +306,11 @@ describe('promisee', () => {
           states: {
             idle: {
               actors: {
-                src: 'rejectPromise',
-                then: '/active',
-                catch: '/inactive',
-                finally: 'finalAction',
+                rejectPromise: {
+                  then: '/active',
+                  catch: '/inactive',
+                  finally: 'finalAction',
+                },
               },
             },
             active: {},
@@ -355,10 +361,11 @@ describe('promisee', () => {
           states: {
             idle: {
               actors: {
-                src: 'rejectPromise',
-                then: '/active',
-                catch: '/active',
-                finally: { actions: 'finalAction', guards: 'guard' },
+                rejectPromise: {
+                  then: '/active',
+                  catch: '/active',
+                  finally: { actions: 'finalAction', guards: 'guard' },
+                },
               },
             },
             active: {},

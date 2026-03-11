@@ -4,13 +4,12 @@ import type {
   NotUndefined,
   PrimitiveObject,
   Require,
-  SoA,
 } from '#bemedev/globals/types';
 import type { EventObject } from '#events';
 import type {
   ExtractActionsFromFinally,
-  ExtractActionsFromPromisee,
-  ExtractGuardsFromPromise,
+  ExtractActionKeysFromPromisee,
+  ExtractGuardKeysFromPromisee,
   ExtractMaxFromPromisee,
   GetEventKeysFromPromisee,
   Promisee,
@@ -80,7 +79,7 @@ export type ExtractActionsFromTransition<
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * @see {@linkcode SingleOrArrayL} for handling single or array
  */
-export type ExtractGuardsFromTransition<
+export type ExtractGuardKeysFromTransition<
   T extends { guards: SingleOrArrayL<GuardConfig> },
 > =
   ReduceArray<T['guards']> extends infer R extends GuardConfig
@@ -193,7 +192,7 @@ export type GetEventKeysFromDelayed<T> = {
  * @see {@linkcode SingleOrArrayL} for handling single or array
  * @see {@linkcode ActionConfig} for the structure of action configurations.
  *
- * @see {@linkcode ExtractGuardsFromTransition} for extracting guards from a transition configuration.
+ * @see {@linkcode ExtractGuardKeysFromTransition} for extracting guards from a transition configuration.
  */
 export type ExtractActionKeysFromDelayed<T> = ExtractActionsFromTransition<
   Extract<
@@ -207,16 +206,20 @@ export type ExtractActionKeysFromDelayed<T> = ExtractActionsFromTransition<
  *
  * @template T - The delayed transitions type.
  *
- * @see {@linkcode ExtractGuardsFromTransition} for extracting guards from a transition configuration.
+ * @see {@linkcode ExtractGuardKeysFromTransition} for extracting guards from a transition configuration.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * @see {@linkcode SingleOrArrayL} for handling single or array
  * @see {@linkcode GuardConfig} for the structure of guard configurations.
  *
  * @see {@linkcode ExtractActionsFromTransition} for extracting actions from a transition configuration.
  */
-export type ExtractGuardKeysFromDelayed<T> = ExtractGuardsFromTransition<
-  Extract<ReduceArray<T[keyof T]>, { guards: SingleOrArrayL<GuardConfig> }>
->;
+export type ExtractGuardKeysFromDelayed<T> =
+  ExtractGuardKeysFromTransition<
+    Extract<
+      ReduceArray<T[keyof T]>,
+      { guards: SingleOrArrayL<GuardConfig> }
+    >
+  >;
 
 /**
  * Represents a JSON configuration for delayed transitions.
@@ -234,7 +237,7 @@ export type TransitionsConfig<Paths extends string = string> = {
   readonly on?: DelayedTransitions<Paths>;
   readonly always?: AlwaysConfig<Paths>;
   readonly after?: DelayedTransitions<Paths>;
-  readonly actors?: SoA<ActorConfig<Paths>>;
+  readonly actors?: RecordS<ActorConfig<Paths>>;
 };
 
 export type GetEventKeysFromEmitter<T extends EmitterConfig> =
@@ -243,7 +246,7 @@ export type GetEventKeysFromEmitter<T extends EmitterConfig> =
 export type GetEventKeysFromMachineConfig<T extends ChildConfig> =
   `on.${GetEventKeysFromDelayed<T['on']>}`;
 
-export type GetEvntKeysFromActor<T> = T extends EmitterConfig
+export type GetEventKeysFromActor<T> = T extends EmitterConfig
   ? GetEventKeysFromEmitter<T>
   : T extends ChildConfig
     ? GetEventKeysFromMachineConfig<T>
@@ -265,12 +268,10 @@ export type GetEventKeysFromTransitions<T> =
       : never)
   | ('actors' extends keyof T
       ? `${NotUndefined<T['actors']> extends infer TP
-          ? TP extends AnyArray
-            ? `actors.${{
-                [key in keyof TP &
-                  string]: `[${key}].${GetEvntKeysFromActor<TP[key]>}`;
-              }[keyof TP & string]}`
-            : `actors.${GetEvntKeysFromActor<TP>}`
+          ? `actors.${{
+              [key in keyof TP &
+                string]: `${key}.${GetEventKeysFromActor<TP[key]>}`;
+            }[keyof TP & string]}`
           : never}`
       : never);
 
@@ -298,20 +299,20 @@ type _ExtractActionsFromMap<T> = ExtractActionsFromTransition<
   >
 >;
 
-export type ExtractActionsFromEmitter<T extends EmitterConfig> =
+export type ExtractActionKeysFromEmitter<T extends EmitterConfig> =
   | _ExtractActionsFromMap<T['next']>
   | _ExtractActionsFromMap<T['error']>
   | ExtractActionsFromFinally<NotUndefined<T['complete']>>;
 
-export type ExtractActionsFromMachine<T extends ChildConfig> =
+export type ExtractActionKeysFromChild<T extends ChildConfig> =
   ExtractActionKeysFromDelayed<T['on']>;
 
 export type ExtractActionKeysFromActor<T> = T extends EmitterConfig
-  ? ExtractActionsFromEmitter<T>
+  ? ExtractActionKeysFromEmitter<T>
   : T extends ChildConfig
-    ? ExtractActionsFromMachine<T>
+    ? ExtractActionKeysFromChild<T>
     : T extends PromiseeConfig
-      ? ExtractActionsFromPromisee<T>
+      ? ExtractActionKeysFromPromisee<T>
       : never;
 /**
  * Extracts actions keys from a {@linkcode TransitionsConfig}.
@@ -321,7 +322,7 @@ export type ExtractActionKeysFromActor<T> = T extends EmitterConfig
  *
  * @see {@linkcode ExtractActionsFromTransition} for extracting actions from a transition configuration.
  * @see {@linkcode ExtractActionsFromDelayed} for extracting actions from delayed transitions.
- * @see {@linkcode ExtractActionsFromPromisee} for extracting actions from promises.
+ * @see {@linkcode ExtractActionKeysFromPromisee} for extracting actions from promises.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * @see {@linkcode SingleOrArrayL} for handling single or array
  * @see {@linkcode ActionConfig} for the structure of action configurations.
@@ -337,7 +338,34 @@ export type ExtractActionKeysFromTransitions<T extends TransitionsConfig> =
         { actions: SingleOrArrayL<ActionConfig> }
       >
     >
-  | ExtractActionKeysFromActor<NotUndefined<ReduceArray<T['actors']>>>;
+  | (NotUndefined<T['actors']> extends infer Ta
+      ? {
+          [K in keyof Ta]: ExtractActionKeysFromActor<Ta[K]>;
+        }[keyof Ta]
+      : never);
+
+type _ExtractGuardKeysFromMap<T> = ExtractGuardKeysFromTransition<
+  Extract<
+    ReduceArray<NotUndefined<T>>,
+    { guards: SingleOrArrayL<GuardConfig> }
+  >
+>;
+
+export type ExtractGuardKeysFromEmitter<T extends EmitterConfig> =
+  | _ExtractGuardKeysFromMap<T['next']>
+  | _ExtractGuardKeysFromMap<T['error']>
+  | ExtractGuardKeysFromDelayed<T['complete']>;
+
+export type ExtractGuardsKeysFromChild<T extends ChildConfig> =
+  ExtractGuardKeysFromDelayed<T['on']>;
+
+export type ExtractGuardsKeysFromActor<T> = T extends EmitterConfig
+  ? ExtractGuardKeysFromEmitter<T>
+  : T extends ChildConfig
+    ? ExtractGuardsKeysFromChild<T>
+    : T extends PromiseeConfig
+      ? ExtractGuardKeysFromPromisee<T>
+      : never;
 
 /**
  * Extracts guard keys from a {@linkcode TransitionsConfig}.
@@ -345,9 +373,9 @@ export type ExtractActionKeysFromTransitions<T extends TransitionsConfig> =
  * @template : {@linkcode TransitionsConfig} [T] - The transitions configuration type.
  * @returns The guard keys extracted from the transitions configuration.
  *
- * @see {@linkcode ExtractGuardsFromTransition} for extracting guards from a transition configuration.
+ * @see {@linkcode ExtractGuardKeysFromTransition} for extracting guards from a transition configuration.
  * @see {@linkcode ExtractGuardKeysFromDelayed} for extracting guards from delayed transitions.
- * @see {@linkcode ExtractGuardsFromPromise} for extracting guards from promises.
+ * @see {@linkcode ExtractGuardKeysFromPromisee} for extracting guards from promises.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * @see {@linkcode SingleOrArrayL} for handling single or array
  * @see {@linkcode GuardConfig} for the structure of guard configurations.
@@ -357,22 +385,25 @@ export type ExtractActionKeysFromTransitions<T extends TransitionsConfig> =
 export type ExtractGuardKeysFromTransitions<T extends TransitionsConfig> =
   | ExtractGuardKeysFromDelayed<T['on']>
   | ExtractGuardKeysFromDelayed<T['after']>
-  | ExtractGuardsFromTransition<
+  | ExtractGuardKeysFromTransition<
       Extract<
         ReduceArray<T['always']>,
         { guards: SingleOrArrayL<GuardConfig> }
       >
     >
-  | ExtractGuardsFromPromise<
-      Extract<NotUndefined<ReduceArray<T['actors']>>, { then: any }>
-    >;
+  | (NotUndefined<T['actors']> extends infer Ta
+      ? {
+          [K in keyof Ta]: ExtractGuardsKeysFromActor<Ta[K]>;
+        }[keyof Ta]
+      : never);
 
 export type ExtractSrcKeyFromTransitions<
   T extends TransitionsConfig,
   Filter extends object = object,
-> = ExtractSrcFromActor<
-  NotUndefined<Extract<ReduceArray<T['actors']>, Filter>>
->;
+  A extends NotUndefined<T['actors']> = NotUndefined<T['actors']>,
+> = {
+  [K in keyof A]: A[K] extends Filter ? K : never;
+}[keyof A];
 
 /**
  * Extracts source keys from a {@linkcode TransitionsConfig}.
@@ -394,15 +425,15 @@ export type ExtractEmitterSrcKeyFromTransitions<
 
 export type ExtractChildKeysFromActors<
   T extends NotUndefined<TransitionsConfig['actors']>,
-  G extends Extract<ReduceArray<T>, { on: any } | { contexts: any }> =
-    Extract<ReduceArray<T>, { on: any } | { contexts: any }>,
-> = G extends any
-  ? {
-      src: G['src'];
-      contexts: keyof NotUndefined<G['contexts']>;
-      on: keyof NotUndefined<G['on']>;
-    }
-  : never;
+> = {
+  [key in keyof T]: T[key] extends infer Tk extends ChildConfig
+    ? {
+        src: key;
+        contexts: keyof NotUndefined<Tk['contexts']>;
+        on: keyof NotUndefined<Tk['on']>;
+      }
+    : never;
+}[keyof T];
 
 export type ExtractChildKeysFromTransitions<T extends TransitionsConfig> =
   ExtractChildKeysFromActors<NotUndefined<T['actors']>>;

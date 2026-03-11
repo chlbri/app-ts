@@ -25,9 +25,10 @@ describe('Tests for longrun promises', () => {
           },
           promise: {
             actors: {
-              src: 'longRunTask',
-              then: '/success',
-              catch: '/failure',
+              longRunTask: {
+                then: '/success',
+                catch: '/failure',
+              },
             },
           },
           success: {
@@ -148,9 +149,10 @@ describe('Tests for longrun promises', () => {
           },
           promise: {
             actors: {
-              src: 'longRunTask',
-              then: '/success',
-              catch: '/failure',
+              longRunTask: {
+                then: '/success',
+                catch: '/failure',
+              },
             },
           },
           success: {

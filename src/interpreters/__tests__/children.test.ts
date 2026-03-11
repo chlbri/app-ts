@@ -31,10 +31,10 @@ describe('Integration testing for interpret, Children', () => {
       {
         initial: 'idle',
         actors: {
-          src: 'child',
-          id: 'child',
-          contexts: {
-            '.': '.',
+          child: {
+            contexts: {
+              '.': '.',
+            },
           },
         },
         states: {
@@ -92,10 +92,10 @@ describe('Integration testing for interpret, Children', () => {
       {
         initial: 'idle',
         actors: {
-          src: 'child',
-          id: 'child',
-          contexts: {
-            '.': 'iterator',
+          child: {
+            contexts: {
+              '.': 'iterator',
+            },
           },
         },
         states: {

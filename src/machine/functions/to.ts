@@ -26,7 +26,7 @@ export type ToChild_F = <
 >(
   events: E,
   actorsMap: A,
-  child: ChildConfig,
+  child: ChildConfig & { __id: string },
   options?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
 ) => Child<Eo, Pc, Tc, T, R>;
 
@@ -51,7 +51,7 @@ export const toChild: ToChild_F = (events, actorsMap, child, options) => {
   const src = toChildSrc(
     events,
     actorsMap,
-    child.src,
+    child.__id,
     options?.actors?.children,
   );
 
@@ -61,7 +61,6 @@ export const toChild: ToChild_F = (events, actorsMap, child, options) => {
 
   const { description } = child;
   if (description) out.description = description;
-  out.id = child.id;
 
   return out;
 };

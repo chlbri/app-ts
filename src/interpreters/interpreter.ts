@@ -229,7 +229,7 @@ export class Interpreter<
   /**
    * The current {@linkcode ToEvents2} event of this {@linkcode Interpreter} service.
    */
-  #event: Eo = { type: INIT_EVENT, payload: undefined } as any;
+  #event: Eo = { type: INIT_EVENT, payload: {} } as any;
 
   /**
    * The initial {@linkcode NodeConfigWithInitials} of the inner {@linkcode Machine}.
@@ -357,7 +357,7 @@ export class Interpreter<
     this.#state = this.#previousState = {
       status: this.#status,
       context: this.#context,
-      event: { type: INIT_EVENT, payload: undefined } as any,
+      event: { type: INIT_EVENT, payload: {} } as any,
       value: this.#value,
       tags: this.tags,
     };
@@ -1194,14 +1194,14 @@ export class Interpreter<
     const promises: (() => Promise<PR | undefined>)[] = [];
 
     promisees.forEach(
-      ({ src, then, catch: _catch, finally: _finally, max: maxS }) => {
-        const promiseF = this.toPromiseSrcFn(src);
+      ({ id, then, catch: _catch, finally: _finally, max: maxS }) => {
+        const promiseF = this.toPromiseSrcFn(id);
         if (!promiseF) return;
 
         const handlePromise = (type: 'then' | 'catch', payload: any) => {
           const out = () => {
             const event = {
-              type: `${src}::${type}`,
+              type: `${id}::${type}`,
               payload,
             };
             this.#changeEvent(_any(event));
@@ -1335,11 +1335,16 @@ export class Interpreter<
 
   get #collectedPromisees() {
     const entriesFlat = Object.entries(this.#flat);
-    const entries: [from: string, ...promisees: PromiseeConfig[]][] = [];
+    const entries: [
+      from: string,
+      ...promisees: (PromiseeConfig & { id: string })[],
+    ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
+      const actors = Object.entries(node.actors ?? {});
       const promisees = toArray
-        .typed(node.actors)
+        .typed(actors)
+        .map(([id, value]) => ({ ...value, id }))
         .filter(actor => 'then' in actor);
       if (node.actors) {
         entries.push([from, ...promisees]);
@@ -1540,16 +1545,21 @@ export class Interpreter<
 
   #collectedEmitterConfigs: [
     from: string,
-    ...promisees: EmitterConfig[],
+    ...promisees: (EmitterConfig & { id: string })[],
   ][] = [];
 
   #collectEmitterConfigs = () => {
     const entriesFlat = Object.entries(this.#machine.flat);
-    const entries: [from: string, ...promisees: EmitterConfig[]][] = [];
+    const entries: [
+      from: string,
+      ...promisees: (EmitterConfig & { id: string })[],
+    ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
+      const actors = Object.entries(node.actors ?? {});
       const promisees = toArray
-        .typed(node.actors)
+        .typed(actors)
+        .map(([id, actor]) => ({ ...actor, id }))
         .filter(actor => 'next' in actor);
       if (node.actors) {
         entries.push([from, ...promisees]);
@@ -1560,16 +1570,23 @@ export class Interpreter<
     return entries;
   };
 
-  #collectedChildrenConfig: [from: string, ...promisees: ChildConfig[]][] =
-    [];
+  #collectedChildrenConfig: [
+    from: string,
+    ...promisees: (ChildConfig & { id: string })[],
+  ][] = [];
 
   #collectChildrenConfig = () => {
     const entriesFlat = Object.entries(this.#machine.flat);
-    const entries: [from: string, ...promisees: ChildConfig[]][] = [];
+    const entries: [
+      from: string,
+      ...promisees: (ChildConfig & { id: string })[],
+    ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
+      const actors = Object.entries(node.actors ?? {});
       const promisees = toArray
-        .typed(node.actors)
+        .typed(actors)
+        .map(([id, actor]) => ({ ...actor, id }))
         .filter(actor => 'on' in actor || 'contexts' in actor);
       if (node.actors) {
         entries.push([from, ...promisees]);
@@ -1585,6 +1602,7 @@ export class Interpreter<
   #collectPausables = () => {
     type _Emitter = EmitterConfig & {
       emitterFn: EmitterFunction2<Eo, Pc, Tc, Ta>;
+      id: string;
     };
     return this.#collectedEmitterConfigs
       .filter(([from]) => this.#isInsideValue(from))
@@ -1594,8 +1612,8 @@ export class Interpreter<
       })
       .map(([from, ..._emitters]) => {
         const emitters = _emitters
-          .map(({ src, ...rest }) => {
-            return { emitterFn: this.toEmitterSrc(src), ...rest, src };
+          .map(({ id, ...rest }) => {
+            return { emitterFn: this.toEmitterSrc(id), ...rest, id };
           })
           .filter(({ emitterFn }) => !!emitterFn) as _Emitter[];
 
@@ -1610,11 +1628,11 @@ export class Interpreter<
       })
       .map(([from, ...emitters]) => {
         const pausables = emitters.map(
-          ({ observable, src, error, next, complete, id }) => {
+          ({ observable, error, next, complete, id }) => {
             const pausable = createPausable(observable, {
               next: payload => {
                 const event = {
-                  type: `${src}::next`,
+                  type: `${id}::next`,
                   payload,
                 } satisfies EventObject;
 
@@ -1624,7 +1642,7 @@ export class Interpreter<
               },
               error: payload => {
                 const event = {
-                  type: `${src}::error`,
+                  type: `${id}::error`,
                   payload,
                 } satisfies EventObject;
 
@@ -1655,6 +1673,7 @@ export class Interpreter<
   #collectChildren = () => {
     type _Child = ChildConfig & {
       childFn: ChildFunction2<Eo, Pc, Tc, Ta>;
+      id: string;
     };
 
     return this.#collectedChildrenConfig
@@ -1665,105 +1684,97 @@ export class Interpreter<
       })
       .map(([from, ..._children]) => {
         const children = _children
-          .map(({ src, ...rest }) => {
-            return { childFn: this.toChildFunction(src), ...rest, src };
+          .map(({ id, ...rest }) => {
+            return { childFn: this.toChildFunction(id), ...rest, id };
           })
           .filter(({ childFn }) => !!childFn) as _Child[];
 
         return [from, ...children] as const;
       })
       .map(([from, ..._children]) => {
-        const services = _children.map(
-          ({ childFn, src, on, contexts, id }) => {
-            const service = this.#executeChild(childFn);
-            return {
-              service,
-              src,
-              on,
-              contexts,
-              id,
-            };
-          },
-        );
+        const services = _children.map(({ childFn, ...rest }) => {
+          const service = this.#executeChild(childFn);
+          return {
+            service,
+            ...rest,
+          };
+        });
 
         return [from, ...services] as const;
       })
       .map(([from, ..._services]) => {
-        const services = _services.map(
-          ({ service, src, on, contexts, id }) => {
-            const si = service as AnyInterpreter & {
-              __subscribe: AddSubscriber_F;
-            };
+        const services = _services.map(({ service, on, contexts, id }) => {
+          const si = service as AnyInterpreter & {
+            __subscribe: AddSubscriber_F;
+          };
 
-            si.__subscribe(
-              payload => {
-                const type = eventToType(payload.event);
+          si.__subscribe(
+            payload => {
+              const type = eventToType(payload.event);
 
-                const event = {
-                  type: `${src}::on::${type}`,
-                  payload,
-                } satisfies EventObject;
+              const event = {
+                type: `${id}::on::${type}`,
+                payload,
+              } satisfies EventObject;
 
-                this.#changeEvent(_any(event));
-                const transitions = toArray<TransitionConfig>(on?.[type]);
-                this.__performTransitions(...transitions);
+              this.#changeEvent(_any(event));
+              const transitions = toArray<TransitionConfig>(on?.[type]);
+              this.__performTransitions(...transitions);
+            },
+            {
+              equals: (_, b) => {
+                const keys = Object.keys(on ?? {});
+                const key = eventToType(b.event);
+                return keys.includes(key);
               },
-              {
-                equals: (_, b) => {
-                  const keys = Object.keys(on ?? {});
-                  const key = eventToType(b.event);
-                  return keys.includes(key);
-                },
-              },
-            );
+            },
+          );
 
-            si.__subscribe(
-              ({ context }) => {
-                const entries = Object.entries(contexts ?? {});
-                entries.forEach(([key, path]) => {
-                  const pContext =
-                    key === '.'
-                      ? structuredClone(context)
-                      : getByKey.low(context, key);
+          si.__subscribe(
+            ({ context }) => {
+              const entries = Object.entries(contexts ?? {});
+              entries.forEach(([key, path]) => {
+                const pContext =
+                  key === '.'
+                    ? structuredClone(context)
+                    : getByKey.low(context, key);
 
-                  if (path === '.')
-                    return this.#mergeContexts({ pContext });
-                  const cb = () => {
-                    return assignByKey.low(this.#pContext, path, pContext);
-                  };
-                  this.#schedulerContexts.schedule(cb);
-                });
-              },
-              {
-                equals: (a, b) => {
-                  const ac = a.context;
-                  const bc = b.context;
-                  const check = ac === bc;
-                  if (check) return true;
-                  const keys = Object.keys(contexts ?? {});
+                if (path === '.') return this.#mergeContexts({ pContext });
+                const cb = () => {
+                  return assignByKey.low(this.#pContext, path, pContext);
+                };
+                this.#schedulerContexts.schedule(cb);
+              });
+            },
+            {
+              equals: (a, b) => {
+                const ac = a.context;
+                const bc = b.context;
+                const check = ac === bc;
+                if (check) return true;
+                const keys = Object.keys(contexts ?? {});
 
-                  for (const key of keys) {
-                    if (key === '.') {
-                      if (!equal(ac, bc)) return false;
-                      continue;
-                    }
-                    const _a = getByKey.low(ac, key);
-                    const _b = getByKey.low(bc, key);
-                    if (!equal(_a, _b)) return false;
+                for (const key of keys) {
+                  if (key === '.') {
+                    if (!equal(ac, bc)) return false;
+                    continue;
                   }
+                  const _a = getByKey.low(ac, key);
+                  const _b = getByKey.low(bc, key);
+                  if (!equal(_a, _b)) return false;
+                }
 
-                  return true;
-                },
+                return true;
               },
-            );
+            },
+          );
 
-            return {
-              service: si,
-              id,
-              from,
-            };
-          },
-        );
+          return {
+            service: si,
+            id,
+            from,
+          };
+        });
 
         this.#collectedChildren.push(...services);
         return services;
