@@ -12,7 +12,7 @@ describe('Coverage of interpretr #2', () => {
           idle: {
             entry: ['inc'],
             on: {
-              INC: { actions: 'inc' },
+              INC: { actions: ['inc', 'neverRun'] },
               'INC.PRIVATE': { actions: 'incPrivate' },
               NEXT: {
                 description: 'Next',
@@ -33,10 +33,11 @@ describe('Coverage of interpretr #2', () => {
         context: 'number',
         pContext: 'number',
       }),
-    ).provideOptions(({ assign }) => ({
+    ).provideOptions(({ assign, voidAction }) => ({
       actions: {
         inc: assign('context', ({ context }) => context + 1),
         incPrivate: assign('pContext', ({ pContext }) => pContext + 1),
+        neverRun: voidAction({}),
       },
     }));
 
@@ -45,6 +46,8 @@ describe('Coverage of interpretr #2', () => {
       context: 0,
       pContext: 0,
     });
+
+    service.subscribe({});
 
     type SE = Parameters<typeof service.send>[0];
 

@@ -89,16 +89,37 @@ describe('#01 => Emitter Machine3 #1', () => {
   test(...stop());
 });
 
-describe('#02 => Emitter Machine3 #2', () => {
-  const service = interpret(machineEmitter3, { context: 0 });
-  const { useContext, waiter, useNext, start, stop } = constructTests(
-    service,
-    ({ contexts, sender, waiter }) => ({
-      useContext: contexts(({ context }) => context),
-      useNext: sender('NEXT'),
-      waiter: waiter(WAITERS.short),
-    }),
+describe('#02 => Emitter Machine3, with complete #2', () => {
+  const mockFn = vi.fn();
+  const service = interpret(
+    machineEmitter3.provideOptions(({ voidAction }) => ({
+      actions: {
+        mockCompleteAction: voidAction(() => {
+          mockFn('Complete action executed');
+        }),
+      },
+    })),
+    { context: 0 },
   );
+  const { useContext, waiter, useMock, useNext, start, stop } =
+    constructTests(
+      service,
+      ({ contexts, sender, waiter, tupleOf, index }) => ({
+        useContext: contexts(({ context }) => context),
+        useNext: sender('NEXT'),
+        waiter: waiter(WAITERS.short),
+
+        useMock: (fails = false) => {
+          const invite = `#${index()} => mockFn called${fails ? ' => (fails)' : ''}`;
+
+          return tupleOf(invite, () => {
+            expect(mockFn).toHaveBeenCalledWith(
+              'Complete action executed',
+            );
+          });
+        },
+      }),
+    );
 
   test(...start());
   test(...waiter());
@@ -109,10 +130,14 @@ describe('#02 => Emitter Machine3 #2', () => {
   test(...waiter());
   test(...useContext(15));
   test(...waiter());
+  test.fails(...useMock());
   test(...useContext(30));
+  test.fails(...useMock());
   test(...waiter());
   test(...useContext(50));
+  test.fails(...useMock());
   test(...waiter());
   test(...useContext(75));
+  test(...useMock());
   test(...stop());
 });

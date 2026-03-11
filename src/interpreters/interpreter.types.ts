@@ -35,10 +35,10 @@ import type {
   ActionConfig,
   ActionResult,
 } from 'src/actions/types';
-import type { DelayFunction2 } from 'src/delays/types';
-import type { GuardConfig, PredicateS2 } from 'src/guards/types';
+import type { DelayFunction2, DelayFunction3 } from '#delays';
+import type { GuardConfig, PredicateS2, PredicateS3 } from '#guards';
 import type { AnyMachine } from 'src/machine/machine.types';
-import type { ContextFrom, PrivateContextFrom } from 'src/machine/types';
+import type { ContextFrom, PrivateContextFrom } from '#machines';
 import type { FnMapR, OptionalDefinition } from '~types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
@@ -112,7 +112,7 @@ export type PerformPredicate_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = (predicate: PredicateS2<E, Pc, Tc, T>) => boolean;
+> = (predicate: PredicateS3<E, Pc, Tc, T>) => boolean;
 
 export type ToDelay_F<
   E extends EventObject = EventObject,
@@ -126,7 +126,7 @@ export type PerformDelay_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = (delay: DelayFunction2<E, Pc, Tc, T>) => number;
+> = (delay: DelayFunction3<E, Pc, Tc, T>) => number;
 
 export type PerformPromise_F<
   E extends EventObject = EventObject,

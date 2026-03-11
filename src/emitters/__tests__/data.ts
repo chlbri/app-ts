@@ -19,6 +19,9 @@ export const machineEmitter1 = createMachine(
       next: {
         actions: ['assigN'],
       },
+      complete: {
+        actions: ['mockCompleteAction'],
+      },
     },
     states: {
       inactive: {
@@ -85,6 +88,11 @@ export const machineEmitter3 = createMachine(
           id: 'interval1',
           next: {
             actions: ['assigN'],
+          },
+          description: 'Interval emitter for active state',
+          complete: {
+            name: 'mockCompleteAction',
+            description: 'Mock complete action',
           },
         },
       },

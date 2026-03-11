@@ -16,7 +16,7 @@ import type { Interpreter } from '#interpreter';
 import type { StateValue } from '#states';
 import { IS_TEST } from '#utils';
 import type { EmptyObject } from '@bemedev/decompose';
-import {sleep} from '@bemedev/sleep';
+import { sleep } from '@bemedev/sleep';
 import type {
   Config,
   ExtractTagsFromConfig,
@@ -188,6 +188,11 @@ type ConstructContexts2_F<
   name?: string,
 ) => (value?: R, index?: number) => readonly [string, () => void];
 
+type OptionTupleOf = (
+  invite: string,
+  assertion: () => any,
+) => [string, () => any];
+
 type Option<
   C extends Config = Config,
   E extends EventsMap = GetEventsFromConfig<C>,
@@ -198,6 +203,7 @@ type Option<
   waiter: ConstructWaiter2_F;
   contexts: ConstructContexts2_F<Pc, Tc>;
   index: (_index?: number) => string;
+  tupleOf: OptionTupleOf;
 
   sender: {
     <T extends EventArgT<E>>(
@@ -363,6 +369,7 @@ export const constructTests = <
 
   const out: ConstructTestsResult2 = {
     ...helper?.({
+      tupleOf: (invite, assertion) => [invite, assertion],
       waiter: (DELAY = 150) => {
         return (times = 1, _index) => {
           const invite = `#${index(_index)} => Wait ${times} times ${DELAY}ms`;

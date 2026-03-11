@@ -12,7 +12,7 @@ import type { StateExtended } from '#states';
 import { reduceFnMap } from '#utils';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
 import { isDescriber, isString } from '~types';
-import type { PredicateMap, PredicateS2 } from '../types';
+import type { PredicateMap, PredicateS2, PredicateS3 } from '../types';
 
 export type _ToPredicateF = <
   E extends EventsMap = EventsMap,
@@ -48,7 +48,7 @@ export type ToPredicate_F = <
   guard: GuardConfig,
   predicates?: PredicateMap<Eo, Pc, Tc, T>,
 ) => {
-  predicate?: PredicateS2<Eo, Pc, Tc, T> | undefined;
+  predicate?: PredicateS3<Eo, Pc, Tc, T> | undefined;
   errors: string[];
 };
 

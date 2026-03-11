@@ -62,7 +62,14 @@ export type PredicateS2<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = boolean | FnR<E, Pc, Tc, T, boolean>;
+> = boolean | PredicateS3<E, Pc, Tc, T>;
+
+export type PredicateS3<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = FnR<E, Pc, Tc, T, boolean>;
 
 export type PredicateUnion<
   E extends EventObject = EventObject,

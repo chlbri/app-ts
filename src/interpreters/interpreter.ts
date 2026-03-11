@@ -960,7 +960,6 @@ export class Interpreter<
 
   #performPredicate: PerformPredicate_F<Eo, Pc, Tc, Ta> = predicate => {
     this._iterate();
-    if (typeof predicate === 'boolean') return predicate;
     return predicate(this.#cloneState);
   };
 
@@ -984,7 +983,6 @@ export class Interpreter<
 
   #performDelay: PerformDelay_F<Eo, Pc, Tc, Ta> = delay => {
     this._iterate();
-    if (typeof delay === 'number') return delay;
     return delay(this.#cloneState);
   };
 
@@ -1078,7 +1076,6 @@ export class Interpreter<
           this._cachedIntervals.splice(index, 1);
           const result = buildCallback();
           if (!result) return [];
-
           outs.push(result);
         } else outs.push(id);
         continue;

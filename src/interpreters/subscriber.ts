@@ -97,10 +97,7 @@ class SubscriberClass<
     const keys = Object.keys(map);
 
     return ({ event, ...rest }: St) => {
-      const check5 = typeof event === 'string';
       const _else = sub.else ?? nothing;
-      if (check5) return _any(_else({ event, ...rest }));
-
       const { type, payload } = event;
 
       for (const key of keys) {
