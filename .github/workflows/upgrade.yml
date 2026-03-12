@@ -37,7 +37,7 @@ jobs:
 
       - name: Upload workspace
         if: steps.check-changes.outputs.changes == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: updated-workspace
           path: |
@@ -56,19 +56,19 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Download workspace
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: updated-workspace
           path: .
 
       - name: Automated Version Bump
-        uses: phips28/gh-action-bump-version@master
+        uses: phips28/gh-action-bump-version@v11.0.7
         id: bump-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -84,7 +84,7 @@ jobs:
           skip-push: 'true'
 
       - name: Upload updated workspace with version
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: updated-workspace-with-version
           path: |
@@ -101,13 +101,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Download workspace with version
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: updated-workspace-with-version
           path: .
@@ -129,7 +129,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload workspace
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ready-workspace
           path: |
@@ -149,7 +149,7 @@ jobs:
         uses: chlbri/pnpmi-action@main
 
       - name: Download workspace with version
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ready-workspace
           path: .
@@ -174,7 +174,7 @@ jobs:
 
     steps:
       - name: Delete artifacts
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
