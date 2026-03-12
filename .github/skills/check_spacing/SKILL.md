@@ -1,3 +1,7 @@
+---
+
+---
+
 # Check Spacing
 
 Detect blank-line spacing violations between consecutive `test()` calls in

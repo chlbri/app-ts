@@ -1,3 +1,4 @@
+import { DEFAULT_MAX_TIME_PROMISE } from '#constants';
 import { constructTests, defaultC, defaultT } from '#fixtures';
 import { returnFalse } from '#guards';
 import { interpret } from '#interpreter';
@@ -207,5 +208,50 @@ describe('after', () => {
     test(...useStateValue('idle'));
     test(...useWaiter(3));
     test(...useStateValue('active'));
+  });
+
+  describe('#05 => after transition - delay is too long', () => {
+    const machine = createMachine(
+      {
+        initial: 'idle',
+        states: {
+          idle: { after: { DELAY: '/active' } },
+          active: {},
+        },
+      },
+      defaultT,
+    );
+
+    machine.addOptions(() => ({
+      delays: {
+        DELAY: DEFAULT_MAX_TIME_PROMISE * 1.5,
+      },
+    }));
+
+    const service = interpret(machine, defaultC);
+    const { useStateValue, start, stop, useLong } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useLong: waiter(DEFAULT_MAX_TIME_PROMISE),
+      }),
+    );
+
+    test(...start());
+    test(...useStateValue('idle'));
+
+    describe('#03 => Check the warnings', () => {
+      test('#01 => Length of warnings', () => {
+        expect(service._warningsCollector?.size).toBe(1);
+      });
+
+      test('#02 => Check the warning', () => {
+        expect(service._warningsCollector).toContain(
+          'Delay DELAY is too long',
+        );
+      });
+    });
+
+    test(...stop());
+    test(...useLong(2));
   });
 });

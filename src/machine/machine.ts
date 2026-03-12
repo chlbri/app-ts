@@ -4,70 +4,70 @@ import extract from '#bemedev/features/common/typings/extract';
 import byKey from '#bemedev/features/objects/typings/byKey';
 import keysOf from '#bemedev/features/objects/typings/keysOf';
 import type {
-  AllowedNames,
-  NotUndefined,
-  PrimitiveObject,
+    AllowedNames,
+    NotUndefined,
+    PrimitiveObject,
 } from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
 import { type EventsMap, type ToEvents2 } from '#events';
 import {
-  isDefinedS,
-  isNotDefinedS,
-  isNotValue,
-  isValue,
-  type DefinedValue,
+    isDefinedS,
+    isNotDefinedS,
+    isNotValue,
+    isValue,
+    type DefinedValue,
 } from '#guards';
 import { type PromiseFunction } from '#promises';
 import type {
-  State,
-  StateExtended,
-  StateP,
-  StatePextended,
+    State,
+    StateExtended,
+    StateP,
+    StatePextended,
 } from '#states';
 import {
-  flatMap,
-  initialConfig,
-  isAtomic,
-  isCompound,
-  nodeToValue,
-  valueToNodeConfig,
-  type FlatMapN,
-  type NodeConfig,
-  type StateValue,
+    flatMap,
+    initialConfig,
+    isAtomic,
+    isCompound,
+    nodeToValue,
+    valueToNodeConfig,
+    type FlatMapN,
+    type NodeConfig,
+    type StateValue,
 } from '#states';
 import { merge, reduceFnMap } from '#utils';
 import { partialCall, toArray } from '@bemedev/basifun';
 import { decompose, getByKey, type Decompose } from '@bemedev/decompose';
 
-import type { Action } from 'src/actions/types';
-import type { DelayFunction } from 'src/delays/types';
-import { ActorsConfigMap, ToEventObject, _EventsR } from '#events';
+import type { Action } from '#actions';
+import type { DelayFunction } from '#delays';
+import { _EventsR, ActorsConfigMap, ToEventObject } from '#events';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
+import type { PredicateS } from '#guards';
 import cloneDeep from 'clone-deep';
-import type { PredicateS } from 'src/guards/types';
 import { assignByKey, expandFnMap } from './functions';
 import type {
-  AddOptions_F,
-  AddOptionsParam_F,
-  AnyMachine,
-  Elements,
-  GetIO_F,
-  ScheduledData,
-  SendAction_F,
-  TimeAction_F,
-  VoidAction_F,
+    AddOptions_F,
+    AddOptionsParam_F,
+    AnyMachine,
+    Elements,
+    GetIO_F,
+    ScheduledData,
+    SendAction_F,
+    TimeAction_F,
+    VoidAction_F,
 } from './machine.types';
 import type {
-  Config,
-  ConfigDef,
-  ExtractTagsFromConfig,
-  GetActorKeysFromConfig,
-  GetEventsFromConfig,
-  MachineOptions,
-  NoExtraKeysConfig,
-  NoExtraKeysConfigDef,
-  TransformConfigDef,
+    Config,
+    ConfigDef,
+    ExtractTagsFromConfig,
+    GetActorKeysFromConfig,
+    GetEventsFromConfig,
+    MachineOptions,
+    NoExtraKeysConfig,
+    NoExtraKeysConfigDef,
+    TransformConfigDef,
 } from './types';
 
 /**

@@ -111,11 +111,6 @@ import type {
   WorkingStatus,
 } from './interpreter.types';
 
-import type {
-  ChildConfig,
-  EmitterConfig,
-  PromiseeConfig,
-} from 'src/actor.types';
 import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
   AllowedNames,
@@ -134,8 +129,13 @@ import type {
 } from '#machines';
 import type { FinallyConfig, PromiseeResult } from '#promises';
 import { createPausable } from '@bemedev/rx-pausable';
-import type { AnyMachine } from 'src/machine/machine.types';
 import { createScheduler } from '@bemedev/scheduler';
+import type {
+  ChildConfig,
+  EmitterConfig,
+  PromiseeConfig,
+} from 'src/actor.types';
+import type { AnyMachine } from 'src/machine/machine.types';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 // TODO: Reuse my custom event loop
@@ -703,25 +703,27 @@ export class Interpreter<
     });
   };
 
-  #pauseChildren = () => {
-    this.#collectedChildren.forEach(({ service }) => service.pause());
-  };
-
-  #stopChildren = (
-    filter: (child: CollectedService) => boolean = () => true,
+  #pauseChildren = (
+    filter: Parameters<Array<CollectedService>['filter']>[0] = () => true,
   ) => {
     this.#collectedChildren
       .filter(filter)
-      .forEach(({ service, from, id }) => {
-        service.stop();
-        this.#collectedChildren = this.#collectedChildren.filter(
-          f => f.id !== id && f.from !== from,
-        );
-      });
+      .forEach(({ service }) => service.pause());
+  };
+
+  #stopChildren = (
+    filter: Parameters<Array<CollectedService>['filter']>[0] = () => true,
+  ) => {
+    this.#collectedChildren.filter(filter).forEach(({ service, id }) => {
+      service.stop();
+      this.#collectedChildren = this.#collectedChildren.filter(
+        f => f.id !== id,
+      );
+    });
   };
 
   #resumeChildren = (
-    filter: (child: CollectedService) => boolean = () => true,
+    filter: Parameters<Array<CollectedService>['filter']>[0] = () => true,
   ) => {
     this.#collectedChildren
       .filter(filter)
@@ -761,17 +763,34 @@ export class Interpreter<
    * Performs all self transitions and activities of this {@linkcode Interpreter} service.
    */
   #next = () => {
+    const filter: Parameters<
+      Array<{ from: string; id: string }>['filter']
+    >[0] = ({ from, id }, _, all) => {
+      const isOutside = !this.#isInsideValue(from);
+
+      const hasSiblingsWithSameId = all
+        .filter(val => val.from !== from)
+        .map(({ id }) => id)
+        .includes(id);
+
+      const check1 = isOutside && hasSiblingsWithSameId;
+      if (check1) return false;
+      return isOutside;
+    };
+
     this.#collectChildren();
     this.#collectPausables();
     this.#selfTransitionsCounter++;
     this.#pauseAllActivities();
     this.#performActivities();
-    this.#stopPausables(({ from }) => !this.#isInsideValue(from));
-    this.#stopChildren(({ from }) => !this.#isInsideValue(from));
+    this.#stopPausables(filter);
+    this.#pausePausables(({ from }) => this.#isInsideValue(from));
+    this.#pauseChildren(({ from }) => this.#isInsideValue(from));
+    this.#stopChildren(filter);
     this.#startChildren();
-    this.#resumeChildren();
+    this.#resumeChildren(({ from }) => !this.#isInsideValue(from));
     this.#startPausables();
-    this.#resumePausables();
+    this.#resumePausables(({ from }) => this.#isInsideValue(from));
 
     this.#abortablePromisees
       .filter(({ from }) => {
@@ -1419,25 +1438,31 @@ export class Interpreter<
     this.#collectedPausables.forEach(({ pausable }) => pausable.start());
   };
 
-  #resumePausables = () => {
-    this.#collectedPausables.forEach(({ pausable }) => pausable.resume());
-  };
-
-  #stopPausables = (
+  #resumePausables = (
     filter: (value: CollectedPausable) => boolean = () => true,
   ) => {
     this.#collectedPausables
       .filter(filter)
-      .forEach(({ pausable, from, id }) => {
-        pausable.stop();
-        this.#collectedPausables = this.#collectedPausables.filter(
-          f => f.id !== id && f.from !== from,
-        );
-      });
+      .forEach(({ pausable }) => pausable.resume());
   };
 
-  #pausePausables = () => {
-    this.#collectedPausables.forEach(({ pausable }) => pausable.pause());
+  #stopPausables = (
+    filter: Parameters<Array<CollectedPausable>['filter']>[0] = () => true,
+  ) => {
+    this.#collectedPausables.filter(filter).forEach(({ pausable, id }) => {
+      pausable.stop();
+      this.#collectedPausables = this.#collectedPausables.filter(
+        f => f.id !== id,
+      );
+    });
+  };
+
+  #pausePausables = (
+    filter: (value: CollectedPausable) => boolean = () => true,
+  ) => {
+    this.#collectedPausables
+      .filter(filter)
+      .forEach(({ pausable }) => pausable.pause());
   };
 
   /**
@@ -1644,8 +1669,6 @@ export class Interpreter<
                   payload,
                 } satisfies EventObject;
 
-                console.warn('ok build', event);
-
                 this.#changeEvent(_any(event));
                 const transitions = toArray<TransitionConfig>(error);
                 this.__performTransitions(...transitions);
@@ -1706,68 +1729,69 @@ export class Interpreter<
             __subscribe: AddSubscriber_F;
           };
 
-          si.__subscribe(
-            payload => {
-              const type = eventToType(payload.event);
+          const checkOn = on !== undefined && Object.keys(on).length > 0;
+          if (checkOn) {
+            si.__subscribe(
+              payload => {
+                const type = eventToType(payload.event);
 
-              const event = {
-                type: `${id}::on::${type}`,
-                payload,
-              } satisfies EventObject;
+                const event = {
+                  type: `${id}::on::${type}`,
+                  payload,
+                } satisfies EventObject;
 
-              this.#changeEvent(_any(event));
-              const transitions = toArray<TransitionConfig>(on?.[type]);
-              this.__performTransitions(...transitions);
-            },
-            {
-              equals: (a, b) => {
-                const check1 =
-                  on === undefined || Object.keys(on).length === 0;
-                if (check1) return true;
-                const checkEvents = a.event.type === b.event.type;
-                return checkEvents;
+                this.#changeEvent(_any(event));
+                const transitions = toArray<TransitionConfig>(on?.[type]);
+                this.__performTransitions(...transitions);
               },
-            },
-          );
+              {
+                equals: (a, b) => a.event.type === b.event.type,
+                id: `${id}::on`,
+              },
+            );
+          }
 
-          si.__subscribe(
-            ({ context }) => {
-              const entries = Object.entries(contexts ?? {});
-              entries.forEach(([key, path]) => {
-                const pContext =
-                  key === '.'
-                    ? structuredClone(context)
-                    : getByKey.low(context, key);
+          const checkContexts =
+            contexts !== undefined && Object.keys(contexts).length > 0;
 
-                if (path === '.') return this.#mergeContexts({ pContext });
-                const cb = () => {
-                  return assignByKey.low(this.#pContext, path, pContext);
-                };
-                this.#schedulerContexts.schedule(cb);
-              });
-            },
-            {
-              equals: (a, b) => {
-                const ac = a.context;
-                const bc = b.context;
-                const check = ac === bc;
-                if (check) return true;
-                const keys = Object.keys(contexts ?? {});
+          if (checkContexts) {
+            si.__subscribe(
+              ({ context }) => {
+                const entries = Object.entries(contexts);
+                entries.forEach(([key, path]) => {
+                  const pContext =
+                    key === '.'
+                      ? structuredClone(context)
+                      : getByKey.low(context, key);
 
-                for (const key of keys) {
-                  if (key === '.') {
-                    if (!equal(ac, bc)) return false;
-                    continue;
+                  if (path === '.')
+                    return this.#mergeContexts({ pContext });
+                  const cb = () => {
+                    return assignByKey.low(this.#pContext, path, pContext);
+                  };
+                  this.#schedulerContexts.schedule(cb);
+                });
+              },
+              {
+                equals: (a, b) => {
+                  const ac = a.context;
+                  const bc = b.context;
+                  if (equal(ac, bc)) return true;
+                  const keys = Object.keys(contexts);
+
+                  for (const key of keys) {
+                    if (key === '.') return equal(ac, bc);
+                    const _a = getByKey.low(ac, key);
+                    const _b = getByKey.low(bc, key);
+                    if (!equal(_a, _b)) return false;
                   }
-                  const _a = getByKey.low(ac, key);
-                  const _b = getByKey.low(bc, key);
-                  if (!equal(_a, _b)) return false;
-                }
 
-                return true;
+                  return true;
+                },
+                id: `${id}::contexts`,
               },
-            },
-          );
+            );
+          }
 
           return {
             service: si,
@@ -1979,10 +2003,6 @@ export class Interpreter<
   ) => {
     const eventsMap = this.#machine.eventsMap;
     const actorsMap = this.#machine.actorsMap;
-    const find = Array.from(this.#innerSubscribers).find(
-      f => f.id === options?.id,
-    );
-    if (find) return find;
 
     const subscriber = createSubscriber(
       eventsMap,

@@ -7,12 +7,7 @@ import { nothing, reduceDescriber } from '#utils';
 import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
 import path from 'path';
-import {
-  constructSend,
-  constructStateValue,
-  defaultT,
-  fakeWaiter,
-} from '../../fixtures';
+import { constructTests, defaultT, fakeWaiter } from '../../fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => vi.useFakeTimers());
@@ -982,21 +977,13 @@ describe('machine coverage', () => {
     );
 
     const service = interpret(machine);
-    const useValue = constructStateValue(service);
-    const useSendNEXT = (index: number) => {
-      const func = constructSend(service);
-      return func('NEXT', index);
-    };
-
-    test('#01 => start the service', () => {
-      service.start();
-    });
-
-    test(...useValue('idle', 1));
-    test(...useSendNEXT(2));
+    const { useStateValue, start, send } = constructTests(service);
+    test(...start());
+    test(...useStateValue('idle'));
+    test(...send('NEXT'));
 
     test(
-      ...useValue(
+      ...useStateValue(
         {
           state1: {
             state11: {

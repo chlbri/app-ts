@@ -83,7 +83,7 @@ export type MachineConfig = Describer | string;
  * @see {@linkcode MachineConfig}
  * @see {@linkcode SingleOrArrayL}
  */
-export type Config = ConfigNode & {
+export type Config = NodeConfig & {
   readonly strict?: boolean;
   readonly __longRuns?: boolean;
 };

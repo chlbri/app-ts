@@ -1,12 +1,8 @@
-import type {
-  Action2,
-  ActionConfig,
-  ActionResult,
-} from 'src/actions/types';
+import type { Action2, ActionConfig, ActionResult } from '#actions';
 
+import type { DefinedValue } from '#guards';
 import type { NodeConfig, StateExtended, StateValue } from '#states';
 import type { Decompose } from '@bemedev/decompose';
-import type { DefinedValue } from 'src/guards/types';
 
 import type {
   Fn,
@@ -21,8 +17,7 @@ import type {
   EventObject,
   EventsMap,
 } from '#events';
-import type { FnMap, FnR } from 'src/types/primitives';
-import type { ValuesOf } from '~types';
+import type { FnMap, FnR, ValuesOf } from '~types';
 import type {
   Config,
   EventsMapFrom,
