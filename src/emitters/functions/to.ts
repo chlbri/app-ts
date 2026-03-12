@@ -25,7 +25,7 @@ export type ToEmitter_F = <
 >(
   events: E,
   actorsMap: A,
-  emitter: EmitterConfig,
+  emitter: EmitterConfig & { __id: string },
   options?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
 ) => Emitter<Eo, Pc, Tc, T, R>;
 
@@ -51,7 +51,7 @@ export const toEmitter: ToEmitter_F = (
   const src = toEmitterSrc(
     events,
     actorsMap,
-    emitter.src,
+    emitter.__id,
     options?.actors?.emitters,
   );
 

@@ -25,7 +25,7 @@ export type ToPromise_F = <
 >(
   events: E,
   actorsMap: A,
-  src: PromiseeConfig,
+  src: PromiseeConfig & { __id: string },
   promises?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
 ) => Promisee<Eo, Pc, Tc, T, R>;
 
@@ -51,7 +51,7 @@ export const toPromise: ToPromise_F = (
   const src = toPromiseSrc(
     events,
     actorsMap,
-    promise.src,
+    promise.__id,
     options?.actors?.promises,
   );
 

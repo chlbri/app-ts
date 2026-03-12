@@ -6,6 +6,7 @@ import type {
 import type { EmitterConfigMap } from '#emitters';
 import type { ChildConfigMap } from 'src/machine/types';
 import type { INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE } from './constants';
+import { EmptyObject } from '@bemedev/decompose';
 
 /**
  * Represents an event object with a type and payload.
@@ -183,7 +184,10 @@ export type EventArgT<E extends EventsMap> =
 export type ToEventObject<
   T extends AllEvent,
   Ex extends string = never,
-> = Exclude<T extends string ? { type: T; payload: {} } : T, { type: Ex }>;
+> = Exclude<
+  T extends string ? { type: T; payload: EmptyObject } : T,
+  { type: Ex }
+>;
 
 export type EventToType<
   T extends AllEvent,

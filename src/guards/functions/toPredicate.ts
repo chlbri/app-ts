@@ -12,7 +12,7 @@ import type { StateExtended } from '#states';
 import { reduceFnMap } from '#utils';
 import recursive, { type GuardDefUnion } from '@bemedev/boolean-recursive';
 import { isDescriber, isString } from '~types';
-import type { PredicateMap, PredicateS2, PredicateS3 } from '../types';
+import type { PredicateMap, PredicateS3 } from '../types';
 
 export type _ToPredicateF = <
   E extends EventsMap = EventsMap,
@@ -118,7 +118,7 @@ const _toPredicate: _ToPredicateF = (
  *
  * @see {@linkcode ToEvents}
  * @see {@linkcode PrimitiveObject}
- * @see {@linkcode PredicateS2}
+ * @see {@linkcode PredicateS3}
  * @see {@linkcode GuardDefUnion}
  * @see {@linkcode reduceFnMap}
  * @see {@linkcode isDescriber}

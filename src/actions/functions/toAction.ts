@@ -13,7 +13,7 @@ import type {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ActionResult,
 } from 'src/actions/types';
-import { fromDescriber, isDescriber } from '~types';
+import { fromDescriber } from '~types';
 
 export type ToAction_F = <
   E extends EventsMap = EventsMap,
@@ -41,7 +41,6 @@ export type ToAction_F = <
  * @see {@linkcode PrimitiveObject}
  * @see {@linkcode ActionResult}
  * @see {@linkcode reduceFnMap}
- * @see {@linkcode isDescriber}
  */
 export const toAction: ToAction_F = (
   events,

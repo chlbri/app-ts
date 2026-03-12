@@ -24,7 +24,6 @@ import type {
   ActorConfig,
   ChildConfig,
   EmitterConfig,
-  ExtractSrcFromActor,
   PromiseeConfig,
 } from 'src/actor.types';
 import type { FromGuard, GuardConfig, Predicate } from 'src/guards/types';
@@ -411,7 +410,6 @@ export type ExtractSrcKeyFromTransitions<
  * @template : {@linkcode TransitionsConfig} [T] - The transitions configuration type.
  * @returns The source keys extracted from the transitions configuration.
  *
- * @see {@linkcode ExtractSrcFromActor} for extracting source from promises.
  * @see {@linkcode NotUndefined} for ensuring the type is not undefined.
  * @see {@linkcode ReduceArray} for reducing arrays to their elements.
  * */
