@@ -41,7 +41,6 @@
         "instanceLimit": 1
       }
     },
-
     {
       "label": "pnpm:lint",
       "type": "npm",
@@ -63,28 +62,5 @@
         "instanceLimit": 1
       }
     },
-
-    {
-      "label": "pnpm:test",
-      "type": "npm",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "new",
-        "group": "test",
-        "clear": true,
-        "close": true
-      },
-      "group": "test",
-      "script": "test",
-      "isBackground": false,
-      "detail": "Test the package",
-      "dependsOn": "pnpm:lint",
-      "runOptions": {
-        "runOn": "folderOpen",
-        "instanceLimit": 1
-      }
-    }
   ]
 }
