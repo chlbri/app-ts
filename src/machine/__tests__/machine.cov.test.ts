@@ -176,7 +176,7 @@ describe('machine coverage', () => {
           test(...useIteratorC(6, 3));
           const array = [
             'Debounced action executed',
-            ...Array(16).fill('nothing call nothing'),
+            // ...Array(16).fill('nothing call nothing'),
           ];
           describe(...useConsole(4, ...array));
         });
@@ -199,13 +199,7 @@ describe('machine coverage', () => {
           test(...useIterator(6, 2));
           test(...useIteratorC(6, 3));
 
-          describe(
-            ...useConsole(
-              4,
-              'NEXT time, you will see!!',
-              ...Array(6).fill('nothing call nothing'),
-            ),
-          );
+          describe(...useConsole(4, 'NEXT time, you will see!!'));
         });
 
         test(...useWaiter(6, 5));
@@ -213,13 +207,7 @@ describe('machine coverage', () => {
         describe('#06 => Check the service', () => {
           test(...useIterator(18, 1));
           test(...useIteratorC(12, 2));
-          const array = [
-            'sendPanelToUser',
-            ...Array(2).fill('nothing call nothing'),
-            ...Array(5)
-              .fill(['sendPanelToUser', 'nothing call nothing'])
-              .flat(),
-          ];
+          const array = Array(6).fill('sendPanelToUser');
           describe(...useConsole(3, ...array));
         });
 
@@ -285,12 +273,8 @@ describe('machine coverage', () => {
           test(...useIterator(42, 2));
           test(...useIteratorC(24, 3));
           const array = [
-            ...Array(4).fill('nothing call nothing'),
             'sendPanelToUser',
-            ...Array(2).fill('nothing call nothing'),
-            ...Array(11)
-              .fill(['sendPanelToUser', 'nothing call nothing'])
-              .flat(),
+            ...Array(11).fill('sendPanelToUser'),
           ];
           describe(...useConsole(4, ...array));
         });
@@ -313,11 +297,7 @@ describe('machine coverage', () => {
           test(...useIterator(42, 2));
           test(...useIteratorC(24, 3));
           test(...useInput('', 4));
-          const array = [
-            ['WRITE with', ':', '""'],
-            ...Array(6).fill('nothing call nothing'),
-          ];
-          describe(...useConsole(5, ...array));
+          describe(...useConsole(5, ['WRITE with', ':', '""']));
         });
 
         test(...useWaiter(12, 16));
@@ -341,13 +321,8 @@ describe('machine coverage', () => {
           const array = [
             'sendPanelToUser',
             'Input, please !!',
-            ...Array(2).fill('nothing call nothing'),
             ...Array(11)
-              .fill([
-                'sendPanelToUser',
-                'Input, please !!',
-                'nothing call nothing',
-              ])
+              .fill(['sendPanelToUser', 'Input, please !!'])
               .flat(),
           ];
 
@@ -372,11 +347,7 @@ describe('machine coverage', () => {
           test(...useIterator(66, 2));
           test(...useIteratorC(36, 3));
           test(...useInput('', 4));
-          const array = [
-            ['WRITE with', ':', `"${INPUT}"`],
-            ...Array(6).fill('nothing call nothing'),
-          ];
-          describe(...useConsole(5, ...array));
+          describe(...useConsole(5, ['WRITE with', ':', `"${INPUT}"`]));
         });
 
         test(...useWaiter(12, 20));
@@ -397,14 +368,7 @@ describe('machine coverage', () => {
           test(...useIterator(90, 2));
           test(...useIteratorC(48, 3));
           test(...useInput('', 4));
-          const array = [
-            'sendPanelToUser',
-            ...Array(2).fill('nothing call nothing'),
-            ...Array(11)
-              .fill(['sendPanelToUser', 'nothing call nothing'])
-              .flat(),
-          ];
-          describe(...useConsole(5, ...array));
+          describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
         });
 
         test(
@@ -529,8 +493,8 @@ describe('machine coverage', () => {
               expect(log).toBeCalledTimes(strings.length);
             });
 
-            test('#02 => Log is called "154" times', () => {
-              expect(log).toBeCalledTimes(154);
+            test('#02 => Log is called "70" times', () => {
+              expect(log).toBeCalledTimes(70);
             });
           });
 

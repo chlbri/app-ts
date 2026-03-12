@@ -1012,7 +1012,7 @@ describe('Composition', () => {
         });
 
         test('#03', () => {
-          expect(dumbFn).toBeCalledTimes(128);
+          expect(dumbFn).toBeCalledTimes(6);
         });
 
         test('#04 => Log the time of all tests', () => {

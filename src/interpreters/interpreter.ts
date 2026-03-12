@@ -1437,9 +1437,7 @@ export class Interpreter<
   };
 
   #pausePausables = () => {
-    this.#collectedPausables.forEach(({ pausable: emitter }) =>
-      emitter.pause(),
-    );
+    this.#collectedPausables.forEach(({ pausable }) => pausable.pause());
   };
 
   /**
@@ -1722,10 +1720,12 @@ export class Interpreter<
               this.__performTransitions(...transitions);
             },
             {
-              equals: (_, b) => {
-                const keys = Object.keys(on ?? {});
-                const key = eventToType(b.event);
-                return keys.includes(key);
+              equals: (a, b) => {
+                const check1 =
+                  on === undefined || Object.keys(on).length === 0;
+                if (check1) return true;
+                const checkEvents = a.event.type === b.event.type;
+                return checkEvents;
               },
             },
           );

@@ -10,6 +10,8 @@ import type {
   EventArgT,
   EventObject,
   EventsMap,
+  ToEventObject,
+  ToEvents2,
   ToEventsR2,
 } from '#events';
 import type { Interpreter } from '#interpreter';
@@ -22,12 +24,11 @@ import type {
   ExtractTagsFromConfig,
   GetEventsFromConfig,
   MachineOptions,
-  SimpleMachineOptions2,
 } from 'src/machine/types';
 import { buildIndex, buildInvite } from './invite';
 
-export * from './invite';
 export * from './constants';
+export * from './invite';
 
 type TestArr = readonly [string, () => void];
 
@@ -64,11 +65,10 @@ type ConstructStateValue_F = <
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  E extends EventsMap = GetEventsFromConfig<C>,
+  E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
 >(
-  service: Interpreter<C, Pc, Tc, E, A, Mo>,
+  service: Interpreter<C, Pc, Tc, E, A>,
 ) => _ConstructStateValue_F;
 
 export const constructStateValue: ConstructStateValue_F = service => {
@@ -89,10 +89,9 @@ type ConstructContexts_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = ActorsConfigMap,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
   R = { context: Tc; pContext: Pc },
 >(
-  service: Interpreter<C, Pc, Tc, E, A, Mo>,
+  service: Interpreter<C, Pc, Tc, E, A>,
   selector?: (result: { context: Tc; pContext: Pc }) => R,
   name?: string,
 ) => (index: number, value?: R) => readonly [string, () => void];
@@ -132,9 +131,8 @@ type ConstructSend_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   E extends EventsMap = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = ActorsConfigMap,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
 >(
-  service: Interpreter<C, Pc, Tc, E, A, Mo>,
+  service: Interpreter<C, Pc, Tc, E, A>,
 ) => (_event: EventArg<E>, index: number) => readonly [string, () => void];
 
 export const constructSend: ConstructSend_F = service => {
@@ -288,12 +286,22 @@ export const constructTests = <
   const C extends Config = Config,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-  const E extends EventsMap = GetEventsFromConfig<C>,
+  const E extends EventsMap = EventsMap,
   const A extends ActorsConfigMap = ActorsConfigMap,
-  Mo extends SimpleMachineOptions2 = MachineOptions<C, E, A, Pc, Tc>,
   T extends object = object,
+  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<
+    C,
+    E,
+    A,
+    Pc,
+    Tc
+  >,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
+  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 >(
-  service: Interpreter<C, Pc, Tc, E, A, Mo>,
+  service: Interpreter<C, Pc, Tc, E, A, Mo, Eo, Ta>,
   helper?: (option: Option<C, E, A, Pc, Tc>) => T,
   startIndex = 0,
 ): ConstructTestsResult<C, E, T> => {

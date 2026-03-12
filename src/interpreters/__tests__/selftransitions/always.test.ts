@@ -1,5 +1,4 @@
 import { constructTests, defaultC, defaultT } from '#fixtures';
-import { returnFalse } from '#guards';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machines';
 
@@ -69,9 +68,9 @@ describe('Integration testing for interpret, Children', () => {
       defaultT,
     );
 
-    machine.addOptions(() => ({
+    machine.addOptions(({ isDefined }) => ({
       delays: { DELAY3: DELAY * 3 },
-      predicates: { returnFalse },
+      predicates: { returnFalse: isDefined('context') },
     }));
     const service = interpret(machine, defaultC);
 
