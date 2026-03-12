@@ -1,8 +1,11 @@
-import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '#events';
-import type { StateExtended } from '#interpreters';
-import type { DirectMerge_F } from '#machines';
-import type { Describer, RecordS } from '~types';
+import type {
+  NotUndefined,
+  PrimitiveObject,
+} from '#bemedev/globals/types';
+import type { ActorsConfigMap, EventObject } from '#events';
+import type { Transition } from '#transitions';
+import type { Observable } from 'rxjs';
+import type { Describer, FnMap, FnR, RecordS } from '~types';
 
 export type Subscriber = {
   unsubscribe: () => void;
@@ -17,51 +20,57 @@ export type Subscribable = {
  *
  * @see {@linkcode Describer} for more details.
  */
-export type EmitterConfig = Describer | string;
+export type EmitterSrcConfig = Describer | string;
+
+export type EmitterDef = {
+  next: PrimitiveObject;
+  error: PrimitiveObject;
+};
+
+export type EmitterConfigMap = RecordS<EmitterDef>;
 
 export type Emitter<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (args: {
-  merge: DirectMerge_F<Pc, Tc>;
-  send: (event: EventArg<E>) => void;
-  selector: <T>(
-    func: (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => T,
-  ) => () => T;
-}) => {
-  start: () => void;
-  pause: () => void;
-  resume: () => void;
-  stop: () => void;
-};
-
-export type Emitter2<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
 > = {
-  id: string;
-  from: string;
-  emitter: Emitter<E, P, Pc, Tc>;
+  src: EmitterFunction2<E, Pc, Tc, T, R>;
+  description?: string;
+  next: Transition<E, Pc, Tc, T>[];
+  error: Transition<E, Pc, Tc, T>[];
+  complete: Transition<E, Pc, Tc, T>[];
 };
 
-export type Emitter3 = {
-  id: string;
-  from: string;
-  instance: {
-    start: () => void;
-    pause: () => void;
-    resume: () => void;
-    stop: () => void;
-  };
-};
+export type EmitterReturn<
+  K extends string,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = NotUndefined<A['emitters']>[K]['next'] extends infer P
+  ? unknown extends P
+    ? never
+    : P
+  : never;
 
-export type EmitterMap<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+export type EmitterFunction<
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<RecordS<Emitter<E, P, Pc, Tc>>>;
+  T extends string = string,
+  R = any,
+> = FnMap<E, Pc, Tc, T, Observable<R>, `${string}::${'next' | 'error'}`>;
+
+export type EmitterFunction2<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
+> = FnR<E, Pc, Tc, T, Observable<R>>;
+
+export type EmittersMap<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = RecordS<EmitterFunction2<E, Pc, Tc, T>>;

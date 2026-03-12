@@ -1,27 +1,35 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
-import type { SimpleMachineOptions } from '#machines';
+import {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import { reduceFnMap } from '#utils';
-import type { PromiseFunction2 } from '../types';
+import type { PromiseFunction2, PromisesMap } from '../types';
 
 export type ToPromiseSrc_F = <
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
-  TC extends PrimitiveObject = PrimitiveObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
-  promisees: P,
+  promisees: A,
   src: string,
-  promises?: SimpleMachineOptions<E, P, Pc, TC>['promises'],
-) => PromiseFunction2<E, P, Pc, TC> | undefined;
+  promises?: PromisesMap<Eo, Pc, Tc, T>,
+) => PromiseFunction2<Eo, Pc, Tc, T, R> | undefined;
 
 /**
  * Converts a source string to a function that can be used to retrieve the promise.
  * @param events of type {@linkcode EventsMap}, the events map.
- * @param promisees of type {@linkcode PromiseeMap}, the promisees map.
+ * @param promisees of type {@linkcode ActorsConfigMap}, the actors config map.
  * @param src of type string, the source string to convert.
- * @param promises of type {@linkcode SimpleMachineOptions}, the machine options containing promises.
  * @returns a function that retrieves the promise or undefined if not found.
  *
  * @see {@linkcode reduceFnMap} for reducing the function map.
@@ -35,5 +43,5 @@ export const toPromiseSrc: ToPromiseSrc_F = (
 ) => {
   const fn = promises?.[src];
   const func = fn ? reduceFnMap(events, promisees, fn) : undefined;
-  return func;
+  return func as any;
 };

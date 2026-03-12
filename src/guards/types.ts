@@ -1,9 +1,13 @@
 import type { ActionConfig, FromActionConfig } from '#actions';
-import type { PrimitiveObject } from '#bemedev/globals/types';
+import type {
+  NotUndefined,
+  PrimitiveObject,
+} from '#bemedev/globals/types';
 import type { GUARD_TYPE } from '#constants';
-import type { EventsMap, PromiseeMap } from '#events';
-import type { KeysMatching } from '@bemedev/decompose';
-import type { FnMap, FnR, RecordS, ReduceArray } from '~types';
+import type { EventObject } from '#events';
+import type { EmptyObject, KeysMatching } from '@bemedev/decompose';
+import type { FnMap, FnR } from 'src/types/primitives';
+import type { RecordS, ReduceArray } from '~types';
 
 type gType = typeof GUARD_TYPE;
 type and = gType['and'];
@@ -47,50 +51,57 @@ export type FromGuard<T extends GuardConfig> = T extends ActionConfig
       : never;
 
 export type PredicateS<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, P, Pc, Tc, boolean>;
+  T extends string = string,
+> = boolean | FnMap<E, Pc, Tc, T, boolean>;
 
 export type PredicateS2<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<E, P, Pc, Tc, boolean>;
+  T extends string = string,
+> = boolean | PredicateS3<E, Pc, Tc, T>;
+
+export type PredicateS3<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = FnR<E, Pc, Tc, T, boolean>;
 
 export type PredicateUnion<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > =
-  | PredicateS<E, P, Pc, Tc>
-  | PredicateAnd<E, P, Pc, Tc>
-  | PredicateOr<E, P, Pc, Tc>;
+  | PredicateS<E, Pc, Tc, T>
+  | PredicateAnd<E, Pc, Tc, T>
+  | PredicateOr<E, Pc, Tc, T>;
 
 export type PredicateAnd<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
-  and: PredicateUnion<E, P, Pc, Tc>[];
+  and: PredicateUnion<E, Pc, Tc, T>[];
 };
 
 export type PredicateOr<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
-  or: PredicateUnion<E, P, Pc, Tc>[];
+  or: PredicateUnion<E, Pc, Tc, T>[];
 };
 
 /**
  * Union of all predicate functions.
- * @template : type {@linkcode EventsMap} [E], the events map to use for resolving the predicate.
+ * @template : type {@linkcode EventObject} [E], the events map to use for resolving the predicate.
  * @template : type {@linkcode PromiseeMap} [P], the promisees map to use for resolving the predicate.
  * @template : [Pc], the type of the private context.
  * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
@@ -102,14 +113,14 @@ export type PredicateOr<
  * @see {@linkcode PredicateOr} for combining multiple predicates with OR logic.
  */
 export type Predicate<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > =
-  | PredicateS2<E, P, Pc, Tc>
-  | PredicateAnd<E, P, Pc, Tc>
-  | PredicateOr<E, P, Pc, Tc>;
+  | PredicateS2<E, Pc, Tc, T>
+  | PredicateAnd<E, Pc, Tc, T>
+  | PredicateOr<E, Pc, Tc, T>;
 
 /**
  * Represents a map of predicates, where each key is a string and each value is a {@linkcode Predicate}.
@@ -124,18 +135,20 @@ export type Predicate<
  * @see {@linkcode RecordS} for single predicate function.
  */
 export type PredicateMap<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<RecordS<PredicateS<E, P, Pc, Tc>>>;
+  T extends string = string,
+> = Partial<RecordS<PredicateS<E, Pc, Tc, T>>>;
 
 type _DefinedValue<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = KeysMatching<{
-  pContext: Pc;
-  context: Tc;
+  pContext: NotUndefined<Pc> extends never
+    ? EmptyObject
+    : NotUndefined<Pc>;
+  context: NotUndefined<Tc> extends never ? EmptyObject : NotUndefined<Tc>;
 }>;
 
 /**

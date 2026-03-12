@@ -1,12 +1,12 @@
 import { interpret } from '#interpreter';
 import { createMachine } from '#machines';
 import { typings } from '#utils';
-import sleep from '@bemedev/sleep';
+import { sleep } from '@bemedev/sleep';
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
 
 describe('Tests for longrun promises', () => {
-  const DELAY = 450_000;
+  const LONG_DELAY = 450_000;
   const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
   afterAll(() => {
     log.mockRestore();
@@ -24,10 +24,11 @@ describe('Tests for longrun promises', () => {
             },
           },
           promise: {
-            promises: {
-              src: 'longRunTask',
-              then: '/success',
-              catch: '/failure',
+            actors: {
+              longRunTask: {
+                then: '/success',
+                catch: '/failure',
+              },
             },
           },
           success: {
@@ -40,10 +41,20 @@ describe('Tests for longrun promises', () => {
       },
       typings({
         eventsMap: { NEXT: 'primitive' },
+        actorsMap: {
+          promisees: {
+            longRunTask: {
+              then: 'primitive',
+              catch: 'primitive',
+            },
+          },
+        },
       }),
     ).provideOptions(({ voidAction }) => ({
-      promises: {
-        longRunTask: () => sleep(DELAY * 2),
+      actors: {
+        promises: {
+          longRunTask: () => sleep(LONG_DELAY * 2) as any,
+        },
       },
       actions: {
         notifySuccess: voidAction(() => console.log('Success!')),
@@ -60,7 +71,7 @@ describe('Tests for longrun promises', () => {
       log.mockClear();
     });
 
-    const useWaiter = createFakeWaiter.withDefaultDelay(vi, DELAY);
+    const useWaiter = createFakeWaiter.withDefaultDelay(vi, LONG_DELAY);
 
     const strings: (string | string[])[] = [];
     const useConsole = (
@@ -99,7 +110,6 @@ describe('Tests for longrun promises', () => {
 
     type SE = Parameters<typeof service.send>[0];
 
-    // #region Hooks
     const useSend = (event: SE, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
 
@@ -109,8 +119,11 @@ describe('Tests for longrun promises', () => {
     // #endregion
 
     test('#00 => Start the service', service.start);
-    test('#01 => __longRun value', () =>
-      expect(service.longRuns).toBe(true));
+
+    test('#01 => __longRun value', () => {
+      expect(service.longRuns).toBe(true);
+    });
+
     test(...useValue('idle', 2));
     describe(...useConsole(3));
     test(...useSend('NEXT', 4));
@@ -135,10 +148,11 @@ describe('Tests for longrun promises', () => {
             },
           },
           promise: {
-            promises: {
-              src: 'longRunTask',
-              then: '/success',
-              catch: '/failure',
+            actors: {
+              longRunTask: {
+                then: '/success',
+                catch: '/failure',
+              },
             },
           },
           success: {
@@ -151,10 +165,20 @@ describe('Tests for longrun promises', () => {
       },
       typings({
         eventsMap: { NEXT: 'primitive' },
+        actorsMap: {
+          promisees: {
+            longRunTask: {
+              then: 'primitive',
+              catch: 'primitive',
+            },
+          },
+        },
       }),
     ).provideOptions(({ voidAction }) => ({
-      promises: {
-        longRunTask: () => sleep(DELAY * 2),
+      actors: {
+        promises: {
+          longRunTask: () => sleep(LONG_DELAY * 2) as any,
+        },
       },
       actions: {
         notifySuccess: voidAction(() => console.log('Success!')),
@@ -171,7 +195,7 @@ describe('Tests for longrun promises', () => {
       log.mockClear();
     });
 
-    const useWaiter = createFakeWaiter.withDefaultDelay(vi, DELAY);
+    const useWaiter = createFakeWaiter.withDefaultDelay(vi, LONG_DELAY);
 
     const strings: (string | string[])[] = [];
     const useConsole = (

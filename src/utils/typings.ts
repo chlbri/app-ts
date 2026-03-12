@@ -2,6 +2,7 @@ import type {
   AnyArray,
   Keys,
   NOmit,
+  NotUndefined,
   Ru,
   SoA,
   SoRa,
@@ -85,15 +86,18 @@ type _PrimitiveObject = __PrimitiveObject | Maybe | ArrayCustom;
  * @remark
  */
 type PrimitiveObject = _PrimitiveObject | SoRa<_PrimitiveObject>;
+type ActorsMap = Partial<
+  Record<'children' | 'promisees' | 'emitters', PrimitiveObject>
+>;
 
 export type Args<
   E extends PrimitiveObject = PrimitiveObject,
-  P extends PrimitiveObject = PrimitiveObject,
+  P extends ActorsMap = ActorsMap,
 > = {
   eventsMap: E;
   pContext: PrimitiveObject;
   context: PrimitiveObject;
-  promiseesMap: P;
+  actorsMap: P;
 };
 
 type ReduceTuple2<T extends AnyArray<PrimitiveObject>> = T extends [
@@ -153,6 +157,7 @@ type Undefiny<T> = T extends AnyArray
   : T extends Ru
     ? UndefinyObject<T>
     : T;
+
 export type TransformPrimitiveObject<T> = Undefiny<
   __TransformPrimitiveObject<T>
 >;
@@ -189,26 +194,53 @@ export const transformPrimitiveObject = <T extends PrimitiveObject>(
   return transformTypes(_obj) as any;
 };
 
+type UndefinyT<T> = PrimitiveObject extends T ? 'undefined' : T;
+
 export type TransformArgs<T extends Partial<Args>> = {
   eventsMap: TransformPrimitiveObject<T['eventsMap']>;
-  pContext: TransformPrimitiveObject<T['pContext']>;
-  context: TransformPrimitiveObject<T['context']>;
-  promiseesMap: __TransformPrimitiveObject<T['promiseesMap']>;
-};
+  pContext: TransformPrimitiveObject<UndefinyT<T['pContext']>>;
+  context: TransformPrimitiveObject<UndefinyT<T['context']>>;
+  actorsMap: {
+    children: TransformPrimitiveObject<
+      NotUndefined<T['actorsMap']>['children']
+    >;
+    promisees: TransformPrimitiveObject<
+      NotUndefined<T['actorsMap']>['promisees']
+    >;
+    emitters: TransformPrimitiveObject<
+      NotUndefined<T['actorsMap']>['emitters']
+    >;
+  };
+} extends infer TT
+  ? {
+      [key in keyof TT]: TT[key];
+    }
+  : never;
 
 const DEFAULT_ARGS = {
   eventsMap: 'primitive',
-  pContext: 'primitive',
+  pContext: 'undefined',
   context: 'primitive',
-  promiseesMap: 'primitive',
-} satisfies Args;
+  actorsMap: {
+    children: 'primitive',
+    promisees: 'primitive',
+    emitters: 'primitive',
+  },
+} as const satisfies Args;
 
-const defaultArgs = <T extends Partial<Args>>(values: T) => {
-  const args = { ...DEFAULT_ARGS, ...values } as Args;
+const defaultArgs = <const T extends Partial<Args>>(values: T) => {
+  const args = {
+    ...DEFAULT_ARGS,
+    ...values,
+    actorsMap: {
+      ...DEFAULT_ARGS.actorsMap,
+      ...values.actorsMap,
+    },
+  } satisfies Args;
   return args;
 };
 
-export const typings = <T extends Partial<Args>>(
+export const typings = <const T extends Partial<Args>>(
   args: T,
 ): TransformArgs<T> => {
   const out = transformPrimitiveObject(defaultArgs(args));

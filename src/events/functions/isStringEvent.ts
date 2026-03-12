@@ -6,7 +6,7 @@ import {
 } from '../constants';
 import type { EventStrings } from '../types';
 
-const VALUES = [INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE];
+const VALUES: string[] = [INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE];
 
 /**
  * Checks if the provided event is a {@linkcode EventStrings}.

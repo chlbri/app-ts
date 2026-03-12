@@ -1,35 +1,47 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
-import type { FnMap } from '~types';
+import type { EventObject } from '#events';
+import type { FnMap, FnR } from '~types';
 
 /**
  * Delay type definition.
  * The function takes in a context object and returns a delay in milliseconds.
- * @template : type {@linkcode EventsMap} [E], the events map.
- * @template : type {@linkcode PromiseeMap} [P], the promisees map.
+ * @template : type {@linkcode EventObject} [E], the events map.
  * @template : [Pc], the type of the private context.
- * @template : type {@linkcode types.PrimitiveObject} [Tc], the type of the context.
+ * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
  * @returns : A number or a {@linkcode FnMap} function that returns a number.
  */
-export type Delay<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+export type DelayFunction<
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = number | FnMap<E, P, Pc, Tc, number>;
+  T extends string = string,
+> = number | FnMap<E, Pc, Tc, T, number>;
+
+export type DelayFunction2<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = number | DelayFunction3<E, Pc, Tc, T>;
+
+export type DelayFunction3<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = FnR<E, Pc, Tc, T, number>;
 
 /**
  * Delay configuration map.
- * Maps a string key to a {@linkcode Delay} function.
- * @template : type {@linkcode EventsMap} [E] - The events map.
- * @template : type {@linkcode PromiseeMap} [P] - The promisees map.
+ * Maps a string key to a {@linkcode DelayFunction} function.
+ * @template : type {@linkcode EventObject} [E] - The events map.
  * @template : [Pc] - The type of the private context.
- * @template : type {@linkcode types.PrimitiveObject} [Tc] - The type of the context.
- * @returns : A partial record where each key is a string and each value is a {@linkcode Delay}.
+ * @template : type {@linkcode PrimitiveObject} [Tc] - The type of the context.
+ * @returns : A partial record where each key is a string and each value is a {@linkcode DelayFunction}.
  */
 export type DelayMap<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = Partial<Record<string, Delay<E, P, Pc, Tc>>>;
+  T extends string = string,
+> = Partial<Record<string, DelayFunction<E, Pc, Tc, T>>>;

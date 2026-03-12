@@ -1,6 +1,11 @@
-import type { ActionResultFn } from '#actions';
+import type { Action2 } from '#actions';
 import type { Cast, PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import { reduceFnMap } from '#utils';
 import type { Decompose } from '@bemedev/decompose';
 import { type FnMap } from '~types';
@@ -19,25 +24,24 @@ export type ExpandFnMap = <
   K extends Extract<keyof D, string> = Extract<keyof D, string>,
   R = D[K],
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
-  promisees: P,
+  actorsMap: A,
   key: K,
-  fn: FnMap<E, P, Cast<Pc, PrimitiveObject>, Cast<Tc, PrimitiveObject>, R>,
-) => ActionResultFn<
-  E,
-  P,
-  Cast<Pc, PrimitiveObject>,
-  Cast<Tc, PrimitiveObject>
->;
+  fn: FnMap<Eo, Pc, Cast<Tc, PrimitiveObject>, T, R>,
+) => Action2<Eo, Pc, Cast<Tc, PrimitiveObject>, T>;
 /**
  *
  * @param events : type {@linkcode EventsMap} [E] - The events map.
- * @param promisees  : type {@linkcode PromiseeMap} [P] - The promisees map.
+ * @param promisees  : type {@linkcode ActorsConfigMap} [P] - The promisees map.
  * @param key  : type {@linkcode Decompose} [D] - The key to assign the result to in the context and the private context.
  * @param fn  : type {@linkcode FnMap} [E, P, Pc, Tc, R] - The function to reduce the events and promisees and performs the action.
- * @returns a {@linkcode ActionResultFn} function.
+ * @returns a {@linkcode Action2} function.
  *
  * @see {@linkcode assignByKey} for assigning the result to the context and private context.
  * @see {@linkcode reduceFnMap} for reducing the events and promisees.

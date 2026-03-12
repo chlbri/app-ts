@@ -1,6 +1,7 @@
+import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { createConfig, EVENTS_FULL } from '#machines';
-import { typings } from '#utils';
+import { createConfig } from '#machines';
+import { notU, typings } from '#utils';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
@@ -41,16 +42,17 @@ export const config21 = createConfig({
               },
             },
             fetch: {
-              promises: {
-                src: 'fetch',
-                then: {
-                  actions: {
-                    name: 'insertData',
-                    description: 'Database insert',
+              actors: {
+                fetch: {
+                  then: {
+                    actions: {
+                      name: 'insertData',
+                      description: 'Database insert',
+                    },
+                    target: '/working/fetch/idle',
                   },
-                  target: '/working/fetch/idle',
+                  catch: '/working/fetch/idle',
                 },
-                catch: '/working/fetch/idle',
               },
             },
           },
@@ -95,7 +97,14 @@ export const config21 = createConfig({
 
 export const machine21 = createMachine(
   {
-    machines: { machine1: 'machine1' },
+    actors: {
+      machine1: {
+        on: {},
+        contexts: {
+          iterator: 'iterator',
+        },
+      },
+    },
     ...config21,
   },
   typings({
@@ -108,28 +117,35 @@ export const machine21 = createMachine(
     context: {
       iterator: 'number',
       input: 'string',
-      data: ['string'],
+      data: typings.array('string'),
     },
     pContext: {
       iterator: 'number',
     },
-    promiseesMap: {
-      fetch: {
-        then: ['string'],
-        catch: 'primitive',
+    actorsMap: {
+      children: {
+        machine1: {
+          NEXT: 'primitive',
+        },
+      },
+      promisees: {
+        fetch: {
+          then: typings.array('string'),
+          catch: 'primitive',
+        },
       },
     },
   }),
 ).provideOptions(
-  ({ isNotValue, isValue, createChild, assign, voidAction, sendTo }) => ({
+  ({ isNotValue, isValue, assign, voidAction, sendTo }) => ({
     actions: {
       inc: assign(
         'context.iterator',
-        ({ context: { iterator } }) => iterator + 1,
+        ({ context }) => notU(context?.iterator) + 1,
       ),
       inc2: assign(
         'context.iterator',
-        ({ context: { iterator } }) => iterator + 4,
+        ({ context }) => notU(context?.iterator) + 4,
       ),
       sendPanelToUser: voidAction(() => console.log('sendPanelToUser')),
       askUsertoInput: voidAction(() => console.log('Input, please !!')),
@@ -137,9 +153,9 @@ export const machine21 = createMachine(
         WRITE: ({ payload: { value } }) => value,
       }),
       insertData: assign('context.data', {
-        'fetch::then': ({ payload, context: { data } }) => {
-          data.push(...payload);
-          return data;
+        'fetch::then': ({ payload, context }) => {
+          context?.data?.push(...payload);
+          return context?.data;
         },
       }),
       send: sendTo(machine1)(() => ({ to: 'machine1', event: 'NEXT' })),
@@ -148,27 +164,25 @@ export const machine21 = createMachine(
       isInputEmpty: isValue('context.input', ''),
       isInputNotEmpty: isNotValue('context.input', ''),
     },
-    promises: {
-      fetch: async ({ context: { input } }) => {
-        return fakeDB.filter(item => item.name.includes(input));
+    actors: {
+      promises: {
+        fetch: async ({ context }) => {
+          const input = notU(context?.input);
+          return fakeDB
+            .filter(item => item.name.includes(input))
+            .map(item => item.name);
+        },
+      },
+      children: {
+        machine1: () =>
+          interpret(machine1, {
+            context: { iterator: 0 },
+          }),
       },
     },
     delays: {
       DELAY,
       DELAY2: 2 * DELAY,
-    },
-    machines: {
-      machine1: createChild(
-        machine1,
-        {
-          pContext: {},
-          context: { iterator: 0 },
-        },
-        {
-          events: EVENTS_FULL,
-          contexts: { iterator: 'iterator' },
-        },
-      ) as any,
     },
   }),
 );

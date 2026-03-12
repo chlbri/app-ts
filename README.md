@@ -1,6 +1,73 @@
 # @bemedev/app-ts
 
-A TypeScript library for creating and managing state machines.
+A TypeScript library for building finite state machines with a rich,
+type-safe API. Manages states, transitions, context, asynchronous
+operations, and reactive streams through a unified **actors** model.
+
+<br/>
+
+## Philosophy
+
+**The machine defines _what can happen_. The interpreter _makes it
+happen_.**
+
+A machine is purely declarative: it describes states, transitions, actions,
+and guards by **name** (`'fetchUser'`, `'canSubmit'`). It never calls
+external code directly. You wire real implementations in later via
+`provideOptions` or `addOptions`.
+
+The **interpreter** takes a machine and executes it at runtime — it
+processes events, manages context, subscribes to actors, and drives
+transitions.
+
+### Actors — three kinds of external work
+
+| Actor type | Shape                 | Trigger           | Direction                        |
+| ---------- | --------------------- | ----------------- | -------------------------------- |
+| `emitters` | `() => Observable<T>` | State entry       | **Source → Machine** (read-only) |
+| `promises` | `() => Promise<T>`    | State entry       | **Source → Machine** (one-shot)  |
+| `children` | `() => Interpreter`   | Machine lifecycle | **Bidirectional** (via `sendTo`) |
+
+### Emitters importance is NOT touched during the flow
+
+This is the single most important architectural choice to understand.
+
+An **emitter** is a passive Observable source. It produces values on its
+own schedule. The machine **only reacts** to those values — it never sends
+events _to_ the emitter, never modifies it, never controls its output.
+
+```
+┌─────────────┐    emissions    ┌──────────────┐
+│  Observable  │ ─────────────► │   Machine     │
+│  (emitter)   │                │  next/error/  │
+│              │  ◄── nothing   │  complete     │
+└─────────────┘                 └──────────────┘
+        ▲                              │
+        │ subscribe on entry           │ unsubscribe on exit
+        └──────────────────────────────┘
+```
+
+**Emitter lifecycle:**
+
+1. The machine config declares an emitter name and its handlers (`next`,
+   `error`, `complete`).
+2. `provideOptions` wires the name to a factory: `() => Observable<T>`.
+3. When the interpreter enters the state → the factory is called, the
+   Observable is subscribed.
+4. Each emission becomes an internal event routed to the matching handler
+   (`next` → actions, `error` → actions, `complete` → actions or target).
+5. The machine **never** sends events _to_ the Observable. It is strictly
+   one-way.
+6. When the interpreter exits the state (or stops) → the Observable is
+   unsubscribed.
+7. Re-entering the state creates a **new** subscription from scratch.
+
+This differs fundamentally from:
+
+- **Promises** — triggered once on state entry, machine waits for
+  resolution.
+- **Children** — bidirectional; the parent can `sendTo` the child
+  interpreter.
 
 <br/>
 
@@ -9,26 +76,40 @@ A TypeScript library for creating and managing state machines.
 ```bash
 npm install @bemedev/app-ts
 # or
-yarn add @bemedev/app-ts
+pnpm add @bemedev/app-ts
 ```
 
-<br/>
-
-## Features
-
-- Typed state machine creation
-- Public and private context management
-- Support for actions, guards and delays
-- Transition and event handling
-- Support for nested machines
-- Support for subscribables (e.g rxjs)
-- Comprehensive typings utilities with Valibot-like API
+> **Requirements:** Node.js ≥ 22, TypeScript ≥ 5.x
 
 <br/>
 
-## Usage
+## Table of Contents
 
-### Basic Machine
+1. [Basic machine](#1-basic-machine)
+2. [Typings utilities](#2-typings-utilities)
+3. [Machine interpretation](#3-machine-interpretation)
+4. [Subscribe to state changes](#4-subscribe-to-state-changes)
+5. [Actions](#5-actions)
+   - [assign](#51-assign)
+   - [voidAction](#52-voidaction)
+   - [batch](#53-batch)
+   - [filter & erase](#54-filter--erase)
+   - [resend & forceSend](#55-resend--forcesend)
+6. [Guards (predicates)](#6-guards-predicates)
+7. [Transitions: on, after, always](#7-transitions-on-after-always)
+8. [Activities (recurring actions)](#8-activities-recurring-actions)
+9. [Actors: emitters](#9-actors-emitters)
+10. [Actors: promises](#10-actors-promises)
+11. [Actors: children](#11-actors-children)
+12. [Tags](#12-tags)
+13. [Legacy options (\_legacy)](#13-legacy-options-_legacy)
+14. [API reference](#14-api-reference)
+
+<br/>
+
+---
+
+## 1. Basic Machine
 
 ```typescript
 import { createMachine } from '@bemedev/app-ts';
@@ -50,7 +131,12 @@ const machine = createMachine({
 });
 ```
 
-### Typings Utilities
+The config is pure data — no callbacks, no side-effects. You can serialise
+it, inspect it, or test it independently from runtime.
+
+<br/>
+
+## 2. Typings Utilities
 
 The library provides powerful typing utilities inspired by Valibot for
 defining complex types:
@@ -60,19 +146,23 @@ import { typings, inferT } from '@bemedev/app-ts';
 
 // Literals
 const status = typings.litterals('idle', 'pending', 'success', 'error');
-type Status = inferT<typeof status>; // 'idle' | 'pending' | 'success' | 'error'
+type Status = inferT<typeof status>;
+// 'idle' | 'pending' | 'success' | 'error'
 
 // Union types
 const value = typings.union('string', 'number', 'boolean');
-type Value = inferT<typeof value>; // string | number | boolean
+type Value = inferT<typeof value>;
+// string | number | boolean
 
 // Arrays
 const tags = typings.array('string');
-type Tags = inferT<typeof tags>; // string[]
+type Tags = inferT<typeof tags>;
+// string[]
 
 // Tuples
 const coordinates = typings.tuple('number', 'number');
-type Coordinates = inferT<typeof coordinates>; // [number, number]
+type Coordinates = inferT<typeof coordinates>;
+// [number, number]
 
 // Objects
 const user = typings.any({
@@ -80,18 +170,22 @@ const user = typings.any({
   age: 'number',
   email: typings.maybe('string'), // optional field
 });
-type User = inferT<typeof user>; // { name: string; age: number; email?: string }
+type User = inferT<typeof user>;
+// { name: string; age: number; email?: string }
 
 // Records
-const config = typings.record('string'); // Record<string, string>
-const namedConfig = typings.record('number', 'width', 'height'); // { width: number; height: number }
+const config = typings.record('string');
+// Record<string, string>
+const namedConfig = typings.record('number', 'width', 'height');
+// { width: number; height: number }
 
 // Intersection types
 const person = typings.intersection(
   { name: 'string', age: 'number' },
   { email: 'string', phone: 'string' },
 );
-type Person = inferT<typeof person>; // { name: string; age: number; email: string; phone: string }
+type Person = inferT<typeof person>;
+// { name: string; age: number; email: string; phone: string }
 
 // Discriminated unions
 const shape = typings.discriminatedUnion(
@@ -109,18 +203,21 @@ const optionalUser = typings.partial({
   name: 'string',
   age: 'number',
 });
-type OptionalUser = inferT<typeof optionalUser>; // { name?: string; age?: number }
+type OptionalUser = inferT<typeof optionalUser>;
+// { name?: string; age?: number }
 
 // Custom types
 const customType = typings.custom<MyCustomType>();
 
 // Single or Array (SoA)
 const singleOrMany = typings.soa('string');
-type SingleOrMany = inferT<typeof singleOrMany>; // string | string[]
+type SingleOrMany = inferT<typeof singleOrMany>;
+// string | string[]
 
 // StateValue type helper
 const stateValue = typings.sv;
-type MyStateValue = inferT<typeof stateValue>; // StateValue
+type MyStateValue = inferT<typeof stateValue>;
+// StateValue
 ```
 
 ### Using Typings with Machines
@@ -156,7 +253,12 @@ const machine = createMachine(
 );
 ```
 
-### Machine Interpretation
+<br/>
+
+## 3. Machine Interpretation
+
+The interpreter brings a machine to life. It holds context, processes
+events, and manages actor subscriptions.
 
 ```typescript
 import { interpret } from '@bemedev/app-ts';
@@ -164,7 +266,7 @@ import { interpret } from '@bemedev/app-ts';
 // Create an interpreter service
 const service = interpret(machine, {
   context: { items: [], error: undefined },
-  pContext: {}, // private context
+  pContext: {}, // private context (invisible to subscribers)
 });
 
 // Start the service
@@ -172,17 +274,23 @@ service.start();
 
 // Send events
 service.send('FETCH');
-service.send({ type: 'SUCCESS', payload: { data: ['item1', 'item2'] } });
+service.send({
+  type: 'SUCCESS',
+  payload: { data: ['item1', 'item2'] },
+});
 
-// Get current state
+// Read current state
 console.log(service.value); // 'success'
-console.log(service.context); // { items: ['item1', 'item2'], error: undefined }
+console.log(service.context);
+// { items: ['item1', 'item2'], error: undefined }
 
 // Stop the service
 await service[Symbol.asyncDispose]();
 ```
 
-### Subscribe to State Changes
+<br/>
+
+## 4. Subscribe to State Changes
 
 ```typescript
 import { interpret } from '@bemedev/app-ts';
@@ -213,263 +321,795 @@ subscription.unsubscribe();
 eventSubscription.close();
 ```
 
-### Advanced Machine with Actions, Guards, and Delays
+<br/>
+
+---
+
+## 5. Actions
+
+Actions are side-effects that run during transitions. They are provided by
+name in the config and implemented via `provideOptions`.
+
+### 5.1 assign
+
+Updates context values using decomposed paths.
 
 ```typescript
-import { createMachine, typings } from '@bemedev/app-ts';
+.provideOptions(({ assign }) => ({
+  actions: {
+    // Update a nested field
+    updateCount: assign(
+      'context.count',
+      ({ context }) => context.count + 1,
+    ),
 
-const fetchMachine = createMachine(
+    // Replace the entire context
+    reset: assign('context', () => ({
+      count: 0,
+      name: 'New',
+    })),
+
+    // Actor-scoped assign (for emitter/promise payloads)
+    insertData: assign('context.data', {
+      'fetch::then': ({ payload, context }) => {
+        context?.data?.push(...payload);
+        return context?.data;
+      },
+    }),
+  },
+}))
+```
+
+### 5.2 voidAction
+
+Side-effect only — does not modify context.
+
+```typescript
+.provideOptions(({ voidAction }) => ({
+  actions: {
+    logState: voidAction(
+      () => console.log('State changed'),
+    ),
+
+    // Actor-scoped void action (e.g. for emitter errors)
+    signals: voidAction({
+      'interval::error': ({ payload }) => {
+        console.warn('Error received:', payload);
+      },
+    }),
+  },
+}))
+```
+
+### 5.3 batch
+
+Groups multiple actions into one.
+
+```typescript
+.provideOptions(({ batch, assign, erase }) => ({
+  actions: {
+    resetForm: batch(
+      erase('context.name'),
+      erase('context.email'),
+      erase('context.age'),
+    ),
+  },
+}))
+```
+
+### 5.4 filter & erase
+
+**filter** — filters arrays, object arrays, or records in context:
+
+```typescript
+.provideOptions(({ filter }) => ({
+  actions: {
+    // Filter array elements
+    filterEven: filter(
+      'context.numbers',
+      (num: number) => num % 2 === 0,
+    ),
+
+    // Filter array of objects
+    filterActive: filter(
+      'context.people',
+      ({ active }) => active,
+    ),
+
+    // Filter record by value
+    filterHighScores: filter(
+      'context.scores',
+      (score) => score >= 80,
+    ),
+  },
+}))
+```
+
+**erase** — sets a property to `undefined`:
+
+```typescript
+.provideOptions(({ erase, batch }) => ({
+  actions: {
+    clearEmail: erase('context.user.email'),
+
+    // Erase multiple with batch
+    clearAll: batch(
+      erase('context.name'),
+      erase('context.email'),
+      erase('context.age'),
+    ),
+  },
+}))
+```
+
+### 5.5 resend & forceSend
+
+Re-dispatch events from within actions.
+
+- **`resend(event)`** — sends the event only if the machine is not in a
+  blocked state.
+- **`forceSend(event)`** — sends the event regardless of blocked state.
+
+```typescript
+.provideOptions(({ resend, forceSend }) => ({
+  actions: {
+    retryFetch: resend('FETCH'),
+    forceIncrement: forceSend('INCREMENT'),
+  },
+}))
+```
+
+<br/>
+
+## 6. Guards (Predicates)
+
+Guards are pure predicates that decide whether a transition should fire.
+
+```typescript
+.provideOptions(({ isValue, isNotValue }) => ({
+  predicates: {
+    // Built-in value check helpers
+    isEmpty: isValue('context.items', []),
+    hasToken: isNotValue('context.token', undefined),
+
+    // Custom predicate
+    isAuthenticated: ({ context }) =>
+      context.token !== undefined,
+  },
+}))
+```
+
+Usage in config:
+
+```typescript
+states: {
+  idle: {
+    on: {
+      FETCH: {
+        guards: 'canFetch',   // single guard
+        target: 'loading',
+      },
+    },
+    always: [
+      { guards: 'isEmpty', target: '/empty' },
+      '/default',             // fallback — no guard
+    ],
+  },
+}
+```
+
+<br/>
+
+## 7. Transitions: on, after, always
+
+### `on` — event-driven transitions
+
+```typescript
+states: {
+  idle: {
+    on: {
+      // Simple target
+      START: '/running',
+
+      // With guard and actions
+      FETCH: {
+        guards: 'canFetch',
+        target: '/loading',
+        actions: 'setLoading',
+      },
+
+      // Multiple candidates — first matching guard wins
+      SUBMIT: [
+        { guards: 'isValid', target: '/success' },
+        { guards: 'hasErrors', target: '/error' },
+        '/fallback',
+      ],
+    },
+  },
+}
+```
+
+### `after` — delayed transitions
+
+Automatically transition after a named delay. If multiple delays are
+defined, the **shortest** one that passes its guard wins.
+
+```typescript
+// Simple delay
+const machine = createMachine(
+  {
+    initial: 'idle',
+    states: {
+      idle: { after: { DELAY: '/active' } },
+      active: {},
+    },
+  },
+  defaultT,
+);
+
+machine.addOptions(() => ({
+  delays: { DELAY: 1000 },
+}));
+// After 1 s in 'idle' → automatically transition to 'active'
+```
+
+```typescript
+// Multiple delays — shortest wins
+const machine2 = createMachine(
   {
     initial: 'idle',
     states: {
       idle: {
-        on: {
-          FETCH: {
-            guards: 'canFetch',
-            target: 'loading',
-            actions: 'setLoading',
-          },
-        },
-      },
-      loading: {
-        entry: 'logEntry',
-        exit: 'logExit',
-        promises: {
-          src: 'fetchData',
-          then: {
-            actions: 'handleSuccess',
-            target: 'success',
-          },
-          catch: {
-            actions: 'handleError',
-            target: 'error',
-          },
-        },
-      },
-      success: {
         after: {
-          RESET_DELAY: { target: 'idle', actions: 'reset' },
+          DELAY1: '/result1',
+          DELAY2: '/result2',
         },
       },
-      error: {
+      result1: {},
+      result2: {},
+    },
+  },
+  defaultT,
+);
+
+machine2.addOptions(() => ({
+  delays: { DELAY1: 3000, DELAY2: 2000 },
+}));
+// DELAY2 (2 s) fires first → goes to result2
+```
+
+```typescript
+// Delayed with guard
+states: {
+  idle: {
+    after: {
+      DELAY: {
+        guards: 'returnFalse',
+        target: '/result1',
+      },
+      DELAY2: '/result2',
+    },
+  },
+}
+// DELAY fires first but guard prevents transition
+// → DELAY2 wins
+```
+
+### `always` — immediate (eventless) transitions
+
+Evaluated every time the state is entered. First matching guard wins.
+
+```typescript
+const machine = createMachine(
+  {
+    initial: 'idle',
+    states: {
+      idle: {
+        always: [
+          { guards: 'returnFalse', target: '/result1' },
+          { guards: 'returnFalse', target: '/result3' },
+          '/result2', // fallback — no guard
+        ],
+      },
+      result1: {},
+      result2: {},
+      result3: {},
+    },
+  },
+  defaultT,
+);
+// First two guards fail → goes to result2
+```
+
+<br/>
+
+## 8. Activities (Recurring Actions)
+
+An activity is an action executed repeatedly on a named delay while the
+state is active. Activities support **pause**, **resume**, and **stop**
+controls.
+
+```typescript
+const machine = createMachine(
+  {
+    initial: 'idle',
+    states: {
+      idle: {
+        activities: { DELAY: 'inc' },
         on: {
-          RETRY: 'loading',
+          PAUSE: { actions: 'pause' },
+          RESUME: { actions: 'resume' },
+          STOP: { actions: 'stop' },
         },
       },
     },
   },
   typings({
     eventsMap: {
-      FETCH: { url: 'string' },
-      RETRY: 'primitive',
+      PAUSE: 'primitive',
+      RESUME: 'primitive',
+      STOP: 'primitive',
     },
-    context: {
-      data: typings.maybe(typings.array('string')),
-      error: typings.maybe('string'),
-      loading: 'boolean',
+    context: { iterator: 'number' },
+  }),
+).provideOptions(
+  ({ assign, pauseActivity, resumeActivity, stopActivity }) => ({
+    actions: {
+      inc: assign(
+        'context.iterator',
+        ({ context }) => context?.iterator + 1,
+      ),
+      pause: pauseActivity('/idle::DELAY'),
+      resume: resumeActivity('/idle::DELAY'),
+      stop: stopActivity('/idle::DELAY'),
     },
-    pContext: {
-      retryCount: 'number',
+    delays: { DELAY: 100 },
+  }),
+);
+```
+
+The activity `inc` runs every 100 ms while in `idle`. Sending `PAUSE`
+freezes it, `RESUME` restarts it, and `STOP` terminates it permanently for
+that state visit.
+
+<br/>
+
+---
+
+## 9. Actors: Emitters
+
+> **Key concept — emitters are NEVER touched during the flow.**
+
+Emitters are passive Observable sources. The machine subscribes to them on
+state entry and **only reacts** to their emissions. It never sends events
+_to_ the Observable, never modifies it, never controls its output.
+
+### 9.1 How emitters work
+
+1. **Config** — declare the emitter name and its handlers:
+
+   ```typescript
+   actors: {
+     interval: {
+       next: { actions: ['assigN'] },
+       error: { actions: ['handleError'] },
+       complete: { actions: ['onComplete'] },
+     },
+   }
+   ```
+
+2. **Implementation** — provide the Observable factory:
+
+   ```typescript
+   .provideOptions(() => ({
+     actors: {
+       emitters: {
+         interval: () =>
+           interval(200).pipe(
+             take(5),
+             map(v => v + 1),
+             map(v => v * 5),
+           ),
+       },
+     },
+   }))
+   ```
+
+3. **Runtime** — the interpreter manages the full lifecycle:
+   - **Enter state** → factory called → `subscribe()`
+   - Each `next` emission → routed to `next` handler (actions/target)
+   - An `error` emission → routed to `error` handler
+   - A `complete` emission → routed to `complete` handler
+   - **Exit state** (or interpreter stops) → `unsubscribe()`
+   - **Re-enter state** → a **new** subscription from scratch
+
+### 9.2 Simple emitter — accumulating values
+
+_Derived from `src/emitters/__tests__/data.ts` and `simple.test.ts`_
+
+```typescript
+import { createMachine, typings, interpret } from '@bemedev/app-ts';
+import { interval, map, take } from 'rxjs';
+
+const machine = createMachine(
+  {
+    initial: 'inactive',
+    actors: {
+      interval: {
+        next: { actions: ['assigN'] },
+        complete: { actions: ['mockCompleteAction'] },
+      },
     },
-    promiseesMap: {
-      fetchData: {
-        then: typings.array('string'),
-        catch: { message: 'string' },
+    states: {
+      inactive: { on: { NEXT: '/active' } },
+      active: { on: { NEXT: '/inactive' } },
+    },
+  },
+  typings({
+    context: 'number',
+    eventsMap: { NEXT: 'primitive' },
+    actorsMap: {
+      emitters: {
+        interval: { next: 'number', error: 'primitive' },
       },
     },
   }),
-).provideOptions(({ assign, voidAction, isValue }) => ({
+).provideOptions(({ assign }) => ({
   actions: {
-    setLoading: assign('context.loading', () => true),
-    handleSuccess: assign('context', {
-      'fetchData::then': ({ payload }) => ({
-        data: payload,
-        error: undefined,
-        loading: false,
-      }),
+    assigN: assign('context', {
+      'interval::next': ({ payload, context }) => notU(context) + payload,
     }),
-    handleError: assign('context', {
-      'fetchData::catch': ({ payload }) => ({
-        data: undefined,
-        error: payload.message,
-        loading: false,
-      }),
-    }),
-    reset: assign('context', () => ({
-      data: undefined,
-      error: undefined,
-      loading: false,
-    })),
-    logEntry: voidAction(() => console.log('Entering loading state')),
-    logExit: voidAction(() => console.log('Exiting loading state')),
   },
-  predicates: {
-    canFetch: isValue('context.loading', false),
-  },
-  promises: {
-    fetchData: async ({ event }) => {
-      if (event.type !== 'FETCH') return [];
-      const response = await fetch(event.payload.url);
-      return response.json();
+  actors: {
+    emitters: {
+      interval: () =>
+        interval(200).pipe(
+          take(5),
+          map(v => v + 1),
+          map(v => v * 5),
+        ),
     },
   },
-  delays: {
-    RESET_DELAY: 3000, // 3 seconds
+}));
+
+const service = interpret(machine, { context: 0 });
+service.start();
+// The RxJS interval emits autonomously every 200 ms:
+//   emission 0 → (0+1)*5 = 5  → context: 0 + 5  = 5
+//   emission 1 → (1+1)*5 = 10 → context: 5 + 10 = 15
+//   emission 2 → (2+1)*5 = 15 → context: 15 + 15 = 30
+//   emission 3 → (3+1)*5 = 20 → context: 30 + 20 = 50
+//   emission 4 → (4+1)*5 = 25 → context: 50 + 25 = 75
+//
+// The machine NEVER told the interval what to emit.
+// It only reacted to each value.
+```
+
+### 9.3 Emitter error handling
+
+_Derived from `src/emitters/__tests__/error.test.ts`_
+
+When the Observable errors, the `error` handler fires. The machine itself
+is not "broken" — it simply routes the error value to the declared actions.
+
+```typescript
+import { Subject } from 'rxjs';
+
+const sub = new Subject<number>();
+
+const machine = createMachine(
+  {
+    initial: 'idle',
+    actors: {
+      interval: {
+        next: { actions: ['assigN'] },
+        error: { actions: ['signals'] },
+      },
+    },
+    states: { idle: {} },
+  },
+  typings({
+    actorsMap: {
+      emitters: {
+        interval: { next: 'number', error: 'number' },
+      },
+    },
+    context: 'number',
+  }),
+).provideOptions(({ assign, voidAction }) => ({
+  actors: {
+    emitters: { interval: () => sub },
+  },
+  actions: {
+    assigN: assign('context', {
+      'interval::next': ({ payload, context }) => context + payload,
+    }),
+    signals: voidAction({
+      'interval::error': ({ payload }) => {
+        console.warn('Error received:', payload);
+      },
+    }),
+  },
+}));
+
+const service = interpret(machine, { context: 0 });
+service.start();
+
+// External code pushes values into the Subject:
+sub.next(5); // → context becomes 5
+sub.next(3); // → context becomes 8
+sub.error(20); // → error handler fires, logs warning
+//
+// The machine didn't control the Subject.
+// It only listened.
+```
+
+### 9.4 State-scoped emitters
+
+_Derived from `src/emitters/__tests__/children.test.ts`_
+
+When an emitter is defined **inside a specific state** (not at root), it
+only runs while that state is active. Exiting the state unsubscribes;
+re-entering creates a fresh subscription.
+
+```typescript
+const machine = createMachine(
+  {
+    initial: 'inactive',
+    states: {
+      inactive: { on: { NEXT: '/active' } },
+      active: {
+        on: { NEXT: '/inactive' },
+        actors: {
+          interval1: {
+            next: { actions: ['assigN'] },
+            complete: { actions: ['mockCompleteAction'] },
+          },
+        },
+      },
+    },
+  } /* typings... */,
+);
+```
+
+```
+Timeline:
+  [inactive] ──NEXT──► [active]
+                          │ subscribe to interval1
+                          │ ... emissions arrive ...
+                          │
+              ◄──NEXT─── [active]
+  [inactive]              │ unsubscribe from interval1
+                          │
+              ──NEXT──► [active]
+                          │ NEW subscription to interval1
+```
+
+### 9.5 Emitters vs Promises vs Children
+
+| Aspect          | Emitters                    | Promises                  | Children                       |
+| --------------- | --------------------------- | ------------------------- | ------------------------------ |
+| Direction       | Source → Machine only       | Source → Machine only     | Bidirectional                  |
+| Cardinality     | 0..∞ emissions              | Exactly 1 resolution      | Ongoing event exchange         |
+| Machine control | **None** — read-only        | Triggered on state entry  | `sendTo` sends events to child |
+| Subscription    | `subscribe` / `unsubscribe` | One-shot `then` / `catch` | `interpret` / `stop`           |
+| Pause / Resume  | Via `@bemedev/rx-pausable`  | N/A                       | Via child interpreter          |
+
+<br/>
+
+---
+
+## 10. Actors: Promises
+
+A promise actor is a one-shot async task triggered on state entry. The
+machine waits for resolution and routes the result to `then`, `catch`, or
+`finally` handlers.
+
+```typescript
+const machine = createMachine(
+  {
+    initial: 'idle',
+    states: {
+      idle: { on: { FETCH: '/fetch' } },
+      fetch: {
+        actors: {
+          fetch: {
+            then: {
+              actions: 'insertData',
+              target: '/idle',
+            },
+            catch: '/idle',
+          },
+        },
+      },
+    },
+  },
+  typings({
+    eventsMap: { FETCH: 'primitive' },
+    context: {
+      input: 'string',
+      data: typings.maybe(typings.array('string')),
+    },
+    actorsMap: {
+      promises: {
+        fetch: {
+          then: typings.array('string'),
+          catch: 'primitive',
+        },
+      },
+    },
+  }),
+).provideOptions(({ assign }) => ({
+  actors: {
+    promises: {
+      fetch: async ({ context }) => {
+        return fakeDB
+          .filter(item => item.name.includes(context.input))
+          .map(item => item.name);
+      },
+    },
+  },
+  actions: {
+    insertData: assign('context.data', {
+      'fetch::then': ({ payload, context }) => {
+        context?.data?.push(...payload);
+        return context?.data;
+      },
+    }),
   },
 }));
 ```
 
-### Nested Machines
+**Lifecycle:**
+
+1. Interpreter enters the state containing the promise actor.
+2. The factory `async ({ context, event }) => ...` is called once.
+3. On success → `then` handler fires (actions + optional target).
+4. On rejection → `catch` handler fires.
+5. The promise is **not** retried automatically — you handle retry via
+   transitions.
+
+<br/>
+
+---
+
+## 11. Actors: Children
+
+A child actor is a nested interpreter. The parent can **send events to it**
+via `sendTo`, and the child's events can bubble up to the parent via `on`
+handlers. Context can be mapped between parent and child.
+
+### 11.1 Sending events to a child — `sendTo`
+
+_Derived from `src/interpreters/__tests__/children.test.ts`_
 
 ```typescript
-import { createMachine, typings } from '@bemedev/app-ts';
-
-const childMachine = createMachine(
+const parent = createMachine(
   {
-    initial: 'step1',
+    actors: {
+      child: {
+        on: {
+          NEXT: { actions: ['notify'] },
+        },
+      },
+    },
+    initial: 'idle',
     states: {
-      step1: { on: { NEXT: 'step2' } },
-      step2: { on: { NEXT: 'step3' } },
-      step3: { type: 'final' },
+      idle: {
+        on: {
+          NEXT: { actions: ['sendChildNext'] },
+        },
+      },
     },
   },
   typings({
     eventsMap: { NEXT: 'primitive' },
-    context: { step: 'number' },
-  }),
-);
-
-const parentMachine = createMachine(
-  {
-    machines: { child: 'childProcess' },
-    initial: 'idle',
-    states: {
-      idle: {
-        on: { START: 'working' },
-      },
-      working: {
-        on: { COMPLETE: 'done' },
-      },
-      done: {},
+    actorsMap: {
+      children: { child: { NEXT: 'primitive' } },
     },
-  },
-  typings({
-    eventsMap: { START: 'primitive', COMPLETE: 'primitive' },
-    context: { status: 'string' },
   }),
-).provideOptions(({ createChild }) => ({
-  machines: {
-    childProcess: createChild(
-      childMachine,
-      { context: { step: 0 } },
-      { events: 'FULL' },
-    ),
+).provideOptions(({ sendTo, voidAction }) => ({
+  actions: {
+    notify: voidAction(() => {
+      notify();
+    }),
+    sendChildNext: sendTo(child)(() => ({
+      to: 'child',
+      event: 'NEXT',
+    })),
+  },
+  actors: {
+    children: {
+      child: () => interpret(child),
+    },
   },
 }));
 ```
 
-### Activities (Recurring Actions)
+When the parent receives `NEXT`, it forwards it to the child via `sendTo`.
+When the child processes `NEXT`, the parent's `on.NEXT` handler fires
+`notify`.
+
+### 11.2 Context mapping between parent and child
 
 ```typescript
-import { createMachine, typings } from '@bemedev/app-ts';
-
-const timerMachine = createMachine(
+const parent = createMachine(
   {
-    initial: 'running',
+    actors: {
+      child: {
+        // Map child's entire context → parent.pContext.iterator
+        contexts: { '.': 'iterator' },
+      },
+    },
+    // ...
+  },
+  /* typings */
+).provideOptions(() => ({
+  actors: {
+    children: {
+      child: () => interpret(childMachine, { context: 0 }),
+    },
+  },
+}));
+```
+
+When the child's context changes, it is automatically synced to the
+parent's private context (`pContext`) at the mapped key. This is one-way:
+the parent reads the child's context but does not write to it.
+
+<br/>
+
+---
+
+## 12. Tags
+
+Tags are metadata labels on states. They allow UI code to query **what
+category** the current state belongs to without checking state names
+directly.
+
+_Derived from `src/interpreters/__tests__/tags/tags.machine.ts`_
+
+```typescript
+const machine = createMachine(
+  {
+    initial: 'idle',
     states: {
-      running: {
-        activities: {
-          TICK_DELAY: 'incrementCounter',
-        },
-        on: {
-          PAUSE: 'paused',
-        },
+      idle: {
+        tags: ['idle'],
+        on: { NEXT: '/working' },
       },
-      paused: {
-        on: {
-          RESUME: 'running',
-        },
+      working: {
+        tags: ['working', 'busy'],
+        on: { NEXT: '/final', PREV: '/idle' },
       },
+      final: {},
     },
   },
   typings({
-    eventsMap: { PAUSE: 'primitive', RESUME: 'primitive' },
-    context: { counter: 'number' },
+    eventsMap: { NEXT: 'primitive', PREV: 'primitive' },
   }),
-).provideOptions(({ assign }) => ({
-  actions: {
-    incrementCounter: assign(
-      'context.counter',
-      ({ context }) => context.counter + 1,
-    ),
-  },
-  delays: {
-    TICK_DELAY: 1000, // 1 second
-  },
-}));
+);
+
+const service = interpret(machine);
+service.start();
+
+service.tags; // ['idle']
+service.send('NEXT');
+service.tags; // ['working', 'busy']
 ```
 
 <br/>
 
-## API Reference
+---
 
-### Machine Creation
+## 13. Legacy Options (\_legacy)
 
-#### `createMachine(config, types)`
+Both `provideOptions` and `addOptions` support accessing previously defined
+options through the `_legacy` parameter. This enables composition of
+existing actions, predicates, delays, promises, and actors without manual
+tracking.
 
-Creates a new state machine.
-
-**Parameters:**
-
-- `config`: Machine configuration object
-  - `initial`: Initial state name
-  - `states`: State definitions
-  - `machines?`: Child machine definitions
-  - `emitters?`: Observable emitters
-- `types`: Type definitions
-  - `context`: Public context type
-  - `pContext?`: Private context type
-  - `eventsMap`: Event definitions
-  - `promiseesMap?`: Promise definitions
-
-**Returns:** `Machine` instance
-
-#### `createConfig(config)`
-
-Utility to create a typed configuration object.
-
-### Machine Methods
-
-#### `machine.provideOptions(callback)`
-
-Provides actions, guards, delays, promises, and child machines.
-
-**Parameters:**
-
-- `callback`: Function receiving helper utilities:
-  - `assign`: Update context values
-  - `voidAction`: Create side-effect actions
-  - `isValue`, `isNotValue`: Value comparison guards
-  - `createChild`: Create child machine instances
-  - `sendTo`: Send events to child machines
-  - `debounce`, `throttle`: Rate limiting utilities
-
-**Returns:** `Machine` instance
-
-#### `machine.addOptions(callback)`
-
-Adds or overwrites options dynamically.
-
-**Returns:** The added options object.
-
-#### Accessing Legacy Options with `_legacy`
-
-Both `provideOptions` and `addOptions` now support accessing previously
-defined options through the `_legacy` parameter. This allows you to reuse
-and compose existing actions, predicates, delays, promises, machines, and
-emitters without manual tracking.
-
-**Example with Machine:**
+### On a Machine
 
 ```typescript
 const machine = createMachine(config, types)
@@ -478,24 +1118,21 @@ const machine = createMachine(config, types)
       increment: assign('context', ({ context }) => context + 1),
     },
   }))
-  .provideOptions(({ batch }, { _legacy }) => {
-    // Access previously defined increment action
-    const previousIncrement = _legacy.actions?.increment;
-
-    return {
-      actions: {
-        doubleIncrement: batch(previousIncrement!, previousIncrement!),
-      },
-    };
-  });
+  .provideOptions(({ batch }, { _legacy }) => ({
+    actions: {
+      doubleIncrement: batch(
+        _legacy.actions.increment!,
+        _legacy.actions.increment!,
+      ),
+    },
+  }));
 ```
 
-**Example with Interpreter:**
+### On an Interpreter
 
 ```typescript
 const service = interpret(machine, { context: 0 });
 
-// Define initial action
 service.addOptions(({ assign }) => ({
   actions: {
     add: assign('context', ({ context }) => context + 5),
@@ -510,10 +1147,9 @@ service.addOptions(({ batch }, { _legacy }) => ({
 }));
 ```
 
-**Example with `provideOptions` on Interpreter:**
+### `provideOptions` on Interpreter (immutable)
 
 ```typescript
-// Create new service instances with cumulative options
 const service1 = interpret(machine, { context: 0 });
 
 const service2 = service1.provideOptions(({ assign }) => ({
@@ -524,336 +1160,196 @@ const service2 = service1.provideOptions(({ assign }) => ({
 
 const service3 = service2.provideOptions(({ assign }, { _legacy }) => ({
   actions: {
-    multiplyAndAdd: assign('context', ({ context }) => {
-      // Can access previous multiply action
-      return context * 2 + 10;
-    }),
+    multiplyAndAdd: assign('context', ({ context }) => context * 2 + 10),
   },
 }));
-
-// service1, service2, and service3 are independent instances
+// service1, service2, service3 are independent instances
 ```
 
 **Properties available in `_legacy`:**
 
-- `_legacy.actions` - Previously defined actions
-- `_legacy.predicates` - Previously defined guards/predicates
-- `_legacy.delays` - Previously defined delays
-- `_legacy.promises` - Previously defined promises
-- `_legacy.machines` - Previously defined child machines
-- `_legacy.emitters` - Previously defined emitters
+| Property             | Content                         |
+| -------------------- | ------------------------------- |
+| `_legacy.actions`    | Previously defined actions      |
+| `_legacy.predicates` | Previously defined guards       |
+| `_legacy.delays`     | Previously defined delays       |
+| `_legacy.promises`   | Previously defined promises     |
+| `_legacy.machines`   | Previously defined child actors |
+| `_legacy.emitters`   | Previously defined emitters     |
 
 **Key features:**
 
-- Immutable: `_legacy` object is frozen and cannot be modified
-- Cumulative: Each call sees options from all previous calls
-- Type-safe: Fully typed for IntelliSense support
+- **Immutable** — the `_legacy` object is frozen; it cannot be mutated.
+- **Cumulative** — each call sees options from all previous calls.
+- **Type-safe** — fully typed for IntelliSense support.
 - Works with both `addOptions` (mutates) and `provideOptions` (returns new
-  instance)
+  instance).
+
+<br/>
+
+---
+
+## 14. API Reference
+
+### Machine Creation
+
+#### `createMachine(config, types?)`
+
+Creates a new state machine.
+
+**Parameters:**
+
+- `config` — Machine configuration object
+  - `initial` — Initial state name
+  - `states` — State definitions
+  - `actors?` — Root-level actor declarations (emitters, promises,
+    children)
+- `types` — Type definitions (via `typings(...)`)
+  - `context` — Public context type
+  - `pContext?` — Private context type
+  - `eventsMap` — Event definitions
+  - `actorsMap?` — Actor type maps (emitters, promises, children)
+
+**Returns:** `Machine` instance
+
+#### `createConfig(config)`
+
+Utility to create a typed configuration object without creating a full
+machine.
+
+### Machine Methods
+
+#### `machine.provideOptions(callback)`
+
+Provides implementations for actions, guards, delays, actors.
+
+**Parameters:**
+
+- `callback(helpers, options)` — Function receiving:
+  - **helpers** — `assign`, `voidAction`, `batch`, `filter`, `erase`,
+    `sendTo`, `resend`, `forceSend`, `isValue`, `isNotValue`,
+    `pauseActivity`, `resumeActivity`, `stopActivity`
+  - **options** — `{ _legacy }` containing all previously defined options
+
+**Returns:** New `Machine` instance (immutable)
+
+#### `machine.addOptions(callback)`
+
+Adds or overwrites options dynamically. Mutates the machine.
+
+**Returns:** The added options object
 
 ### Interpreter
 
-#### `interpret(machine, options)`
+#### `interpret(machine, options?)`
 
 Creates an interpreter service for a machine.
 
 **Parameters:**
 
-- `machine`: Machine instance
+- `machine` — Machine instance
 - `options`:
-  - `context`: Initial public context
-  - `pContext?`: Initial private context
-  - `mode?`: `'strict'` | `'normal'` (default: `'strict'`)
-  - `exact?`: Use exact timing intervals (default: `true`)
+  - `context` — Initial public context
+  - `pContext?` — Initial private context
+  - `mode?` — `'strict'` | `'normal'` (default: `'strict'`)
+  - `exact?` — Use exact timing intervals (default: `true`)
 
 **Returns:** `Interpreter` service
 
 ### Interpreter Properties
 
-- **`service.value`** - Current state value
-- **`service.context`** - Current public context
-- **`service.status`** - Service status (`'idle'`, `'working'`,
-  `'stopped'`, etc.)
-- **`service.state`** - Complete state snapshot
-- **`service.config`** - Current state configuration
-- **`service.mode`** - Current mode (`'strict'` | `'normal'`)
+| Property          | Description                                         |
+| ----------------- | --------------------------------------------------- |
+| `service.value`   | Current state value (string or nested object)       |
+| `service.context` | Current public context                              |
+| `service.status`  | Service status (`'idle'`, `'working'`, `'stopped'`) |
+| `service.state`   | Complete state snapshot                             |
+| `service.config`  | Current state configuration                         |
+| `service.mode`    | Current mode (`'strict'` \| `'normal'`)             |
+| `service.tags`    | Active tags for the current state                   |
 
 ### Interpreter Methods
 
-#### `service.start()`
-
-Starts the service and begins processing.
-
-#### `service.send(event)`
-
-Sends an event to the machine.
-
-**Parameters:**
-
-- `event`: Event name (string) or event object `{ type, payload }`
-
-#### `service.subscribe(subscriber, options?)`
-
-Subscribes to state changes.
-
-**Parameters:**
-
-- `subscriber`: Callback function or event map
-- `options?`:
-  - `id?`: Unique subscriber ID
-  - `equals?`: Custom equality function
-
-**Returns:** Subscription object with `unsubscribe()` or `close()` method
-
-#### `service.pause()`
-
-Pauses the service (stops activities and timers).
-
-#### `service.resume()`
-
-Resumes the service after pausing.
-
-#### `service.stop()`
-
-Stops the service completely.
-
-#### `service.addOptions(callback)`
-
-Dynamically adds or overwrites options on the running service. Mutates the
-current service instance.
-
-**Parameters:**
-
-- `callback`: Same as `machine.provideOptions` callback, including
-  `_legacy` parameter
-
-**Returns:** The added options object.
-
-**Example:**
-
-```typescript
-service.addOptions(({ assign }, { _legacy }) => ({
-  actions: {
-    newAction: assign('context', ({ context }) => context + 1),
-  },
-}));
-```
-
-#### `service.provideOptions(callback)`
-
-Creates a new service instance with additional options. Does not mutate the
-original service.
-
-**Parameters:**
-
-- `callback`: Same as `machine.provideOptions` callback, including
-  `_legacy` parameter
-
-**Returns:** New `Interpreter` instance with preserved initial context
-
-**Example:**
-
-```typescript
-const service2 = service1.provideOptions(({ assign }) => ({
-  actions: {
-    customAction: assign('context', ({ context }) => context * 2),
-  },
-}));
-// service1 and service2 are independent
-```
-
-#### `await service[Symbol.asyncDispose]()`
-
-Cleanly disposes of the service (async).
-
-#### `service.dispose()`
-
-Synchronously disposes of the service.
+| Method                                 | Description                                       |
+| -------------------------------------- | ------------------------------------------------- |
+| `service.start()`                      | Starts the service and begins processing          |
+| `service.send(event)`                  | Sends an event (string or `{ type, payload }`)    |
+| `service.subscribe(subscriber)`        | Subscribes to state changes                       |
+| `service.pause()`                      | Pauses activities and timers                      |
+| `service.resume()`                     | Resumes after pausing                             |
+| `service.stop()`                       | Stops the service completely                      |
+| `service.addOptions(callback)`         | Mutates the service with new options              |
+| `service.provideOptions(callback)`     | Returns a **new** service with additional options |
+| `service.dispose()`                    | Synchronously disposes of the service             |
+| `await service[Symbol.asyncDispose]()` | Cleanly disposes (async)                          |
 
 ### State Configuration
-
-#### State Definition
 
 ```typescript
 states: {
   stateName: {
     type?: 'atomic' | 'compound' | 'parallel' | 'final',
-    initial?: string, // For compound states
-    entry?: ActionConfig, // Actions on entry
-    exit?: ActionConfig, // Actions on exit
-    on?: { [event: string]: TransitionConfig }, // Event transitions
-    after?: { [delay: string]: TransitionConfig }, // Delayed transitions
-    always?: TransitionConfig, // Automatic transitions
-    activities?: { [delay: string]: ActionConfig }, // Recurring actions
-    promises?: PromiseConfig, // Async operations
-    states?: { [state: string]: StateDefinition }, // Nested states
+    initial?: string,
+    tags?: string[],
+    entry?: ActionConfig,
+    exit?: ActionConfig,
+    on?: { [event: string]: TransitionConfig },
+    after?: { [delay: string]: TransitionConfig },
+    always?: TransitionConfig | TransitionConfig[],
+    activities?: { [delay: string]: ActionConfig },
+    actors?: { [name: string]: ActorConfig },
+    states?: { [state: string]: StateDefinition },
   }
 }
 ```
 
-#### Transition Configuration
+### Transition Configuration
 
 ```typescript
 type TransitionConfig =
   | string // Target state
   | {
       target?: string;
-      guards?: GuardConfig; // Conditions
-      actions?: ActionConfig; // Actions to execute
+      guards?: GuardConfig;
+      actions?: ActionConfig;
     }
-  | TransitionConfig[]; // Multiple transitions (first match wins)
+  | TransitionConfig[]; // Multiple candidates (first match wins)
 ```
 
-### Actions
+### Typings Utilities Reference
 
-#### `assign(path, updater)`
-
-Updates context values.
-
-```typescript
-actions: {
-  updateCount: assign('context.count', ({ context }) => context.count + 1),
-  updateMultiple: assign('context', () => ({ count: 0, name: 'New' })),
-}
-```
-
-#### `voidAction(callback)`
-
-Creates side-effect only actions.
-
-```typescript
-actions: {
-  logState: voidAction(() => console.log('State changed')),
-}
-```
-
-#### `batch(...actions)`
-
-Groups multiple actions.
-
-```typescript
-actions: {
-  initialize: batch('resetCount', 'clearError', 'logStart'),
-}
-```
-
-#### `filter(key, predicate)`
-
-Filters arrays or objects in context.
-
-```typescript
-actions: {
-  // Filter array elements
-  filterEven: filter('context.numbers', (num: number) => num % 2 === 0),
-
-  // Filter array of objects
-  filterActive: filter('context.users', (user) => user.active),
-
-  // Filter object properties (by value)
-  filterHighScores: filter('context.scores', (score) => score >= 80),
-}
-```
-
-#### `erase(path)`
-
-Sets a property to `undefined`. Uses full decomposed keys like `assign`.
-
-```typescript
-actions: {
-  // Erase single property
-  clearEmail: erase('context.user.email'),
-
-  // Erase multiple properties with batch
-  resetForm: batch(
-    erase('context.name'),
-    erase('context.email'),
-    erase('context.age'),
-  ),
-}
-```
-
-### Guards (Predicates)
-
-#### `isValue(path, value)`
-
-Checks if a value equals expected value.
-
-```typescript
-predicates: {
-  isEmpty: isValue('context.items', []),
-}
-```
-
-#### `isNotValue(path, value)`
-
-Checks if a value differs from expected value.
-
-#### Custom Guards
-
-```typescript
-predicates: {
-  isAuthenticated: ({ context }) => context.token !== undefined,
-}
-```
-
-### Delays
-
-```typescript
-delays: {
-  SHORT: 1000,
-  LONG: ({ context }) => context.timeout,
-}
-```
-
-### Promises
-
-```typescript
-promises: {
-  fetchUser: async ({ event, context }) => {
-    const response = await fetch(`/api/users/${event.payload.id}`);
-    return response.json();
-  },
-}
-```
-
-### Typings Utilities
-
-- **`typings.litterals(...values)`** - Create literal types
-- **`typings.union(...types)`** - Create union types
-- **`typings.array(type)`** - Create array types
-- **`typings.tuple(...types)`** - Create tuple types
-- **`typings.any(schema)`** - Create object schemas
-- **`typings.record(type, ...keys?)`** - Create record types
-- **`typings.intersection(...types)`** - Create intersection types
-- **`typings.discriminatedUnion(key, ...types)`** - Create discriminated
-  unions
-- **`typings.maybe(type)`** - Create optional/undefined types
-- **`typings.partial(schema)`** - Make all properties optional
-- **`typings.custom<T>()`** - Use custom TypeScript types
-- **`typings.soa(type)`** - Single or Array type
-- **`typings.sv`** - StateValue type helper
-- **`inferT<T>`** - Infer TypeScript type from typing schema
+| Utility                                | Produces                         |
+| -------------------------------------- | -------------------------------- |
+| `typings.litterals(...values)`         | Literal union types              |
+| `typings.union(...types)`              | Union types                      |
+| `typings.array(type)`                  | Array types                      |
+| `typings.tuple(...types)`              | Tuple types                      |
+| `typings.any(schema)`                  | Object schemas                   |
+| `typings.record(type, ...keys?)`       | Record types                     |
+| `typings.intersection(...types)`       | Intersection types               |
+| `typings.discriminatedUnion(key, ...)` | Discriminated unions             |
+| `typings.maybe(type)`                  | Optional / undefined types       |
+| `typings.partial(schema)`              | All properties optional          |
+| `typings.custom<T>()`                  | Custom TypeScript types          |
+| `typings.soa(type)`                    | Single or Array type             |
+| `typings.sv`                           | StateValue type helper           |
+| `inferT<T>`                            | Infer TS type from typing schema |
 
 <br/>
 
-## CHANGE_LOG
+---
 
-<details>
+## Changelog
 
-<summary>
-View changelog
-</summary>
-[CHANGELOG.md](https://github.com/chlbri/app-ts/blob/main/CHANGELOG.md)
-
-<br/>
-
-</details>
+[View CHANGELOG.md](https://github.com/chlbri/app-ts/blob/main/CHANGELOG.md)
 
 <br/>
 
 ## NB
 
-**_Don't use version 0.9.17, it doesn't exports anything_**
+**_Don't use version 0.9.17, it doesn't export anything._**
+
+<br/>
 
 ## Contributing
 
@@ -867,16 +1363,15 @@ MIT
 
 <br/>
 
-## Auteur
+## Author
 
 chlbri (bri_lvi@icloud.com)
 
-[My github](https://github.com/chlbri?tab=repositories)
-
-[<svg width="98" height="96" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="#24292f"/></svg>](https://github.com/chlbri?tab=repositories)
+[My GitHub](https://github.com/chlbri?tab=repositories)
 
 <br/>
 
-## Liens
+## Links
 
 - [Documentation](https://github.com/chlbri/app-ts)
+- [Changelog](https://github.com/chlbri/app-ts/blob/main/CHANGELOG.md)

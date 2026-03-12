@@ -1,33 +1,42 @@
 import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap, ToEvents } from '#events';
+import type {
+  ActorsConfigMap,
+  EventObject,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
+import type { State } from '#states';
 import { nothing, toEventsMap } from '#utils';
 import type { TimerState } from '@bemedev/interval2';
 import equal from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
-import { isFunction } from '../types/primitives';
-import type { FnSubReduced, State } from './interpreter.types';
+import { FnMapR, isFunction } from '../types/primitives';
 
 /**
  * Subscriber class that manages the subscription state and provides methods
  * to handle state changes and unsubscribe.
  *
  * @template : {@linkcode EventsMap} [E] - Type of the events map
- * @template : {@linkcode PromiseeMap} [P] - Type of the promisees map
+ * @template : {@linkcode ActorsConfigMap} [A] - Type of the actors map
  * @template : {@linkcode PrimitiveObject} [Tc] - Type of the context
  * @template : [R] - Type of the return value
  *
  */
 class SubscriberClass<
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
+  St extends State<Eo, Tc, T> = State<Eo, Tc, T>,
 > {
-  #subscriber: FnSubReduced<E, P, Tc, void>;
-
+  #subscriber: FnMapR<Eo, Tc, T, void>;
   #eventsMap: E;
-
-  #promiseesMap: P;
+  #actorsMap: A;
 
   #state: TimerState = 'idle';
 
@@ -36,7 +45,7 @@ class SubscriberClass<
    * @param previous of type {@linkcode State} - First state to compare
    * @param next of type {@linkcode State} - Second state to compare
    */
-  #equals: (previous: State<Tc>, next: State<Tc>) => boolean;
+  #equals: (previous: St, next: St) => boolean;
 
   get id() {
     return this._id;
@@ -56,14 +65,14 @@ class SubscriberClass<
    */
   constructor(
     eventsMap: E,
-    promiseesMap: P,
-    subscriber: FnSubReduced<E, P, Tc, void>,
-    equals: (a: State<Tc>, b: State<Tc>) => boolean = equal,
+    actorsMap: A,
+    subscriber: FnMapR<Eo, Tc, T, void>,
+    equals: (a: St, b: St) => boolean = equal,
     private _id = nanoid(),
   ) {
     this.#subscriber = subscriber;
     this.#eventsMap = eventsMap;
-    this.#promiseesMap = promiseesMap;
+    this.#actorsMap = actorsMap;
     this.#equals = equals;
 
     this.#state = 'active';
@@ -84,14 +93,11 @@ class SubscriberClass<
     const check1 = isFunction(sub);
     if (check1) return _any(sub);
 
-    const map = toEventsMap(this.#eventsMap, this.#promiseesMap);
+    const map = toEventsMap(this.#eventsMap, this.#actorsMap);
     const keys = Object.keys(map);
 
-    return ({ event, ...rest }: State<Tc, ToEvents<E, P>>) => {
-      const check5 = typeof event === 'string';
+    return ({ event, ...rest }: St) => {
       const _else = sub.else ?? nothing;
-      if (check5) return _any(_else({ event, ...rest }));
-
       const { type, payload } = event;
 
       for (const key of keys) {
@@ -122,7 +128,7 @@ class SubscriberClass<
    * and if they are not equal, it calls the subscriber with the next state.
    * If the states are equal or if the subscriber cannot perform its action,
    */
-  fn = (previous: State<Tc>, next: State<Tc>) => {
+  fn = (previous: St, next: St) => {
     if (this.#cannotPerform) return;
 
     const _equals = this.#equals(previous, next);
@@ -153,46 +159,52 @@ class SubscriberClass<
 export type { SubscriberClass };
 
 export type SubscriberOptions<
+  E extends EventObject = EventObject,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
   id?: string;
-  equals?: (a: State<Tc>, b: State<Tc>) => boolean;
+  equals?: (a: State<E, Tc, T>, b: State<E, Tc, T>) => boolean;
 };
 
 type CreateSubscriber_F = <
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventsMap = EventsMap,
+  const A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  const Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   eventsMap: E,
-  promiseesMap: P,
-  subscriber: FnSubReduced<E, P, Tc, void>,
-  options?: SubscriberOptions<Tc>,
-) => SubscriberClass<E, P, Tc>;
+  actorsMap: A,
+  subscriber: FnMapR<Eo, Tc, T, void>,
+  options?: SubscriberOptions<Eo, Tc, T>,
+) => SubscriberClass<E, A, Tc, T, Eo>;
 
 /**
  * Creates a new instance of SubscriberMapClass.
  *
  * @param eventsMap : {@linkcode EventsMap} [E] - The events map.
- * @param promiseesMap : {@linkcode PromiseeMap} [P] - The promisees map.
+ * @param actorsMap : {@linkcode ActorsConfigMap} [A] - The actors map.
  * @param subscriber - The subscriber function that will be called with the {@linkcode State}.
  * @param options - Optional parameters for the subscriber, including equality function and ID.
  * @returns A new instance of {@linkcode SubscriberClass} that manages the subscription state and provides methods to handle state changes and unsubscribe.
  *
  * @remarks
- * This function maps the provided events and promisees.
+ * This function maps the provided events and actors.
  *
- * This allows for efficient subscription management and state handling depending on the events and promisees.
+ * This allows for efficient subscription management and state handling depending on the events and actors.
  */
 export const createSubscriber: CreateSubscriber_F = (
   eventsMap,
-  promiseesMap,
+  actorsMap,
   subscriber,
   options,
 ) => {
   return new SubscriberClass(
     eventsMap,
-    promiseesMap,
+    actorsMap,
     subscriber,
     options?.equals,
     options?.id,

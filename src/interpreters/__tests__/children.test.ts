@@ -1,9 +1,9 @@
-import typings from '#bemedev/features/numbers/typings';
+import num from '#bemedev/features/numbers/typings';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { EVENTS_FULL } from '#machines';
 import { createFakeWaiter } from '@bemedev/vitest-extended';
-import { defaultC, defaultT } from './fixtures';
+import { constructTests, defaultC, defaultT } from '../../fixtures';
+import { typings } from '#utils';
 
 describe('Integration testing for interpret, Children', () => {
   beforeAll(() => {
@@ -19,7 +19,7 @@ describe('Integration testing for interpret, Children', () => {
         },
       },
     },
-    { ...defaultT, context: typings.type },
+    { ...defaultT, context: num.type },
   ).provideOptions(({ assign }) => ({
     actions: {
       inc: assign('context', ({ context }) => context + 1),
@@ -31,24 +31,32 @@ describe('Integration testing for interpret, Children', () => {
     const parent = createMachine(
       {
         initial: 'idle',
-        machines: { child: 'child' },
+        actors: {
+          child: {
+            contexts: {
+              '.': '.',
+            },
+          },
+        },
         states: {
           idle: {},
         },
       },
-      { ...defaultT, pContext: typings.type },
-    ).provideOptions(({ createChild }) => ({
-      machines: {
-        child: createChild(
-          child,
-          {
-            context: 0,
-            pContext: {},
+      {
+        ...defaultT,
+        pContext: num.type,
+        actorsMap: {
+          ...defaultT.actorsMap,
+          children: {
+            child: {},
           },
-          {
-            events: EVENTS_FULL,
-          },
-        ),
+        },
+      },
+    ).provideOptions(() => ({
+      actors: {
+        children: {
+          child: () => interpret(child, { context: 0 }),
+        },
       },
     }));
 
@@ -84,7 +92,13 @@ describe('Integration testing for interpret, Children', () => {
     const parent = createMachine(
       {
         initial: 'idle',
-        machines: { child: 'child' },
+        actors: {
+          child: {
+            contexts: {
+              '.': 'iterator',
+            },
+          },
+        },
         states: {
           idle: {},
           working: {
@@ -96,22 +110,20 @@ describe('Integration testing for interpret, Children', () => {
       },
       {
         ...defaultT,
-        pContext: { iterator: typings.type },
+        pContext: { iterator: num.type },
         eventsMap: { NEXT: {} },
+        actorsMap: {
+          ...defaultT.actorsMap,
+          children: {
+            child: {},
+          },
+        },
       },
-    ).provideOptions(({ createChild }) => ({
-      machines: {
-        child: createChild(
-          child,
-          {
-            context: 0,
-            pContext: {},
-          },
-          {
-            events: EVENTS_FULL,
-            contexts: 'iterator',
-          },
-        ),
+    ).provideOptions(() => ({
+      actors: {
+        children: {
+          child: () => interpret(child, { context: 0 }),
+        },
       },
     }));
 
@@ -144,5 +156,101 @@ describe('Integration testing for interpret, Children', () => {
     test('#07 => send NEXT event', () => {
       service.send('NEXT');
     });
+  });
+
+  describe('#03 => Cover child->on', () => {
+    const notify = vi.fn();
+    const child = createMachine(
+      {
+        initial: 'active',
+        states: {
+          active: {
+            on: { NEXT: '/inactive' },
+          },
+          inactive: {
+            on: { NEXT: '/active' },
+          },
+        },
+      },
+      typings({
+        eventsMap: {
+          NEXT: 'primitive',
+        },
+      }),
+    );
+
+    const parent = createMachine(
+      {
+        actors: {
+          child: {
+            on: {
+              NEXT: {
+                actions: ['notify'],
+              },
+            },
+          },
+        },
+        initial: 'idle',
+        states: {
+          idle: {
+            on: {
+              NEXT: {
+                actions: ['sendChildNext'],
+              },
+            },
+          },
+        },
+      },
+      typings({
+        eventsMap: {
+          NEXT: 'primitive',
+        },
+        actorsMap: {
+          children: {
+            child: {
+              NEXT: 'primitive',
+            },
+          },
+        },
+      }),
+    ).provideOptions(({ sendTo, voidAction }) => ({
+      actions: {
+        notify: voidAction(() => {
+          console.warn('REACH');
+          notify();
+        }),
+        sendChildNext: sendTo(child)(() => {
+          return {
+            to: 'child',
+            event: 'NEXT',
+          };
+        }),
+      },
+      actors: { children: { child: () => interpret(child) } },
+    }));
+
+    const service = interpret(parent);
+
+    let calls = 0;
+    const { send, useNotify, start } = constructTests(
+      service,
+      ({ index, tupleOf }) => {
+        return {
+          useNotify: (fails = false) => {
+            const invite = `#${index()} => Notify is used => ${fails ? '(fails)' : ''}`;
+
+            return tupleOf(invite, () => {
+              if (!fails) calls++;
+              expect(notify).toBeCalledTimes(calls);
+            });
+          },
+        };
+      },
+    );
+
+    test(...start());
+    test(...useNotify(true));
+    test(...send('NEXT'));
+    test(...useNotify());
   });
 });

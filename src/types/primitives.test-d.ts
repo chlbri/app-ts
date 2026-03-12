@@ -10,8 +10,10 @@ import type {
   NoExtraKeysFor,
   NoExtraKeysRecord,
   NoExtraKeysStrict,
+  TrueObject,
   ValuesOf,
 } from '~types';
+import type { FilterArray } from './primitives';
 
 export type ExtractLargeKeys<T> = string extends T
   ? never
@@ -477,3 +479,98 @@ expectTypeOf<ValidCollection['set']>().toMatchTypeOf<Set<string>>();
 // #endregion Edge cases
 
 // #endregion NoExtraKeys Tests
+
+// #region Array Filtering
+type _FA = [
+  1,
+  2,
+  3,
+  4,
+  5,
+  'string',
+  'my name',
+  true,
+  false,
+  true,
+  { a: 1 },
+  [1, 2],
+  () => {},
+];
+
+type FA1 = FilterArray<_FA, number>;
+expectTypeOf<FA1>().toEqualTypeOf<[1, 2, 3, 4, 5]>();
+
+type FA2 = FilterArray<_FA, string>;
+expectTypeOf<FA2>().toEqualTypeOf<['string', 'my name']>();
+
+type FA3 = FilterArray<_FA, boolean>;
+expectTypeOf<FA3>().toEqualTypeOf<[true, false, true]>();
+
+type FA4 = FilterArray<_FA, object>;
+expectTypeOf<FA4>().toEqualTypeOf<[{ a: 1 }, [1, 2], () => {}]>();
+
+type FA5 = FilterArray<_FA, TrueObject>;
+expectTypeOf<FA5>().toEqualTypeOf<[{ a: 1 }]>();
+
+type FA6 = FilterArray<_FA, Array<any>>;
+expectTypeOf<FA6>().toEqualTypeOf<[[1, 2]]>();
+
+type FA7 = FilterArray<_FA, Function>;
+expectTypeOf<FA7>().toEqualTypeOf<[() => {}]>();
+
+type FA8 = FilterArray<_FA, () => {}>;
+expectTypeOf<FA8>().toEqualTypeOf<[() => {}]>();
+
+type FA9 = FilterArray<_FA, () => void>;
+expectTypeOf<FA9>().toEqualTypeOf<[() => {}]>();
+
+type FA10 = FilterArray<_FA, () => number>;
+expectTypeOf<FA10>().toEqualTypeOf<[]>();
+
+type FA11 = FilterArray<_FA, string | number>;
+expectTypeOf<FA11>().toEqualTypeOf<[1, 2, 3, 4, 5, 'string', 'my name']>();
+
+type FA12 = FilterArray<_FA, string | boolean>;
+expectTypeOf<FA12>().toEqualTypeOf<
+  ['string', 'my name', true, false, true]
+>();
+
+type FA13 = FilterArray<_FA, ''>;
+expectTypeOf<FA13>().toEqualTypeOf<[]>();
+
+type FA14 = FilterArray<_FA, never>;
+expectTypeOf<FA14>().toEqualTypeOf<[]>();
+
+type FA15 = FilterArray<_FA, any>;
+expectTypeOf<FA15>().toEqualTypeOf<_FA>();
+
+type FA16 = FilterArray<_FA, unknown>;
+expectTypeOf<FA16>().toEqualTypeOf<_FA>();
+
+type FA17 = FilterArray<_FA, 'string'>;
+expectTypeOf<FA17>().toEqualTypeOf<['string']>();
+
+type FA18 = FilterArray<_FA, 1>;
+expectTypeOf<FA18>().toEqualTypeOf<[1]>();
+
+type FA19 = FilterArray<_FA, true>;
+expectTypeOf<FA19>().toEqualTypeOf<[true, true]>();
+
+type FA20 = FilterArray<_FA, 1 | 2 | true | 'string'>;
+expectTypeOf<FA20>().toEqualTypeOf<[1, 2, 'string', true, true]>();
+// #endregion
+
+type ExS1 = Exclude<
+  | 'START'
+  | 'HELP'
+  | 'getChildren::then'
+  | 'machine1::on::NEXT'
+  | 'machine1::on::ERROR'
+  | 'machine2::on::NEXT'
+  | 'machine2::on::ERROR',
+  `${string}::on::${string}`
+>;
+
+expectTypeOf<ExS1>().toEqualTypeOf<
+  'START' | 'HELP' | 'getChildren::then'
+>();

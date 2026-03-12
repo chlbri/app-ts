@@ -6,7 +6,6 @@ import { machine2 } from './machine2';
 export const machine23 = createMachine(
   {
     initial: 'idle',
-    entry: 'debounce',
     states: {
       idle: {
         activities: {
@@ -17,6 +16,7 @@ export const machine23 = createMachine(
         },
       },
       working: {
+        entry: 'debounce',
         type: 'parallel',
         activities: {
           DELAY2: 'inc2',
@@ -40,16 +40,17 @@ export const machine23 = createMachine(
                 },
               },
               fetch: {
-                promises: {
-                  src: 'fetch',
-                  then: {
-                    actions: {
-                      name: 'insertData',
-                      description: 'Database insert',
+                actors: {
+                  fetch: {
+                    then: {
+                      actions: {
+                        name: 'insertData',
+                        description: 'Database insert',
+                      },
+                      target: '/working/fetch/idle',
                     },
-                    target: '/working/fetch/idle',
+                    catch: '/working/fetch/idle',
                   },
-                  catch: '/working/fetch/idle',
                 },
               },
             },
@@ -64,10 +65,11 @@ export const machine23 = createMachine(
                     target: '/working/ui/input',
                   },
                 },
-                machines: {
+                actors: {
                   machine1: {
-                    name: 'machine1',
-                    description: 'A beautiful machine',
+                    contexts: {
+                      iterator: 'iterator',
+                    },
                   },
                 },
               },
@@ -101,7 +103,7 @@ export const machine23 = createMachine(
     eventsMap: machine2.eventsMap,
     context: machine2.context,
     pContext: machine2.pContext,
-    promiseesMap: machine2.promiseesMap,
+    actorsMap: machine2.actorsMap,
   },
 )
   .provideOptions(toFunction<any>(machine2.options))

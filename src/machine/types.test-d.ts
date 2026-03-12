@@ -1,19 +1,25 @@
-import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { machine1, machine2 } from '#fixturesData';
-import type { SingleOrArrayL } from '~types';
-import type { EVENTS_FULL } from './constants';
+import type { Fn, PrimitiveObject } from '#bemedev/globals/types';
+import type { machine2 } from '#fixturesData';
 import type {
-  ContextFrom,
-  EventsMapFrom,
+  ChildEvents,
+  Config,
   FnMapFrom,
+  GetActorKeysFromConfig,
   GetEventsFromMachine,
-  PromiseesMapFrom,
-  SubscriberType,
 } from './types';
 
-type TT2 = keyof FnMapFrom<typeof machine2>;
+type TT2 = keyof Exclude<FnMapFrom<typeof machine2>, Fn>;
 expectTypeOf<TT2>().toEqualTypeOf<
-  'NEXT' | 'FINISH' | 'FETCH' | 'WRITE' | 'else'
+  | 'machine$$init'
+  | 'machine$$exceeded'
+  | 'NEXT'
+  | 'else'
+  | 'FINISH'
+  | 'FETCH'
+  | 'WRITE'
+  | 'fetch::then'
+  | 'fetch::catch'
+  | 'machine1::on::NEXT'
 >;
 
 type GEFC2 = GetEventsFromMachine<typeof machine2>;
@@ -24,47 +30,65 @@ expectTypeOf<GEFC2>().toEqualTypeOf<{
   WRITE: PrimitiveObject;
 }>();
 
-type Sub1 = SubscriberType<
-  EventsMapFrom<typeof machine2>,
-  PromiseesMapFrom<typeof machine2>,
-  ContextFrom<typeof machine2>,
-  typeof machine1
->;
+const config = {
+  actors: {
+    machine11: {
+      contexts: {},
+      on: {
+        NEXT: '/working',
+        PREVIOUS: '/idle',
+      },
+    },
+  },
+  initial: 'idle',
+  states: {
+    idle: {
+      actors: {
+        machine122: {
+          contexts: {},
+          on: {
+            NEXT2: '/working',
+            PREVIOUS2: '/idle',
+          },
+        },
+      },
+    },
+    working: {
+      actors: {
+        machine122: {
+          contexts: {},
+          on: {
+            NEXT3: '/working',
+          },
+        },
+      },
+    },
+  },
+} as const satisfies Config;
 
-expectTypeOf<Sub1>().branded.toEqualTypeOf<{
-  events:
-    | typeof EVENTS_FULL
-    | SingleOrArrayL<
-        | {
-            NEXT?: SingleOrArrayL<
-              | 'NEXT'
-              | 'FINISH'
-              | 'FETCH'
-              | 'WRITE'
-              | 'fetch::then'
-              | 'fetch::catch'
-            >;
-          }
-        | 'NEXT'
-        | 'FINISH'
-        | 'FETCH'
-        | 'WRITE'
-        | 'fetch::then'
-        | 'fetch::catch'
-      >;
-  contexts: SingleOrArrayL<{
-    iterator?: SingleOrArrayL<'iterator'>;
-  }>;
+type GAK1 = GetActorKeysFromConfig<typeof config>['children'];
+
+expectTypeOf<GAK1>().toEqualTypeOf<{
+  machine11: Record<'NEXT' | 'PREVIOUS', any>;
+  machine122: Record<'NEXT2' | 'PREVIOUS2' | 'NEXT3', any>;
 }>();
 
-type Sub2 = SubscriberType<
-  {},
-  {},
-  string,
-  { config: unknown; context: string }
+type CE1 = ChildEvents<
+  'str',
+  {
+    children: {
+      str: {
+        NEXT: {};
+        PREVIOUS: {};
+      };
+    };
+    promisees: {
+      data: {
+        then: '/';
+        catch: '/';
+      };
+    };
+  }
 >;
 
-expectTypeOf<Sub2>().branded.toEqualTypeOf<{
-  events: typeof EVENTS_FULL | SingleOrArrayL<{}>;
-  contexts?: never;
-}>();
+expectTypeOf<CE1>().toEqualTypeOf<{ NEXT: {}; PREVIOUS: {} }>();

@@ -1,5 +1,8 @@
 import type {
   DelayedTransitions,
+  ExtractChildKeysFromTransitions,
+  ExtractEmitterSrcKeyFromTransitions,
+  ExtractPromiseeSrcKeyFromTransitions,
   GetEventKeysFromDelayed,
   GetEventKeysFromTransitions,
   TransitionsConfig,
@@ -54,20 +57,30 @@ const ttest3 = {
     { guards: 'guard3', actions: 'build3', target: '/state' },
     { actions: 'f', target: '/state' },
   ],
-  promises: [
-    {
-      src: 'source1',
+  actors: {
+    source1: {
       then: [{ guards: 'guard4', actions: 'build4' }, { actions: 'g' }],
       catch: [{ guards: 'guard5', actions: 'build5' }, { actions: 'h' }],
       finally: [{ guards: 'guard6', actions: 'build6' }, { actions: 'i' }],
     },
-    {
-      src: 'source2',
+    source2: {
       then: [{ guards: 'guard7', actions: 'build7' }, { actions: 'j' }],
       catch: [{ guards: 'guard8', actions: 'build8' }, { actions: 'k' }],
       finally: [{ guards: 'guard9', actions: 'build9' }, { actions: 'l' }],
     },
-  ],
+    em1: {
+      next: '/dfdfd',
+    },
+    m1: {
+      on: {
+        EVENT1: { actions: 'action1' },
+        EVENT34: [
+          { guards: 'guard2', actions: 'build2' },
+          { actions: 'e' },
+        ],
+      },
+    },
+  },
 } as const satisfies TransitionsConfig;
 
 type TTest3 = GetEventKeysFromTransitions<typeof ttest3>;
@@ -81,13 +94,92 @@ expectTypeOf<TTest3>().toEqualTypeOf<
   | 'after.END.[1]'
   | 'always.[0]'
   | 'always.[1]'
-  | 'promises.[0].then.[0]'
-  | 'promises.[0].then.[1]'
-  | 'promises.[0].catch.[0]'
-  | 'promises.[0].catch.[1]'
-  | 'promises.[1].then.[0]'
-  | 'promises.[1].then.[1]'
-  | 'promises.[1].catch.[0]'
-  | 'promises.[1].catch.[1]'
+  | 'actors.source1.then.[0]'
+  | 'actors.source1.then.[1]'
+  | 'actors.source1.catch.[0]'
+  | 'actors.source1.catch.[1]'
+  | 'actors.source2.then.[0]'
+  | 'actors.source2.then.[1]'
+  | 'actors.source2.catch.[0]'
+  | 'actors.source2.catch.[1]'
+  | 'actors.em1.next'
+  | 'actors.em1.error'
+  | 'actors.m1.on.EVENT1'
+  | 'actors.m1.on.EVENT34.[0]'
+  | 'actors.m1.on.EVENT34.[1]'
 >();
 // #endregion
+
+const transition1 = {
+  actors: {
+    machine111: {
+      contexts: {},
+      on: {
+        NEXT: '/working',
+        PREVIOUS: '/idle',
+      },
+    },
+    promise2: {
+      then: '/',
+      catch: '/',
+    },
+    machine122: {
+      contexts: {},
+      on: {
+        NEXT2: '/working',
+        PREVIOUS2: '/idle',
+      },
+    },
+  },
+} as const satisfies TransitionsConfig;
+
+type TTS1 = ExtractChildKeysFromTransitions<typeof transition1>;
+
+expectTypeOf<TTS1>().toEqualTypeOf<
+  | {
+      src: 'machine111';
+      contexts: never;
+      on: 'NEXT' | 'PREVIOUS';
+    }
+  | {
+      src: 'machine122';
+      contexts: never;
+      on: 'NEXT2' | 'PREVIOUS2';
+    }
+>();
+
+const transition2 = {
+  actors: {
+    machine111: {
+      contexts: {},
+      on: {
+        NEXT: '/working',
+        PREVIOUS: '/idle',
+      },
+    },
+    promise2: {
+      then: '/',
+      catch: '/',
+    },
+    promise3: {
+      then: '/',
+      catch: '/',
+    },
+    emitter1: {
+      next: '/',
+    },
+  },
+} as const satisfies TransitionsConfig;
+
+type TTS2 = ExtractPromiseeSrcKeyFromTransitions<typeof transition2>;
+expectTypeOf<TTS2>().toEqualTypeOf<'promise2' | 'promise3'>();
+
+type TTS3 = ExtractEmitterSrcKeyFromTransitions<typeof transition2>;
+expectTypeOf<TTS3>().toEqualTypeOf<'emitter1'>();
+
+type TTS4 = ExtractChildKeysFromTransitions<typeof transition2>;
+expectTypeOf<TTS4>().toEqualTypeOf<{
+  src: 'machine111';
+  contexts: never;
+  on: 'NEXT' | 'PREVIOUS';
+}>();

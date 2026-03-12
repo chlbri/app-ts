@@ -1,7 +1,7 @@
 import { flatMap, type NodeConfig } from '#states';
 import { toArray } from '@bemedev/basifun';
 
-export const getTags = (node: NodeConfig) => {
+export const getTags = <T extends string = string>(node: NodeConfig) => {
   const flat = flatMap(node);
   const out: string[] = [];
   const entries = Object.entries(flat);
@@ -14,5 +14,5 @@ export const getTags = (node: NodeConfig) => {
   const checkEmpty = out.length === 0;
   if (checkEmpty) return undefined;
 
-  return out;
+  return out as T[];
 };

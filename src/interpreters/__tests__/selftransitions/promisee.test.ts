@@ -1,17 +1,23 @@
+import { constructTests, defaultC } from '#fixtures';
 import { returnFalse, returnTrue } from '#guards';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import sleep from '@bemedev/sleep';
-import { createFakeWaiter } from '@bemedev/vitest-extended';
-import {
-  constructSend,
-  constructValue,
-  defaultC,
-  defaultT,
-} from '../fixtures';
+import { typings } from '#utils';
+import { sleep } from '@bemedev/sleep';
 
 const DELAY = 1000;
-const useWaiter = createFakeWaiter.withDefaultDelay(vi, DELAY);
+
+const fixtureTypings = <const T extends string>(value: T) =>
+  typings({
+    actorsMap: {
+      promisees: {
+        [value]: {
+          then: 'primitive',
+          catch: 'primitive',
+        },
+      } as Record<T, { then: 'primitive'; catch: 'primitive' }>,
+    },
+  });
 
 describe('promisee', () => {
   beforeAll(() => {
@@ -24,27 +30,32 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
-              src: 'notDefined',
-              then: '/active',
-              catch: '/active',
-              description: 'notDefined',
+            actors: {
+              notDefined: {
+                then: '/active',
+                catch: '/active',
+                description: 'notDefined',
+              },
             },
           },
           active: {},
         },
       },
-      defaultT,
+      fixtureTypings('notDefined'),
     );
-    const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
+    const service = interpret(machine);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
-    test(...useValue('idle', 2));
-    test(...createFakeWaiter.all(vi)(3));
-    test(...useValue('idle', 4));
+    const { start, useWaiter, useStateValue } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(0),
+      }),
+    );
+
+    test(...start());
+    test(...useStateValue('idle'));
+    test(...useWaiter());
+    test(...useStateValue('idle'));
   });
 
   describe('#02 => Promise rejects', () => {
@@ -53,33 +64,32 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
-              src: 'rejectPromise',
-              then: '/active',
-              catch: '/inactive',
+            actors: {
+              rejectPromise: {
+                then: '/active',
+                catch: '/inactive',
+              },
             },
           },
           active: {},
           inactive: {},
         },
       },
-      defaultT,
+      fixtureTypings('rejectPromise'),
     );
 
     machine.addOptions(() => ({
-      promises: {
-        rejectPromise: () => Promise.reject(),
+      actors: {
+        promises: {
+          rejectPromise: () => Promise.reject(),
+        },
       },
     }));
 
     const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
-
-    test('#01 => Start', () => {
-      service.start();
-    });
-
-    test(...useValue('inactive', 2));
+    const { start, useStateValue } = constructTests(service);
+    test(...start());
+    test(...useStateValue('inactive'));
   });
 
   describe('#03 => Promise resolves', () => {
@@ -88,33 +98,32 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
-              src: 'resolvePromise',
-              then: '/active',
-              catch: '/inactive',
+            actors: {
+              resolvePromise: {
+                then: '/active',
+                catch: '/inactive',
+              },
             },
           },
           active: {},
           inactive: {},
         },
       },
-      defaultT,
+      fixtureTypings('resolvePromise'),
     );
 
     machine.addOptions(() => ({
-      promises: {
-        resolvePromise: () => Promise.resolve(),
+      actors: {
+        promises: {
+          resolvePromise: () => Promise.resolve({}),
+        },
       },
     }));
 
-    const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
-
-    test('#01 => Start', () => {
-      service.start();
-    });
-
-    test(...useValue('active', 2));
+    const service = interpret(machine);
+    const { start, useStateValue } = constructTests(service);
+    test(...start());
+    test(...useStateValue('active'));
   });
 
   describe('#04 => cannotPerform', () => {
@@ -123,10 +132,11 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
-              src: 'rejectPromise',
-              then: '/active',
-              catch: '/inactive',
+            actors: {
+              rejectPromise: {
+                then: '/active',
+                catch: '/inactive',
+              },
             },
             on: {
               NEXT: '/active2',
@@ -137,31 +147,47 @@ describe('promisee', () => {
           inactive: {},
         },
       },
-      { ...defaultT, eventsMap: { NEXT: {} } },
+      typings({
+        actorsMap: {
+          promisees: {
+            rejectPromise: {
+              then: 'primitive',
+              catch: 'primitive',
+            },
+          },
+        },
+        eventsMap: {
+          NEXT: 'primitive',
+        },
+      }),
     );
 
     machine.addOptions(() => ({
-      promises: {
-        rejectPromise: async () => {
-          await sleep(DELAY * 2);
-          return Promise.reject();
+      actors: {
+        promises: {
+          rejectPromise: async () => {
+            await sleep(DELAY * 2);
+            return Promise.reject();
+          },
         },
       },
     }));
 
-    const service = interpret(machine, defaultC);
-    const useValue = constructValue(service);
-    const useSend = constructSend(service);
+    const service = interpret(machine);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    const { start, useStateValue, send, useWaiter } = constructTests(
+      service,
+      ({ waiter }) => ({
+        useWaiter: waiter(DELAY),
+      }),
+    );
 
-    test(...useValue('idle', 2));
+    test(...start());
+    test(...useStateValue('idle'));
+    test(...useWaiter());
+    test(...send('NEXT'));
+    test(...useStateValue('active2'));
     test(...useWaiter(3));
-    test(...useSend('NEXT', 4));
-    test(...useValue('active2', 5));
-    test(...useWaiter(3, 2));
   });
 
   describe('#05 => with max', () => {
@@ -171,45 +197,52 @@ describe('promisee', () => {
         initial: 'idle',
         states: {
           idle: {
-            promises: {
-              src: 'rejectPromise',
-              then: '/active',
-              catch: '/inactive',
-              max: 'DELAY',
+            actors: {
+              rejectPromise: {
+                then: '/active',
+                catch: '/inactive',
+                max: 'DELAY',
+              },
             },
           },
           active: {},
           inactive: {},
         },
       },
-      defaultT,
+      fixtureTypings('rejectPromise'),
     );
 
     machine.addOptions(() => ({
-      promises: {
-        rejectPromise: async () => {
-          await sleep(DELAY * 2);
-          return Promise.reject();
+      actors: {
+        promises: {
+          rejectPromise: async () => {
+            await sleep(DELAY * 2);
+            return Promise.reject();
+          },
         },
       },
     }));
     // #endregion
 
     describe('#01 => max is not defined', () => {
-      const service = interpret(machine, defaultC);
-      const useValue = constructValue(service);
+      const service = interpret(machine);
+
+      const { start, useStateValue, useWaiter } = constructTests(
+        service,
+        ({ waiter }) => ({
+          useWaiter: waiter(DELAY),
+        }),
+      );
+
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});
       const error = 'Delay (DELAY) is not defined';
 
-      test('#01 => Start', () => {
-        service.start();
-      });
-
-      test(...useValue('inactive', 2));
-      test(...useWaiter(3, 1));
-      test(...useValue('inactive', 4));
-      test(...useWaiter(3, 2));
-      test(...useValue('inactive', 5));
+      test(...start());
+      test(...useStateValue('inactive'));
+      test(...useWaiter(3));
+      test(...useStateValue('inactive'));
+      test(...useWaiter(3));
+      test(...useStateValue('inactive'));
 
       describe('#06 => Error is throwing', () => {
         test('#01 => Length of collector is one', () => {
@@ -241,18 +274,21 @@ describe('promisee', () => {
         delays: { DELAY },
       }));
 
-      const service = interpret(machine, defaultC);
-      const useValue = constructValue(service);
+      const service = interpret(machine);
 
-      test('#01 => Start', () => {
-        service.start();
-      });
+      const { start, useStateValue, useWaiter } = constructTests(
+        service,
+        ({ waiter }) => ({
+          useWaiter: waiter(DELAY),
+        }),
+      );
 
-      test(...useValue('idle', 2));
-      test(...useWaiter(3, 1));
-      test(...useValue('inactive', 4));
-      test(...useWaiter(3, 2));
-      test(...useValue('inactive', 5));
+      test(...start());
+      test(...useStateValue('idle'));
+      test(...useWaiter(3));
+      test(...useStateValue('inactive'));
+      test(...useWaiter(3));
+      test(...useStateValue('inactive'));
     });
   });
 
@@ -269,42 +305,45 @@ describe('promisee', () => {
           initial: 'idle',
           states: {
             idle: {
-              promises: {
-                src: 'rejectPromise',
-                then: '/active',
-                catch: '/inactive',
-                finally: 'finalAction',
+              actors: {
+                rejectPromise: {
+                  then: '/active',
+                  catch: '/inactive',
+                  finally: 'finalAction',
+                },
               },
             },
             active: {},
             inactive: {},
           },
         },
-        defaultT,
+        fixtureTypings('rejectPromise'),
       );
 
-      machine.addOptions(() => ({
-        promises: { rejectPromise },
+      machine.addOptions(({ voidAction }) => ({
+        actors: {
+          promises: { rejectPromise },
+        },
         actions: {
-          finalAction: () => {
-            actionVi('finalAction');
-            return {};
-          },
+          finalAction: voidAction(() => actionVi('finalAction')),
         },
       }));
 
       const service = interpret(machine, defaultC);
-      const useValue = constructValue(service);
 
-      test('#01 => Start', () => {
-        service.start();
-      });
+      const { start, useStateValue, useWaiter } = constructTests(
+        service,
+        ({ waiter }) => ({
+          useWaiter: waiter(DELAY),
+        }),
+      );
 
-      test(...useValue('idle', 2));
-      test(...useWaiter(3, 2));
-      test(...useValue('inactive', 4));
+      test(...start());
+      test(...useStateValue('idle'));
+      test(...useWaiter(3));
+      test(...useStateValue('inactive'));
 
-      describe('#05 => actionVi is called one time', () => {
+      describe('#04 => actionVi is called one time', () => {
         test('#01 => Called one time', () => {
           expect(actionVi).toHaveBeenCalledTimes(1);
         });
@@ -321,29 +360,30 @@ describe('promisee', () => {
           initial: 'idle',
           states: {
             idle: {
-              promises: {
-                src: 'rejectPromise',
-                then: '/active',
-                catch: '/active',
-                finally: { actions: 'finalAction', guards: 'guard' },
+              actors: {
+                rejectPromise: {
+                  then: '/active',
+                  catch: '/active',
+                  finally: { actions: 'finalAction', guards: 'guard' },
+                },
               },
             },
             active: {},
           },
         },
-        defaultT,
+        fixtureTypings('rejectPromise'),
       );
 
       const actionVi = vi.fn();
       const guard = vi.fn(returnFalse);
-      machine.addOptions(() => ({
-        promises: { rejectPromise },
+
+      machine.addOptions(({ voidAction }) => ({
+        actors: {
+          promises: { rejectPromise },
+        },
         predicates: { guard },
         actions: {
-          finalAction: () => {
-            actionVi('finalAction');
-            return {};
-          },
+          finalAction: voidAction(() => actionVi('finalAction')),
         },
       }));
 
@@ -353,22 +393,25 @@ describe('promisee', () => {
           guard.mockClear();
         });
 
-        const service = interpret(machine, defaultC);
-        const useValue = constructValue(service);
+        const service = interpret(machine);
 
-        test('#01 => Start', () => {
-          service.start();
-        });
+        const { start, useStateValue, useWaiter } = constructTests(
+          service,
+          ({ waiter }) => ({
+            useWaiter: waiter(DELAY),
+          }),
+        );
 
-        test(...useValue('idle', 2));
-        test(...useWaiter(3, 2));
-        test(...useValue('active', 4));
+        test(...start());
+        test(...useStateValue('idle'));
+        test(...useWaiter(3));
+        test(...useStateValue('active'));
 
-        test('#05 => guard is called one time', () => {
+        test('#04 => guard is called one time', () => {
           expect(guard).toHaveBeenCalledTimes(1);
         });
 
-        test('#06 => actionVi is not called', () => {
+        test('#05 => actionVi is not called', () => {
           expect(actionVi).not.toBeCalled();
         });
       });
@@ -383,27 +426,19 @@ describe('promisee', () => {
           guard.mockClear();
         });
 
-        machine.addOptions(() => ({
-          promises: { rejectPromise },
-          predicates: { guard },
-          actions: {
-            finalAction: () => {
-              actionVi('finalAction');
-              return {};
-            },
-          },
-        }));
-
         const service = interpret(machine, defaultC);
-        const useValue = constructValue(service);
 
-        test('#01 => Start', () => {
-          service.start();
-        });
+        const { start, useStateValue, useWaiter } = constructTests(
+          service,
+          ({ waiter }) => ({
+            useWaiter: waiter(DELAY),
+          }),
+        );
 
-        test(...useValue('idle', 2));
-        test(...useWaiter(3, 2));
-        test(...useValue('active', 4));
+        test(...start());
+        test(...useStateValue('idle'));
+        test(...useWaiter(3));
+        test(...useStateValue('active'));
 
         test('#05 => guard is called one time', () => {
           expect(guard).toHaveBeenCalledTimes(1);
@@ -421,6 +456,4 @@ describe('promisee', () => {
       });
     });
   });
-
-  describe('#07 => Getters', () => {});
 });

@@ -1,46 +1,55 @@
-import type { ActionConfig, ActionMap, ActionResult } from '#actions';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
+import type {
+  ActorsConfigMap,
+  EventsMap,
+  ToEventObject,
+  ToEvents2,
+} from '#events';
 import { reduceFnMap } from '#utils';
-import { isDescriber, type FnR } from '~types';
+import type {
+  Action2,
+  ActionConfig,
+  ActionMap,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  ActionResult,
+} from 'src/actions/types';
+import { fromDescriber } from '~types';
 
 export type ToAction_F = <
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
+    ToEvents2<E, A>
+  >,
 >(
   events: E,
-  promisees: P,
+  actorsMap: A,
   action: ActionConfig,
-  actions?: ActionMap<E, P, Pc, Tc>,
-) => FnR<E, P, Pc, Tc, ActionResult<Pc, Tc>> | undefined;
+  actions?: ActionMap<Eo, Pc, Tc, T>,
+) => Action2<Eo, Pc, Tc, T> | undefined;
 
 /**
  * Converts an ActionConfig to a function that can be executed with the provided eventsMap and promisees.
  * @param events of type {@linkcode EventsMap}, events map to use for resolving the action.
- * @param promisees of type {@linkcode PromiseeMap}, the promisees map to use for resolving the action.
+ * @param actorsMap of type {@linkcode PromiseeMap}, the promisees map to use for resolving the action.
  * @param action of type {@linkcode ActionConfig}, action configuration to convert.
  * @param actions of type {@linkcode ActionMap}, The actions map containing functions to execute.
  *
- * @see {@linkcode types.PrimitiveObject}
+ * @see {@linkcode PrimitiveObject}
  * @see {@linkcode ActionResult}
  * @see {@linkcode reduceFnMap}
- * @see {@linkcode isDescriber}
  */
 export const toAction: ToAction_F = (
   events,
-  promisees,
+  actorsMap,
   action,
   actions,
 ) => {
-  if (isDescriber(action)) {
-    const fn = actions?.[action.name];
-    const func = fn ? reduceFnMap(events, promisees, fn) : undefined;
-    return func;
-  }
-
-  const fn = actions?.[action];
-  const func = fn ? reduceFnMap(events, promisees, fn) : undefined;
+  const name = fromDescriber(action);
+  const fn = actions?.[name];
+  const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
   return func;
 };

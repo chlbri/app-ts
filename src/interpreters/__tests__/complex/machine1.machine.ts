@@ -58,9 +58,8 @@ export const machine = createMachine(
         },
       },
       checking: {
-        promises: [
-          {
-            src: 'checkOnline',
+        actors: {
+          checkOnline: {
             description: 'Check if we are online',
             then: {
               actions: 'setOnlineStatus',
@@ -70,8 +69,7 @@ export const machine = createMachine(
               actions: 'setOnlineStatus',
             },
           },
-          {
-            src: 'getIntermediaries',
+          getIntermediaries: {
             description: 'Fetch intermediaries from the blockchain',
             then: {
               target: '/working',
@@ -85,7 +83,7 @@ export const machine = createMachine(
               },
             },
           },
-        ],
+        },
       },
       working: {
         initial: 'idle',
@@ -117,9 +115,8 @@ export const machine = createMachine(
             },
           },
           adding: {
-            promises: [
-              {
-                src: 'checkOnline',
+            actors: {
+              checkOnline: {
                 description: 'Check if we are online',
                 then: {
                   actions: 'setOnlineStatus',
@@ -129,8 +126,7 @@ export const machine = createMachine(
                   actions: 'setOnlineStatus',
                 },
               },
-              {
-                src: 'addIntermediary',
+              addIntermediary: {
                 description: 'Add the intermediary to the blockchain',
                 then: {
                   target: '/working/idle',
@@ -149,7 +145,7 @@ export const machine = createMachine(
                 },
                 max: 'MAX_MUTATE',
               },
-            ],
+            },
           },
         },
       },
@@ -164,6 +160,7 @@ export const machine = createMachine(
       ADD_INTERMEDIARY: intermediary,
       RESET: 'primitive',
     },
+
     context: typings.partial({
       asset,
       intermediaries: typings.array(intermediary),
@@ -177,18 +174,21 @@ export const machine = createMachine(
         },
       }),
     }),
-    promiseesMap: {
-      checkOnline: {
-        then: 'boolean',
-        catch: 'boolean',
-      },
-      getIntermediaries: {
-        then: [intermediary],
-        catch: [],
-      },
-      addIntermediary: {
-        then: intermediary,
-        catch: 'undefined',
+
+    actorsMap: {
+      promisees: {
+        checkOnline: {
+          then: 'boolean',
+          catch: 'boolean',
+        },
+        getIntermediaries: {
+          then: typings.array(intermediary),
+          catch: 'primitive',
+        },
+        addIntermediary: {
+          then: intermediary,
+          catch: 'primitive',
+        },
       },
     },
   }),

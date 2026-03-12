@@ -1,26 +1,35 @@
 import type { ActionConfig, FromActionConfig } from '#actions';
+import { PromiseeConfig } from '#actor';
 import type {
   NotUndefined,
   PrimitiveObject,
   ReduceArray,
   Require,
 } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap, ToEvents } from '#events';
+import type { ActorsConfigMap, EventObject } from '#events';
 import type {
   ExtractActionsFromTransition,
   ExtractGuardKeysFromDelayed,
   GetEventKeysFromDelayed,
-  SingleOrArrayT,
   Transition,
   TransitionConfigMapA,
 } from '#transitions';
-import type { FnMap, FnR, SingleOrArrayL } from '~types';
+import type { FnMap, FnR, RecordS, SingleOrArrayL } from '~types';
+
+export type PromiseReturn<
+  K extends string,
+  A extends ActorsConfigMap = ActorsConfigMap,
+> = NotUndefined<A['promisees']>[K]['then'] extends infer P
+  ? unknown extends P
+    ? never
+    : P
+  : never;
 
 /**
  * A function type that represents a promise function with map.
  *
- * @template : {@linkcode EventsMap} [E] - The events map.
- * @template : {@linkcode PromiseeMap} [P] - The promisees map.
+ * @template : {@linkcode EventObject} [E] - The events map.
+ * @template : {@linkcode ActorsConfigMap} [A] - The actors configuration map.
  * @template Pc - The context type, defaults to `any`.
  * @template : {@linkcode PrimitiveObject} [Tc] - The primitive object type, defaults to `PrimitiveObject`.
  *
@@ -29,17 +38,25 @@ import type { FnMap, FnR, SingleOrArrayL } from '~types';
  * @see {@linkcode PromiseFunction2} for a reduced version with a context.
  */
 export type PromiseFunction<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnMap<E, P, Pc, Tc, Promise<any>>;
+  T extends string = string,
+  R = any,
+> = FnMap<
+  E,
+  Pc,
+  Tc,
+  T,
+  Promise<R>,
+  `${string}::${'then' | 'catch' | 'finally'}`
+>;
 
 /**
  * A reduced version of {@linkcode PromiseFunction} that takes a context.
  *
  * @template : {@linkcode EventsMap} [E] - The events map.
- * @template : {@linkcode PromiseeMap} [P] - The promisees map.
+ * @template : {@linkcode ActorsConfigMap} [A] - The actors configuration map.
  * @template Pc - The context type, defaults to `any`.
  * @template : {@linkcode types} [Tc] - The primitive object type, defaults to `PrimitiveObject`.
  *
@@ -47,11 +64,19 @@ export type PromiseFunction<
  * @see {@linkcode Promise}
  */
 export type PromiseFunction2<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = FnR<E, P, Pc, Tc, Promise<any>>;
+  T extends string = string,
+  R = any,
+> = FnR<E, Pc, Tc, T, Promise<R>>;
+
+export type PromisesMap<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = RecordS<PromiseFunction2<E, Pc, Tc, T>>;
 
 /**
  * The finally part of a promise configuration.
@@ -75,16 +100,6 @@ export type FinallyConfig<Paths extends string = string> =
  * @see {@linkcode SingleOrArrayT} for the type of then and catch.
  * @see {@linkcode FinallyConfig} for the type of finally.
  */
-export type PromiseeConfig<Paths extends string = string> = {
-  readonly src: string;
-
-  // Max wait time to perform the promise
-  readonly max?: string;
-  readonly description?: string;
-  readonly then: SingleOrArrayT<Paths>;
-  readonly catch: SingleOrArrayT<Paths>;
-  readonly finally?: FinallyConfig<Paths>;
-};
 
 export type GetEventKeysFromPromisee<T extends PromiseeConfig> =
   GetEventKeysFromDelayed<Pick<T, 'then' | 'catch'>>;
@@ -138,7 +153,7 @@ export type ExtractActionsFromFinally<T extends FinallyConfig> =
  * part of the promisee configuration.
  * @see {@linkcode NotUndefined} for handling undefined values in the promisee configuration.
  */
-export type ExtractActionsFromPromisee<T extends PromiseeConfig> =
+export type ExtractActionKeysFromPromisee<T extends PromiseeConfig> =
   | _ExtractActionsFromMap<T['then']>
   | _ExtractActionsFromMap<T['catch']>
   | ExtractActionsFromFinally<NotUndefined<T['finally']>>;
@@ -149,7 +164,7 @@ export type ExtractActionsFromPromisee<T extends PromiseeConfig> =
  * @template T - The type of the promisee configuration, which should have a `src` property.
  * @returns The source string of the promisee configuration.
  */
-export type ExtractSrcFromPromisee<T extends { src: string }> = T['src'];
+export type ExtractSrcFromActor<T extends { src: string }> = T['src'];
 
 /**
  * Extracts the maximum wait time from a promisee configuration.
@@ -167,7 +182,7 @@ export type ExtractMaxFromPromisee<T extends { max: string }> = T['max'];
  *
  * @see {@linkcode ExtractGuardKeysFromDelayed} for extracting guards from a delayed part.
  */
-export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
+export type ExtractGuardKeysFromPromisee<T extends PromiseeConfig> =
   | ExtractGuardKeysFromDelayed<T['then']>
   | ExtractGuardKeysFromDelayed<T['catch']>
   | ExtractGuardKeysFromDelayed<T['finally']>;
@@ -186,33 +201,31 @@ export type ExtractGuardsFromPromise<T extends PromiseeConfig> =
  * @see {@linkcode Transition} for the type of transitions.
  */
 export type Promisee<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
 > = {
-  src: PromiseFunction2<E, P, Pc, Tc>;
+  src: PromiseFunction2<E, Pc, Tc, T, R>;
   description?: string;
-  then: Transition<E, P, Pc, Tc>[];
-  catch: Transition<E, P, Pc, Tc>[];
-  finally: Transition<E, P, Pc, Tc>[];
+  then: Transition<E, Pc, Tc, T>[];
+  catch: Transition<E, Pc, Tc, T>[];
+  finally: Transition<E, Pc, Tc, T>[];
 };
 
 /**
  * Represents the result of a promisee execution.
  *
  * @template E - The events map, defaults to {@linkcode EventsMap}.
- * @template P - The promisees map, defaults to {@linkcode PromiseeMap}.
+ * @template A - The actors map, defaults to {@linkcode ActorsConfigMap}.
  * @template Pc - The context type, defaults to `any`.
  * @template : {@linkcode PrimitiveObject} Tc - The primitive object type, defaults to `PrimitiveObject`.
  *
  * @see {@linkcode ToEvents} for converting events and promisees to a unified event type.
  * @see {@linkcode ActionResult} for the type of action results.
  */
-export type PromiseeResult<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-> = {
-  event: ToEvents<E, P>;
+export type PromiseeResult<E extends EventObject> = {
+  event: E;
   target: string | false;
 };

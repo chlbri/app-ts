@@ -1,29 +1,43 @@
-import { interval, map } from 'rxjs';
-import { createPausable } from '../functions';
+import { createPausable } from '@bemedev/rx-pausable';
+import { Subject } from 'rxjs';
+import { createSequence } from '@bemedev/sequence';
 
-const { start, resume, pause, stop } = createPausable(
-  interval(100).pipe(map(v => v + 1)),
-  value => console.log('value', '=>', value),
-);
+const sub = new Subject<number>();
+const DELAY = 350;
+const pausable = createPausable(sub, {
+  next: value => {
+    console.warn('Next received in subject subscription:', value);
+  },
+  error: value => {
+    console.warn('Error received in subject subscription:', value);
+  },
+  complete: () => console.warn('Subject completed'),
+});
 
-// Simulate start, pause, resume, and stop
-console.log('Starting...');
-setTimeout(() => {
-  console.log('Start');
-  start(); // Start the observable
-}, 100);
+createSequence()
+  .add(0, pausable.start)
+  .add(DELAY, () => sub.next(1))
+  .add(DELAY, () => sub.next(2))
+  .add(DELAY, () => sub.error('Test error'))
+  .add(DELAY, () => sub.next(3))
+  .add(DELAY, () => sub.complete())
+  .run();
 
-setTimeout(() => {
-  console.log('Pause');
-  pause(); // Pause after 500 ms
-}, 500);
+// pausable.start();
+// sub.next(1);
 
-setTimeout(() => {
-  console.log('Resume');
-  resume(); // Resume after 1 second
-}, 1000);
+// setTimeout(() => {
+//   sub.next(2);
+// }, DELAY);
 
-setTimeout(() => {
-  console.log('Stop');
-  stop(); // Stop after 2 seconds
-}, 2050);
+// // setTimeout(() => {
+// //   sub.error('Test error');
+// // }, DELAY * 2);
+
+// setTimeout(() => {
+//   sub.next(2);
+// }, DELAY * 4);
+
+// setTimeout(() => {
+//   sub.complete();
+// }, DELAY * 5);

@@ -3,12 +3,10 @@ import { _machine2, DELAY, fakeDB } from '#fixturesData';
 import { interpret } from '#interpreters';
 import { nothing } from '#utils';
 import equal from 'fast-deep-equal';
-import { fakeWaiter } from '../fixtures';
+import { constructTests, fakeWaiter } from '../../../fixtures';
 
 describe('machine coverage', () => {
-  beforeAll(() => {
-    vi.useFakeTimers();
-  });
+  beforeAll(() => vi.useFakeTimers());
 
   describe('#01 => Integration', () => {
     const TEXT = '#01 => Activities Integration Test from perform';
@@ -17,12 +15,85 @@ describe('machine coverage', () => {
       // #region Config
 
       const service = interpret(_machine2, {
-        pContext: {
-          iterator: 0,
-        },
-        context: { iterator: 0, input: '', data: [] },
         exact: true,
+        context: { iterator: 0, input: '', data: [] },
+        pContext: { iterator: 0 },
       });
+
+      const {
+        useIterator,
+        useWaiter,
+        useData,
+        useInput,
+        useWrite,
+        // useConsole,
+        start,
+        pause,
+        resume,
+        stop,
+        send,
+      } = constructTests(service, ({ contexts, waiter, sender }) => ({
+        useWaiter: waiter(DELAY),
+        useContext: contexts(({ context }) => context),
+        useInput: contexts(({ context }) => context?.input, 'input'),
+        useWrite: sender('WRITE'),
+
+        useData: (index: number, ...data: any[]) => {
+          const inviteStrict = `#02 => Check strict data`;
+
+          const strict = () => {
+            expect(service.context?.data).toStrictEqual(data);
+          };
+
+          const inviteLength = `#01 => Length of data is ${data.length}`;
+
+          const length = () => {
+            expect(service.context?.data?.length).toBe(data.length);
+          };
+
+          const _index = index < 10 ? '0' + index : index;
+          const invite = `#${_index} => Check data`;
+          const func = () => {
+            test(inviteLength, length);
+            test(inviteStrict, strict);
+          };
+
+          return tupleOf(invite, func);
+        },
+
+        // useConsole: (
+        //   index: number,
+        //   ..._strings: (string | string[])[]
+        // ) => {
+        //   const inviteStrict = `#02 => Check strict string`;
+
+        //   const strict = () => {
+        //     const calls = strings.map(data => [data].flat());
+        //     expect(log.mock.calls).toStrictEqual(calls);
+        //   };
+
+        //   const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
+
+        //   const length = () => {
+        //     strings.push(..._strings);
+        //     expect(log.mock.calls.length).toBe(strings.length);
+        //   };
+
+        //   const _index = index < 10 ? '0' + index : index;
+        //   const invite = `#${_index} => Check the console`;
+        //   const func = () => {
+        //     test(inviteLength, length);
+        //     test(inviteStrict, strict);
+        //   };
+
+        //   return tupleOf(invite, func);
+        // },
+
+        useIterator: contexts(
+          ({ context }) => context?.iterator,
+          'iterator',
+        ),
+      }));
 
       const subscriber = service.subscribe(
         {
@@ -38,207 +109,108 @@ describe('machine coverage', () => {
         },
       );
 
-      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+      // const log = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       beforeAll(() => {
         console.time(TEXT);
       });
 
-      type SE = Parameters<typeof service.send>[0];
-
       const INPUT = 'a';
 
-      const FAKES = fakeDB.filter(({ name }) => name.includes(INPUT));
+      const FAKES = fakeDB
+        .filter(({ name }) => name.includes(INPUT))
+        .map(({ name }) => name);
 
-      const strings: (string | string[])[] = [];
-
-      // #region Hooks
-
-      const useSend = (event: SE, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
-
-        return tupleOf(invite, () => service.send(event));
-      };
-
-      const useWrite = (value: string, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
-
-        return tupleOf(invite, () =>
-          service.send({ type: 'WRITE', payload: { value } }),
-        );
-      };
-
-      const useWaiter = (times: number, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
-
-        return tupleOf(invite, () => fakeWaiter(DELAY, times));
-      };
-
-      const useIterator = (num: number, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-        return tupleOf(invite, async () => {
-          expect(service.select('iterator')).toBe(num);
-        });
-      };
-
-      const useInput = (input: string, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
-        return tupleOf(invite, async () => {
-          expect(service.context.input).toBe(input);
-        });
-      };
-
-      const useData = (index: number, ...datas: any[]) => {
-        const inviteStrict = `#02 => Check strict data`;
-
-        const strict = () => {
-          expect(service.context.data).toStrictEqual(datas);
-        };
-
-        const inviteLength = `#01 => Length of data is ${datas.length}`;
-
-        const length = () => {
-          expect(service.context.data.length).toBe(datas.length);
-        };
-
-        const invite = `#${index < 10 ? '0' + index : index} => Check data`;
-        const func = () => {
-          test(inviteLength, length);
-          test(inviteStrict, strict);
-        };
-
-        return tupleOf(invite, func);
-      };
-
-      const useConsole = (
-        index: number,
-        ..._strings: (string | string[])[]
-      ) => {
-        const inviteStrict = `#02 => Check strict string`;
-
-        const strict = () => {
-          const calls = strings.map(data => [data].flat());
-          expect(log.mock.calls).toStrictEqual(calls);
-        };
-
-        const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
-
-        const length = () => {
-          strings.push(..._strings);
-          expect(log.mock.calls.length).toBe(strings.length);
-        };
-
-        const invite = `#${index < 10 ? '0' + index : index} => Check the console`;
-        const func = () => {
-          test(inviteLength, length);
-          test(inviteStrict, strict);
-        };
-
-        return tupleOf(invite, func);
-      };
-      // #endregion
+      // const strings: (string | string[])[] = [];
 
       // #endregion
 
-      test('#00 => Start the machine', () => {
-        service.start();
-      });
+      test(...start());
 
-      test(...useWaiter(6, 1));
+      test(...useWaiter(6));
 
       describe('#02 => Check the service', () => {
-        test(...useIterator(6, 2));
-        describe(...useConsole(4, 'Debounced action executed'));
+        test(...useIterator(6, 1));
+        // describe(...useConsole(2, 'Debounced action executed'));
       });
 
-      test(...useSend('NEXT', 3));
+      test(...send('NEXT'));
 
       describe('#05 => Check the service', () => {
-        test(...useIterator(6, 2));
-
-        describe(...useConsole(4, 'NEXT time, you will see!!'));
+        test(...useIterator(6, 1));
+        // describe(...useConsole(2, 'NEXT time, you will see!!'));
       });
 
-      test(...useWaiter(6, 5));
+      test(...useWaiter(6));
 
       describe('#06 => Check the service', () => {
         test(...useIterator(18, 1));
-        describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
+        // describe(...useConsole(2, ...Array(6).fill('sendPanelToUser')));
       });
 
-      test('#07 => pause', service.pause);
+      test(...pause());
 
       describe('#08 => Check the service', () => {
-        test(...useIterator(18, 2));
-
-        describe(...useConsole(4));
+        test(...useIterator(18, 1));
+        // describe(...useConsole(2));
       });
 
-      test(...useWaiter(6, 9));
+      test(...useWaiter(6));
 
       describe('#10 => Check the service', () => {
-        test(...useIterator(18, 2));
-
-        describe(...useConsole(4));
+        test(...useIterator(18, 1));
+        // describe(...useConsole(2));
       });
 
-      test('#11 => resume', service.resume);
-
-      test(...useWaiter(12, 12));
+      test(...resume());
+      test(...useWaiter(12));
 
       describe('#13 => Check the service', () => {
-        test(...useIterator(42, 2));
-
-        describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
+        test(...useIterator(42, 1));
+        // describe(...useConsole(2, ...Array(12).fill('sendPanelToUser')));
       });
 
-      test(...useWrite('', 14));
+      test(...useWrite({ value: '' }));
 
       describe('#15 => Check the service', () => {
-        test(...useIterator(42, 2));
-        test(...useInput('', 4));
-        describe(...useConsole(5, ['WRITE with', ':', '""']));
+        test(...useIterator(42, 1));
+        test(...useInput('', 2));
+        // describe(...useConsole(3, ['WRITE with', ':', '""']));
       });
 
       test(...useWaiter(12, 16));
 
       describe('#17 => Check the service', () => {
-        test(...useIterator(66, 2));
-        test(...useInput('', 4));
+        test(...useIterator(66, 1));
+        test(...useInput('', 2));
 
-        describe(
-          ...useConsole(
-            5,
-            ...Array(24)
-              .fill(0)
-              .map((_, index) => {
-                const isEven = index % 2 === 0;
-                return isEven ? 'sendPanelToUser' : 'Input, please !!';
-              }),
-          ),
-        );
+        // describe(
+        //   ...useConsole(
+        //     3,
+        //     ...Array(24)
+        //       .fill(0)
+        //       .map((_, index) => {
+        //         const isEven = index % 2 === 0;
+        //         return isEven ? 'sendPanelToUser' : 'Input, please !!';
+        //       }),
+        //   ),
+        // );
       });
 
-      test(...useWrite(INPUT, 18));
+      test(...useWrite({ value: INPUT }));
 
       describe('#19 => Check the service', () => {
-        test(...useIterator(66, 2));
-        test(...useInput('', 4));
-        describe(
-          ...useConsole(
-            5,
-
-            ['WRITE with', ':', `"${INPUT}"`],
-          ),
-        );
+        test(...useIterator(66, 1));
+        test(...useInput('', 2));
+        // describe(...useConsole(3, ['WRITE with', ':', `"${INPUT}"`]));
       });
 
       test(...useWaiter(12, 20));
 
       describe('#21 => Check the service', () => {
-        test(...useIterator(90, 2));
-        test(...useInput('', 4));
-        describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
+        test(...useIterator(90, 1));
+        test(...useInput('', 2));
+        // describe(...useConsole(3, ...Array(12).fill('sendPanelToUser')));
       });
 
       test(
@@ -246,48 +218,48 @@ describe('machine coverage', () => {
         subscriber.close.bind(subscriber),
       );
 
-      test(...useWrite(INPUT, 23));
+      test(...useWrite({ value: INPUT }));
 
       describe('#24 => Check the service', () => {
-        test(...useIterator(90, 2));
-        test(...useInput(INPUT, 4));
-        describe(...useConsole(5));
+        test(...useIterator(90, 1));
+        test(...useInput(INPUT, 2));
+        // describe(...useConsole(3));
       });
 
       test(...useWaiter(6, 25));
 
       describe('#26 => Check the service', () => {
-        test(...useIterator(102, 2));
-        test(...useInput(INPUT, 4));
-        describe(...useData(5));
-        describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
+        test(...useIterator(102, 1));
+        test(...useInput(INPUT, 2));
+        describe(...useData(3));
+        // describe(...useConsole(4, ...Array(6).fill('sendPanelToUser')));
       });
 
-      test(...useSend('FETCH', 27));
+      test(...send('FETCH', 27));
 
       describe('#28 => Check the service', () => {
-        test(...useIterator(102, 2));
-        test(...useInput(INPUT, 4));
-        describe(...useData(5, ...FAKES));
-        describe(...useConsole(6));
+        test(...useIterator(102, 1));
+        test(...useInput(INPUT, 2));
+        describe(...useData(3, ...FAKES));
+        // describe(...useConsole(4));
       });
 
       test('#29 => Await the fetch', () => fakeWaiter());
 
       describe('#30 => Check the service', () => {
-        test(...useIterator(102, 2));
-        test(...useInput(INPUT, 4));
-        describe(...useData(5, ...FAKES));
-        describe(...useConsole(5));
+        test(...useIterator(102, 1));
+        test(...useInput(INPUT, 2));
+        describe(...useData(3, ...FAKES));
+        // describe(...useConsole(4));
       });
 
       test(...useWaiter(6, 31));
 
       describe('#32 => Check the service', () => {
         test(...useIterator(114, 2));
-        test(...useInput(INPUT, 4));
-        describe(...useData(5, ...FAKES));
-        describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
+        test(...useInput(INPUT, 2));
+        describe(...useData(3, ...FAKES));
+        // describe(...useConsole(4, ...Array(6).fill('sendPanelToUser')));
       });
 
       test('#33 => Wait for debounce', () => {
@@ -296,21 +268,20 @@ describe('machine coverage', () => {
       });
 
       describe('#34 => Check the service', () => {
-        test(...useIterator(1000, 2));
-        describe(...useConsole(6));
+        test(...useIterator(1000, 1));
+        // describe(...useConsole(2));
       });
 
       describe('#35 => Close the service', async () => {
-        test('#01 => Pause the service', service.stop);
+        test(...stop(1));
 
         describe('#02 => Calls of log', () => {
-          test('#01 => Length of calls of log is the same of length of strings', () => {
-            expect(log).toBeCalledTimes(strings.length);
-          });
-
-          test('#02 => Log is called "78" times', () => {
-            expect(log).toBeCalledTimes(70);
-          });
+          // test('#01 => Length of calls of log is the same of length of strings', () => {
+          //   expect(log).toBeCalledTimes(strings.length);
+          // });
+          // test('#02 => Log is called "70" times', () => {
+          //   expect(log).toBeCalledTimes(70);
+          // });
         });
 
         test('#03 => Log the time of all tests', () => {

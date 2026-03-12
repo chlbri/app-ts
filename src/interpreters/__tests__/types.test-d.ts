@@ -1,4 +1,3 @@
-import type { InitEvent, MaxExceededEvent } from '#events';
 import type {
   ActionKeysFrom,
   ChildrenKeysFrom,
@@ -19,24 +18,24 @@ expectTypeOf<TTConfig>().toEqualTypeOf<Config3>();
 
 type TTPrivate = PrivateContextFrom<Machine3>;
 expectTypeOf<TTPrivate>().toEqualTypeOf<{
-  data: string;
+  readonly data: string;
 }>();
 
 type TTC = ContextFrom<Machine3>;
 expectTypeOf<TTC>().toEqualTypeOf<{
-  age: number;
+  readonly age: number;
 }>();
 
 type TTEm = EventsMapFrom<Machine3>;
 expectTypeOf<TTEm>().toEqualTypeOf<{
-  EVENT: {
-    password: string;
-    username: string;
+  readonly EVENT: {
+    readonly password: string;
+    readonly username: string;
   };
-  EVENT2: boolean;
-  EVENT3: {
-    login: string;
-    pwd: string;
+  readonly EVENT2: boolean;
+  readonly EVENT3: {
+    readonly login: string;
+    readonly pwd: string;
   };
 }>();
 
@@ -45,26 +44,29 @@ expectTypeOf<TTE>().toEqualTypeOf<
   | {
       type: 'EVENT';
       payload: {
-        password: string;
-        username: string;
+        readonly password: string;
+        readonly username: string;
       };
     }
   | {
       type: 'EVENT3';
       payload: {
-        login: string;
-        pwd: string;
+        readonly login: string;
+        readonly pwd: string;
       };
     }
   | {
       type: 'EVENT2';
       payload: boolean;
     }
-  | InitEvent
-  | MaxExceededEvent
 >();
 
-type ActionKeys = ActionKeysFrom<Machine3>;
+type ActionKeys =
+  ActionKeysFrom<Machine3> extends infer P extends string
+    ? {
+        [K in P]: K;
+      }[P]
+    : never;
 expectTypeOf<ActionKeys>().branded.toEqualTypeOf<
   | 'deal'
   | 'deal17'

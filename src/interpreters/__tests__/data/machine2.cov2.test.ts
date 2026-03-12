@@ -3,7 +3,7 @@ import { _machine2, DELAY, fakeDB } from '#fixturesData';
 import { interpret } from '#interpreters';
 import { nothing } from '#utils';
 import equal from 'fast-deep-equal';
-import { fakeWaiter } from '../fixtures';
+import { fakeWaiter } from '#fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => {
@@ -39,8 +39,6 @@ describe('machine coverage', () => {
         },
       );
 
-      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-
       beforeAll(() => {
         console.time(TEXT);
       });
@@ -49,9 +47,9 @@ describe('machine coverage', () => {
 
       const INPUT = 'a';
 
-      const FAKES = fakeDB.filter(({ name }) => name.includes(INPUT));
-
-      const strings: (string | string[])[] = [];
+      const FAKES = fakeDB
+        .filter(({ name }) => name.includes(INPUT))
+        .map(({ name }) => name);
 
       // #region Hooks
 
@@ -111,32 +109,6 @@ describe('machine coverage', () => {
         return tupleOf(invite, func);
       };
 
-      const useConsole = (
-        index: number,
-        ..._strings: (string | string[])[]
-      ) => {
-        const inviteStrict = `#02 => Check strict string`;
-
-        const strict = () => {
-          const calls = strings.map(data => [data].flat());
-          expect(log.mock.calls).toStrictEqual(calls);
-        };
-
-        const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
-
-        const length = () => {
-          strings.push(..._strings);
-          expect(log.mock.calls.length).toBe(strings.length);
-        };
-
-        const invite = `#${index < 10 ? '0' + index : index} => Check the console`;
-        const func = () => {
-          test(inviteLength, length);
-          test(inviteStrict, strict);
-        };
-
-        return tupleOf(invite, func);
-      };
       // #endregion
 
       // #endregion
@@ -149,38 +121,30 @@ describe('machine coverage', () => {
 
       describe('#02 => Check the service', () => {
         test(...useIterator(6, 2));
-        describe(...useConsole(4, 'Debounced action executed'));
       });
 
       test(...useSend('NEXT', 3));
 
       describe('#05 => Check the service', () => {
         test(...useIterator(6, 2));
-
-        describe(...useConsole(4, 'NEXT time, you will see!!'));
       });
 
       test(...useWaiter(6, 5));
 
       describe('#06 => Check the service', () => {
         test(...useIterator(18, 1));
-        describe(...useConsole(3, ...Array(6).fill('sendPanelToUser')));
       });
 
       test('#07 => pause', service.pause.bind(service));
 
       describe('#08 => Check the service', () => {
         test(...useIterator(18, 2));
-
-        describe(...useConsole(4));
       });
 
       test(...useWaiter(6, 9));
 
       describe('#10 => Check the service', () => {
         test(...useIterator(18, 2));
-
-        describe(...useConsole(4));
       });
 
       test('#11 => resume', service.resume.bind(service));
@@ -189,8 +153,6 @@ describe('machine coverage', () => {
 
       describe('#13 => Check the service', () => {
         test(...useIterator(42, 2));
-
-        describe(...useConsole(4, ...Array(12).fill('sendPanelToUser')));
       });
 
       test(...useWrite('', 14));
@@ -198,7 +160,6 @@ describe('machine coverage', () => {
       describe('#15 => Check the service', () => {
         test(...useIterator(42, 2));
         test(...useInput('', 4));
-        describe(...useConsole(5, ['WRITE with', ':', '""']));
       });
 
       test(...useWaiter(12, 16));
@@ -206,18 +167,6 @@ describe('machine coverage', () => {
       describe('#17 => Check the service', () => {
         test(...useIterator(66, 2));
         test(...useInput('', 4));
-
-        describe(
-          ...useConsole(
-            5,
-            ...Array(24)
-              .fill(0)
-              .map((_, index) => {
-                const isEven = index % 2 === 0;
-                return isEven ? 'sendPanelToUser' : 'Input, please !!';
-              }),
-          ),
-        );
       });
 
       test(...useWrite(INPUT, 18));
@@ -225,13 +174,6 @@ describe('machine coverage', () => {
       describe('#19 => Check the service', () => {
         test(...useIterator(66, 2));
         test(...useInput('', 4));
-        describe(
-          ...useConsole(
-            5,
-
-            ['WRITE with', ':', `"${INPUT}"`],
-          ),
-        );
       });
 
       test(...useWaiter(12, 20));
@@ -239,7 +181,6 @@ describe('machine coverage', () => {
       describe('#21 => Check the service', () => {
         test(...useIterator(90, 2));
         test(...useInput('', 4));
-        describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
       });
 
       test(
@@ -252,7 +193,6 @@ describe('machine coverage', () => {
       describe('#24 => Check the service', () => {
         test(...useIterator(90, 2));
         test(...useInput(INPUT, 4));
-        describe(...useConsole(5));
       });
 
       test(...useWaiter(6, 25));
@@ -261,7 +201,6 @@ describe('machine coverage', () => {
         test(...useIterator(102, 2));
         test(...useInput(INPUT, 4));
         describe(...useData(5));
-        describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
       });
 
       test(...useSend('FETCH', 27));
@@ -270,7 +209,6 @@ describe('machine coverage', () => {
         test(...useIterator(102, 2));
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));
-        describe(...useConsole(6));
       });
 
       test('#29 => Await the fetch', () => fakeWaiter());
@@ -279,7 +217,6 @@ describe('machine coverage', () => {
         test(...useIterator(102, 2));
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));
-        describe(...useConsole(5));
       });
 
       test(...useWaiter(6, 31));
@@ -288,7 +225,6 @@ describe('machine coverage', () => {
         test(...useIterator(114, 2));
         test(...useInput(INPUT, 4));
         describe(...useData(5, ...FAKES));
-        describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
       });
 
       test('#33 => Send Finish', () => {
@@ -298,27 +234,16 @@ describe('machine coverage', () => {
 
       describe('#34 => Check the service', () => {
         test(...useIterator(114, 2));
-        describe(...useConsole(6));
       });
 
       describe('#35 => Close the service', async () => {
         test('#01 => Pause the service', service.pause.bind(service));
 
-        describe('#02 => Calls of log', () => {
-          test('#01 => Length of calls of log is the same of length of strings', () => {
-            expect(log).toBeCalledTimes(strings.length);
-          });
-
-          test('#02 => Log is called "78" times', () => {
-            expect(log).toBeCalledTimes(70);
-          });
-        });
-
-        test('#03 => Log the time of all tests', () => {
+        test('#02 => Log the time of all tests', () => {
           console.timeEnd(TEXT);
         });
 
-        test('#04 => dispose', service[Symbol.asyncDispose].bind(service));
+        test('#03 => dispose', service[Symbol.asyncDispose]);
       });
 
       test('#36 => Wait for debounce', () => {

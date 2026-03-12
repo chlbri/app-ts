@@ -1,18 +1,18 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventsMap, PromiseeMap } from '#events';
+import type { EventObject } from '#events';
 import { getByKey } from '#machines';
-import type { FnR } from '~types';
+import type { FnR } from 'src/types/primitives';
 import type { DefinedValue } from '../../types';
 
 export type IsValueS_F = <
-  E extends EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 >(
   path: DefinedValue<Pc, Tc>,
   ...values: any[]
-) => FnR<E, P, Pc, Tc, boolean>;
+) => FnR<E, Pc, Tc, T, boolean>;
 
 /**
  * Checks if the value at the specified path in pContext, context, or events matches any of the provided values.
@@ -35,7 +35,7 @@ export type IsValueS_F = <
  * console.log(result); // true
  * ```
  *
- * @see {@linkcode EventsMap} for the type of the events map.
+ * @see {@linkcode EventObject} for the type of the events map.
  * @see {@linkcode PromiseeMap} for the type of the promisees map.
  * @see {@linkcode PrimitiveObject} for the type of the context.
  * @see {@linkcode getByKey} for retrieving values by key.
@@ -94,7 +94,7 @@ export const isValue: IsValueS_F = (path, ...values) => {
  * console.log(result); // false
  * ```
  *
- * @see {@linkcode EventsMap} for the type of the events map.
+ * @see {@linkcode EventObject} for the type of the events map.
  * @see {@linkcode PromiseeMap} for the type of the promisees map.
  * @see {@linkcode PrimitiveObject} for the type of the context.
  * @see {@linkcode getByKey} for retrieving values by key.
@@ -106,7 +106,7 @@ export const isNotValue: IsValueS_F = (path, ...values) => {
   const func = isValue(path, ...values);
 
   return state => {
-    const result = func(state);
+    const result = func(state as any);
     return !result;
   };
 };

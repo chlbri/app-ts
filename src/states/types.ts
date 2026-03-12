@@ -1,16 +1,20 @@
-import type { Action, ActionConfig, FromActionConfig } from '#actions';
 import type {
+  Equals,
   Keys,
   PrimitiveObject,
+  SoA,
   UnionToIntersection,
 } from '#bemedev/globals/types';
-import { EmitterConfig } from '#emitters';
-import type { EventsMap, PromiseeMap } from '#events';
+import type { EventObject } from '#events';
 import type { FromGuard, GuardConfig } from '#guards';
-import { MachineConfig } from '#machines';
 import type { Transitions, TransitionsConfig } from '#transitions';
 import type {
-  Identitfy,
+  Action,
+  ActionConfig,
+  FromActionConfig,
+} from 'src/actions/types';
+import type {
+  Identify,
   RecordS,
   ReduceArray,
   SingleOrArrayL,
@@ -73,8 +77,6 @@ export type BaseConfig = {
   readonly exit?: SingleOrArrayL<ActionConfig>;
   readonly tags?: SingleOrArrayL<string>;
   readonly activities?: ActivityConfig;
-  readonly emitters?: RecordS<EmitterConfig>;
-  readonly machines?: RecordS<MachineConfig>;
 };
 
 export type CommonNodeConfig<Paths extends string = string> = BaseConfig &
@@ -133,6 +135,77 @@ export interface StateValueMap {
 
 // #region Flat
 
+// #region States
+export type WorkingStatus =
+  | 'idle'
+  | 'starting'
+  | 'started'
+  | 'paused'
+  | 'working'
+  | 'sending'
+  | 'stopped'
+  | 'busy';
+
+type _ExtractTagsFromFlat<Flat extends FlatMapN> = {
+  [key in keyof Flat]: Flat[key] extends infer S extends {
+    tags: SingleOrArrayL<string>;
+  }
+    ? ReduceArray<S['tags']>
+    : never;
+}[keyof Flat];
+
+export type ExtractTagsFromFlat<Flat extends FlatMapN> =
+  _ExtractTagsFromFlat<Flat> extends infer Tags
+    ? Equals<Tags, never> extends true
+      ? string
+      : Equals<Tags, unknown> extends true
+        ? string
+        : Tags
+    : string;
+
+export type State<
+  E extends EventObject = EventObject,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = {
+  context: Tc;
+  status: WorkingStatus;
+  value: StateValue;
+  event: E;
+  tags?: SoA<T>;
+};
+
+export type StateP<
+  E = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = {
+  context: Tc;
+  status: WorkingStatus;
+  value: StateValue;
+  payload: E;
+  tags?: SoA<T>;
+};
+
+export type StateExtended<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = {
+  pContext: Pc;
+} & State<E, Tc, T>;
+
+export type StatePextended<
+  E = any,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = {
+  pContext: Pc;
+} & StateP<E, Tc, T>;
+// #endregion
+
 type FlatMapNodeConfig<
   T extends NodeConfig,
   withChildren extends boolean = true,
@@ -173,17 +246,17 @@ export type EndWithAlways<T extends Keys> = Extract<T, AlwaysEnd>;
 export type EndwA<T extends Keys> = EndWithAlways<T>;
 
 export type Node<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
   id?: string;
   description?: string;
   type: StateType;
-  entry: Action<E, P, Pc, Tc>[];
-  exit: Action<E, P, Pc, Tc>[];
+  entry: Action<E, Pc, Tc, T>[];
+  exit: Action<E, Pc, Tc, T>[];
   tags: string[];
-  states: Identitfy<Node<E, P, Pc, Tc>>[];
+  states: Identify<Node<E, Pc, Tc, T>>[];
   initial?: string;
-} & Transitions<E, P, Pc, Tc>;
+} & Transitions<E, Pc, Tc, T>;

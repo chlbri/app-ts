@@ -11,29 +11,100 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
-## **[1.7.0] - 18/02/2026** => _00:00_
+## **[1.7.0] - 12/03/2026** => _15:41_
 
 </summary>
 
-- **Refactor pausable Observable functionality into separate package**
-  - Extract `createPausable` function to dedicated `@bemedev/rx-pausable`
-    package
-  - Update import statements to use `@bemedev/rx-pausable` instead of local
-    functions
-  - Improve modularity and reusability of pausable Observable utilities
-- **Update dependencies**
-  - Add `@bemedev/rx-pausable` v0.1.0
-  - Upgrade `@types/node` from 25.0.3 to 25.1.0
-  - Upgrade `@typescript-eslint/eslint-plugin` from 8.50.1 to 8.54.0
-  - Upgrade `@typescript-eslint/parser` from 8.50.1 to 8.54.0
-  - Upgrade `globals` from 16.5.0 to 17.3.0
-  - Upgrade `prettier` from 3.7.4 to 3.8.1
-  - Upgrade `rollup` from 4.54.0 to 4.57.1
-- **Fix import paths in tests**
-  - Correct import path for `createPausable` function in emitter tests
-- **Add documentation**
-  - Add new translation prompt file (`translate.prompt.md`) for
-    internationalization
+- **BREAKING: Rename actor terminology to `actors` throughout the
+  codebase**
+  - Rename actor and promise configurations to align with `actors`
+    terminology
+  - Rename machine configurations and type definitions to use `actors`
+  - Add new `actor.types.ts` with `Actor` type and related configurations
+- **BREAKING: Replace `AllEvent` with `EventObject` in interpreter**
+  - Remove `AllEvent` type; use `EventObject` uniformly across the
+    interpreter
+  - Clean up unused code and simplify event handling
+
+- **Add `Scheduler` class for task management in interpreter**
+  - Implement internal `Scheduler` for deferred task execution
+  - Schedule context assignment to improve consistency
+  - Make `processImmediate` private; use `@bemedev/scheduler` externally
+- **Add `typeToEvent` function for improved event/type conversion**
+- **Add new Emitter machines with corresponding tests**
+  - New `src/fixtures/` module for centralized test fixtures
+  - Add `invite.ts` and `invite.test.ts` as fixture examples
+- **Add `reduceDescriber` utility function**
+
+- **Fix guard `select` logic and simplify `resume` in interpreter**
+- **Fix `@bemedev/decompose` dependency upgrade to v2.0.2 with improved
+  type safety in `machine2.ts` and `primitives2.ts`**
+
+- **Add test organization instructions and Copilot skills**
+  - Add `.github/instructions/organize-tests.instructions.md`
+  - Add Copilot skills: `analyze_tests` and `check_spacing`
+  - Move Copilot instructions to dedicated `.github/instructions/` folder
+
+- **Refactor actors to keyed maps and tighten types**
+  - Convert actor registries from arrays to keyed maps for O(1) lookup
+  - Tighten TypeScript types across actors, machine, and interpreter
+- **Refactor predicates and delays to function-only form**
+  - Remove object form support; accept only functions for predicates/delays
+  - Update all related tests accordingly
+- **Refactor emitters to use rxjs Observable**
+  - Replace internal pausable implementation with `@bemedev/rx-pausable`
+  - Add `src.ts` and `to.ts` functions replacing `toEmitter.ts`
+  - Remove `pausable.ts` and legacy `addons/tapWhile.ts`
+- **Refactor interpreter: clean up and modularize**
+  - Replace `reduceAction` usage in interpreters
+  - Clean up imports and type definitions
+  - Refactor child management and add child tests
+- **Refactor Machine class to use Config generics**
+  - Update `create.ts`, `machine.ts`, `machine.types.ts` to leverage Config
+  - Add `src.ts` and `to.ts` functions to machine module
+  - Remove `toMachine.ts`; consolidate into new functions
+- **Refactor events: generalize event typing**
+  - Update `eventToType` tests to include `undefined` payload
+- **Refactor guards: improve type safety and clarity**
+- **Refactor promises: update type from `'primitive'` to `['string']`**
+- **Remove unused types from primitives and machine modules**
+  - Consolidate `primitives2` into `primitives`
+  - Remove `reduceAction.ts` from actions/functions
+
+- **Add comprehensive delay test suite**
+  - `changeDelay.edge.test.ts`, `changeDelay.normal.test.ts`
+  - `changeDelay.too.long.test.ts`, `changeDelay.too.short.test.ts`
+  - `delay.notDefined.test.ts` and shared `fixtures.ts`
+- **Add comprehensive emitter test suite**
+  - `children.test.ts`, `error.test.ts`, `simple.test.ts`,
+    `notDefined.test.ts`
+  - Refactor `data.ts` for shared test data
+  - Remove legacy `machines.test.ts`, `machines.children.test.ts`
+- **Add interpreter activity test suite**
+  - New tests: `cannot.test.ts`, `delay.notDefined.test.ts`,
+    `delay.tooLong.test.ts`, `delay.tooShort.test.ts`, `pause.test.ts`,
+    `perform.bis.test.ts`
+  - Add `coverage/actors.test.ts` and `coverage/addOptions-return.test.ts`
+  - Remove obsolete `issues/` tests and legacy `fixtures.ts`
+- **Reorganize machine tests**
+  - Move `machine.test.ts` → `__tests__/cov.test.ts`
+  - Add `__tests__/addOptions-return.test.ts`
+- **Add `sendToActions` test suite**
+  - `sendToActions1.test.ts` and `sendToActions2.test.ts`
+
+- **Add `@bemedev/scheduler` v0.1.0** (extract internal scheduler)
+- **Add `@bemedev/sequence` v0.1.0**
+- **Add `@vitest/ui` v3.2.4** with `test:ui` script
+- Upgrade `@bemedev/rx-pausable` v1.0.3 → v1.1.0
+- Upgrade `@bemedev/decompose` v1.5.0 → v2.0.3
+- Upgrade `@bemedev/sleep` v0.2.1 → v0.2.2
+- Upgrade `eslint` v9.39.2 → v10.0.3
+- Upgrade `@eslint/js` v9.39.2 → v10.0.1
+- Upgrade `@types/node` v25.1.0 → v25.4.0
+- Upgrade `@typescript-eslint/eslint-plugin` & `parser` v8.54.0 → v8.57.0
+- Upgrade `rollup` v4.57.1 → v4.59.0
+- Upgrade `globals` v17.3.0 → v17.4.0
+- Upgrade `glob` v13.0.0 → v13.0.6
 - <u>Test coverage **_100%_**</u>
 
 </details>

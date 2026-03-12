@@ -1,39 +1,34 @@
-import type { ActionConfig, ActionResult, ActionResultFn } from '#actions';
-import type { EventArg, EventsMap, PromiseeMap, ToEvents } from '#events';
+import type { Action2, ActionConfig, ActionResult } from '#actions';
+
 import type { DefinedValue } from '#guards';
-import type { NodeConfig, StateValue } from '#states';
+import type { NodeConfig, StateExtended, StateValue } from '#states';
 import type { Decompose } from '@bemedev/decompose';
 
 import type {
   Fn,
-  NotUndefined,
   PrimitiveObject,
   Ru,
   SubTypeLow,
 } from '#bemedev/globals/types';
 import type {
-  FnMap,
-  FnR,
-  KeyU,
-  NoExtraKeysStrict,
-  ValuesOf,
-} from '~types';
+  ActorsConfigMap,
+  EventArg,
+  EventArgAll,
+  EventObject,
+  EventsMap,
+} from '#events';
+import type { FnMap, FnR, ValuesOf } from '~types';
 import type {
-  ChildS,
   Config,
-  ContextFrom,
   EventsMapFrom,
-  PrivateContextFrom,
   SimpleMachineOptions2,
-  SubscriberType,
 } from './types';
-
 /**
  * Types for all meaningful elements of the machine.
  *
  * @template :  {@linkcode Config} [C] - type of the machine configuration
  * @template :  {@linkcode EventsMap} [E] - type of the events map
- * @template :  {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template :  {@linkcode ActorsConfigMap} [A] - type of the actors configuration map
  * @template :  any [Pc] - type of the private context
  * @template :  {@linkcode types} [Tc] - type of the context
  * @template :  {@linkcode SimpleMachineOptions2} [Mo] - type of the machine options
@@ -41,7 +36,7 @@ import type {
 export type Elements<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
@@ -49,14 +44,12 @@ export type Elements<
   config: C;
   pContext: Pc;
   events: E;
-  promisees: P;
+  actorsMap: A;
   context: Tc;
   actions?: Mo['actions'];
   predicates?: Mo['predicates'];
   delays?: Mo['delays'];
-  promises?: Mo['promises'];
-  machines?: Mo['machines'];
-  emitters?: Mo['emitters'];
+  actors?: Mo['actors'];
 };
 
 export type GetIO_F = (
@@ -68,11 +61,10 @@ export type GetIO_F = (
  * Simple representation of a machine with meaningful properties.
  *
  * @template :  {@linkcode EventsMap} [E] - type of the events map
- * @template :  {@linkcode PromiseeMap} [P] - type of the promisees map
+ * @template :  {@linkcode ActorsConfigMap} [A] - type of the actors configuration map
  * @template :  any [Pc] - type of the private context
  * @template :  {@linkcode PrimitiveObject} [Tc] - type of the context
  *
- * @see {@linkcode ToEvents} for converting events and promisees maps to a unified event type.
  * @see {@linkcode NodeConfigWithInitials}  for the structure of node configurations with initials.
  * @see {@linkcode StateValue} for the type of state values.
  * @see {@linkcode Fn} for creating functions
@@ -80,7 +72,7 @@ export type GetIO_F = (
  */
 export interface AnyMachine<
   E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > {
@@ -90,14 +82,14 @@ export interface AnyMachine<
   context: Tc;
   pContext: Pc;
   eventsMap: E;
-  promiseesMap: P;
-  __events: ToEvents<E, P>;
+  actorsMap: A;
+  __events: any;
   __state: any;
   actions: any;
   predicates: any;
   delays: any;
   promises: any;
-  machines: any;
+  children: any;
   renew: any;
   initialConfig: NodeConfig;
   initialValue: StateValue;
@@ -108,10 +100,10 @@ export interface AnyMachine<
 }
 
 export type AssignAction_F<
-  E extends EventsMap,
-  P extends PromiseeMap,
-  Pc,
-  Tc extends PrimitiveObject,
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = <
   D = Decompose<
     {
@@ -123,35 +115,48 @@ export type AssignAction_F<
   K extends keyof D = keyof D,
 >(
   key: K,
-  fn: FnMap<E, P, Pc, Tc, D[K]>,
-) => ActionResultFn<E, P, Pc, Tc>;
+  fn: FnMap<E, Pc, Tc, T, D[K]>,
+) => Action2<E, Pc, Tc, T>;
 
 export type ResendAction_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (event: EventArg<E>) => ActionResultFn<E, P, Pc, Tc>;
+  T extends string = string,
+> = (event: EventArgAll<E>) => Action2<E, Pc, Tc, T>;
 
 export type TimeAction_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (id: string) => ActionResultFn<E, P, Pc, Tc>;
+  T extends string = string,
+> = (id: string) => Action2<E, Pc, Tc, T>;
 
 export type VoidAction_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (fn?: FnMap<E, P, Pc, Tc, void>) => ActionResultFn<E, P, Pc, Tc>;
+  T extends string = string,
+> = (fn?: FnMap<E, Pc, Tc, T, void>) => Action2<E, Pc, Tc, T>;
+
+export type ByKey_F<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = <
+  S extends StateExtended<E, Pc, Tc, T>,
+  D = Decompose<S, { object: 'both'; start: false; sep: '.' }>,
+  K extends keyof D & string = keyof D & string,
+>(
+  key: K,
+) => D[K];
 
 export type FilterAction_F<
-  E extends EventsMap,
-  P extends PromiseeMap,
-  Pc,
-  Tc extends PrimitiveObject,
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = <
   D = Decompose<
     {
@@ -170,13 +175,13 @@ export type FilterAction_F<
         ? (value: ValuesOf<D[K]>, all: D[K]) => boolean
         : never
     : never,
-) => ActionResultFn<E, P, Pc, Tc>;
+) => Action2<E, Pc, Tc, T>;
 
 export type EraseAction_F<
-  E extends EventsMap,
-  P extends PromiseeMap,
-  Pc,
-  Tc extends PrimitiveObject,
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = <
   D extends object = Extract<
     Decompose<
@@ -192,7 +197,7 @@ export type EraseAction_F<
   K extends keyof DD & string = keyof DD & string,
 >(
   key: K,
-) => ActionResultFn<E, P, Pc, Tc>;
+) => Action2<E, Pc, Tc, T>;
 
 export type DirectMerge_F<
   Pc = any,
@@ -200,169 +205,136 @@ export type DirectMerge_F<
 > = Fn<[result?: ActionResult<Pc, Tc>], void>;
 
 export type SendAction_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = <T extends AnyMachine>(
-  _?: T,
+  T extends string = string,
+> = <M extends AnyMachine>(
+  _?: M,
 ) => (
   fn: FnMap<
     E,
-    P,
     Pc,
     Tc,
-    { to: string; event: EventArg<EventsMapFrom<T>> }
+    T,
+    { to: string; event: EventArg<EventsMapFrom<M>> }
   >,
-) => ActionResultFn<E, P, Pc, Tc>;
+) => Action2<E, Pc, Tc, T>;
 
 export type ValueCheckerGuard_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = (
   path: DefinedValue<Pc, Tc>,
   ...values: any[]
-) => FnR<E, P, Pc, Tc, boolean>;
+) => FnR<E, Pc, Tc, T, boolean>;
 
 export type DefineGuard_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = (path: DefinedValue<Pc, Tc>) => FnR<E, P, Pc, Tc, boolean>;
-
-export type ChildProvider_F<
-  E extends EventsMap,
-  P extends PromiseeMap,
-  Pc = any,
-> = <
-  const T extends KeyU<'config' | 'context' | 'pContext'> = KeyU<
-    'pContext' | 'context' | 'config'
-  >,
->(
-  machine: T,
-  initials: {
-    pContext: PrivateContextFrom<T>;
-    context: ContextFrom<T>;
-  },
-  ...subscribers: SubscriberType<E, P, Pc, T>[]
-) => ChildS<E, P, Pc, T>;
+  T extends string = string,
+> = (path: DefinedValue<Pc, Tc>) => FnR<E, Pc, Tc, T, boolean>;
 
 export type AllActions_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = AssignAction_F<E, P, Pc, Tc> | VoidAction_F<E, P, Pc, Tc>;
+  T extends string = string,
+> = AssignAction_F<E, Pc, Tc, T> | VoidAction_F<E, Pc, Tc, T>;
 
 export type DebounceAction_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = <T extends ActionResultFn<E, P, Pc, Tc>>(
-  fn: T,
+  T extends string = string,
+> = <A extends Action2<E, Pc, Tc, T>>(
+  fn: A,
   options: {
     ms?: number;
     id: string;
   },
-) => ActionResultFn<E, P, Pc, Tc>;
+) => Action2<E, Pc, Tc, T>;
 
 export type BatchAction_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = <T extends ActionResultFn<E, P, Pc, Tc> | undefined>(
-  ...fns: T[]
-) => ActionResultFn<E, P, Pc, Tc>;
+  T extends string = string,
+> = <A extends (Action2<E, Pc, Tc, T> | undefined)[]>(
+  ...fns: A
+) => Action2<E, Pc, Tc, T>;
 
 /**
  * Type for the _legacy parameter containing previously defined options.
  */
 export type LegacyOptions<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = Readonly<{
-  actions?: {
-    [key in keyof NotUndefined<Mo['actions']>]?: ActionResultFn<
-      E,
-      P,
-      Pc,
-      Tc
-    >;
-  };
+  actions?: Mo['actions'];
   predicates?: Mo['predicates'];
   delays?: Mo['delays'];
-  promises?: Mo['promises'];
-  machines?: Mo['machines'];
-  emitters?: Mo['emitters'];
+  actors?: Mo['actors'];
 }>;
 
 export type AddOption<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
 > = {
-  isDefined: DefineGuard_F<E, P, Pc, Tc>;
-  isNotDefined: DefineGuard_F<E, P, Pc, Tc>;
-  isValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
-  isNotValue: ValueCheckerGuard_F<E, P, Pc, Tc>;
-  createChild: ChildProvider_F<E, P, Pc>;
-  assign: AssignAction_F<E, P, Pc, Tc>;
-  batch: BatchAction_F<E, P, Pc, Tc>;
-  filter: FilterAction_F<E, P, Pc, Tc>;
-  erase: EraseAction_F<E, P, Pc, Tc>;
-  voidAction: VoidAction_F<E, P, Pc, Tc>;
-  sendTo: SendAction_F<E, P, Pc, Tc>;
-  debounce: DebounceAction_F<E, P, Pc, Tc>;
-  resend: ResendAction_F<E, P, Pc, Tc>;
+  isDefined: DefineGuard_F<E, Pc, Tc, T>;
+  isNotDefined: DefineGuard_F<E, Pc, Tc, T>;
+  isValue: ValueCheckerGuard_F<E, Pc, Tc, T>;
+  isNotValue: ValueCheckerGuard_F<E, Pc, Tc, T>;
+  assign: AssignAction_F<E, Pc, Tc, T>;
+  batch: BatchAction_F<E, Pc, Tc, T>;
+  filter: FilterAction_F<E, Pc, Tc, T>;
+  erase: EraseAction_F<E, Pc, Tc, T>;
+  voidAction: VoidAction_F<E, Pc, Tc, T>;
+  sendTo: SendAction_F<E, Pc, Tc, T>;
+  debounce: DebounceAction_F<E, Pc, Tc, T>;
+  resend: ResendAction_F<E, Pc, Tc, T>;
   /**
    * Force send action, performs the action regardless of the current state.
    */
-  forceSend: ResendAction_F<E, P, Pc, Tc>;
-  pauseActivity: TimeAction_F<E, P, Pc, Tc>;
-  resumeActivity: TimeAction_F<E, P, Pc, Tc>;
-  stopActivity: TimeAction_F<E, P, Pc, Tc>;
-  pauseTimer: TimeAction_F<E, P, Pc, Tc>;
-  resumeTimer: TimeAction_F<E, P, Pc, Tc>;
-  stopTimer: TimeAction_F<E, P, Pc, Tc>;
+  forceSend: ResendAction_F<E, Pc, Tc, T>;
+  pauseActivity: TimeAction_F<E, Pc, Tc, T>;
+  resumeActivity: TimeAction_F<E, Pc, Tc, T>;
+  stopActivity: TimeAction_F<E, Pc, Tc, T>;
+  pauseTimer: TimeAction_F<E, Pc, Tc, T>;
+  resumeTimer: TimeAction_F<E, Pc, Tc, T>;
+  stopTimer: TimeAction_F<E, Pc, Tc, T>;
   // merge: DirectMerge_F<Pc, Tc>;
   // emitter: Emitter<E, P, Pc, Tc>;
 };
 
 export type AddOptionsParam_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = (
-  option: AddOption<E, P, Pc, Tc>,
+  option: AddOption<E, Pc, Tc, T>,
   /**
    * Access to previously defined options from previous addOptions or provideOptions calls.
    * Provides actions, predicates, emitters, machines, promises, and delays.
    */
   legacyOptions: {
-    _legacy: LegacyOptions<E, P, Pc, Tc, Mo>;
+    _legacy: LegacyOptions<Mo>;
   },
-) => Mo;
+) => Mo | undefined;
 
 export type AddOptions_F<
-  E extends EventsMap = EventsMap,
-  P extends PromiseeMap = PromiseeMap,
+  E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
-> = <T extends Mo>(
-  option: AddOptionsParam_F<E, P, Pc, Tc, NoExtraKeysStrict<T, Mo>>,
-) => T;
+> = (option: AddOptionsParam_F<E, Pc, Tc, T, Mo>) => Mo | undefined;
 
 /**
  * Represents a scheduled action with its data and execution time.
