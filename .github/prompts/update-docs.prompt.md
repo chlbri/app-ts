@@ -1,3 +1,7 @@
+---
+model: Claude Sonnet 4.6 (copilot)
+---
+
 # Update Documentation
 
 Update CHANGELOG.md and README.md after version upgrade.

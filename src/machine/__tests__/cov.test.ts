@@ -1,7 +1,7 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { _machine2, DELAY, fakeDB, machine2 } from '#fixturesData';
 import { interpret } from '#interpreters';
-import { createMachine, getEntries } from '#machine';
+import { createMachine, getEntries, Machine } from '#machine';
 import type { StateValue } from '#states';
 import { nothing, reduceDescriber } from '#utils';
 import { createTests } from '@bemedev/vitest-extended';
@@ -511,6 +511,10 @@ describe('machine coverage', () => {
       '__events',
       '__actionFn',
       '__actionKey',
+      '__config',
+      '__eventsO',
+      '__childKey',
+      '__tag',
       '__actionParams',
       '__stateExtended',
       '__state',
@@ -524,7 +528,7 @@ describe('machine coverage', () => {
       '__src',
       '__promise',
       '__machine',
-    ] as const;
+    ] as const satisfies (keyof Machine)[];
 
     array.forEach((key, index) => {
       const invite = `#${index < 10 ? '0' + index : index} => ${key}`;

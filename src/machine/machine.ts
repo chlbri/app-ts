@@ -4,36 +4,36 @@ import extract from '#bemedev/features/common/typings/extract';
 import byKey from '#bemedev/features/objects/typings/byKey';
 import keysOf from '#bemedev/features/objects/typings/keysOf';
 import type {
-    AllowedNames,
-    NotUndefined,
-    PrimitiveObject,
+  AllowedNames,
+  NotUndefined,
+  PrimitiveObject,
 } from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
 import { type EventsMap, type ToEvents2 } from '#events';
 import {
-    isDefinedS,
-    isNotDefinedS,
-    isNotValue,
-    isValue,
-    type DefinedValue,
+  isDefinedS,
+  isNotDefinedS,
+  isNotValue,
+  isValue,
+  type DefinedValue,
 } from '#guards';
 import { type PromiseFunction } from '#promises';
 import type {
-    State,
-    StateExtended,
-    StateP,
-    StatePextended,
+  State,
+  StateExtended,
+  StateP,
+  StatePextended,
 } from '#states';
 import {
-    flatMap,
-    initialConfig,
-    isAtomic,
-    isCompound,
-    nodeToValue,
-    valueToNodeConfig,
-    type FlatMapN,
-    type NodeConfig,
-    type StateValue,
+  flatMap,
+  initialConfig,
+  isAtomic,
+  isCompound,
+  nodeToValue,
+  valueToNodeConfig,
+  type FlatMapN,
+  type NodeConfig,
+  type StateValue,
 } from '#states';
 import { merge, reduceFnMap } from '#utils';
 import { partialCall, toArray } from '@bemedev/basifun';
@@ -48,26 +48,26 @@ import type { PredicateS } from '#guards';
 import cloneDeep from 'clone-deep';
 import { assignByKey, expandFnMap } from './functions';
 import type {
-    AddOptions_F,
-    AddOptionsParam_F,
-    AnyMachine,
-    Elements,
-    GetIO_F,
-    ScheduledData,
-    SendAction_F,
-    TimeAction_F,
-    VoidAction_F,
+  AddOptions_F,
+  AddOptionsParam_F,
+  AnyMachine,
+  Elements,
+  GetIO_F,
+  ScheduledData,
+  SendAction_F,
+  TimeAction_F,
+  VoidAction_F,
 } from './machine.types';
 import type {
-    Config,
-    ConfigDef,
-    ExtractTagsFromConfig,
-    GetActorKeysFromConfig,
-    GetEventsFromConfig,
-    MachineOptions,
-    NoExtraKeysConfig,
-    NoExtraKeysConfigDef,
-    TransformConfigDef,
+  Config,
+  ConfigDef,
+  ExtractTagsFromConfig,
+  GetActorKeysFromConfig,
+  GetEventsFromConfig,
+  MachineOptions,
+  NoExtraKeysConfig,
+  NoExtraKeysConfigDef,
+  TransformConfigDef,
 } from './types';
 
 /**
@@ -935,42 +935,8 @@ class Machine<
     return out;
   }
 
-  /**
-   * @deprecated
-   * @remarks used internally
-   */
-  _providePrivateContext = <T = any>(pContext: T) => {
-    const { context, config, events, actorsMap } = this.#elements;
-
-    const out = new Machine<C, T, Tc, E, A>(config);
-
-    out.#context = context;
-    out.#pContext = pContext;
-    out.#eventsMap = events;
-    out.#actorsMap = actorsMap;
-
-    return out;
-  };
-
   addPrivateContext = (pContext: Pc) => {
     this.#pContext = pContext;
-  };
-
-  /**
-   * @deprecated
-   * @remarks used internally
-   */
-  _provideContext = <T extends PrimitiveObject>(context: T) => {
-    const { pContext, config, events, actorsMap } = this.#elements;
-
-    const out = new Machine<C, Pc, T, E, A>(config);
-
-    out.#pContext = pContext;
-    out.#context = context;
-    out.#eventsMap = events;
-    out.#actorsMap = actorsMap;
-
-    return out;
   };
 
   addContext = (context: Tc) => {
