@@ -46,8 +46,11 @@ describe('Filter and Erase actions', () => {
         context: { numbers: [] },
       });
 
-      const { useStateValue: useValue, send: useSend, start } =
-        constructTests(service);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
       test(...start(1));
 
@@ -137,8 +140,11 @@ describe('Filter and Erase actions', () => {
         context: { people: [] },
       });
 
-      const { useStateValue: useValue, send: useSend, start } =
-        constructTests(service);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
       test(...start(1));
 
@@ -227,8 +233,11 @@ describe('Filter and Erase actions', () => {
         context: { scores: {} },
       });
 
-      const { useStateValue: useValue, send: useSend, start } =
-        constructTests(service);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
       test(...start(1));
 
@@ -321,8 +330,11 @@ describe('Filter and Erase actions', () => {
         },
       });
 
-      const { useStateValue: useValue, send: useSend, start } =
-        constructTests(service);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
       test(...start(1));
       test(...useValue('idle', 2));
@@ -399,8 +411,11 @@ describe('Filter and Erase actions', () => {
         },
       });
 
-      const { useStateValue: useValue, send: useSend, start } =
-        constructTests(service);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
       test(...start(1));
 
@@ -489,8 +504,11 @@ describe('Filter and Erase actions', () => {
         context: {},
       });
 
-      const { useStateValue: useValue, send: useSend, start } =
-        constructTests(service);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
       test(...start(1));
 

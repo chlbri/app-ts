@@ -1,9 +1,9 @@
-import type { EventArg, EventsMap } from '../types';
+import type { EventArg, EventObject, EventsMap } from '../types';
 import { type _EventsR } from './../types';
 
-export type TransformEventArg = <E extends EventsMap>(
-  event: EventArg<E>,
-) => _EventsR<E>;
+export type TransformEventArg = <T extends EventObject = EventObject>(
+  event: string | EventObject,
+) => T;
 
 /**
  * Transforms an non-formated event into a standardized event object.

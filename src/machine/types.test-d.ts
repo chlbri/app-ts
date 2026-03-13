@@ -1,4 +1,5 @@
 import type { Fn, PrimitiveObject } from '#bemedev/globals/types';
+import { EventStrings } from '#events';
 import type { machine2 } from '#fixturesData';
 import type {
   ChildEvents,
@@ -10,8 +11,7 @@ import type {
 
 type TT2 = keyof Exclude<FnMapFrom<typeof machine2>, Fn>;
 expectTypeOf<TT2>().toEqualTypeOf<
-  | 'machine$$init'
-  | 'machine$$exceeded'
+  | EventStrings
   | 'NEXT'
   | 'else'
   | 'FINISH'

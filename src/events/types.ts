@@ -5,7 +5,11 @@ import type {
 } from '#bemedev/globals/types';
 import type { EmitterConfigMap } from '#emitters';
 import type { ChildConfigMap } from 'src/machine/types';
-import type { INIT_EVENT, MAX_EXCEEDED_EVENT_TYPE } from './constants';
+import type {
+  ALWAYS_EVENT,
+  INIT_EVENT,
+  MAX_EXCEEDED_EVENT_TYPE,
+} from './constants';
 import { EmptyObject } from '@bemedev/decompose';
 
 /**
@@ -34,11 +38,12 @@ export type PromiseeMap = Record<string, PromiseeDef>;
 
 export type InitEvent = typeof INIT_EVENT;
 export type MaxExceededEvent = typeof MAX_EXCEEDED_EVENT_TYPE;
+export type AlwaysEvent = typeof ALWAYS_EVENT;
 
 /**
  * Represents a union of all event strings.
  */
-export type EventStrings = InitEvent | MaxExceededEvent;
+export type EventStrings = InitEvent | MaxExceededEvent | AlwaysEvent;
 
 export type AllEvent = EventObject | EventStrings;
 
@@ -151,7 +156,7 @@ export type ToEvents2<
   E extends EventsMap,
   A extends ActorsConfigMap,
   Ex extends string = never,
-> = ToEventsR2<E, A, Ex> | InitEvent | MaxExceededEvent;
+> = ToEventsR2<E, A, Ex> | EventStrings;
 
 export type EventArgObject<E extends EventObject> =
   object extends E['payload'] ? E['type'] | E : E;

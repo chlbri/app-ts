@@ -1,3 +1,4 @@
+import { ALWAYS_EVENT, transformEventArg } from '#events';
 import { constructTests, defaultC, defaultT } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
@@ -65,7 +66,7 @@ describe('Interpret for actions', () => {
       test('#02 => Called with the correct arguments', () => {
         expect(action1).toHaveBeenCalledWith({
           ...defaultC,
-          event: { type: 'NEXT', payload: {} },
+          event: transformEventArg(ALWAYS_EVENT),
           status: 'busy',
           tags: undefined,
           value: 'state1',
@@ -142,7 +143,7 @@ describe('Interpret for actions', () => {
       test('#02 => Called with the correct arguments', () => {
         expect(action1).toHaveBeenCalledWith({
           ...defaultC,
-          event: { type: 'NEXT', payload: {} },
+          event: transformEventArg(ALWAYS_EVENT),
           status: 'busy',
           tags: undefined,
           value: 'state1',

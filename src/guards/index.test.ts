@@ -3,6 +3,7 @@ import stringT from '#bemedev/features/strings/typings';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { constructTests, defaultC, defaultT } from '#fixtures';
+import { transformEventArg, ALWAYS_EVENT } from '#events';
 
 describe('Interpret for guards', () => {
   const guard1 = vi.fn().mockReturnValue(defaultC);
@@ -100,7 +101,7 @@ describe('Interpret for guards', () => {
       test('#02 => Called with the correct arguments', () => {
         expect(guard1).toHaveBeenCalledWith({
           ...defaultC,
-          event: { type: 'NEXT', payload: {} },
+          event: transformEventArg(ALWAYS_EVENT),
           status: 'busy',
           tags: undefined,
           value: 'state1',
@@ -168,7 +169,7 @@ describe('Interpret for guards', () => {
 
     test(...send('NEXT', 5));
 
-    describe('#05 => Check the action', () => {
+    describe('#06 => Check the action', () => {
       test('#01 => Called one time', () => {
         expect(guard1).toHaveBeenCalledTimes(1);
       });
@@ -176,7 +177,7 @@ describe('Interpret for guards', () => {
       test('#02 => Called with the correct arguments', () => {
         expect(guard1).toHaveBeenCalledWith({
           ...defaultC,
-          event: { type: 'NEXT', payload: {} },
+          event: transformEventArg(ALWAYS_EVENT),
           status: 'busy',
           tags: undefined,
           value: 'state1',

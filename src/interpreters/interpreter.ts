@@ -10,6 +10,7 @@ import {
 
 import { toDelay } from '#delays';
 import {
+  ALWAYS_EVENT,
   eventToType,
   INIT_EVENT,
   possibleEvents,
@@ -135,7 +136,7 @@ import type {
   EmitterConfig,
   PromiseeConfig,
 } from 'src/actor.types';
-import type { AnyMachine } from 'src/machine/machine.types';
+import type { AnyMachine } from '#machines';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 // TODO: Reuse my custom event loop
@@ -229,7 +230,7 @@ export class Interpreter<
   /**
    * The current {@linkcode ToEvents2} event of this {@linkcode Interpreter} service.
    */
-  #event: Eo = { type: INIT_EVENT, payload: {} } as any;
+  #event: Eo = transformEventArg(INIT_EVENT);
 
   /**
    * The initial {@linkcode NodeConfigWithInitials} of the inner {@linkcode Machine}.
@@ -1348,6 +1349,7 @@ export class Interpreter<
   };
 
   #performAlways: PerformAlway_F = alway => {
+    this.#changeEvent(transformEventArg(ALWAYS_EVENT));
     const always = toArray<TransitionConfig>(alway);
     return this.__performTransitions(...always);
   };
