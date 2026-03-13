@@ -16,6 +16,7 @@ type PrimitiveS =
   | 'null'
   | 'undefined'
   | 'symbol';
+
 type TransformPrimitiveS<T extends PrimitiveS> = T extends 'string'
   ? string
   : T extends 'number'
