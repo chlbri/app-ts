@@ -4,7 +4,7 @@ import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { type StateValue } from '#states';
 import { typings } from '#utils';
-import { createFakeWaiter } from '@bemedev/vitest-extended';
+import { constructTests } from '../../fixtures';
 import type { inferT } from 'src/utils/typings';
 import { __tsSchema } from '../machine.real.gen';
 
@@ -151,7 +151,9 @@ describe('REAL LIFE TESTS', () => {
     // #endregion
 
     describe('TESTS', () => {
-      test('#00 => start the machine', service.start);
+      const { start } = constructTests(service);
+
+      test(...start(0));
 
       // test(...useValue('idle', 1));
       test(...useIterator(2, 2));
@@ -370,7 +372,9 @@ describe('REAL LIFE TESTS', () => {
     // #endregion
 
     describe('TESTS', () => {
-      test('#00 => start the machine', service.start);
+      const { start } = constructTests(service);
+
+      test(...start(0));
       test(...useValue('idle', 1));
       test(...useIterator(1, 2));
       test(...useSend('NEXT', 3));
@@ -1180,7 +1184,9 @@ describe('REAL LIFE TESTS', () => {
       return tupleOf(invite, () => service.send(event));
     };
 
-    const useWaiter = createFakeWaiter.withDefaultDelay(vi, 500);
+    const { start, waiter } = constructTests(service, ({ waiter }) => ({
+      waiter: waiter(500),
+    }));
 
     const useLang = (_lang: inferT<typeof lang>, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => Language should be ${_lang}`;
@@ -1199,7 +1205,7 @@ describe('REAL LIFE TESTS', () => {
     // #endregion
 
     describe('TESTS', () => {
-      test('#00 => start the machine', service.start);
+      test(...start(0));
       test(...useValue({ working: 'idle' }, 1));
       test('#02 => Context should be initialized', () => {
         expect(service.state.context).toEqual({
@@ -1215,7 +1221,7 @@ describe('REAL LIFE TESTS', () => {
         ...useSend({ type: 'CHANGE_LANG', payload: { lang: 'fr' } }, 3),
       );
       test(...useLang('en', 4));
-      test(...useWaiter(5, 1));
+      test(...waiter(1, 5));
       test(...useLang('fr', 6));
       test(...useSend('ADD', 7));
       describe('#08 => Should add a new field', () => {
@@ -1266,7 +1272,7 @@ describe('REAL LIFE TESTS', () => {
           );
         });
       });
-      test(...useWaiter(11, 1));
+      test(...waiter(1, 11));
       test('#12 => Should update first field', () => {
         expect(service.state.context.fields?.[0]).toEqual({
           label: 'Name',

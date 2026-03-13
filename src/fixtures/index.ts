@@ -172,7 +172,7 @@ export const mockConsole = () => {
 };
 
 type ConstructWaiter2_F = (
-  DELAY: number,
+  DELAY?: number,
 ) => (
   times?: number,
   index?: number,

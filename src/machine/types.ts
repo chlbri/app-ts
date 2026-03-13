@@ -1,6 +1,8 @@
 import type { Action2, FromActionConfig } from '#actions';
 import type {
   DeepRequired,
+  Equals,
+  Keys,
   NotUndefined,
   PrimitiveObject,
   Ru,
@@ -48,7 +50,7 @@ import type {
   Transition,
   TransitionsConfig,
 } from '#transitions';
-import type { Decompose } from '@bemedev/decompose';
+import type { Decompose, Recompose } from '@bemedev/decompose';
 import type { Observable } from 'rxjs';
 import type {
   Describer,
@@ -516,11 +518,24 @@ export type GetEmittersSrcFromConfig<C extends Config> =
 export type GetEmittersSrcFromMachine<T extends KeyU<'config'>> =
   GetEmittersSrcFromConfig<ConfigFrom<T>>;
 
-export type GetChildrenSrcKeyFromFlat<
+export type GetChildrenSrcKeysFromFlat<
   Flat extends FlatMapN,
   G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
 > = {
   [key in G['src']]: Record<Extract<G, { src: key }>['on'], any>;
+};
+
+export type GetChildrenSrcKeysFromFlat2<
+  Flat extends FlatMapN,
+  G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
+> = {
+  [key in G['src']]: Extract<G, { src: key }> extends infer E extends G
+    ? {
+        on: Record<E['on'], any>;
+        context: keyof E['contexts'];
+        parentPcontext: E['contexts'][keyof E['contexts']];
+      }
+    : never;
 };
 
 export type GetChildrenSrcFromFlat<
@@ -539,6 +554,7 @@ export type GetChildrenSrcFromFlat<
     T,
     {
       eventsMap: ChildEvents<key & string, A>;
+      context: Recomposer<keyof Extract<G, { src: key }>['contexts']>;
     }
   >;
 };
@@ -550,11 +566,11 @@ export type GetChildrenSrcFromFlat<
  * @returns A type representing all child machines from the machine config.
  *
  * @see {@linkcode FlatMapN} for the flat map structure.
- * @see {@linkcode GetChildrenSrcKeyFromFlat} for extracting promises from the flat map.
+ * @see {@linkcode GetChildrenSrcKeysFromFlat} for extracting promises from the flat map.
  * @see {@linkcode FlatMapN} for extracting the config from a machine config.
  */
 export type GetChildrenSrcFromConfig<C extends Config> =
-  GetChildrenSrcKeyFromFlat<FlatMapN<C>>;
+  GetChildrenSrcKeysFromFlat<FlatMapN<C>>;
 
 /**
  * Get all child machines from a machine.
@@ -600,14 +616,36 @@ export type GetActorsFromMachine<
   T extends string = string,
 > = GetActorsFromConfig<ConfigFrom<M>, E, A, Pc, Tc, T>;
 
-export type GetActorsSrcKeyFromFlat<Flat extends FlatMapN> = {
-  children: GetChildrenSrcKeyFromFlat<Flat>;
+export type GetActorsSrcKeysFromFlat<Flat extends FlatMapN> = {
+  children: GetChildrenSrcKeysFromFlat<Flat>;
   emitters: GetEmittersSrcKeyFromFlat<Flat>;
   promisees: GetPromiseesSrcKeyFromFlat<Flat>;
 };
 
+export type Recomposer<P extends Keys> =
+  Equals<P, '.'> extends true
+    ? any
+    : Equals<P, ''> extends true
+      ? any
+      : Recompose<Record<Exclude<P, '' | '.'>, unknown>>;
+
+export type GetActorsSrcKeysFromFlat2<
+  Flat extends FlatMapN,
+  G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
+> = {
+  children: {
+    [key in G['src']]: Record<Extract<G, { src: key }>['on'], any>;
+  };
+  emitters: GetEmittersSrcKeyFromFlat<Flat>;
+  promisees: GetPromiseesSrcKeyFromFlat<Flat>;
+  pContext: Recomposer<G['contexts'][keyof G['contexts']]>;
+};
+
 export type GetActorKeysFromConfig<C extends Config> =
-  GetActorsSrcKeyFromFlat<FlatMapN<C>>;
+  GetActorsSrcKeysFromFlat<FlatMapN<C>>;
+
+export type GetActorKeysFromConfig2<C extends Config> =
+  GetActorsSrcKeysFromFlat2<FlatMapN<C>>;
 
 export type GetActorKeysFromMachine<T extends KeyU<'config'>> =
   GetActorKeysFromConfig<ConfigFrom<T>>;

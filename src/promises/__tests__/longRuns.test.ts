@@ -1,9 +1,8 @@
+import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machines';
 import { typings } from '#utils';
 import { sleep } from '@bemedev/sleep';
-import tupleOf from '#bemedev/features/arrays/castings/tuple';
-import { createFakeWaiter } from '@bemedev/vitest-extended';
 
 describe('Tests for longrun promises', () => {
   const LONG_DELAY = 450_000;
@@ -64,75 +63,60 @@ describe('Tests for longrun promises', () => {
 
     const service = interpret(machine);
 
-    // #region Hooks
-
     beforeAll(() => {
       vi.useFakeTimers();
       log.mockClear();
     });
 
-    const useWaiter = createFakeWaiter.withDefaultDelay(vi, LONG_DELAY);
+    const { start, useStateValue, send, useWaiter, useConsole } =
+      constructTests(service, ({ waiter, tupleOf }) => {
+        const strings: (string | string[])[] = [];
+        return {
+          useWaiter: waiter(LONG_DELAY),
+          useConsole: (
+            index: number,
+            ..._strings: (string | string[])[]
+          ) => {
+            const inviteStrict = `#02 => Check strict string`;
 
-    const strings: (string | string[])[] = [];
-    const useConsole = (
-      index: number,
-      ..._strings: (string | string[])[]
-    ) => {
-      const inviteStrict = `#02 => Check strict string`;
+            const strict = () => {
+              const calls = strings.map(data => [data].flat());
+              expect(log.mock.calls).toStrictEqual(calls);
+            };
 
-      const strict = () => {
-        const calls = strings.map(data => [data].flat());
-        expect(log.mock.calls).toStrictEqual(calls);
-      };
+            const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
 
-      const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
+            const length = () => {
+              strings.push(..._strings);
+              expect(log.mock.calls.length).toBe(strings.length);
+            };
 
-      const length = () => {
-        strings.push(..._strings);
-        expect(log.mock.calls.length).toBe(strings.length);
-      };
+            const invite = `#${index < 10 ? '0' + index : index} => Check the console`;
+            const func = () => {
+              test(inviteLength, length);
+              test(inviteStrict, strict);
+            };
 
-      const invite = `#${index < 10 ? '0' + index : index} => Check the console`;
-      const func = () => {
-        test(inviteLength, length);
-        test(inviteStrict, strict);
-      };
-
-      return tupleOf(invite, func);
-    };
-
-    const useValue = (value: string, index: number) => {
-      const invite = `#${index < 10 ? '0' + index : index} => value is "${value}"`;
-      return tupleOf(invite, async () => {
-        expect(service.value).toBe(value);
+            return tupleOf(invite, func);
+          },
+        };
       });
-    };
 
-    type SE = Parameters<typeof service.send>[0];
-
-    const useSend = (event: SE, index: number) => {
-      const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
-
-      return tupleOf(invite, () => service.send(event));
-    };
-
-    // #endregion
-
-    test('#00 => Start the service', service.start);
+    test(...start(0));
 
     test('#01 => __longRun value', () => {
       expect(service.longRuns).toBe(true);
     });
 
-    test(...useValue('idle', 2));
+    test(...useStateValue('idle', 2));
     describe(...useConsole(3));
-    test(...useSend('NEXT', 4));
-    test(...useValue('promise', 5));
+    test(...send('NEXT', 4));
+    test(...useStateValue('promise', 5));
     describe(...useConsole(6));
-    test(...useWaiter(7));
-    test(...useValue('promise', 8));
-    test(...useWaiter(9));
-    test(...useValue('success', 10));
+    test(...useWaiter(1, 7));
+    test(...useStateValue('promise', 8));
+    test(...useWaiter(1, 9));
+    test(...useStateValue('success', 10));
     describe(...useConsole(11, 'Success!'));
   });
 
@@ -188,73 +172,57 @@ describe('Tests for longrun promises', () => {
 
     const service = interpret(machine);
 
-    // #region Hooks
-
     beforeAll(() => {
       vi.useFakeTimers();
       log.mockClear();
     });
 
-    const useWaiter = createFakeWaiter.withDefaultDelay(vi, LONG_DELAY);
+    const { start, useStateValue, send, useWaiter, useConsole } =
+      constructTests(service, ({ waiter, tupleOf }) => {
+        const strings: (string | string[])[] = [];
+        return {
+          useWaiter: waiter(LONG_DELAY),
+          useConsole: (
+            index: number,
+            ..._strings: (string | string[])[]
+          ) => {
+            const inviteStrict = `#02 => Check strict string`;
 
-    const strings: (string | string[])[] = [];
-    const useConsole = (
-      index: number,
-      ..._strings: (string | string[])[]
-    ) => {
-      const inviteStrict = `#02 => Check strict string`;
+            const strict = () => {
+              const calls = strings.map(data => [data].flat());
+              expect(log.mock.calls).toStrictEqual(calls);
+            };
 
-      const strict = () => {
-        const calls = strings.map(data => [data].flat());
-        expect(log.mock.calls).toStrictEqual(calls);
-      };
+            const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
 
-      const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
+            const length = () => {
+              strings.push(..._strings);
+              expect(log.mock.calls.length).toBe(strings.length);
+            };
 
-      const length = () => {
-        strings.push(..._strings);
-        expect(log.mock.calls.length).toBe(strings.length);
-      };
+            const invite = `#${index < 10 ? '0' + index : index} => Check the console`;
+            const func = () => {
+              test(inviteLength, length);
+              test(inviteStrict, strict);
+            };
 
-      const invite = `#${index < 10 ? '0' + index : index} => Check the console`;
-      const func = () => {
-        test(inviteLength, length);
-        test(inviteStrict, strict);
-      };
-
-      return tupleOf(invite, func);
-    };
-
-    const useValue = (value: string, index: number) => {
-      const invite = `#${index < 10 ? '0' + index : index} => value is "${value}"`;
-      return tupleOf(invite, async () => {
-        expect(service.value).toBe(value);
+            return tupleOf(invite, func);
+          },
+        };
       });
-    };
 
-    type SE = Parameters<typeof service.send>[0];
-
-    // #region Hooks
-    const useSend = (event: SE, index: number) => {
-      const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
-
-      return tupleOf(invite, () => service.send(event));
-    };
-
-    // #endregion
-
-    test('#00 => Start the service', service.start);
+    test(...start(0));
     test('#01 => __longRun value', () =>
       expect(service.longRuns).toBe(false));
-    test(...useValue('idle', 2));
+    test(...useStateValue('idle', 2));
     describe(...useConsole(4));
-    test(...useSend('NEXT', 5));
-    test(...useValue('promise', 5));
+    test(...send('NEXT', 5));
+    test(...useStateValue('promise', 5));
     describe(...useConsole(6));
-    test(...useWaiter(5));
-    test(...useValue('promise', 8));
-    test(...useWaiter(9));
-    test(...useValue('failure', 10));
+    test(...useWaiter(1, 5));
+    test(...useStateValue('promise', 8));
+    test(...useWaiter(1, 9));
+    test(...useStateValue('failure', 10));
     describe(...useConsole(11, 'Failure!'));
   });
 });

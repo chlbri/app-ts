@@ -3,7 +3,7 @@ import { _machine2, DELAY, fakeDB } from '#fixturesData';
 import { interpret } from '#interpreters';
 import { nothing } from '#utils';
 import equal from 'fast-deep-equal';
-import { constructTests, fakeWaiter } from '../../../fixtures';
+import { constructTests } from '../../../fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => vi.useFakeTimers());
@@ -244,7 +244,7 @@ describe('machine coverage', () => {
         // describe(...useConsole(4));
       });
 
-      test('#29 => Await the fetch', () => fakeWaiter());
+      test(...useWaiter(0, 29));
 
       describe('#30 => Check the service', () => {
         test(...useIterator(102, 1));

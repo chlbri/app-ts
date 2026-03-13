@@ -5,6 +5,7 @@ import byKey from '#bemedev/features/objects/typings/byKey';
 import keysOf from '#bemedev/features/objects/typings/keysOf';
 import type {
   AllowedNames,
+  NOmit,
   NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
@@ -63,6 +64,7 @@ import type {
   ConfigDef,
   ExtractTagsFromConfig,
   GetActorKeysFromConfig,
+  GetActorKeysFromConfig2,
   GetEventsFromConfig,
   MachineOptions,
   NoExtraKeysConfig,
@@ -1193,10 +1195,11 @@ export type CreateMachine_F = <
     NoExtraKeysConfigDef<ConfigDef>,
   const C extends Config & TransformConfigDef<C2> = Config &
     TransformConfigDef<C2>,
-  Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  A extends GetActorKeysFromConfig<C> = GetActorKeysFromConfig<C>,
+  A0 extends GetActorKeysFromConfig2<C> = GetActorKeysFromConfig2<C>,
+  A extends NOmit<A0, 'pContext'> = NOmit<A0, 'pContext'>,
+  Pc extends A0['pContext'] = A0['pContext'],
   Mo extends MachineOptions<C, EventM, A, Pc, Tc> = MachineOptions<
     C,
     EventM,

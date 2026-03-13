@@ -5,12 +5,12 @@ import {
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MIN_ACTIVITY_TIME,
 } from '#constants';
-import { constructTests, defaultC, defaultT, fakeWaiter } from '#fixtures';
+import { constructTests, defaultC, defaultT } from '#fixtures';
 import { DELAY, fakeDB, machine21, machine3 } from '#fixturesData';
 import { createMachine } from '#machine';
 import type { StateValue } from '#states';
 import { nothing, typings } from '#utils';
-import { createFakeWaiter } from '@bemedev/vitest-extended';
+
 import equal from 'fast-deep-equal';
 import { interpret, TIME_TO_RINIT_SELF_COUNTER } from '../interpreter';
 import type { AnyInterpreter } from '../interpreter.types';
@@ -413,23 +413,21 @@ describe('Composition', () => {
       },
     }));
 
-    const useWaiter = createFakeWaiter.withDefaultDelay(vi, 1000);
-
     const service = interpret(machine, defaultC);
+    const { start, waiter } = constructTests(service, ({ waiter }) => ({
+      waiter: waiter(1000),
+    }));
 
-    test('#01 => Start the service', () => {
-      service.start();
-    });
+    test(...start());
+    test(...waiter());
 
-    test(...useWaiter(1));
-
-    test('#03 => inc is called', () => {
+    test('#02 => inc is called', () => {
       expect(inc).toBeCalledTimes(1);
     });
 
-    test(...useWaiter(4));
+    test(...waiter(1, 3));
 
-    test('#05 => inc is not called again', () => {
+    test('#04 => inc is not called again', () => {
       expect(inc).toBeCalledTimes(1);
     });
   });
@@ -528,6 +526,10 @@ describe('Composition', () => {
         exact: true,
       });
 
+      const { start, waiter } = constructTests(service, ({ waiter }) => ({
+        waiter: waiter(DELAY),
+      }));
+
       const subscriber = service.subscribe(
         {
           WRITE: ({ payload: { value } }) =>
@@ -576,12 +578,6 @@ describe('Composition', () => {
           const sendWrite = service.sender('WRITE');
           return sendWrite({ value });
         });
-      };
-
-      const useWaiter = (times: number, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
-
-        return tupleOf(invite, () => fakeWaiter(DELAY, times));
       };
 
       const useState = (state: StateValue, index: number) => {
@@ -664,11 +660,9 @@ describe('Composition', () => {
 
       // #endregion
 
-      test('#00 => Start the machine', () => {
-        service.start();
-      });
+      test(...start());
 
-      test(...useWaiter(6, 1));
+      test(...waiter(6, 1));
 
       describe('#02 => Check the service', () => {
         test(...useState('idle', 1));
@@ -698,7 +692,7 @@ describe('Composition', () => {
         describe(...useConsole(4, 'NEXT time, you will see!!'));
       });
 
-      test(...useWaiter(6, 5));
+      test(...waiter(6, 5));
 
       describe('#06 => Check the service', () => {
         test(...useIterator(18, 1));
@@ -727,7 +721,7 @@ describe('Composition', () => {
         describe(...useConsole(4));
       });
 
-      test(...useWaiter(6, 9));
+      test(...waiter(6, 9));
 
       describe('#10 => Check the service', () => {
         test(
@@ -750,7 +744,7 @@ describe('Composition', () => {
 
       test('#11 => resume', service.resume);
 
-      test(...useWaiter(12, 12));
+      test(...waiter(12, 12));
 
       describe('#13 => Check the service', () => {
         test(
@@ -792,7 +786,7 @@ describe('Composition', () => {
         describe(...useConsole(5, ['WRITE with', ':', '""']));
       });
 
-      test(...useWaiter(12, 16));
+      test(...waiter(12, 16));
 
       describe('#17 => Check the service', () => {
         test(
@@ -845,7 +839,7 @@ describe('Composition', () => {
         describe(...useConsole(5, ['WRITE with', ':', `"${INPUT}"`]));
       });
 
-      test(...useWaiter(12, 20));
+      test(...waiter(12, 20));
 
       describe('#21 => Check the service', () => {
         test(
@@ -892,7 +886,7 @@ describe('Composition', () => {
         describe(...useConsole(5));
       });
 
-      test(...useWaiter(6, 25));
+      test(...waiter(6, 25));
 
       describe('#26 => Check the service', () => {
         test(
@@ -936,7 +930,7 @@ describe('Composition', () => {
         describe(...useConsole(6));
       });
 
-      test('#29 => Await the fetch', () => fakeWaiter());
+      test(...waiter(0, 29));
 
       describe('#30 => Check the service', () => {
         test(
@@ -958,7 +952,7 @@ describe('Composition', () => {
         describe(...useConsole(5));
       });
 
-      test(...useWaiter(6, 31));
+      test(...waiter(6, 31));
 
       describe('#32 => Check the service', () => {
         test(
@@ -986,7 +980,7 @@ describe('Composition', () => {
       });
 
       test(...useSend('SEND', 34));
-      test(...useWaiter(6, 35));
+      test(...waiter(6, 35));
       describe(...useConsole(36, ...Array(6).fill('sendPanelToUser')));
 
       test('#37 => machine1.value', () => {

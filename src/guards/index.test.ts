@@ -2,12 +2,7 @@ import numberT from '#bemedev/features/numbers/typings';
 import stringT from '#bemedev/features/strings/typings';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import {
-  constructSend,
-  constructStateValue,
-  defaultC,
-  defaultT,
-} from '#fixtures';
+import { constructTests, defaultC, defaultT } from '#fixtures';
 
 describe('Interpret for guards', () => {
   const guard1 = vi.fn().mockReturnValue(defaultC);
@@ -34,14 +29,12 @@ describe('Interpret for guards', () => {
       },
     }));
 
-    const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
+    const service = interpret(machine);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    const { start, useStateValue } = constructTests(service);
 
-    test(...useValue('state2', 2));
+    test(...start());
+    test(...useStateValue('state2'));
   });
 
   describe('#01 => string', () => {
@@ -71,15 +64,11 @@ describe('Interpret for guards', () => {
     );
 
     const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
-    const useSendNext = (index: number) =>
-      constructSend(service)('NEXT', index);
+    const { useStateValue, send, start } = constructTests(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    test(...start(1));
 
-    test(...useValue('state2', 2));
+    test(...useStateValue('state2', 2));
 
     describe('#03 => Check the warnings', () => {
       test('#01 => Length of warnings', () => {
@@ -101,7 +90,7 @@ describe('Interpret for guards', () => {
       }));
     });
 
-    test(...useSendNext(5));
+    test(...send('NEXT', 5));
 
     describe('#05 => Check the action', () => {
       test('#01 => Called one time', () => {
@@ -151,15 +140,11 @@ describe('Interpret for guards', () => {
     );
 
     const service = interpret(machine, defaultC);
-    const useValue = constructStateValue(service);
-    const useSendNext = (index: number) =>
-      constructSend(service)('NEXT', index);
+    const { useStateValue, send, start } = constructTests(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    test(...start(1));
 
-    test(...useValue('state2', 2));
+    test(...useStateValue('state2', 2));
 
     describe('#03 => Check the warnings', () => {
       test('#01 => Length of warnings', () => {
@@ -181,7 +166,7 @@ describe('Interpret for guards', () => {
       }));
     });
 
-    test(...useSendNext(5));
+    test(...send('NEXT', 5));
 
     describe('#05 => Check the action', () => {
       test('#01 => Called one time', () => {
@@ -262,12 +247,10 @@ describe('Interpret for guards', () => {
       context: { data: 5 },
       pContext: { data: 'avion' },
     });
-    const useValue = constructStateValue(service);
+    const { useStateValue, start } = constructTests(service);
 
-    test('#01 => Start', () => {
-      service.start();
-    });
+    test(...start(1));
 
-    test(...useValue('state2', 2));
+    test(...useStateValue('state2', 2));
   });
 });

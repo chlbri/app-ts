@@ -427,7 +427,7 @@ export type ExtractChildKeysFromActors<
   [key in keyof T]: T[key] extends infer Tk extends ChildConfig
     ? {
         src: key;
-        contexts: keyof NotUndefined<Tk['contexts']>;
+        contexts: NotUndefined<Tk['contexts']>;
         on: keyof NotUndefined<Tk['on']>;
       }
     : never;

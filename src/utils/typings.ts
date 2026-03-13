@@ -228,22 +228,22 @@ const DEFAULT_ARGS = {
   },
 } as const satisfies Args;
 
-const defaultArgs = <const T extends Partial<Args>>(values: T) => {
+const defaultArgs = <const T extends Partial<Args>>(values?: T) => {
   const args = {
     ...DEFAULT_ARGS,
     ...values,
     actorsMap: {
       ...DEFAULT_ARGS.actorsMap,
-      ...values.actorsMap,
+      ...values?.actorsMap,
     },
   } satisfies Args;
   return args;
 };
 
 export const typings = <const T extends Partial<Args>>(
-  args: T,
+  args?: T,
 ): TransformArgs<T> => {
-  const out = transformPrimitiveObject(defaultArgs(args));
+  const out = transformPrimitiveObject(defaultArgs(args as any));
   return out as TransformArgs<T>;
 };
 

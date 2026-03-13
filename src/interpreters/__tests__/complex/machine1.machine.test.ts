@@ -1,7 +1,7 @@
+import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
 import { decomposeSV } from '#utils';
 import { sleep } from '@bemedev/sleep';
-import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { BLOCK_IMMO_INTERMEDIARY, machine } from './machine1.machine';
 import {
   ASSET_1,
@@ -9,7 +9,6 @@ import {
   INTERMEDIARY_2,
 } from './machine1.machine.fixtures';
 
-const waiter = createFakeWaiter(vi);
 vi.useFakeTimers();
 
 describe('Complex machine 1', () => {
@@ -17,8 +16,16 @@ describe('Complex machine 1', () => {
     context: {},
   });
 
+  const { start, wait500, wait150 } = constructTests(
+    service,
+    ({ waiter }) => ({
+      wait500: waiter(500),
+      wait150: waiter(150),
+    }),
+  );
+
   afterAll(service.stop);
-  test('#00 => start the machine', service.start);
+  test(...start());
 
   test('#01 => service add options', () => {
     service.addOptions(() => ({
@@ -70,8 +77,7 @@ describe('Complex machine 1', () => {
     });
   });
 
-  test("#04 => Wait the machine to be in 'workig/adding' state", () =>
-    waiter(500));
+  test(...wait500(1, 4));
 
   test('#05 => state is at "working.idle"', () => {
     const decomposed = decomposeSV(service.state.value);
@@ -94,9 +100,7 @@ describe('Complex machine 1', () => {
     expect(decomposed).not.toContain('working.idle');
   });
 
-  test('#08 => Wait the machine to be in "working.idle" state', () => {
-    return waiter(150);
-  });
+  test(...wait150(1, 8));
 
   test('#09 => state is at "working.idle"', () => {
     const decomposed = decomposeSV(service.state.value);
@@ -184,8 +188,7 @@ describe('Complex machine 1', () => {
     });
   });
 
-  test("16 => Wait the machine to be in 'workig/adding' state", () =>
-    waiter(500));
+  test(...wait500(1, 16));
 
   test('#17 => state is at "working.idle"', () => {
     const decomposed = decomposeSV(service.state.value);
@@ -246,8 +249,7 @@ describe('Complex machine 1', () => {
     expect(decomposed).not.toContain('working.idle');
   });
 
-  test('#23 => Wait the machine to be in "working.idle" state', () =>
-    waiter(150));
+  test(...wait150(1, 23));
 
   test('#24 => state is at "working.idle"', () => {
     const decomposed = decomposeSV(service.state.value);
