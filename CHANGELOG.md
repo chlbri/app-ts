@@ -11,6 +11,54 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.0.0] - 13/03/2026** => _20:46_
+
+</summary>
+
+- **BREAKING: Rename `ToEvents2` → `ToEvents` and `ToEventsR2` → `ToEventsR`**
+  - Remove old `ToEvents` and `ToEventsR` (single-actors variants)
+  - `ToEvents` now covers all actors (children, emitters, promisees) and
+    includes `AlwaysEvent` via `EventStrings`
+- **BREAKING: Rename `_EventsR` → `EventsR`** (now public)
+- **BREAKING: Rename `GetChildrenSrcKeyFromFlat` →
+  `GetChildrenSrcKeysFromFlat`**
+- **BREAKING: Rename `GetActorsSrcKeyFromFlat` →
+  `GetActorsSrcKeysFromFlat`**
+- **BREAKING: Rename `PrimitiveObject` type → `PrimitiveObjectT`** and
+  export it
+- **BREAKING: `GetChildrenSrcFromFlat` now includes a `context` field**
+  using new `Recomposer` utility type
+- **BREAKING: `ToEventObject` uses `EmptyObject` instead of `{}`**
+
+- **Add `AlwaysEvent` type** and include it in `EventStrings`
+- **Add `Recomposer<P>` utility type** for reconstructing context from flat
+  path keys
+- **Add `GetChildrenSrcKeysFromFlat2`** with extended `on`/`context`/
+  `parentPcontext` shape
+- **Add `GetActorsSrcKeysFromFlat2`** and `GetActorKeysFromConfig2`
+- **Add `GetActorKeysFromConfig2`** alias using the new flat variant
+- **Make `typings()` args parameter optional**
+
+- **Refactor `MachineOptions` and `SimpleMachineOptions`** to use renamed
+  `ToEvents`
+- **Refactor `GetChildrenSrcFromConfig`** to delegate to
+  `GetChildrenSrcKeysFromFlat`
+- **Refactor `GetActorKeysFromConfig`** to delegate to
+  `GetActorsSrcKeysFromFlat`
+
+- **Rewrite README** with detailed documentation and table of contents
+- Upgrade `@types/node` v25.4.0 → v25.5.0
+- Upgrade `pnpm` GitHub Action to v4.3.0
+- Upgrade GitHub Actions to latest versions
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[1.7.0] - 12/03/2026** => _15:41_
 
 </summary>
