@@ -1,7 +1,6 @@
 import { DEFAULT_MAX_TIME_PROMISE } from '#constants';
 import { constructTests, defaultC } from '#fixtures';
 import { interpret } from '#interpreter';
-import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { machine } from './constants';
 
 vi.useFakeTimers();
@@ -18,7 +17,10 @@ describe('Delay is too long', () => {
   }));
 
   const service = interpret(machine);
-  const { useStateValue, start, stop } = constructTests(service);
+  const { useStateValue, start, stop, waiter } = constructTests(
+    service,
+    ({ waiter }) => ({ waiter: waiter(DEFAULT_MAX_TIME_PROMISE * 2) }),
+  );
 
   test(...start());
   test(...useStateValue('state1', 1));
@@ -40,5 +42,5 @@ describe('Delay is too long', () => {
   });
 
   test(...stop());
-  test(...createFakeWaiter.all(vi)(6, DEFAULT_MAX_TIME_PROMISE * 2));
+  test(...waiter(1, 6));
 });

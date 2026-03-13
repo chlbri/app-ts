@@ -1,9 +1,9 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { _machine2, DELAY, fakeDB } from '#fixturesData';
+import { constructTests } from '#fixtures';
 import { interpret } from '#interpreters';
 import { nothing } from '#utils';
 import equal from 'fast-deep-equal';
-import { fakeWaiter } from '#fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => {
@@ -15,8 +15,6 @@ describe('machine coverage', () => {
       '#02 => Activities Integration Test from perform -> stop before set to 1000';
 
     describe(TEXT, () => {
-      // #region Config
-
       const service = interpret(_machine2, {
         pContext: {
           iterator: 0,
@@ -43,140 +41,120 @@ describe('machine coverage', () => {
         console.time(TEXT);
       });
 
-      type SE = Parameters<typeof service.send>[0];
-
       const INPUT = 'a';
 
       const FAKES = fakeDB
         .filter(({ name }) => name.includes(INPUT))
         .map(({ name }) => name);
 
-      // #region Hooks
+      const {
+        start,
+        pause,
+        resume,
+        dispose,
+        send,
+        waiter,
+        useWrite,
+        useIterator,
+        useInput,
+        useData,
+      } = constructTests(service, ({ waiter: w, sender, contexts }) => {
+        const useData = (index: number, ...datas: any[]) => {
+          const inviteStrict = `#02 => Check strict data`;
 
-      const useSend = (event: SE, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
+          const strict = () => {
+            expect(service.context.data).toStrictEqual(datas);
+          };
 
-        return tupleOf(invite, () => service.send(event));
-      };
+          const inviteLength = `#01 => Length of data is ${datas.length}`;
 
-      const useWrite = (value: string, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
+          const length = () => {
+            expect(service.context.data.length).toBe(datas.length);
+          };
 
-        return tupleOf(invite, () =>
-          service.send({ type: 'WRITE', payload: { value } }),
-        );
-      };
+          const invite = `#${index < 10 ? '0' + index : index} => Check data`;
+          const func = () => {
+            test(inviteLength, length);
+            test(inviteStrict, strict);
+          };
 
-      const useWaiter = (times: number, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
-
-        return tupleOf(invite, () => fakeWaiter(DELAY, times));
-      };
-
-      const useIterator = (num: number, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-        return tupleOf(invite, async () => {
-          expect(service.select('iterator')).toBe(num);
-        });
-      };
-
-      const useInput = (input: string, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
-        return tupleOf(invite, async () => {
-          expect(service.context.input).toBe(input);
-        });
-      };
-
-      const useData = (index: number, ...datas: any[]) => {
-        const inviteStrict = `#02 => Check strict data`;
-
-        const strict = () => {
-          expect(service.context.data).toStrictEqual(datas);
+          return tupleOf(invite, func);
         };
 
-        const inviteLength = `#01 => Length of data is ${datas.length}`;
-
-        const length = () => {
-          expect(service.context.data.length).toBe(datas.length);
+        return {
+          waiter: w(DELAY),
+          useWrite: sender('WRITE'),
+          useIterator: contexts(
+            ({ context }) => context?.iterator,
+            'iterator',
+          ),
+          useInput: contexts(({ context }) => context?.input, 'input'),
+          useData,
         };
-
-        const invite = `#${index < 10 ? '0' + index : index} => Check data`;
-        const func = () => {
-          test(inviteLength, length);
-          test(inviteStrict, strict);
-        };
-
-        return tupleOf(invite, func);
-      };
-
-      // #endregion
-
-      // #endregion
-
-      test('#00 => Start the machine', () => {
-        service.start();
       });
 
-      test(...useWaiter(6, 1));
+      test(...start(0));
+
+      test(...waiter(6, 1));
 
       describe('#02 => Check the service', () => {
         test(...useIterator(6, 2));
       });
 
-      test(...useSend('NEXT', 3));
+      test(...send('NEXT', 3));
 
       describe('#05 => Check the service', () => {
         test(...useIterator(6, 2));
       });
 
-      test(...useWaiter(6, 5));
+      test(...waiter(6, 5));
 
       describe('#06 => Check the service', () => {
         test(...useIterator(18, 1));
       });
 
-      test('#07 => pause', service.pause.bind(service));
+      test(...pause(7));
 
       describe('#08 => Check the service', () => {
         test(...useIterator(18, 2));
       });
 
-      test(...useWaiter(6, 9));
+      test(...waiter(6, 9));
 
       describe('#10 => Check the service', () => {
         test(...useIterator(18, 2));
       });
 
-      test('#11 => resume', service.resume.bind(service));
+      test(...resume(11));
 
-      test(...useWaiter(12, 12));
+      test(...waiter(12, 12));
 
       describe('#13 => Check the service', () => {
         test(...useIterator(42, 2));
       });
 
-      test(...useWrite('', 14));
+      test(...useWrite({ value: '' }));
 
       describe('#15 => Check the service', () => {
         test(...useIterator(42, 2));
         test(...useInput('', 4));
       });
 
-      test(...useWaiter(12, 16));
+      test(...waiter(12, 16));
 
       describe('#17 => Check the service', () => {
         test(...useIterator(66, 2));
         test(...useInput('', 4));
       });
 
-      test(...useWrite(INPUT, 18));
+      test(...useWrite({ value: INPUT }));
 
       describe('#19 => Check the service', () => {
         test(...useIterator(66, 2));
         test(...useInput('', 4));
       });
 
-      test(...useWaiter(12, 20));
+      test(...waiter(12, 20));
 
       describe('#21 => Check the service', () => {
         test(...useIterator(90, 2));
@@ -188,14 +166,14 @@ describe('machine coverage', () => {
         subscriber.close.bind(subscriber),
       );
 
-      test(...useWrite(INPUT, 23));
+      test(...useWrite({ value: INPUT }));
 
       describe('#24 => Check the service', () => {
         test(...useIterator(90, 2));
         test(...useInput(INPUT, 4));
       });
 
-      test(...useWaiter(6, 25));
+      test(...waiter(6, 25));
 
       describe('#26 => Check the service', () => {
         test(...useIterator(102, 2));
@@ -203,7 +181,7 @@ describe('machine coverage', () => {
         describe(...useData(5));
       });
 
-      test(...useSend('FETCH', 27));
+      test(...send('FETCH', 27));
 
       describe('#28 => Check the service', () => {
         test(...useIterator(102, 2));
@@ -211,7 +189,7 @@ describe('machine coverage', () => {
         describe(...useData(5, ...FAKES));
       });
 
-      test('#29 => Await the fetch', () => fakeWaiter());
+      test(...waiter(0, 29));
 
       describe('#30 => Check the service', () => {
         test(...useIterator(102, 2));
@@ -219,7 +197,7 @@ describe('machine coverage', () => {
         describe(...useData(5, ...FAKES));
       });
 
-      test(...useWaiter(6, 31));
+      test(...waiter(6, 31));
 
       describe('#32 => Check the service', () => {
         test(...useIterator(114, 2));
@@ -237,13 +215,13 @@ describe('machine coverage', () => {
       });
 
       describe('#35 => Close the service', async () => {
-        test('#01 => Pause the service', service.pause.bind(service));
+        test(...pause(1));
 
         test('#02 => Log the time of all tests', () => {
           console.timeEnd(TEXT);
         });
 
-        test('#03 => dispose', service[Symbol.asyncDispose]);
+        test(...dispose(3));
       });
 
       test('#36 => Wait for debounce', () => {

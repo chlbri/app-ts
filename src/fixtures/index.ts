@@ -11,8 +11,8 @@ import type {
   EventObject,
   EventsMap,
   ToEventObject,
-  ToEvents2,
-  ToEventsR2,
+  ToEvents,
+  ToEventsR,
 } from '#events';
 import type { Interpreter } from '#interpreter';
 import type { StateValue } from '#states';
@@ -172,7 +172,7 @@ export const mockConsole = () => {
 };
 
 type ConstructWaiter2_F = (
-  DELAY: number,
+  DELAY?: number,
 ) => (
   times?: number,
   index?: number,
@@ -208,7 +208,7 @@ type Option<
       type: T,
     ): (
       ...data: Extract<
-        ToEventsR2<E, A>,
+        ToEventsR<E, A>,
         { type: T }
       >['payload'] extends infer P
         ? object extends P
@@ -221,7 +221,7 @@ type Option<
       type: T,
     ) => (
       ...data: Extract<
-        ToEventsR2<E, A>,
+        ToEventsR<E, A>,
         { type: T }
       >['payload'] extends infer P
         ? object extends P
@@ -296,9 +296,7 @@ export const constructTests = <
     Pc,
     Tc
   >,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
   Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 >(
   service: Interpreter<C, Pc, Tc, E, A, Mo, Eo, Ta>,

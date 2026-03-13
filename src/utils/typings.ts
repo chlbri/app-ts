@@ -16,6 +16,7 @@ type PrimitiveS =
   | 'null'
   | 'undefined'
   | 'symbol';
+
 type TransformPrimitiveS<T extends PrimitiveS> = T extends 'string'
   ? string
   : T extends 'number'
@@ -85,27 +86,27 @@ type _PrimitiveObject = __PrimitiveObject | Maybe | ArrayCustom;
  *
  * @remark
  */
-type PrimitiveObject = _PrimitiveObject | SoRa<_PrimitiveObject>;
+export type PrimitiveObjectT = _PrimitiveObject | SoRa<_PrimitiveObject>;
 type ActorsMap = Partial<
-  Record<'children' | 'promisees' | 'emitters', PrimitiveObject>
+  Record<'children' | 'promisees' | 'emitters', PrimitiveObjectT>
 >;
 
 export type Args<
-  E extends PrimitiveObject = PrimitiveObject,
+  E extends PrimitiveObjectT = PrimitiveObjectT,
   P extends ActorsMap = ActorsMap,
 > = {
   eventsMap: E;
-  pContext: PrimitiveObject;
-  context: PrimitiveObject;
+  pContext: PrimitiveObjectT;
+  context: PrimitiveObjectT;
   actorsMap: P;
 };
 
-type ReduceTuple2<T extends AnyArray<PrimitiveObject>> = T extends [
+type ReduceTuple2<T extends AnyArray<PrimitiveObjectT>> = T extends [
   infer First,
-  ...infer Rest extends AnyArray<PrimitiveObject>,
+  ...infer Rest extends AnyArray<PrimitiveObjectT>,
 ]
   ? [TransformPrimitiveObject<First>, ...ReduceTuple2<Rest>]
-  : T extends AnyArray<infer A extends PrimitiveObject>
+  : T extends AnyArray<infer A extends PrimitiveObjectT>
     ? TransformPrimitiveObject<A>[]
     : [];
 
@@ -113,7 +114,7 @@ type __TransformPrimitiveObject<T> = T extends Types
   ? TransformTypes<T>
   : T extends Custom<infer TCustom>
     ? TCustom
-    : T extends AnyArray<PrimitiveObject>
+    : T extends AnyArray<PrimitiveObjectT>
       ? ReduceTuple2<T>
       : T extends ArrayCustom<infer A>
         ? TransformPrimitiveObject<A>[]
@@ -162,7 +163,7 @@ export type TransformPrimitiveObject<T> = Undefiny<
   __TransformPrimitiveObject<T>
 >;
 
-export const transformPrimitiveObject = <T extends PrimitiveObject>(
+export const transformPrimitiveObject = <T extends PrimitiveObjectT>(
   obj: T,
 ): TransformPrimitiveObject<T> => {
   const _obj = obj as any;
@@ -194,7 +195,7 @@ export const transformPrimitiveObject = <T extends PrimitiveObject>(
   return transformTypes(_obj) as any;
 };
 
-type UndefinyT<T> = PrimitiveObject extends T ? 'undefined' : T;
+type UndefinyT<T> = PrimitiveObjectT extends T ? 'undefined' : T;
 
 export type TransformArgs<T extends Partial<Args>> = {
   eventsMap: TransformPrimitiveObject<T['eventsMap']>;
@@ -228,22 +229,22 @@ const DEFAULT_ARGS = {
   },
 } as const satisfies Args;
 
-const defaultArgs = <const T extends Partial<Args>>(values: T) => {
+const defaultArgs = <const T extends Partial<Args>>(values?: T) => {
   const args = {
     ...DEFAULT_ARGS,
     ...values,
     actorsMap: {
       ...DEFAULT_ARGS.actorsMap,
-      ...values.actorsMap,
+      ...values?.actorsMap,
     },
   } satisfies Args;
   return args;
 };
 
 export const typings = <const T extends Partial<Args>>(
-  args: T,
+  args?: T,
 ): TransformArgs<T> => {
-  const out = transformPrimitiveObject(defaultArgs(args));
+  const out = transformPrimitiveObject(defaultArgs(args as any));
   return out as TransformArgs<T>;
 };
 
@@ -252,7 +253,7 @@ typings.custom = <T = any>(value?: T) =>
     [CUSTOM]: value,
   }) as Custom<T>;
 
-typings.record = <const K extends Keys[], V extends PrimitiveObject>(
+typings.record = <const K extends Keys[], V extends PrimitiveObjectT>(
   value: V,
   ...keys: K
 ) => {
@@ -264,7 +265,7 @@ typings.record = <const K extends Keys[], V extends PrimitiveObject>(
   return object as Record<K[number] extends never ? Keys : K[number], V>;
 };
 
-typings.any = <T extends PrimitiveObject>(value: T) => value;
+typings.any = <T extends PrimitiveObjectT>(value: T) => value;
 
 typings.maybe = <T extends __PrimitiveObject | __PrimitiveObject[]>(
   value?: T,
@@ -278,7 +279,7 @@ typings.litterals = <const T extends (string | number | boolean)[]>(
 ) => values[0] as unknown as Custom<T[number]>;
 
 typings.union = <
-  T extends [PrimitiveObject, PrimitiveObject, ...PrimitiveObject[]],
+  T extends [PrimitiveObjectT, PrimitiveObjectT, ...PrimitiveObjectT[]],
 >(
   ...values: T
 ) => {
@@ -298,7 +299,7 @@ typings.tuple = <
 ) => values;
 
 type Discriminated<K extends Keys> = PrimitiveObjectMap &
-  Record<K, PrimitiveObject>;
+  Record<K, PrimitiveObjectT>;
 
 typings.discriminatedUnion = <
   const K extends Keys,
@@ -342,7 +343,7 @@ typings.intersection = <
   return out as IntersectionCustom<T>;
 };
 
-typings.partial = <T extends PrimitiveObject>(
+typings.partial = <T extends PrimitiveObjectT>(
   value: T,
 ): T & PartialCustom => {
   const entries = Object.entries(value).filter(([key]) => key !== PARTIAL);
@@ -355,11 +356,11 @@ typings.partial = <T extends PrimitiveObject>(
   return out;
 };
 
-typings.soa = <T extends PrimitiveObject>(value: T) => {
+typings.soa = <T extends PrimitiveObjectT>(value: T) => {
   return value as SoA<T>;
 };
 
 typings.sv = {} as Custom<StateValue>;
 
-export type inferT<T extends PrimitiveObject> =
+export type inferT<T extends PrimitiveObjectT> =
   TransformPrimitiveObject<T>;

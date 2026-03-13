@@ -222,7 +222,6 @@ export type Promisee<
  * @template Pc - The context type, defaults to `any`.
  * @template : {@linkcode PrimitiveObject} Tc - The primitive object type, defaults to `PrimitiveObject`.
  *
- * @see {@linkcode ToEvents} for converting events and promisees to a unified event type.
  * @see {@linkcode ActionResult} for the type of action results.
  */
 export type PromiseeResult<E extends EventObject> = {

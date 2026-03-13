@@ -3,7 +3,7 @@ import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import { reduceFnMap } from '#utils';
 import type { EmitterFunction2, EmittersMap } from '../types';
@@ -14,9 +14,7 @@ export type ToEmitterSrc_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
   R = any,
 >(
   events: E,

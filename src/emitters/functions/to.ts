@@ -4,7 +4,7 @@ import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import type { SimpleMachineOptions } from '#machines';
 import { toTransition } from '#transitions';
@@ -19,9 +19,7 @@ export type ToEmitter_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 >(
   events: E,
   actorsMap: A,

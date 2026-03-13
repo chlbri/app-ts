@@ -6,7 +6,7 @@ import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import { toChild } from '#machines';
 import { toPromise } from '#promises';
@@ -23,9 +23,7 @@ export type ResolveNode_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 >(
   events: E,
   actorsMap: A,

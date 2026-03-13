@@ -1,7 +1,6 @@
 import num from '#bemedev/features/numbers/typings';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { createFakeWaiter } from '@bemedev/vitest-extended';
 import { constructTests, defaultC, defaultT } from '../../fixtures';
 import { typings } from '#utils';
 
@@ -65,27 +64,20 @@ describe('Integration testing for interpret, Children', () => {
       pContext: 0,
     });
 
-    const useIterator = (index: number, value: number) => {
-      const count = index > 10 ? '' + index : `0${index}`;
-      const invite = `#${count} => iterator is (${value})`;
-      const fn = () => {
-        expect(service._pContext).toBe(value);
-      };
+    const { start, waiter, useIterator } = constructTests(
+      service,
+      ({ contexts, waiter }) => ({
+        useIterator: contexts(({ pContext }) => pContext, 'iterator'),
+        waiter: waiter(100),
+      }),
+    );
 
-      return [invite, fn] as const;
-    };
-
-    const useWaiter = createFakeWaiter.withDefaultDelay(vi, 100);
-
-    test('#01 => start the service', () => {
-      service.start();
-    });
-
-    test(...useIterator(2, 0));
-    test(...useWaiter(3));
-    test(...useIterator(4, 1));
-    test(...useWaiter(5));
-    test(...useIterator(6, 2));
+    test(...start(1));
+    test(...useIterator(0, 2));
+    test(...waiter(1, 3));
+    test(...useIterator(1, 4));
+    test(...waiter(1, 5));
+    test(...useIterator(2, 6));
   });
 
   describe('#02 => context of child, and the type correspond to a subtype of privateContext of parent', () => {
@@ -132,30 +124,25 @@ describe('Integration testing for interpret, Children', () => {
       pContext: { iterator: 0 },
     });
 
-    const useIterator = (index: number, value: number) => {
-      const count = index > 10 ? '' + index : `0${index}`;
-      const invite = `#${count} => iterator is (${value})`;
-      const fn = () => {
-        expect(service._pSelect('iterator')).toBe(value);
-      };
+    const { start, waiter, useIterator, send } = constructTests(
+      service,
+      ({ contexts, waiter, sender }) => ({
+        useIterator: contexts(
+          ({ pContext }) => (pContext as any)?.iterator,
+          'iterator',
+        ),
+        waiter: waiter(100),
+        useNext: sender('NEXT'),
+      }),
+    );
 
-      return [invite, fn] as const;
-    };
-
-    const useWaiter = createFakeWaiter.withDefaultDelay(vi, 100);
-
-    test('#01 => start the service', () => {
-      service.start();
-    });
-
-    test(...useIterator(2, 0));
-    test(...useWaiter(3));
-    test(...useIterator(4, 1));
-    test(...useWaiter(5));
-    test(...useIterator(6, 2));
-    test('#07 => send NEXT event', () => {
-      service.send('NEXT');
-    });
+    test(...start(1));
+    test(...useIterator(0, 2));
+    test(...waiter(1, 3));
+    test(...useIterator(1, 4));
+    test(...waiter(1, 5));
+    test(...useIterator(2, 6));
+    test(...send('NEXT', 7));
   });
 
   describe('#03 => Cover child->on', () => {

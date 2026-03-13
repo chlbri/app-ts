@@ -138,12 +138,12 @@ type TTS1 = ExtractChildKeysFromTransitions<typeof transition1>;
 expectTypeOf<TTS1>().toEqualTypeOf<
   | {
       src: 'machine111';
-      contexts: never;
+      contexts: {};
       on: 'NEXT' | 'PREVIOUS';
     }
   | {
       src: 'machine122';
-      contexts: never;
+      contexts: {};
       on: 'NEXT2' | 'PREVIOUS2';
     }
 >();
@@ -180,6 +180,6 @@ expectTypeOf<TTS3>().toEqualTypeOf<'emitter1'>();
 type TTS4 = ExtractChildKeysFromTransitions<typeof transition2>;
 expectTypeOf<TTS4>().toEqualTypeOf<{
   src: 'machine111';
-  contexts: never;
+  contexts: {};
   on: 'NEXT' | 'PREVIOUS';
 }>();

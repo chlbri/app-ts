@@ -4,7 +4,7 @@ import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import { toTransition } from '#transitions';
 import _any from '#bemedev/features/common/castings/any';
@@ -20,9 +20,7 @@ export type ToChild_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R extends { eventsMap: any } = { eventsMap: any },
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 >(
   events: E,
   actorsMap: A,

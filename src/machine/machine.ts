@@ -5,11 +5,12 @@ import byKey from '#bemedev/features/objects/typings/byKey';
 import keysOf from '#bemedev/features/objects/typings/keysOf';
 import type {
   AllowedNames,
+  NOmit,
   NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
-import { type EventsMap, type ToEvents2 } from '#events';
+import { type EventsMap, type ToEvents } from '#events';
 import {
   isDefinedS,
   isNotDefinedS,
@@ -41,7 +42,7 @@ import { decompose, getByKey, type Decompose } from '@bemedev/decompose';
 
 import type { Action } from '#actions';
 import type { DelayFunction } from '#delays';
-import { _EventsR, ActorsConfigMap, ToEventObject } from '#events';
+import { EventsR, ActorsConfigMap, ToEventObject } from '#events';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import type { PredicateS } from '#guards';
@@ -63,6 +64,7 @@ import type {
   ConfigDef,
   ExtractTagsFromConfig,
   GetActorKeysFromConfig,
+  GetActorKeysFromConfig2,
   GetEventsFromConfig,
   MachineOptions,
   NoExtraKeysConfig,
@@ -97,9 +99,7 @@ class Machine<
     Pc,
     Tc
   >,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
   Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 > implements AnyMachine<E, A, Pc, Tc> {
   /**
@@ -172,14 +172,14 @@ class Machine<
    *
    * This property provides the events map for this {@linkcode Machine} as a type.
    *
-   * @see {@linkcode ToEvents2}
+   * @see {@linkcode ToEvents}
    * @see {@linkcode E}
    * @see {@linkcode A}
    *
    * @remarks Used for typing purposes only.
    */
   get __events() {
-    return _unknown<_EventsR<E>>();
+    return _unknown<EventsR<E>>();
   }
 
   /**
@@ -187,7 +187,7 @@ class Machine<
    *
    * This property provides the events map for this {@linkcode Machine} as a type.
    *
-   * @see {@linkcode ToEvents2}
+   * @see {@linkcode ToEvents}
    * @see {@linkcode E}
    * @see {@linkcode A}
    *
@@ -203,7 +203,6 @@ class Machine<
    *
    * @remarks Used for typing purposes only.
    *
-   * @see {@linkcode ToEvents}
    * @see {@linkcode E}
    * @see {@linkcode PromiseeMap}
    * @see {@linkcode A}
@@ -233,7 +232,6 @@ class Machine<
    *
    * @remarks Used for typing purposes only.
    *
-   * @see {@linkcode ToEvents}
    * @see {@linkcode E}
    * @see {@linkcode Pc}
    * @see {@linkcode PrimitiveObject}
@@ -251,7 +249,7 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode StateExtended}
-   * @see {@linkcode ToEvents2}
+   * @see {@linkcode ToEvents}
    * @see {@linkcode PrimitiveObject}
    * @see {@linkcode ActorsConfigMap}
    * @see {@linkcode E}
@@ -354,7 +352,6 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode PredicateS}
-   * @see {@linkcode ToEvents}
    * @see {@linkcode ActorsConfigMap}
    * @see {@linkcode PrimitiveObject}
    * @see {@linkcode E}
@@ -385,7 +382,6 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode DelayFunction}
-   * @see {@linkcode ToEvents}
    * @see {@linkcode ActorsConfigMap}
    * @see {@linkcode PrimitiveObject}
    * @see {@linkcode E}
@@ -443,7 +439,6 @@ class Machine<
    * @remarks Used for typing purposes only.
    *
    * @see {@linkcode PromiseFunction}
-   * @see {@linkcode ToEvents}
    * @see {@linkcode ActorsConfigMap}
    * @see {@linkcode PrimitiveObject}
    * @see {@linkcode E}
@@ -1080,8 +1075,6 @@ class Machine<
     return isNotDefinedS<Eo, Pc, Tc, Ta>;
   }
 
-  // #merge = (state: StateExtended<Pc, Tc, ToEvents<E, P>>) => {};
-
   /**
    * Function helper to send an event to a child service.
    *
@@ -1193,10 +1186,11 @@ export type CreateMachine_F = <
     NoExtraKeysConfigDef<ConfigDef>,
   const C extends Config & TransformConfigDef<C2> = Config &
     TransformConfigDef<C2>,
-  Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  A extends GetActorKeysFromConfig<C> = GetActorKeysFromConfig<C>,
+  A0 extends GetActorKeysFromConfig2<C> = GetActorKeysFromConfig2<C>,
+  A extends NOmit<A0, 'pContext'> = NOmit<A0, 'pContext'>,
+  Pc extends A0['pContext'] = A0['pContext'],
   Mo extends MachineOptions<C, EventM, A, Pc, Tc> = MachineOptions<
     C,
     EventM,

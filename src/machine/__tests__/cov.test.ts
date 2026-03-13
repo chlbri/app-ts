@@ -2,12 +2,12 @@ import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { _machine2, DELAY, fakeDB, machine2 } from '#fixturesData';
 import { interpret } from '#interpreters';
 import { createMachine, getEntries, Machine } from '#machine';
-import type { StateValue } from '#states';
+
 import { nothing, reduceDescriber } from '#utils';
 import { createTests } from '@bemedev/vitest-extended';
 import equal from 'fast-deep-equal';
 import path from 'path';
-import { constructTests, defaultT, fakeWaiter } from '../../fixtures';
+import { constructTests, defaultT } from '../../fixtures';
 
 describe('machine coverage', () => {
   beforeAll(() => vi.useFakeTimers());
@@ -46,8 +46,6 @@ describe('machine coverage', () => {
         },
       );
 
-      type SE = Parameters<typeof service.send>[0];
-
       const INPUT = 'a';
 
       const FAKES = fakeDB
@@ -58,115 +56,96 @@ describe('machine coverage', () => {
 
       // #region Hooks
 
-      const useSend = (event: SE, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Send a "${(event as any).type ?? event}" event`;
+      const {
+        start,
+        pause,
+        resume,
+        send,
+        useStateValue,
+        useWaiter,
+        useWrite,
+        useIterator,
+        useIteratorC,
+        useInput,
+        useData,
+        useConsole,
+      } = constructTests(
+        service,
+        ({ waiter: _waiter, sender, contexts }) => ({
+          useWaiter: _waiter(DELAY),
+          useWrite: sender('WRITE'),
+          useIterator: contexts(
+            ({ context }) => context?.iterator,
+            'iterator',
+          ),
+          useIteratorC: contexts(
+            ({ pContext }) => (pContext as any)?.iterator,
+            'private iterator',
+          ),
+          useInput: contexts(({ context }) => context?.input, 'input'),
+          useData: (index: number, ...datas: any[]) => {
+            const inviteStrict = `#02 => Check strict data`;
 
-        return tupleOf(invite, () => service.send(event));
-      };
+            const strict = () => {
+              expect(service.context?.data).toStrictEqual(datas);
+            };
 
-      const useWrite = (value: string, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Write "${value}"`;
+            const inviteLength = `#01 => Length of data is ${datas.length}`;
 
-        return tupleOf(invite, () =>
-          service.send({ type: 'WRITE', payload: { value } }),
-        );
-      };
+            const length = () => {
+              expect(service.context?.data?.length).toBe(datas.length);
+            };
 
-      const useWaiter = (times: number, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times the delay`;
+            const _index = index < 10 ? '0' + index : index;
+            const invite = `#${_index} => Check data`;
+            const func = () => {
+              test(inviteLength, length);
+              test(inviteStrict, strict);
+            };
 
-        return tupleOf(invite, () => fakeWaiter(DELAY, times));
-      };
+            return tupleOf(invite, func);
+          },
+          useConsole: (
+            index: number,
+            ..._strings: (string | string[])[]
+          ) => {
+            const inviteStrict = `#02 => Check strict string`;
 
-      const useState = (state: StateValue, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => Current state is "${state}"`;
-        return tupleOf(invite, () => {
-          expect(service.state.value).toStrictEqual(state);
-        });
-      };
+            const strict = () => {
+              const calls = strings.map(data => [data].flat());
+              expect(log.mock.calls).toStrictEqual(calls);
+            };
 
-      const useIterator = (num: number, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => iterator is "${num}"`;
-        return tupleOf(invite, async () => {
-          expect(service.select('iterator')).toBe(num);
-        });
-      };
+            const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
 
-      const useIteratorC = (num: number, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => private iterator is "${num}"`;
-        return tupleOf(invite, async () => {
-          expect(service._pSelect('iterator')).toBe(num);
-        });
-      };
+            const length = () => {
+              strings.push(..._strings);
+              expect(log.mock.calls.length).toBe(strings.length);
+            };
 
-      const useInput = (input: string, index: number) => {
-        const invite = `#${index < 10 ? '0' + index : index} => input is "${input}"`;
-        return tupleOf(invite, async () => {
-          expect(service.context?.input).toBe(input);
-        });
-      };
+            const _index = index < 10 ? '0' + index : index;
+            const invite = `#${_index} => Check the console`;
+            const func = () => {
+              test(inviteLength, length);
+              test(inviteStrict, strict);
+            };
 
-      const useData = (index: number, ...datas: any[]) => {
-        const inviteStrict = `#02 => Check strict data`;
+            return tupleOf(invite, func);
+          },
+        }),
+      );
 
-        const strict = () => {
-          expect(service.context?.data).toStrictEqual(datas);
-        };
-
-        const inviteLength = `#01 => Length of data is ${datas.length}`;
-
-        const length = () => {
-          expect(service.context?.data?.length).toBe(datas.length);
-        };
-
-        const invite = `#${index < 10 ? '0' + index : index} => Check data`;
-        const func = () => {
-          test(inviteLength, length);
-          test(inviteStrict, strict);
-        };
-
-        return tupleOf(invite, func);
-      };
-
-      const useConsole = (
-        index: number,
-        ..._strings: (string | string[])[]
-      ) => {
-        const inviteStrict = `#02 => Check strict string`;
-
-        const strict = () => {
-          const calls = strings.map(data => [data].flat());
-          expect(log.mock.calls).toStrictEqual(calls);
-        };
-
-        const inviteLength = `#01 => Length of calls is : ${_strings.length}`;
-
-        const length = () => {
-          strings.push(..._strings);
-          expect(log.mock.calls.length).toBe(strings.length);
-        };
-
-        const invite = `#${index < 10 ? '0' + index : index} => Check the console`;
-        const func = () => {
-          test(inviteLength, length);
-          test(inviteStrict, strict);
-        };
-
-        return tupleOf(invite, func);
-      };
       // #endregion
 
       // #endregion
 
       describe('TESTS', () => {
-        test('#00 => Start the machine', () => {
-          service.start();
-        });
+        test(...start());
 
         test(...useWaiter(6, 1));
 
         describe('#02 => Check the service', () => {
-          test(...useState('idle', 1));
+          test(...useStateValue('idle', 1));
           test(...useIterator(6, 2));
           test(...useIteratorC(6, 3));
           const array = [
@@ -176,11 +155,11 @@ describe('machine coverage', () => {
           describe(...useConsole(4, ...array));
         });
 
-        test(...useSend('NEXT', 3));
+        test(...send('NEXT', 3));
 
         describe('#05 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -206,11 +185,11 @@ describe('machine coverage', () => {
           describe(...useConsole(3, ...array));
         });
 
-        test('#07 => pause', service.pause.bind(service));
+        test(...pause(7));
 
         describe('#08 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -231,7 +210,7 @@ describe('machine coverage', () => {
 
         describe('#10 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -248,13 +227,13 @@ describe('machine coverage', () => {
           describe(...useConsole(4));
         });
 
-        test('#11 => resume', service.resume.bind(service));
+        test(...resume(11));
 
         test(...useWaiter(12, 12));
 
         describe('#13 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -274,11 +253,11 @@ describe('machine coverage', () => {
           describe(...useConsole(4, ...array));
         });
 
-        test(...useWrite('', 14));
+        test(...useWrite({ value: '' }));
 
         describe('#15 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -299,7 +278,7 @@ describe('machine coverage', () => {
 
         describe('#17 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -324,11 +303,11 @@ describe('machine coverage', () => {
           describe(...useConsole(5, ...array));
         });
 
-        test(...useWrite(INPUT, 18));
+        test(...useWrite({ value: INPUT }));
 
         describe('#19 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -349,7 +328,7 @@ describe('machine coverage', () => {
 
         describe('#21 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -371,11 +350,11 @@ describe('machine coverage', () => {
           subscriber.close.bind(subscriber),
         );
 
-        test(...useWrite(INPUT, 23));
+        test(...useWrite({ value: INPUT }));
 
         describe('#24 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -396,7 +375,7 @@ describe('machine coverage', () => {
 
         describe('#26 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -414,11 +393,11 @@ describe('machine coverage', () => {
           describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
         });
 
-        test(...useSend('FETCH', 27));
+        test(...send('FETCH', 27));
 
         describe('#28 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -436,11 +415,11 @@ describe('machine coverage', () => {
           describe(...useConsole(6));
         });
 
-        test('#29 => Await the fetch', () => fakeWaiter());
+        test(...useWaiter(0, 29));
 
         describe('#30 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -462,7 +441,7 @@ describe('machine coverage', () => {
 
         describe('#32 => Check the service', () => {
           test(
-            ...useState(
+            ...useStateValue(
               {
                 working: {
                   fetch: 'idle',
@@ -481,7 +460,7 @@ describe('machine coverage', () => {
         });
 
         describe('#33 => Close the service', async () => {
-          test('#01 => Pause the service', service.pause.bind(service));
+          test(...pause(1));
 
           describe('#02 => Calls of log', () => {
             test('#01 => Length of calls of log is the same of length of strings', () => {
@@ -1107,8 +1086,9 @@ describe('machine coverage', () => {
       );
 
       const service = interpret(machineT);
+      const { start } = constructTests(service);
 
-      test('#00 => start', service.start.bind(service));
+      test(...start(0));
 
       describe('#01 => log', () => {
         test('#01 => errors is empty', () => {

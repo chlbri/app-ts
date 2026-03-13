@@ -3,7 +3,7 @@ import {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import { reduceFnMap } from '#utils';
 import type { PromiseFunction2, PromisesMap } from '../types';
@@ -15,9 +15,7 @@ export type ToPromiseSrc_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 >(
   events: E,
   promisees: A,

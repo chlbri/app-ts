@@ -12,7 +12,7 @@ import type {
   EventObject,
   EventsMap,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import type { GuardConfig, PredicateS2, PredicateS3 } from '#guards';
 import type { ContextFrom, PrivateContextFrom } from '#machines';
@@ -203,9 +203,7 @@ export type AddSubscriber_F<
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 > = (
   subscriber: FnMapR<Eo, Tc, T, void>,
   options?: SubscriberOptions<Eo, Tc, T>,
@@ -216,9 +214,7 @@ export type Subscribe_F<
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 > = (
   subscriber: FnMapR<Eo, Tc, T, void>,
   options?: SubscriberOptions<Eo, Tc, T>,

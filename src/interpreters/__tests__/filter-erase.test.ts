@@ -1,7 +1,7 @@
+import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
-import { constructSend, constructStateValue } from '#fixtures';
 
 describe('Filter and Erase actions', () => {
   describe('#01 => Filter action', () => {
@@ -46,14 +46,13 @@ describe('Filter and Erase actions', () => {
         context: { numbers: [] },
       });
 
-      const useValue = constructStateValue(service);
-      type SE = Parameters<typeof service.send>[0];
-      const useSend = (event: SE, index?: number) =>
-        constructSend(service)(event, index ?? 1);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
-      test('#01 => Start service', () => {
-        service.start();
-      });
+      test(...start(1));
 
       test(...useValue('state1', 2));
 
@@ -141,14 +140,13 @@ describe('Filter and Erase actions', () => {
         context: { people: [] },
       });
 
-      const useValue = constructStateValue(service);
-      type SE = Parameters<typeof service.send>[0];
-      const useSend = (event: SE, index?: number) =>
-        constructSend(service)(event, index ?? 1);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
-      test('#01 => Start service', () => {
-        service.start();
-      });
+      test(...start(1));
 
       test(...useValue('idle', 2));
 
@@ -235,14 +233,13 @@ describe('Filter and Erase actions', () => {
         context: { scores: {} },
       });
 
-      const useValue = constructStateValue(service);
-      type SE = Parameters<typeof service.send>[0];
-      const useSend = (event: SE, index?: number) =>
-        constructSend(service)(event, index ?? 1);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
-      test('#01 => Start service', () => {
-        service.start();
-      });
+      test(...start(1));
 
       test(...useValue('idle', 2));
 
@@ -333,12 +330,13 @@ describe('Filter and Erase actions', () => {
         },
       });
 
-      const useValue = constructStateValue(service);
-      type SE = Parameters<typeof service.send>[0];
-      const useSend = (event: SE, index?: number) =>
-        constructSend(service)(event, index ?? 1);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
-      test('#01 => Start service', service.start);
+      test(...start(1));
       test(...useValue('idle', 2));
 
       test('#03 => Add actions', () => {
@@ -413,14 +411,13 @@ describe('Filter and Erase actions', () => {
         },
       });
 
-      const useValue = constructStateValue(service);
-      type SE = Parameters<typeof service.send>[0];
-      const useSend = (event: SE, index?: number) =>
-        constructSend(service)(event, index ?? 1);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
-      test('#01 => Start service', () => {
-        service.start();
-      });
+      test(...start(1));
 
       test(...useValue('idle', 2));
 
@@ -507,14 +504,13 @@ describe('Filter and Erase actions', () => {
         context: {},
       });
 
-      const useValue = constructStateValue(service);
-      type SE = Parameters<typeof service.send>[0];
-      const useSend = (event: SE, index?: number) =>
-        constructSend(service)(event, index ?? 1);
+      const {
+        useStateValue: useValue,
+        send: useSend,
+        start,
+      } = constructTests(service);
 
-      test('#01 => Start service', () => {
-        service.start();
-      });
+      test(...start(1));
 
       test(...useValue('idle', 2));
 

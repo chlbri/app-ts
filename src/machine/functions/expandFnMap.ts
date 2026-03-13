@@ -4,7 +4,7 @@ import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import { reduceFnMap } from '#utils';
 import type { Decompose } from '@bemedev/decompose';
@@ -26,9 +26,7 @@ export type ExpandFnMap = <
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 >(
   events: E,
   actorsMap: A,
