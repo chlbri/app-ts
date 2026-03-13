@@ -20,8 +20,8 @@ import {
   type EventArgT,
   type EventObject,
   type ToEventObject,
-  type ToEvents2,
-  type ToEventsR2,
+  type ToEvents,
+  type ToEventsR,
 } from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
 import { getEntries, getExits } from '#machine';
@@ -177,9 +177,7 @@ export class Interpreter<
     Pc,
     Tc
   >,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
   Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 > implements AnyInterpreter<E, A, Pc, Tc> {
   /**
@@ -228,7 +226,7 @@ export class Interpreter<
   #iterator = 0;
 
   /**
-   * The current {@linkcode ToEvents2} event of this {@linkcode Interpreter} service.
+   * The current {@linkcode ToEvents} event of this {@linkcode Interpreter} service.
    */
   #event: Eo = transformEventArg(INIT_EVENT);
 
@@ -313,7 +311,7 @@ export class Interpreter<
    * @deprecated
    *
    * Used for typings only
-   * The accessor of current {@linkcode ToEvents2} of this {@linkcode Interpreter} service
+   * The accessor of current {@linkcode ToEvents} of this {@linkcode Interpreter} service
    *
    * @remarks Usually for typings
    */
@@ -1499,9 +1497,9 @@ export class Interpreter<
   }
 
   /**
-   * Changes the current {@linkcode ToEvents2} event of this {@linkcode Interpreter} service.
+   * Changes the current {@linkcode ToEvents} event of this {@linkcode Interpreter} service.
    *
-   * @param event - the {@linkcode ToEventsR2} event to change the current {@linkcode Interpreter} service state.
+   * @param event - the {@linkcode ToEventsR} event to change the current {@linkcode Interpreter} service state.
    */
   #changeEvent = (event: Eo) => {
     const cb = () => {
@@ -2153,7 +2151,7 @@ export class Interpreter<
    * @see {@linkcode send} for sending events directly.
    */
   sender = <T extends EventArgT<E>>(type: T) => {
-    type Arg = Extract<ToEventsR2<E, A>, { type: T }>['payload'];
+    type Arg = Extract<ToEventsR<E, A>, { type: T }>['payload'];
     type Payload = object extends Arg ? [] : [Arg];
 
     return (...data: Payload) => {

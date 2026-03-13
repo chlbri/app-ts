@@ -5,7 +5,7 @@ import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import type { GuardConfig } from '#guards';
 import type { StateExtended } from '#states';
@@ -20,9 +20,7 @@ export type _ToPredicateF = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 >(
   events: E,
   actorsMap: A,
@@ -39,9 +37,7 @@ export type ToPredicate_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 >(
   events: E,
   actorsMap: A,
@@ -116,7 +112,6 @@ const _toPredicate: _ToPredicateF = (
  * @param predicates of type {@linkcode PredicateMap}, the map of predicates containing functions to execute.
  * @returns an object containing the predicate function and any errors encountered during the conversion.
  *
- * @see {@linkcode ToEvents}
  * @see {@linkcode PrimitiveObject}
  * @see {@linkcode PredicateS3}
  * @see {@linkcode GuardDefUnion}

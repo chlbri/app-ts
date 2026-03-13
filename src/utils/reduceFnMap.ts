@@ -4,8 +4,8 @@ import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
-  ToEvents2,
-  ToEventsR2,
+  ToEvents,
+  ToEventsR,
 } from '#events';
 import {
   isFunction,
@@ -22,7 +22,7 @@ type ToEventMap_F = <
 >(
   events: E,
   actors: A,
-) => ToEventsR2<E, A>;
+) => ToEventsR<E, A>;
 
 export const toEventsMap: ToEventMap_F = (events, _actors) => {
   const promisees = Object.entries(_actors.promisees || {}).reduce(
@@ -63,9 +63,7 @@ export type ReduceFnMap_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 >(
   events: E,
   actorsMap: A,
@@ -117,9 +115,7 @@ export type ReduceFnMap2_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 >(
   events: E,
   actorsMap: A,

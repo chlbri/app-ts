@@ -5,7 +5,7 @@ import type {
   EventObject,
   EventsMap,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import type { State } from '#states';
 import { nothing, toEventsMap } from '#utils';
@@ -29,9 +29,7 @@ class SubscriberClass<
   A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
   St extends State<Eo, Tc, T> = State<Eo, Tc, T>,
 > {
   #subscriber: FnMapR<Eo, Tc, T, void>;
@@ -172,8 +170,8 @@ type CreateSubscriber_F = <
   const A extends ActorsConfigMap = ActorsConfigMap,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  const Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
+  const Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<
+    ToEvents<E, A>
   >,
 >(
   eventsMap: E,

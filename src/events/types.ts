@@ -55,7 +55,7 @@ export type AllEvent = EventObject | EventStrings;
  * @see {@linkcode Unionize} for the utility type that creates a union type from
  * the keys of the map.
  */
-export type _EventsR<T extends EventsMap> =
+export type EventsR<T extends EventsMap> =
   Unionize<T> extends infer U
     ? U extends any
       ? { type: keyof U & string; payload: U[keyof U] }
@@ -121,9 +121,6 @@ export type ActorsConfigMap = {
  * @template : {@linkcode PromiseeMap} [P], the map of promisees.
  * @returns A union type of events and promisee-events.
  */
-export type ToEventsR<E extends EventsMap, P extends PromiseeMap> =
-  | _EventsR<E>
-  | _PromiseesR<P>;
 
 /**
  * Represents a union type of all events, promisees, emitters, and child events.
@@ -132,12 +129,12 @@ export type ToEventsR<E extends EventsMap, P extends PromiseeMap> =
  * @template : {@linkcode ActorsConfigMap} [A], the configuration map for actors which includes children, emitters, and promisees.
  * @returns A union type of events, promisee-events, emitter-events, and child-events.
  */
-export type ToEventsR2<
+export type ToEventsR<
   E extends EventsMap,
   A extends ActorsConfigMap,
   Ex extends string = never,
 > =
-  | _EventsR<E>
+  | EventsR<E>
   | _PromiseesR<NotUndefined<A['promisees']>>
   | _EmitterConfigR<NotUndefined<A['emitters']>>
   | _ChildConfigR<NotUndefined<A['children']>> extends infer U extends
@@ -147,16 +144,11 @@ export type ToEventsR2<
     : Exclude<U, { type: Ex }>
   : never;
 
-export type ToEvents<E extends EventsMap, P extends PromiseeMap> =
-  | ToEventsR<E, P>
-  | InitEvent
-  | MaxExceededEvent;
-
-export type ToEvents2<
+export type ToEvents<
   E extends EventsMap,
   A extends ActorsConfigMap,
   Ex extends string = never,
-> = ToEventsR2<E, A, Ex> | EventStrings;
+> = ToEventsR<E, A, Ex> | EventStrings;
 
 export type EventArgObject<E extends EventObject> =
   object extends E['payload'] ? E['type'] | E : E;
@@ -171,20 +163,20 @@ export type EventArgAll<E extends AllEvent> = E extends string
  * Transforms an event map into arguments to send to the machine.
  * @template : {@linkcode EventsMap} [E], the map of events.
  *
- * @see {@linkcode _EventsR} for the utility type that transforms the map into a union type.
+ * @see {@linkcode EventsR} for the utility type that transforms the map into a union type.
  * @see {@linkcode EventObject} for the structure of the event object.
  */
-export type EventArg<E extends EventsMap> = EventArgObject<_EventsR<E>>;
+export type EventArg<E extends EventsMap> = EventArgObject<EventsR<E>>;
 
 /**
  * Extracts the type of the event from the event map.
  * @template : {@linkcode EventsMap} [E], the map of events
  *
- * @see {@linkcode _EventsR} for the utility type that transforms the map into a union type.
+ * @see {@linkcode EventsR} for the utility type that transforms the map into a union type.
  * @see {@linkcode EventObject} for the structure of the event object.
  */
 export type EventArgT<E extends EventsMap> =
-  _EventsR<E> extends infer To extends EventObject ? To['type'] : never;
+  EventsR<E> extends infer To extends EventObject ? To['type'] : never;
 
 export type ToEventObject<
   T extends AllEvent,

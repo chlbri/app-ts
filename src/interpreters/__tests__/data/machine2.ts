@@ -1,6 +1,6 @@
 import { interpret } from '#interpreters';
 import { notU, typings } from '#utils';
-import { createConfig } from 'src/machine/functions/create';
+import { createConfig } from '#machines';
 import { createMachine } from '#machine';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
@@ -136,18 +136,8 @@ export const machine2 = createMachine(
       },
     },
   }),
-).provideOptions(({ isNotValue, isValue, assign, voidAction, batch }) => ({
+).provideOptions(({ isNotValue, isValue, assign, voidAction }) => ({
   actions: {
-    initialize: batch(
-      assign('context', () => ({
-        iterator: 0,
-        input: '',
-        data: [],
-      })),
-      assign('pContext', () => ({
-        iterator: 0,
-      })),
-    ),
     inc: assign(
       'context.iterator',
       ({ context }) => notU(context?.iterator) + 1,

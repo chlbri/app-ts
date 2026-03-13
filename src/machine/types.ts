@@ -20,7 +20,7 @@ import type {
   EventsMap,
   PromiseeDef,
   ToEventObject,
-  ToEvents2,
+  ToEvents,
 } from '#events';
 import type { PredicateS, PredicateS2 } from '#guards';
 import type {
@@ -729,9 +729,7 @@ export type MachineOptions<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   Flat extends FlatMapN<C, false> = FlatMapN<C, false>,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 > = Partial<{
   actions: Partial<GetActionsFromFlat<Flat, Eo, Pc, Tc, T>>;
   predicates: Partial<GetGuardsFromFlat<Flat, Eo, Pc, Tc, T>>;
@@ -1021,9 +1019,7 @@ export type SimpleMachineOptions<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents2<E, A>> = ToEventObject<
-    ToEvents2<E, A>
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 > = Partial<{
   actions: Partial<RecordS<Action2<Eo, Pc, Tc, T>>>;
   predicates: Partial<RecordS<PredicateS2<Eo, Pc, Tc, T>>>;
