@@ -4,8 +4,8 @@ import type {
   NotUndefined,
   Primitive,
   PrimitiveObject,
-} from '#bemedev/globals/types';
-import type { DelayFunction2, DelayFunction3 } from '#delays';
+} from "#bemedev/globals/types";
+import type { DelayFunction2, DelayFunction3 } from "#delays";
 import type {
   ActorsConfigMap,
   EventArg,
@@ -13,46 +13,42 @@ import type {
   EventsMap,
   ToEventObject,
   ToEvents,
-} from '#events';
-import type { GuardConfig, PredicateS2, PredicateS3 } from '#guards';
-import type { ContextFrom, PrivateContextFrom } from '#machines';
-import type { PromiseeResult, PromiseFunction2 } from '#promises';
-import type { ActivityConfig, NodeConfig, StateValue } from '#states';
+} from "#events";
+import type { GuardConfig, PredicateS2, PredicateS3 } from "#guards";
+import type { ContextFrom, PrivateContextFrom } from "#machines";
+import type { PromiseeResult, PromiseFunction2 } from "#promises";
+import type { ActivityConfig, NodeConfig, StateValue } from "#states";
 import type {
   AlwaysConfig,
   DelayedTransitions,
   TransitionConfig,
-} from '#transitions';
-import type { TimeoutPromise } from '@bemedev/basifun';
-import type { Decompose } from '@bemedev/decompose';
-import type { Interval2, IntervalParams } from '@bemedev/interval2';
-import type { Pausable } from '@bemedev/rx-pausable';
-import { Observable } from 'rxjs';
-import type {
-  Action2,
-  ActionConfig,
-  ActionResult,
-} from 'src/actions/types';
-import type { EmitterConfig, PromiseeConfig } from 'src/actor.types';
-import type { AnyMachine } from 'src/machine/machine.types';
-import type { FnMapR, OptionalDefinition } from '~types';
-import { type InterpreterFrom } from './interpreter';
-import type { SubscriberClass, SubscriberOptions } from './subscriber';
+} from "#transitions";
+import type { TimeoutPromise } from "@bemedev/basifun";
+import type { Decompose } from "@bemedev/decompose";
+import type { Interval2, IntervalParams } from "@bemedev/interval2";
+import type { Pausable } from "@bemedev/rx-pausable";
+import { Observable } from "rxjs";
+import type { Action2, ActionConfig, ActionResult } from "#actions";
+import type { EmitterConfig, PromiseeConfig } from "../actor.types";
+import type { AnyMachine } from "#machines";
+import type { FnMapR, OptionalDefinition } from "~types";
+import { type InterpreterFrom } from "./interpreter";
+import type { SubscriberClass, SubscriberOptions } from "./subscriber";
 
 export type WorkingStatus =
-  | 'idle'
-  | 'starting'
-  | 'started'
-  | 'paused'
-  | 'working'
-  | 'sending'
-  | 'stopped'
-  | 'busy';
+  | "idle"
+  | "starting"
+  | "started"
+  | "paused"
+  | "working"
+  | "sending"
+  | "stopped"
+  | "busy";
 
-export type Mode = 'normal' | 'strict';
+export type Mode = "normal" | "strict";
 
-export type OptionalDefinitions<P, C> = OptionalDefinition<P, 'pContext'> &
-  OptionalDefinition<C, 'context'>;
+export type OptionalDefinitions<P, C> = OptionalDefinition<P, "pContext"> &
+  OptionalDefinition<C, "context">;
 
 export type InterpreterOptions<
   M extends AnyMachine,
@@ -64,10 +60,7 @@ export type InterpreterOptions<
 } & OptionalDefinitions<P, C>;
 
 export type InterpretArgs<M extends AnyMachine> =
-  Equals<
-    InterpreterOptions<M>,
-    Partial<InterpreterOptions<M>>
-  > extends true
+  Equals<InterpreterOptions<M>, Partial<InterpreterOptions<M>>> extends true
     ? [machine: M, config?: InterpreterOptions<M>]
     : [machine: M, config: InterpreterOptions<M>];
 
@@ -171,10 +164,7 @@ export type PerformPromisee_F<E extends EventObject> = (
   ...promisees: (PromiseeConfig & { id: string })[]
 ) => (() => Promise<(PromiseeResult<E> | undefined)[]>) | undefined;
 
-export type Contexts<
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-> = {
+export type Contexts<Pc = any, Tc extends PrimitiveObject = PrimitiveObject> = {
   pContext?: Pc;
   context?: Tc;
 };
@@ -225,7 +215,7 @@ export type Selector_F<T = any> = T extends Primitive
   : <
       D extends Decompose<
         Required<NotUndefined<T>>,
-        { start: false; object: 'both' }
+        { start: false; object: "both" }
       >,
       K extends Extract<keyof D, string>,
       R = D[K],
@@ -277,7 +267,7 @@ export interface AnyInterpreter<
 }
 
 export type CreateInterval2_F = (
-  config: NOmit<IntervalParams, 'exact'>,
+  config: NOmit<IntervalParams, "exact">,
 ) => Interval2;
 
 export type Subcription = { unsubscribe: () => void };

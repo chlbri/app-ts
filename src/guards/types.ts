@@ -1,17 +1,14 @@
-import type { ActionConfig, FromActionConfig } from '#actions';
-import type {
-  NotUndefined,
-  PrimitiveObject,
-} from '#bemedev/globals/types';
-import type { GUARD_TYPE } from '#constants';
-import type { EventObject } from '#events';
-import type { EmptyObject, KeysMatching } from '@bemedev/decompose';
-import type { FnMap, FnR } from 'src/types/primitives';
-import type { RecordS, ReduceArray } from '~types';
+import type { ActionConfig, FromActionConfig } from "#actions";
+import type { NotUndefined, PrimitiveObject } from "#bemedev/globals/types";
+import type { GUARD_TYPE } from "#constants";
+import type { EventObject } from "#events";
+import type { EmptyObject, KeysMatching } from "@bemedev/decompose";
+import type { FnMap, FnR } from "~types";
+import type { RecordS, ReduceArray } from "~types";
 
 type gType = typeof GUARD_TYPE;
-type and = gType['and'];
-type or = gType['or'];
+type and = gType["and"];
+type or = gType["or"];
 
 export type GuardUnion = ActionConfig | GuardAnd | GuardOr;
 
@@ -45,9 +42,9 @@ export type GuardConfig = GuardUnion;
 export type FromGuard<T extends GuardConfig> = T extends ActionConfig
   ? FromActionConfig<T>
   : T extends GuardAnd
-    ? FromGuard<ReduceArray<T['and']>>
+    ? FromGuard<ReduceArray<T["and"]>>
     : T extends GuardOr
-      ? FromGuard<ReduceArray<T['or']>>
+      ? FromGuard<ReduceArray<T["or"]>>
       : never;
 
 export type PredicateS<
@@ -145,9 +142,7 @@ type _DefinedValue<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = KeysMatching<{
-  pContext: NotUndefined<Pc> extends never
-    ? EmptyObject
-    : NotUndefined<Pc>;
+  pContext: NotUndefined<Pc> extends never ? EmptyObject : NotUndefined<Pc>;
   context: NotUndefined<Tc> extends never ? EmptyObject : NotUndefined<Tc>;
 }>;
 
@@ -160,4 +155,4 @@ type _DefinedValue<
 export type DefinedValue<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
-> = _DefinedValue<Pc, Tc> | 'events' | 'events.type' | 'events.payload';
+> = _DefinedValue<Pc, Tc> | "events" | "events.type" | "events.payload";

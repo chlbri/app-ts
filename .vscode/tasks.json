@@ -61,6 +61,6 @@
         "runOn": "folderOpen",
         "instanceLimit": 1
       }
-    },
+    }
   ]
 }

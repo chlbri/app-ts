@@ -3,10 +3,7 @@
     ".github/workflows/ci.yml",
     ".github/workflows/publish-NPM.yml"
   ],
-  "githubPullRequests.ignoredPullRequestBranches": [
-    "dev"
-  ],
+  "githubPullRequests.ignoredPullRequestBranches": ["dev"],
   "demoTime.defaultFileType": "json",
-  "typescript.tsdk": "node_modules/typescript/lib",
   "editor.colorDecorators": false
 }

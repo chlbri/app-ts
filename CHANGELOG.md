@@ -15,7 +15,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **BREAKING: Rename `ToEvents2` → `ToEvents` and `ToEventsR2` → `ToEventsR`**
+- **BREAKING: Rename `ToEvents2` → `ToEvents` and `ToEventsR2` →
+  `ToEventsR`**
   - Remove old `ToEvents` and `ToEventsR` (single-actors variants)
   - `ToEvents` now covers all actors (children, emitters, promisees) and
     includes `AlwaysEvent` via `EventStrings`

@@ -2,15 +2,15 @@ import type {
   NotUndefined,
   PrimitiveObject,
   Unionize,
-} from '#bemedev/globals/types';
-import type { EmitterConfigMap } from '#emitters';
-import type { ChildConfigMap } from 'src/machine/types';
+} from "#bemedev/globals/types";
+import type { EmitterConfigMap } from "#emitters";
+import type { ChildConfigMap } from "#machines";
 import type {
   ALWAYS_EVENT,
   INIT_EVENT,
   MAX_EXCEEDED_EVENT_TYPE,
-} from './constants';
-import { EmptyObject } from '@bemedev/decompose';
+} from "./constants";
+import { EmptyObject } from "@bemedev/decompose";
 
 /**
  * Represents an event object with a type and payload.
@@ -76,11 +76,11 @@ type _PromiseesR<T extends PromiseeMap> =
       ?
           | {
               type: `${keyof U & string}::then`;
-              payload: U[keyof U]['then'];
+              payload: U[keyof U]["then"];
             }
           | {
               type: `${keyof U & string}::catch`;
-              payload: U[keyof U]['catch'];
+              payload: U[keyof U]["catch"];
             }
       : never
     : never;
@@ -91,11 +91,11 @@ type _EmitterConfigR<T extends EmitterConfigMap> =
       ?
           | {
               type: `${keyof U & string}::next`;
-              payload: U[keyof U]['next'];
+              payload: U[keyof U]["next"];
             }
           | {
               type: `${keyof U & string}::error`;
-              payload: U[keyof U]['error'];
+              payload: U[keyof U]["error"];
             }
       : never
     : never;
@@ -135,9 +135,9 @@ export type ToEventsR<
   Ex extends string = never,
 > =
   | EventsR<E>
-  | _PromiseesR<NotUndefined<A['promisees']>>
-  | _EmitterConfigR<NotUndefined<A['emitters']>>
-  | _ChildConfigR<NotUndefined<A['children']>> extends infer U extends
+  | _PromiseesR<NotUndefined<A["promisees"]>>
+  | _EmitterConfigR<NotUndefined<A["emitters"]>>
+  | _ChildConfigR<NotUndefined<A["children"]>> extends infer U extends
   EventObject
   ? never extends Ex
     ? U
@@ -150,8 +150,9 @@ export type ToEvents<
   Ex extends string = never,
 > = ToEventsR<E, A, Ex> | EventStrings;
 
-export type EventArgObject<E extends EventObject> =
-  object extends E['payload'] ? E['type'] | E : E;
+export type EventArgObject<E extends EventObject> = object extends E["payload"]
+  ? E["type"] | E
+  : E;
 
 export type EventArgAll<E extends AllEvent> = E extends string
   ? E
@@ -176,7 +177,7 @@ export type EventArg<E extends EventsMap> = EventArgObject<EventsR<E>>;
  * @see {@linkcode EventObject} for the structure of the event object.
  */
 export type EventArgT<E extends EventsMap> =
-  EventsR<E> extends infer To extends EventObject ? To['type'] : never;
+  EventsR<E> extends infer To extends EventObject ? To["type"] : never;
 
 export type ToEventObject<
   T extends AllEvent,

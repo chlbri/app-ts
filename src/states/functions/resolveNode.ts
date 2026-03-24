@@ -1,21 +1,21 @@
-import { toAction } from '#actions';
-import _any from '#bemedev/features/common/castings/any';
-import type { PrimitiveObject } from '#bemedev/globals/types';
-import { toEmitter } from '#emitters';
+import { toAction } from "#actions";
+import _any from "#bemedev/features/common/castings/any";
+import type { PrimitiveObject } from "#bemedev/globals/types";
+import { toEmitter } from "#emitters";
 import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
   ToEvents,
-} from '#events';
-import { toChild } from '#machines';
-import { toPromise } from '#promises';
-import { toTransition } from '#transitions';
-import { toArray } from '@bemedev/basifun';
-import { identify } from '@bemedev/basifun/objects/identify';
-import type { SimpleMachineOptions } from 'src/machine/types';
-import type { Node, NodeConfig } from '../types';
-import { stateType } from './stateType';
+} from "#events";
+import { toChild } from "#machines";
+import { toPromise } from "#promises";
+import { toTransition } from "#transitions";
+import { toArray } from "@bemedev/basifun";
+import { identify } from "@bemedev/basifun/objects/identify";
+import type { SimpleMachineOptions } from "#machines";
+import type { Node, NodeConfig } from "../types";
+import { stateType } from "./stateType";
 
 export type ResolveNode_F = <
   E extends EventsMap = EventsMap,
@@ -72,7 +72,7 @@ export const resolveNode: ResolveNode_F = (
   const entry = toArray.typed(config.entry).map(aMapper);
   const exit = toArray.typed(config.exit).map(aMapper);
 
-  const states = identify(config.states).map(config =>
+  const states = identify(config.states).map((config) =>
     resolveNode(events, actorsMap, config, options),
   );
 
@@ -82,16 +82,16 @@ export const resolveNode: ResolveNode_F = (
   const actors = identify(config.actors);
 
   const promises = actors
-    .filter(actor => 'then' in actor)
-    .map(promise => toPromise(events, actorsMap, promise, options));
+    .filter((actor) => "then" in actor)
+    .map((promise) => toPromise(events, actorsMap, promise, options));
 
   const emitters = actors
-    .filter(actor => 'next' in actor)
-    .map(emitter => toEmitter(events, actorsMap, emitter, options));
+    .filter((actor) => "next" in actor)
+    .map((emitter) => toEmitter(events, actorsMap, emitter, options));
 
   const children = actors
-    .filter(actor => 'on' in actor || 'contexts' in actor)
-    .map(child => toChild(events, actorsMap, child, options));
+    .filter((actor) => "on" in actor || "contexts" in actor)
+    .map((child) => toChild(events, actorsMap, child, options));
 
   const out = _any({
     type,

@@ -1,19 +1,19 @@
-import type { PrimitiveObject } from '#bemedev/globals/types';
+import type { PrimitiveObject } from "#bemedev/globals/types";
 import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
   ToEvents,
-} from '#events';
-import { reduceFnMap } from '#utils';
+} from "#events";
+import { reduceFnMap } from "#utils";
 import type {
   Action2,
   ActionConfig,
   ActionMap,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ActionResult,
-} from 'src/actions/types';
-import { fromDescriber } from '~types';
+} from "#actions";
+import { fromDescriber } from "~types";
 
 export type ToAction_F = <
   E extends EventsMap = EventsMap,
@@ -40,12 +40,7 @@ export type ToAction_F = <
  * @see {@linkcode ActionResult}
  * @see {@linkcode reduceFnMap}
  */
-export const toAction: ToAction_F = (
-  events,
-  actorsMap,
-  action,
-  actions,
-) => {
+export const toAction: ToAction_F = (events, actorsMap, action, actions) => {
   const name = fromDescriber(action);
   const fn = actions?.[name];
   const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;

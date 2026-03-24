@@ -1,16 +1,16 @@
-import type { EmitterConfig } from 'src/actor.types';
-import type { PrimitiveObject } from '#bemedev/globals/types';
+import type { EmitterConfig } from "../../actor.types";
+import type { PrimitiveObject } from "#bemedev/globals/types";
 import type {
   ActorsConfigMap,
   EventsMap,
   ToEventObject,
   ToEvents,
-} from '#events';
-import type { SimpleMachineOptions } from '#machines';
-import { toTransition } from '#transitions';
-import { toArray } from '@bemedev/basifun';
-import type { Emitter } from '../types';
-import { toEmitterSrc } from './src';
+} from "#events";
+import type { SimpleMachineOptions } from "#machines";
+import { toTransition } from "#transitions";
+import { toArray } from "@bemedev/basifun";
+import type { Emitter } from "../types";
+import { toEmitterSrc } from "./src";
 
 export type ToEmitter_F = <
   E extends EventsMap = EventsMap,
@@ -40,12 +40,7 @@ export type ToEmitter_F = <
  * @see {@linkcode toArray.typed} for the type of the context.
  * @see {@linkcode ToEmitter_F} for more details
  */
-export const toEmitter: ToEmitter_F = (
-  events,
-  actorsMap,
-  emitter,
-  options,
-) => {
+export const toEmitter: ToEmitter_F = (events, actorsMap, emitter, options) => {
   const src = toEmitterSrc(
     events,
     actorsMap,
@@ -55,18 +50,14 @@ export const toEmitter: ToEmitter_F = (
 
   const next = toArray
     .typed(emitter.next)
-    .map(config =>
-      toTransition(events, actorsMap, config as any, options),
-    );
+    .map((config) => toTransition(events, actorsMap, config as any, options));
 
   const error = toArray
     .typed(emitter.error)
-    .map(config =>
-      toTransition(events, actorsMap, config as any, options),
-    );
+    .map((config) => toTransition(events, actorsMap, config as any, options));
 
-  const complete = toArray.typed(emitter.complete).map(config => {
-    const check1 = typeof config === 'object' && 'actions' in config;
+  const complete = toArray.typed(emitter.complete).map((config) => {
+    const check1 = typeof config === "object" && "actions" in config;
     if (check1) return toTransition(events, actorsMap, config, options);
 
     return toTransition(events, actorsMap, { actions: config }, options);

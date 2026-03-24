@@ -1,14 +1,14 @@
-import { toAction, type ActionConfig } from '#actions';
-import _any from '#bemedev/features/common/castings/any';
-import isPrimitive from '#bemedev/features/common/castings/primitive/is';
+import { toAction, type ActionConfig } from "#actions";
+import _any from "#bemedev/features/common/castings/any";
+import isPrimitive from "#bemedev/features/common/castings/primitive/is";
 import {
   DEFAULT_DELIMITER,
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MAX_TIME_PROMISE,
   DEFAULT_MIN_ACTIVITY_TIME,
-} from '#constants';
+} from "#constants";
 
-import { toDelay } from '#delays';
+import { toDelay } from "#delays";
 import {
   ALWAYS_EVENT,
   eventToType,
@@ -22,9 +22,9 @@ import {
   type ToEventObject,
   type ToEvents,
   type ToEventsR,
-} from '#events';
-import { toPredicate, type GuardConfig } from '#guards';
-import { getEntries, getExits } from '#machine';
+} from "#events";
+import { toPredicate, type GuardConfig } from "#guards";
+import { getEntries, getExits } from "#machine";
 import {
   getByKey,
   getTags,
@@ -39,8 +39,8 @@ import {
   type MachineOptionsFrom,
   type PrivateContextFrom,
   type ScheduledData,
-} from '#machines';
-import { toPromiseSrc } from '#promises';
+} from "#machines";
+import { toPromiseSrc } from "#promises";
 import {
   flatMap,
   initialConfig,
@@ -53,18 +53,13 @@ import {
   type State,
   type StateExtended,
   type StateValue,
-} from '#states';
+} from "#states";
 import type {
   AlwaysConfig,
   DelayedTransitions,
   TransitionConfig,
-} from '#transitions';
-import {
-  IS_TEST,
-  isStringEmpty,
-  reduceDescriber,
-  replaceAll,
-} from '#utils';
+} from "#transitions";
+import { IS_TEST, isStringEmpty, reduceDescriber, replaceAll } from "#utils";
 import {
   anyPromises,
   asyncfy,
@@ -74,18 +69,18 @@ import {
   toArray,
   withTimeout,
   type TimeoutPromise,
-} from '@bemedev/basifun';
-import { assignByKey, decomposeSV } from '@bemedev/decompose';
+} from "@bemedev/basifun";
+import { assignByKey, decomposeSV } from "@bemedev/decompose";
 import {
   createInterval,
   createTimeout,
   type Interval2,
   type Timeout2,
-} from '@bemedev/interval2';
-import { sleep } from '@bemedev/sleep';
-import cloneDeep from 'clone-deep';
-import equal from 'fast-deep-equal';
-import { isDescriber, type RecordS } from '~types';
+} from "@bemedev/interval2";
+import { sleep } from "@bemedev/sleep";
+import cloneDeep from "clone-deep";
+import equal from "fast-deep-equal";
+import { isDescriber, type RecordS } from "~types";
 import type {
   _Send_F,
   AddSubscriber_F,
@@ -110,36 +105,35 @@ import type {
   PerformTransitions_F,
   Selector_F,
   WorkingStatus,
-} from './interpreter.types';
+} from "./interpreter.types";
 
-import _unknown from '#bemedev/features/common/castings/_unknown';
+import _unknown from "#bemedev/features/common/castings/_unknown";
 import type {
   AllowedNames,
   Fn,
   NotUndefined,
   PrimitiveObject,
-} from '#bemedev/globals/types';
-import { EmitterFunction2, toEmitterSrc } from '#emitters';
-import type { Machine } from '#machine';
+} from "#bemedev/globals/types";
+import { EmitterFunction2, toEmitterSrc } from "#emitters";
+import type { Machine } from "#machine";
 import type {
   ActorsMapFrom,
   ChildFunction2,
   ExtractTagsFromConfig,
   GetActorKeysFromConfig,
   MachineOptions,
-} from '#machines';
-import type { FinallyConfig, PromiseeResult } from '#promises';
-import { createPausable } from '@bemedev/rx-pausable';
-import { createScheduler } from '@bemedev/scheduler';
+} from "#machines";
+import type { FinallyConfig, PromiseeResult } from "#promises";
+import { createPausable } from "@bemedev/rx-pausable";
+import { createScheduler } from "@bemedev/scheduler";
 import type {
   ChildConfig,
   EmitterConfig,
   PromiseeConfig,
-} from 'src/actor.types';
-import type { AnyMachine } from '#machines';
-import { createSubscriber, type SubscriberClass } from './subscriber';
+} from "../actor.types";
+import type { AnyMachine } from "#machines";
+import { createSubscriber, type SubscriberClass } from "./subscriber";
 
-// TODO: Reuse my custom event loop
 /**
  * The `Interpreter` class is responsible for interpreting and managing the state of a machine.
  * It provides methods to start, stop, pause, and resume the machine, as well as to send events
@@ -170,13 +164,7 @@ export class Interpreter<
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
-  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<
-    C,
-    E,
-    A,
-    Pc,
-    Tc
-  >,
+  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<C, E, A, Pc, Tc>,
   Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
   Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 > implements AnyInterpreter<E, A, Pc, Tc> {
@@ -188,7 +176,7 @@ export class Interpreter<
   /**
    * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.
    */
-  #status: WorkingStatus = 'idle';
+  #status: WorkingStatus = "idle";
 
   /**
    * The current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
@@ -285,7 +273,7 @@ export class Interpreter<
    *
    * @see {@linkcode children} for all children.
    */
-  getChildAt = (id: string) => this.children.find(f => f.id === id);
+  getChildAt = (id: string) => this.children.find((f) => f.id === id);
 
   /**
    * Allias of {@linkcode getChildAt} function.
@@ -343,7 +331,7 @@ export class Interpreter<
    */
   constructor(
     machine: AnyMachine<E, A, Pc, Tc>,
-    mode: Mode = 'strict',
+    mode: Mode = "strict",
     exact = true,
   ) {
     this.#machine = machine.renew;
@@ -370,14 +358,14 @@ export class Interpreter<
    * Checks if the current {@linkcode Mode} mode is 'strict'.
    */
   get isStrict() {
-    return this.#mode === 'strict';
+    return this.#mode === "strict";
   }
 
   /**
    * Checks if the current {@linkcode Mode} mode is 'normal'.
    */
   get isNormal() {
-    return this.#mode === 'normal';
+    return this.#mode === "normal";
   }
 
   get #schedulers() {
@@ -530,7 +518,7 @@ export class Interpreter<
    * In this mode, all errors are thrown and warnings are logged to the console.
    */
   makeStrict = () => {
-    this.#mode = 'strict';
+    this.#mode = "strict";
   };
 
   /**
@@ -538,7 +526,7 @@ export class Interpreter<
    * In this mode, errors are logged to the console, but not thrown.
    */
   makeNormal = () => {
-    this.#mode = 'normal';
+    this.#mode = "normal";
   };
 
   /**
@@ -607,12 +595,12 @@ export class Interpreter<
       return this.#pContext;
       /* v8 ignore next 4 */
     }
-    console.error('pContext is not available in production');
+    console.error("pContext is not available in production");
     return;
   }
 
   get isReady() {
-    return this.#status !== 'idle' && this.#status !== 'stopped';
+    return this.#status !== "idle" && this.#status !== "stopped";
   }
 
   /**
@@ -655,7 +643,7 @@ export class Interpreter<
       }
       /* v8 ignore next 4 */
     }
-    console.error('pContext is not available in production');
+    console.error("pContext is not available in production");
     return undefined as any;
   }
 
@@ -664,8 +652,8 @@ export class Interpreter<
    * @returns 'started'.
    */
   #startStatus = (): WorkingStatus => {
-    this.#setStatus('started');
-    return 'started';
+    this.#setStatus("started");
+    return "started";
   };
 
   /**
@@ -676,7 +664,7 @@ export class Interpreter<
    * @remarks Used to display console messages in a readable format.
    */
   #displayConsole = (messages: Iterable<string>) => {
-    return Array.from(messages).join('\n');
+    return Array.from(messages).join("\n");
   };
 
   /**
@@ -703,7 +691,7 @@ export class Interpreter<
   };
 
   #pauseChildren = (
-    filter: Parameters<Array<CollectedService>['filter']>[0] = () => true,
+    filter: Parameters<Array<CollectedService>["filter"]>[0] = () => true,
   ) => {
     this.#collectedChildren
       .filter(filter)
@@ -711,18 +699,18 @@ export class Interpreter<
   };
 
   #stopChildren = (
-    filter: Parameters<Array<CollectedService>['filter']>[0] = () => true,
+    filter: Parameters<Array<CollectedService>["filter"]>[0] = () => true,
   ) => {
     this.#collectedChildren.filter(filter).forEach(({ service, id }) => {
       service.stop();
       this.#collectedChildren = this.#collectedChildren.filter(
-        f => f.id !== id,
+        (f) => f.id !== id,
       );
     });
   };
 
   #resumeChildren = (
-    filter: Parameters<Array<CollectedService>['filter']>[0] = () => true,
+    filter: Parameters<Array<CollectedService>["filter"]>[0] = () => true,
   ) => {
     this.#collectedChildren
       .filter(filter)
@@ -763,12 +751,12 @@ export class Interpreter<
    */
   #next = () => {
     const filter: Parameters<
-      Array<{ from: string; id: string }>['filter']
+      Array<{ from: string; id: string }>["filter"]
     >[0] = ({ from, id }, _, all) => {
       const isOutside = !this.#isInsideValue(from);
 
       const hasSiblingsWithSameId = all
-        .filter(val => val.from !== from)
+        .filter((val) => val.from !== from)
         .map(({ id }) => id)
         .includes(id);
 
@@ -834,7 +822,7 @@ export class Interpreter<
     return structuredClone({ pContext, ...this.#state });
   }
 
-  #performAction: PerformActionLater_F<Eo, Pc, Tc, Ta> = action => {
+  #performAction: PerformActionLater_F<Eo, Pc, Tc, Ta> = (action) => {
     this._iterate();
     return action(this.#cloneState);
   };
@@ -843,8 +831,8 @@ export class Interpreter<
     if (!scheduled) return;
     const { data, ms: timeout, id } = scheduled;
     const callback = () => this.#mergeContexts(data);
-    this.#timeoutActions.filter(f => f.id === id).forEach(this.#dispose);
-    this.#timeoutActions = this.#timeoutActions.filter(f => f.id !== id);
+    this.#timeoutActions.filter((f) => f.id === id).forEach(this.#dispose);
+    this.#timeoutActions = this.#timeoutActions.filter((f) => f.id !== id);
     const timer = createTimeout({ callback, timeout, id });
     this.#timeoutActions.push(timer);
     timer.start();
@@ -884,36 +872,32 @@ export class Interpreter<
 
   #performPauseActivityAction = (id?: string) => {
     if (!id) return;
-    this.#currentActivities?.filter(f => f.id === id).forEach(this.#pause);
+    this.#currentActivities?.filter((f) => f.id === id).forEach(this.#pause);
   };
 
   #performResumeActivityAction = (id?: string) => {
     if (!id) return;
-    this.#currentActivities
-      ?.filter(f => f.id === id)
-      .forEach(this.#resume);
+    this.#currentActivities?.filter((f) => f.id === id).forEach(this.#resume);
   };
 
   #performStopActivityAction = (id?: string) => {
     if (!id) return;
-    this.#currentActivities
-      ?.filter(f => f.id === id)
-      .forEach(this.#dispose);
+    this.#currentActivities?.filter((f) => f.id === id).forEach(this.#dispose);
   };
 
   #performPauseTimerAction = (id?: string) => {
     if (!id) return;
-    this.#timeoutActions.filter(f => f.id === id).forEach(this.#pause);
+    this.#timeoutActions.filter((f) => f.id === id).forEach(this.#pause);
   };
 
   #performResumeTimerAction = (id?: string) => {
     if (!id) return;
-    this.#timeoutActions.filter(f => f.id === id).forEach(this.#resume);
+    this.#timeoutActions.filter((f) => f.id === id).forEach(this.#resume);
   };
 
   #performStopTimerAction = (id?: string) => {
     if (!id) return;
-    this.#timeoutActions.filter(f => f.id === id).forEach(this.#stop);
+    this.#timeoutActions.filter((f) => f.id === id).forEach(this.#stop);
   };
 
   #performsExtendedActions = ({
@@ -946,11 +930,10 @@ export class Interpreter<
     return result;
   };
 
-  #executeAction: PerformAction_F<Eo, Pc, Tc, Ta> = action => {
+  #executeAction: PerformAction_F<Eo, Pc, Tc, Ta> = (action) => {
     this.#makeBusy();
 
-    const { pContext, context, ...extendeds } =
-      this.#performAction(action);
+    const { pContext, context, ...extendeds } = this.#performAction(action);
 
     this.#mergeContexts({ pContext, context });
     this.#performsExtendedActions(extendeds);
@@ -972,16 +955,16 @@ export class Interpreter<
   #performActions = (...actions: ActionConfig[]) => {
     actions
       .map(this.toActionFn)
-      .filter(f => f !== undefined)
+      .filter((f) => f !== undefined)
       .forEach(this.#executeAction);
   };
 
-  #performPredicate: PerformPredicate_F<Eo, Pc, Tc, Ta> = predicate => {
+  #performPredicate: PerformPredicate_F<Eo, Pc, Tc, Ta> = (predicate) => {
     this._iterate();
     return predicate(this.#cloneState);
   };
 
-  #executePredicate: PerformPredicate_F<Eo, Pc, Tc, Ta> = predicate => {
+  #executePredicate: PerformPredicate_F<Eo, Pc, Tc, Ta> = (predicate) => {
     this.#makeBusy();
     const out = this.#performPredicate(predicate);
 
@@ -996,22 +979,22 @@ export class Interpreter<
       .map(this.toPredicateFn)
       .filter(isDefined)
       .map(this.#executePredicate)
-      .every(b => b);
+      .every((b) => b);
   };
 
-  #performDelay: PerformDelay_F<Eo, Pc, Tc, Ta> = delay => {
+  #performDelay: PerformDelay_F<Eo, Pc, Tc, Ta> = (delay) => {
     this._iterate();
     return delay(this.#cloneState);
   };
 
-  #executeDelay: PerformDelay_F<Eo, Pc, Tc, Ta> = delay => {
+  #executeDelay: PerformDelay_F<Eo, Pc, Tc, Ta> = (delay) => {
     this.#makeBusy();
     const out = this.#performDelay(delay);
     this.#startStatus();
     return out;
   };
 
-  #mergeContexts: DirectMerge_F<Pc, Tc> = result => {
+  #mergeContexts: DirectMerge_F<Pc, Tc> = (result) => {
     const cb = () => {
       this.#pContext = (result?.pContext as any) ?? this.#pContext;
       const context = (result?.context as any) ?? this.#context;
@@ -1057,7 +1040,7 @@ export class Interpreter<
 
         const callback = () => {
           for (const activity of activities) {
-            const check2 = typeof activity === 'string';
+            const check2 = typeof activity === "string";
             const check3 = isDescriber(activity);
             const check4 = check2 || check3;
 
@@ -1089,7 +1072,7 @@ export class Interpreter<
 
       if (_interval) {
         const check =
-          _interval.state === 'idle' || _interval.state === 'paused';
+          _interval.state === "idle" || _interval.state === "paused";
         if (check) {
           this._cachedIntervals.splice(index, 1);
           const result = buildCallback();
@@ -1131,8 +1114,8 @@ export class Interpreter<
    */
   protected _cachedIntervals: Interval2[] = [];
 
-  #performTransition: PerformTransition_F = transition => {
-    const check = typeof transition == 'string';
+  #performTransition: PerformTransition_F = (transition) => {
+    const check = typeof transition == "string";
     if (check) {
       const { diffEntries, diffExits } = this.#diffNext(transition);
       this.#performActions(...toArray.typed(diffExits));
@@ -1142,9 +1125,7 @@ export class Interpreter<
     const { guards, actions, target } = transition;
     const { diffEntries, diffExits } = this.#diffNext(target);
 
-    const response = this.#performPredicates(
-      ...toArray<GuardConfig>(guards),
-    );
+    const response = this.#performPredicates(...toArray<GuardConfig>(guards));
 
     if (response) {
       this.#performActions(...toArray.typed(diffExits));
@@ -1155,19 +1136,17 @@ export class Interpreter<
     return false;
   };
 
-  private __performTransitions: PerformTransitions_F = (
-    ...transitions
-  ) => {
+  private __performTransitions: PerformTransitions_F = (...transitions) => {
     for (const _transition of transitions) {
       const transition = this.#performTransition(_transition);
-      const check1 = typeof transition === 'string';
+      const check1 = typeof transition === "string";
       if (check1) return transition;
     }
 
     return false;
   };
 
-  #performPromiseSrc: PerformPromise_F<Eo, Pc, Tc, Ta> = promise => {
+  #performPromiseSrc: PerformPromise_F<Eo, Pc, Tc, Ta> = (promise) => {
     this._iterate();
     return promise(this.#cloneState);
   };
@@ -1179,7 +1158,7 @@ export class Interpreter<
     const finals = toArray.typed(_finally);
 
     for (const final of finals) {
-      const check2 = typeof final === 'string';
+      const check2 = typeof final === "string";
       const check3 = isDescriber(final);
 
       const check4 = check2 || check3;
@@ -1188,9 +1167,7 @@ export class Interpreter<
         continue;
       }
 
-      const response = this.#performPredicates(
-        ...toArray.typed(final.guards),
-      );
+      const response = this.#performPredicates(...toArray.typed(final.guards));
       if (response) {
         this.#performActions(...toArray.typed(final.actions));
       }
@@ -1199,7 +1176,7 @@ export class Interpreter<
   };
 
   get #sending() {
-    return this.#status === 'sending';
+    return this.#status === "sending";
   }
 
   get longRuns() {
@@ -1216,7 +1193,7 @@ export class Interpreter<
         const promiseF = this.toPromiseSrcFn(id);
         if (!promiseF) return;
 
-        const handlePromise = (type: 'then' | 'catch', payload: any) => {
+        const handlePromise = (type: "then" | "catch", payload: any) => {
           const out = () => {
             const event = {
               type: `${id}::${type}`,
@@ -1224,13 +1201,9 @@ export class Interpreter<
             };
             this.#changeEvent(_any(event));
 
-            const transitions = toArray.typed(
-              type === 'then' ? then : _catch,
-            );
+            const transitions = toArray.typed(type === "then" ? then : _catch);
 
-            const target = this.__performTransitions(
-              ...(transitions as any),
-            );
+            const target = this.__performTransitions(...(transitions as any));
 
             this.#performFinally(_finally);
             return { event: this.#event, target };
@@ -1252,7 +1225,7 @@ export class Interpreter<
           const check4 = !isDefined(delayF);
           if (check4) {
             const promise = async () =>
-              Promise.resolve().then(partialCall(handlePromise, 'catch'));
+              Promise.resolve().then(partialCall(handlePromise, "catch"));
             return promises.push(promise);
           }
           const max = this.#performDelay(delayF);
@@ -1267,8 +1240,8 @@ export class Interpreter<
           });
 
           return wT()
-            .then(partialCall(handlePromise, 'then'))
-            .catch(partialCall(handlePromise, 'catch'));
+            .then(partialCall(handlePromise, "then"))
+            .catch(partialCall(handlePromise, "catch"));
         };
         return promises.push(promise);
       },
@@ -1278,7 +1251,7 @@ export class Interpreter<
 
     if (check5) return;
 
-    const promise = () => Promise.all(promises.map(p => p()));
+    const promise = () => Promise.all(promises.map((p) => p()));
     return promise;
   };
 
@@ -1315,8 +1288,7 @@ export class Interpreter<
       const _promise = async () => {
         await sleep(delay);
 
-        const func = () =>
-          this.__performTransitions(...(transitions as any));
+        const func = () => this.__performTransitions(...(transitions as any));
 
         if (this.#cannotPerform(from)) return false;
 
@@ -1330,11 +1302,7 @@ export class Interpreter<
         return out;
       };
 
-      const promise = withTimeout(
-        _promise,
-        from,
-        DEFAULT_MAX_TIME_PROMISE,
-      );
+      const promise = withTimeout(_promise, from, DEFAULT_MAX_TIME_PROMISE);
 
       promises.push(promise);
     });
@@ -1346,7 +1314,7 @@ export class Interpreter<
     return promise;
   };
 
-  #performAlways: PerformAlway_F = alway => {
+  #performAlways: PerformAlway_F = (alway) => {
     this.#changeEvent(transformEventArg(ALWAYS_EVENT));
     const always = toArray<TransitionConfig>(alway);
     return this.__performTransitions(...always);
@@ -1364,7 +1332,7 @@ export class Interpreter<
       const promisees = toArray
         .typed(actors)
         .map(([id, value]) => ({ ...value, id }))
-        .filter(actor => 'then' in actor);
+        .filter((actor) => "then" in actor);
       if (node.actors) {
         entries.push([from, ...promisees]);
       }
@@ -1447,12 +1415,12 @@ export class Interpreter<
   };
 
   #stopPausables = (
-    filter: Parameters<Array<CollectedPausable>['filter']>[0] = () => true,
+    filter: Parameters<Array<CollectedPausable>["filter"]>[0] = () => true,
   ) => {
     this.#collectedPausables.filter(filter).forEach(({ pausable, id }) => {
       pausable.stop();
       this.#collectedPausables = this.#collectedPausables.filter(
-        f => f.id !== id,
+        (f) => f.id !== id,
       );
     });
   };
@@ -1526,22 +1494,20 @@ export class Interpreter<
         if (after) {
           const _after = async () => {
             await after()
-              .then(transition => {
+              .then((transition) => {
                 if (transition !== false)
                   return this.#performConfig(transition);
               })
               .catch(() =>
-                this._addWarning(
-                  `${from}::after - No transitions reached!`,
-                ),
+                this._addWarning(`${from}::after - No transitions reached!`),
               );
           };
-          promises.push(withTimeout(_after, 'after'));
+          promises.push(withTimeout(_after, "after"));
         }
 
         if (promisee) {
           const _promisee = async () => {
-            return promisee().then(transitions => {
+            return promisee().then((transitions) => {
               for (const transition of transitions) {
                 if (!transition) continue;
                 const target = transition.target;
@@ -1551,7 +1517,7 @@ export class Interpreter<
               }
             });
           };
-          promises.push(withTimeout(_promisee, 'promisee'));
+          promises.push(withTimeout(_promisee, "promisee"));
         }
 
         const check1 = promises.length < 1;
@@ -1583,7 +1549,7 @@ export class Interpreter<
       const promisees = toArray
         .typed(actors)
         .map(([id, actor]) => ({ ...actor, id }))
-        .filter(actor => 'next' in actor);
+        .filter((actor) => "next" in actor);
       if (node.actors) {
         entries.push([from, ...promisees]);
       }
@@ -1610,7 +1576,7 @@ export class Interpreter<
       const promisees = toArray
         .typed(actors)
         .map(([id, actor]) => ({ ...actor, id }))
-        .filter(actor => 'on' in actor || 'contexts' in actor);
+        .filter((actor) => "on" in actor || "contexts" in actor);
       if (node.actors) {
         entries.push([from, ...promisees]);
       }
@@ -1653,7 +1619,7 @@ export class Interpreter<
         const pausables = emitters.map(
           ({ observable, error, next, complete, id }) => {
             const pausable = createPausable(observable, {
-              next: payload => {
+              next: (payload) => {
                 const event = {
                   type: `${id}::next`,
                   payload,
@@ -1663,7 +1629,7 @@ export class Interpreter<
                 const transitions = toArray<TransitionConfig>(next);
                 this.__performTransitions(...transitions);
               },
-              error: payload => {
+              error: (payload) => {
                 const event = {
                   type: `${id}::error`,
                   payload,
@@ -1732,7 +1698,7 @@ export class Interpreter<
           const checkOn = on !== undefined && Object.keys(on).length > 0;
           if (checkOn) {
             si.__subscribe(
-              payload => {
+              (payload) => {
                 const type = eventToType(payload.event);
 
                 const event = {
@@ -1760,12 +1726,11 @@ export class Interpreter<
                 const entries = Object.entries(contexts);
                 entries.forEach(([key, path]) => {
                   const pContext =
-                    key === '.'
+                    key === "."
                       ? structuredClone(context)
                       : getByKey.low(context, key);
 
-                  if (path === '.')
-                    return this.#mergeContexts({ pContext });
+                  if (path === ".") return this.#mergeContexts({ pContext });
                   const cb = () => {
                     return assignByKey.low(this.#pContext, path, pContext);
                   };
@@ -1780,7 +1745,7 @@ export class Interpreter<
                   const keys = Object.keys(contexts);
 
                   for (const key of keys) {
-                    if (key === '.') return equal(ac, bc);
+                    if (key === ".") return equal(ac, bc);
                     const _a = getByKey.low(ac, key);
                     const _b = getByKey.low(bc, key);
                     if (!equal(_a, _b)) return false;
@@ -1818,7 +1783,7 @@ export class Interpreter<
     this.#makeBusy();
 
     const state1 = structuredClone(this.#state);
-    await Promise.all(this.#collectedSelfTransitions.map(f => f()));
+    await Promise.all(this.#collectedSelfTransitions.map((f) => f()));
     const state2 = structuredClone(this.#state);
     const check = !equal(state1, state2);
     if (check) this.#flush();
@@ -1844,17 +1809,17 @@ export class Interpreter<
     return (value: T) => (value as any)[key]();
   };
 
-  #pause = this.#mapperFn('pause');
+  #pause = this.#mapperFn("pause");
 
-  #open = this.#mapperFn('open');
-  #start = this.#mapperFn('start');
+  #open = this.#mapperFn("open");
+  #start = this.#mapperFn("start");
 
-  #close = this.#mapperFn('close');
+  #close = this.#mapperFn("close");
 
-  #resume = this.#mapperFn('resume');
-  #unsubscribe = this.#mapperFn('unsubscribe');
-  #stop = this.#mapperFn('stop');
-  #dispose = this.#mapperFn('dispose');
+  #resume = this.#mapperFn("resume");
+  #unsubscribe = this.#mapperFn("unsubscribe");
+  #stop = this.#mapperFn("stop");
+  #dispose = this.#mapperFn("dispose");
 
   pause = () => {
     this.#pauseAllActivities();
@@ -1864,11 +1829,11 @@ export class Interpreter<
     this.#pauseChildren();
     this.#pausePausables();
     this.#timeoutActions.forEach(this.#pause);
-    this.#setStatus('paused');
+    this.#setStatus("paused");
   };
 
   resume = () => {
-    if (this.#status === 'paused') {
+    if (this.#status === "paused") {
       this.#performActivities();
       this.#makeBusy();
       this.#subscribers.forEach(this.#open);
@@ -1887,13 +1852,13 @@ export class Interpreter<
     this._cachedIntervals.forEach(this.#dispose);
     this.#timeoutActions.forEach(this.#stop);
     this.#stopPausables();
-    this.#setStatus('stopped');
+    this.#setStatus("stopped");
     this.#stopSchedulers();
   };
 
   #makeBusy = (): WorkingStatus => {
-    this.#setStatus('busy');
-    return 'busy';
+    this.#setStatus("busy");
+    return "busy";
   };
 
   #setStatus = (status: WorkingStatus) => {
@@ -1906,8 +1871,8 @@ export class Interpreter<
   };
 
   #startingStatus = (): WorkingStatus => {
-    this.#setStatus('starting');
-    return 'starting';
+    this.#setStatus("starting");
+    return "starting";
   };
 
   /**
@@ -1961,9 +1926,7 @@ export class Interpreter<
    * Options can include actions, predicates, delays, promises, and child machines.
    * @returns a new interpreter instance with the provided options applied.
    */
-  provideOptions = (
-    option: Parameters<(typeof this)['addOptions']>[0],
-  ) => {
+  provideOptions = (option: Parameters<(typeof this)["addOptions"]>[0]) => {
     const newMachine = this.#machine.provideOptions(option);
     const out = new Interpreter(newMachine, this.#mode, this.#exact);
     out._ppC(this.#initialPpc);
@@ -1975,14 +1938,11 @@ export class Interpreter<
   #innerSubscribers = new Set<SubscriberClass<E, A, Tc, Ta, Eo>>();
 
   // @ts-expect-error Already used recursively
-  subscribe: AddSubscriber_F<E, A, Tc, Ta, Eo> = (
-    _subscriber,
-    options,
-  ) => {
+  subscribe: AddSubscriber_F<E, A, Tc, Ta, Eo> = (_subscriber, options) => {
     const eventsMap = this.#machine.eventsMap;
     const actorsMap = this.#machine.actorsMap;
     const find = Array.from(this.#subscribers).find(
-      f => f.id === options?.id,
+      (f) => f.id === options?.id,
     );
     if (find) return find;
 
@@ -2031,7 +1991,7 @@ export class Interpreter<
       return this.#errorsCollector;
       /* v8 ignore next 3 */
     }
-    console.error('errorsCollector is not available in production');
+    console.error("errorsCollector is not available in production");
     return;
   }
 
@@ -2045,16 +2005,16 @@ export class Interpreter<
       return this.#warningsCollector;
       /* v8 ignore next 3 */
     }
-    console.error('warningsCollector is not available in production');
+    console.error("warningsCollector is not available in production");
     return;
   }
 
   protected _addError = (...errors: string[]) => {
-    errors.forEach(error => this.#errorsCollector.add(error));
+    errors.forEach((error) => this.#errorsCollector.add(error));
   };
 
   protected _addWarning = (...warnings: string[]) => {
-    warnings.forEach(warning => this.#warningsCollector.add(warning));
+    warnings.forEach((warning) => this.#warningsCollector.add(warning));
   };
 
   // #region Next
@@ -2088,11 +2048,11 @@ export class Interpreter<
 
       const split1 = from1
         .split(DEFAULT_DELIMITER)
-        .filter(val => !isStringEmpty(val)).length;
+        .filter((val) => !isStringEmpty(val)).length;
 
       const split2 = from2
         .split(DEFAULT_DELIMITER)
-        .filter(val => !isStringEmpty(val)).length;
+        .filter((val) => !isStringEmpty(val)).length;
 
       const splitsAreDifferents = split1 !== split2;
       if (splitsAreDifferents) return split2 - split1;
@@ -2102,10 +2062,10 @@ export class Interpreter<
     return flat2;
   };
 
-  protected _send: _Send_F<Eo> = event => {
+  protected _send: _Send_F<Eo> = (event) => {
     this.#sent = true;
     this.#changeEvent(event);
-    this.#setStatus('sending');
+    this.#setStatus("sending");
     let sv = this.#value;
 
     const flat2 = this.#extractTransitions(event);
@@ -2115,9 +2075,7 @@ export class Interpreter<
       const cannotContinue = !this.#isInsideValue2(sv, from);
       if (cannotContinue) return;
 
-      const target = this.__performTransitions(
-        ...toArray.typed(transitions),
-      );
+      const target = this.__performTransitions(...toArray.typed(transitions));
 
       const diffTarget = target === false ? undefined : target;
       sv = nextSV(sv, diffTarget);
@@ -2151,7 +2109,7 @@ export class Interpreter<
    * @see {@linkcode send} for sending events directly.
    */
   sender = <T extends EventArgT<E>>(type: T) => {
-    type Arg = Extract<ToEventsR<E, A>, { type: T }>['payload'];
+    type Arg = Extract<ToEventsR<E, A>, { type: T }>["payload"];
     type Payload = object extends Arg ? [] : [Arg];
 
     return (...data: Payload) => {
@@ -2257,7 +2215,7 @@ export class Interpreter<
     // #region Entry actions
 
     // These actions are from next config states that are not inside the previous
-    keysNext.forEach(key => {
+    keysNext.forEach((key) => {
       const check2 = !keys.includes(key);
 
       if (check2) {
@@ -2303,7 +2261,7 @@ export class Interpreter<
     const state = replaceAll({
       entry,
       match: DEFAULT_DELIMITER,
-      replacement: '.',
+      replacement: ".",
     });
 
     return values.includes(state);
@@ -2313,7 +2271,7 @@ export class Interpreter<
    * Changes the current {@linkcode Interpreter} service status to 'working'.
    * @returns the current {@linkcode WorkingStatus} of this {@linkcode Interpreter} service.
    */
-  #makeWork = () => this.#setStatus('working');
+  #makeWork = () => this.#setStatus("working");
 
   // #endregion
 
@@ -2322,10 +2280,7 @@ export class Interpreter<
    * @param out of type [T], the output value to check if it is defined.
    * @param messages - the messages to add to the warnings collector if the output is not defined. it's a parram array
    */
-  #returnWithWarning = <T = any>(
-    out: T | undefined,
-    ...messages: string[]
-  ) => {
+  #returnWithWarning = <T = any>(out: T | undefined, ...messages: string[]) => {
     const check = isDefined(out);
     if (check) return out;
 
@@ -2365,12 +2320,7 @@ export class Interpreter<
     const promises = this.#machine.promises;
 
     return this.#returnWithWarning(
-      toPromiseSrc<E, A, Pc, Tc, Ta>(
-        events,
-        actorsMap,
-        src,
-        promises as any,
-      ),
+      toPromiseSrc<E, A, Pc, Tc, Ta>(events, actorsMap, src, promises as any),
       `Promise (${src}) is not defined`,
     );
   };
@@ -2392,12 +2342,7 @@ export class Interpreter<
     const machines = this.#machine.children;
 
     return this.#returnWithWarning(
-      toChildSrc<E, A, Pc, Tc, Ta>(
-        events,
-        actorsMap,
-        machine,
-        machines as any,
-      ),
+      toChildSrc<E, A, Pc, Tc, Ta>(events, actorsMap, machine, machines as any),
       `Machine (${reduceDescriber(machine)}) is not defined`,
     );
   };

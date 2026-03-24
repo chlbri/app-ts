@@ -1,8 +1,8 @@
-import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { EventObject } from '#events';
-import { getByKey } from '#machines';
-import type { FnR } from 'src/types/primitives';
-import type { DefinedValue } from '../../types';
+import type { PrimitiveObject } from "#bemedev/globals/types";
+import type { EventObject } from "#events";
+import { getByKey } from "#machines";
+import type { FnR } from "~types";
+import type { DefinedValue } from "../../types";
 
 export type IsValueS_F = <
   E extends EventObject = EventObject,
@@ -47,29 +47,29 @@ export const isValue: IsValueS_F = (path, ...values) => {
   const start = path.startsWith.bind(path);
 
   return ({ pContext, context, event }) => {
-    if (path === 'pContext') {
-      return values.some(value => pContext === value);
+    if (path === "pContext") {
+      return values.some((value) => pContext === value);
     }
 
-    if (path === 'context') {
-      return values.some(value => context === value);
+    if (path === "context") {
+      return values.some((value) => context === value);
     }
 
-    if (path === 'events') return values.some(value => event === value);
+    if (path === "events") return values.some((value) => event === value);
 
-    if (start('context.')) {
-      const key = path.replace('context.', '');
-      return values.some(value => getByKey(context, key) === value);
+    if (start("context.")) {
+      const key = path.replace("context.", "");
+      return values.some((value) => getByKey(context, key) === value);
     }
 
-    if (start('pContext.')) {
-      const key = path.replace('pContext.', '');
-      return values.some(value => getByKey(pContext, key) === value);
+    if (start("pContext.")) {
+      const key = path.replace("pContext.", "");
+      return values.some((value) => getByKey(pContext, key) === value);
     }
 
-    const key = path.replace('events.', '');
+    const key = path.replace("events.", "");
     const toValidate = getByKey(event, key);
-    return values.some(value => toValidate === value);
+    return values.some((value) => toValidate === value);
   };
 };
 
@@ -105,7 +105,7 @@ export const isValue: IsValueS_F = (path, ...values) => {
 export const isNotValue: IsValueS_F = (path, ...values) => {
   const func = isValue(path, ...values);
 
-  return state => {
+  return (state) => {
     const result = func(state as any);
     return !result;
   };
