@@ -1,17 +1,22 @@
-import type { Action, ActionConfig, FromActionConfig } from "#actions";
+import type { Action, ActionConfig, FromActionConfig } from '#actions';
 import type {
   Equals,
   Keys,
   PrimitiveObject,
   SoA,
   UnionToIntersection,
-} from "#bemedev/globals/types";
-import type { EventObject } from "#events";
-import type { FromGuard, GuardConfig } from "#guards";
-import type { Transitions, TransitionsConfig } from "#transitions";
-import type { Identify, RecordS, ReduceArray, SingleOrArrayL } from "~types";
+} from '#bemedev/globals/types';
+import type { EventObject } from '#events';
+import type { FromGuard, GuardConfig } from '#guards';
+import type { Transitions, TransitionsConfig } from '#transitions';
+import type {
+  Identify,
+  RecordS,
+  ReduceArray,
+  SingleOrArrayL,
+} from '~types';
 
-export type StateType = "atomic" | "compound" | "parallel";
+export type StateType = 'atomic' | 'compound' | 'parallel';
 
 export type SNC = NodeConfig;
 
@@ -29,7 +34,7 @@ export type ActivityConfig = Record<string, ActivityArray>;
 export type ActionsFromActivity<TS extends ActivityArray> = TS extends any
   ? ReduceArray<TS> extends infer TR
     ? TR extends { actions: SingleOrArrayL<ActionConfig> }
-      ? FromGuard<ReduceArray<TR["actions"]>>
+      ? FromGuard<ReduceArray<TR['actions']>>
       : FromActionConfig<ReduceArray<Extract<TR, ActionConfig>>>
     : never
   : never;
@@ -37,25 +42,25 @@ export type ActionsFromActivity<TS extends ActivityArray> = TS extends any
 export type GuardsFromActivity<TS extends ActivityArray> = TS extends any
   ? ReduceArray<TS> extends infer TR
     ? TR extends { guards: SingleOrArrayL<GuardConfig> }
-      ? FromGuard<ReduceArray<TR["guards"]>>
+      ? FromGuard<ReduceArray<TR['guards']>>
       : never
     : never
   : never;
 
 export type ExtractActionsFromActivity<
   T extends { activities: ActivityConfig },
-> = T["activities"] extends infer TA extends ActivityConfig
+> = T['activities'] extends infer TA extends ActivityConfig
   ? { [key in keyof TA]: ActionsFromActivity<TA[key]> }[keyof TA]
   : never;
 
 export type ExtractGuardsFromActivity<
   T extends { activities: ActivityConfig },
-> = T["activities"] extends infer TA extends ActivityConfig
+> = T['activities'] extends infer TA extends ActivityConfig
   ? { [key in keyof TA]: GuardsFromActivity<TA[key]> }[keyof TA]
   : never;
 
-export type ExtractDelaysFromActivity<T> = "activities" extends keyof T
-  ? T["activities"] extends infer TA extends ActivityConfig
+export type ExtractDelaysFromActivity<T> = 'activities' extends keyof T
+  ? T['activities'] extends infer TA extends ActivityConfig
     ? TA extends any
       ? keyof TA
       : never
@@ -79,17 +84,17 @@ export type NodeConfig<
 > = CommonNodeConfig<Paths> &
   (
     | {
-        readonly type?: "atomic";
+        readonly type?: 'atomic';
         readonly initial?: never;
         readonly states?: never;
       }
     | {
-        readonly type?: "compound";
+        readonly type?: 'compound';
         readonly initial: I;
         readonly states: RecordS<NodeConfig>;
       }
     | {
-        readonly type: "parallel";
+        readonly type: 'parallel';
         readonly initial?: never;
         readonly states: RecordS<NodeConfig>;
       }
@@ -97,7 +102,7 @@ export type NodeConfig<
 
 export type NodeConfigAtomic<Paths extends string = string> =
   CommonNodeConfig<Paths> & {
-    readonly type?: "atomic";
+    readonly type?: 'atomic';
     readonly initial?: never;
     readonly states?: never;
   };
@@ -106,14 +111,14 @@ export type NodeConfigCompound<
   Paths extends string = string,
   I extends string = string,
 > = CommonNodeConfig<Paths> & {
-  readonly type?: "compound";
+  readonly type?: 'compound';
   readonly initial: I;
   readonly states: RecordS<NodeConfig>;
 };
 
 export type NodeConfigParallel<Paths extends string = string> =
   CommonNodeConfig<Paths> & {
-    readonly type: "parallel";
+    readonly type: 'parallel';
     readonly initial?: never;
     readonly states: RecordS<NodeConfig>;
   };
@@ -128,20 +133,20 @@ export interface StateValueMap {
 
 // #region States
 export type WorkingStatus =
-  | "idle"
-  | "starting"
-  | "started"
-  | "paused"
-  | "working"
-  | "sending"
-  | "stopped"
-  | "busy";
+  | 'idle'
+  | 'starting'
+  | 'started'
+  | 'paused'
+  | 'working'
+  | 'sending'
+  | 'stopped'
+  | 'busy';
 
 type _ExtractTagsFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]: Flat[key] extends infer S extends {
     tags: SingleOrArrayL<string>;
   }
-    ? ReduceArray<S["tags"]>
+    ? ReduceArray<S['tags']>
     : never;
 }[keyof Flat];
 
@@ -200,21 +205,25 @@ export type StatePextended<
 type FlatMapNodeConfig<
   T extends NodeConfig,
   withChildren extends boolean = true,
-  Remaining extends string = "/",
-> = "states" extends keyof T
+  Remaining extends string = '/',
+> = 'states' extends keyof T
   ? {
-      readonly [key in keyof T["states"] as `${Remaining}${key & string}`]: withChildren extends true
-        ? T["states"][key]
-        : Omit<T["states"][key], "states">;
+      readonly [key in keyof T['states'] as `${Remaining}${key & string}`]: withChildren extends true
+        ? T['states'][key]
+        : Omit<T['states'][key], 'states'>;
     } & {
-      [key in keyof T["states"]]: T["states"][key] extends infer S extends
+      [key in keyof T['states']]: T['states'][key] extends infer S extends
         NodeConfig & {
           states: RecordS<NodeConfig>;
         }
-        ? FlatMapNodeConfig<S, withChildren, `${Remaining}${key & string}/`>
+        ? FlatMapNodeConfig<
+            S,
+            withChildren,
+            `${Remaining}${key & string}/`
+          >
         : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
           {};
-    }[keyof T["states"]]
+    }[keyof T['states']]
   : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     {};
 
@@ -222,7 +231,7 @@ export type FlatMapN<
   T extends NodeConfig = NodeConfig,
   withChildren extends boolean = true,
 > = UnionToIntersection<FlatMapNodeConfig<T, withChildren>> & {
-  readonly "/": T;
+  readonly '/': T;
 };
 // #endregion
 

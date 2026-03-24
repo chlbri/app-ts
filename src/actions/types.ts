@@ -1,7 +1,7 @@
-import type { DeepPartial, PrimitiveObject } from "#bemedev/globals/types";
-import type { EventObject } from "#events";
-import type { FnMap, FnR } from "~types";
-import type { Describer, FromDescriber } from "~types";
+import type { DeepPartial, PrimitiveObject } from '#bemedev/globals/types';
+import type { EventObject } from '#events';
+import type { FnMap, FnR } from '~types';
+import type { Describer, FromDescriber } from '~types';
 
 /**
  * JSON configuration for an action.
@@ -17,7 +17,9 @@ export type ActionConfig = string | Describer;
  *
  * @see {@linkcode FromDescriber} for more details.
  */
-export type FromActionConfig<T> = T extends Describer ? FromDescriber<T> : T;
+export type FromActionConfig<T> = T extends Describer
+  ? FromDescriber<T>
+  : T;
 
 /**
  * Represents the result of executing an action, which includes the private context and the context.
