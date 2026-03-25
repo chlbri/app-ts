@@ -4,6 +4,7 @@ import type { machine2 } from '#fixturesData';
 import type {
   ChildEvents,
   Config,
+  DecomposedStateFrom,
   FnMapFrom,
   GetActorKeysFromConfig,
   GetEventsFromMachine,
@@ -20,7 +21,7 @@ expectTypeOf<TT2>().toEqualTypeOf<
   | 'fetch::then'
   | 'fetch::catch'
   | 'machine1::on::NEXT'
->;
+>();
 
 type GEFC2 = GetEventsFromMachine<typeof machine2>;
 expectTypeOf<GEFC2>().toEqualTypeOf<{
@@ -92,3 +93,22 @@ type CE1 = ChildEvents<
 >;
 
 expectTypeOf<CE1>().toEqualTypeOf<{ NEXT: {}; PREVIOUS: {} }>();
+
+type DSF2 = keyof DecomposedStateFrom<typeof machine2>;
+
+expectTypeOf<DSF2>().toEqualTypeOf<
+  | 'tags'
+  | 'context'
+  | 'value'
+  | 'context.iterator'
+  | 'context.input'
+  | 'context.data'
+  | `context.data.[${number}]`
+  | 'status'
+  | 'event'
+  | `tags.[${number}]`
+  | 'event.type'
+  | 'event.payload'
+  | 'event.payload.value'
+  | `event.payload.[${number}]`
+>();

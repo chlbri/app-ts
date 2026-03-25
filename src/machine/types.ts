@@ -806,6 +806,9 @@ export type EventsMapFrom<T extends KeyU<'eventsMap'>> = Extract<
  */
 export type StateFrom<T extends KeyU<'__state'>> = T['__state'];
 
+export type DecomposedStateFrom<T extends KeyU<'__decomposedState'>> =
+  T['__decomposedState'];
+
 /**
  * Getting extended state from a machine.
  *

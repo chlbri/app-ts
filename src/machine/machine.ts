@@ -283,6 +283,28 @@ class Machine<
   /**
    * @deprecated
    *
+   * This property provides the decomposed state for this {@linkcode Machine} as a type.
+   *
+   * @remarks Used for typing purposes only.
+   *
+   * @see {@linkcode State}
+   * @see {@linkcode Decompose}
+   * @see {@linkcode Eo}
+   * @see {@linkcode Tc}
+   * @see {@linkcode Ta}
+   */
+  get __decomposedState() {
+    return _unknown<
+      Decompose<
+        State<Eo, Tc, Ta>,
+        { sep: '.'; start: false; object: 'both' }
+      >
+    >();
+  }
+
+  /**
+   * @deprecated
+   *
    * This property provides the state payload for this {@linkcode Machine} as a type.
    *
    * @remarks Used for typing purposes only.

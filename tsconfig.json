@@ -1,5 +1,4 @@
 {
-  "include": ["**/*", ".vitest.ts"],
   "compilerOptions": {
     "module": "esnext",
     "importHelpers": true,

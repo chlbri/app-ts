@@ -1,4 +1,9 @@
 export { decompose, decomposeSV, recompose } from '@bemedev/decompose';
+export type {
+  Decompose,
+  DecomposeKeys,
+  DecomposeOptions,
+} from '@bemedev/decompose';
 
 import equal from 'fast-deep-equal';
 export * from './environment';

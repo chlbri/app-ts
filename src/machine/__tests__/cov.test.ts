@@ -497,6 +497,7 @@ describe('machine coverage', () => {
       '__actionParams',
       '__stateExtended',
       '__state',
+      '__decomposedState',
       '__stateP',
       '__statePextended',
       '__guardKey',

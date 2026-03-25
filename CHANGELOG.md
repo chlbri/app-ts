@@ -11,6 +11,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.1.0] - 25/03/2026** => _23:42_
+
+</summary>
+
+- **Refactor**: Migrate build tooling — replace Rollup → Rolldown, ESLint →
+  OXLint, Prettier → OXFmt
+- **Refactor**: Unifier les imports — remplacer les chemins `src/...` par
+  les alias `#alias` et imports relatifs dans tous les fichiers de types
+- **Refactor**: Uniformiser les guillemets dans tous les fichiers sources
+- **Refactor**: Améliorer la lisibilité et le formatage du code de
+  l'interpréteur
+- **Update**: Mise à jour de la configuration TypeScript (`tsconfig.json`)
+- Update dependencies
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.0.0] - 13/03/2026** => _20:46_
 
 </summary>

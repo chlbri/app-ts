@@ -5,7 +5,7 @@ import { createMachine } from '#machine';
 import { type StateValue } from '#states';
 import { typings } from '#utils';
 import { constructTests } from '../../fixtures';
-import type { inferT } from 'src/utils/typings';
+import type { inferT } from '../../utils/typings';
 import { __tsSchema } from '../machine.real.gen';
 
 beforeAll(() => {
