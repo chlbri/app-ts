@@ -1,9 +1,9 @@
-import tupleOf from '#bemedev/features/arrays/castings/tuple';
-import _any from '#bemedev/features/common/castings/any';
-import type { PrimitiveObject } from '#bemedev/globals/types';
-import { _unknown } from '#bemedev/globals/utils/_unknown';
-import { expandFn } from '#bemedev/globals/utils/expandFn';
-import { DEFAULT_NOTHING } from '#constants';
+import tupleOf from "#bemedev/features/arrays/castings/tuple";
+import _any from "#bemedev/features/common/castings/any";
+import type { PrimitiveObject } from "#bemedev/globals/types";
+import { _unknown } from "#bemedev/globals/utils/_unknown";
+import { expandFn } from "#bemedev/globals/utils/expandFn";
+import { DEFAULT_NOTHING } from "#constants";
 import type {
   ActorsConfigMap,
   EventArg,
@@ -13,26 +13,26 @@ import type {
   ToEventObject,
   ToEvents,
   ToEventsR,
-} from '#events';
-import type { Interpreter } from '#interpreter';
-import type { StateValue } from '#states';
-import { IS_TEST } from '#utils';
-import type { EmptyObject } from '@bemedev/decompose';
-import { sleep } from '@bemedev/sleep';
+} from "#events";
+import type { Interpreter } from "#interpreter";
+import type { StateValue } from "#states";
+import { IS_TEST } from "#utils";
+import type { EmptyObject } from "@bemedev/decompose";
+import { sleep } from "@bemedev/sleep";
 import type {
   Config,
   ExtractTagsFromConfig,
   GetEventsFromConfig,
   MachineOptions,
-} from 'src/machine/types';
-import { buildIndex, buildInvite } from './invite';
+} from "#machines";
+import { buildIndex, buildInvite } from "./invite";
 
-export * from './constants';
-export * from './invite';
+export * from "./constants";
+export * from "./invite";
 
 type TestArr = readonly [string, () => void];
 
-export const defaultI = { initials: { '/': 'idle' } } as const;
+export const defaultI = { initials: { "/": "idle" } } as const;
 
 export const fakeWaiter = async (ms = 0, times = 1) => {
   const check = vi.isFakeTimers();
@@ -43,14 +43,11 @@ export const fakeWaiter = async (ms = 0, times = 1) => {
 
 type ConstructWaiter_F = (
   DELAY?: number,
-) => (
-  index: number,
-  times?: number,
-) => readonly [string, () => Promise<void>];
+) => (index: number, times?: number) => readonly [string, () => Promise<void>];
 
 export const constructWaiter: ConstructWaiter_F = (DELAY = 150) => {
   return (index, times = 1) => {
-    const invite = `#${index < 10 ? '0' + index : index} => Wait ${times} times ${DELAY}ms`;
+    const invite = `#${index < 10 ? "0" + index : index} => Wait ${times} times ${DELAY}ms`;
 
     return tupleOf(invite, () => fakeWaiter(DELAY, times));
   };
@@ -71,10 +68,10 @@ type ConstructStateValue_F = <
   service: Interpreter<C, Pc, Tc, E, A>,
 ) => _ConstructStateValue_F;
 
-export const constructStateValue: ConstructStateValue_F = service => {
+export const constructStateValue: ConstructStateValue_F = (service) => {
   return (value, index) => {
     const _value = JSON.stringify(value);
-    const _index = index < 10 ? '0' + index : index;
+    const _index = index < 10 ? "0" + index : index;
     const invite = `#${_index} => current value is :${_value}`;
 
     return tupleOf(invite, () => {
@@ -106,12 +103,10 @@ export const constructContexts: ConstructContexts_F = (
     const _defaultSelector = (value: any) => value;
     const selector = _selector ?? _defaultSelector;
 
-    const _value = isNo
-      ? 'undefined'
-      : JSON.stringify(value).substring(0, 15);
+    const _value = isNo ? "undefined" : JSON.stringify(value).substring(0, 15);
 
-    const _index = index < 10 ? '0' + index : index;
-    const name = _name ?? 'context';
+    const _index = index < 10 ? "0" + index : index;
+    const name = _name ?? "context";
     const invite = `#${_index} => ${name} equal : ${_value}`;
 
     return tupleOf(invite, () => {
@@ -135,10 +130,10 @@ type ConstructSend_F = <
   service: Interpreter<C, Pc, Tc, E, A>,
 ) => (_event: EventArg<E>, index: number) => readonly [string, () => void];
 
-export const constructSend: ConstructSend_F = service => {
+export const constructSend: ConstructSend_F = (service) => {
   return (_event, index) => {
     const event = JSON.stringify(_event);
-    const _index = index < 10 ? '0' + index : index;
+    const _index = index < 10 ? "0" + index : index;
     const invite = `#${_index}=> send ${event}`;
 
     return tupleOf(invite, () => {
@@ -156,8 +151,8 @@ export const asyncNothing = async () => {
 };
 
 export const mockConsole = () => {
-  const fnLog = vi.spyOn(console, 'log');
-  const fnError = vi.spyOn(console, 'error');
+  const fnLog = vi.spyOn(console, "log");
+  const fnError = vi.spyOn(console, "error");
 
   beforeAll(() => {
     const fn = () => void 0;
@@ -173,10 +168,7 @@ export const mockConsole = () => {
 
 type ConstructWaiter2_F = (
   DELAY?: number,
-) => (
-  times?: number,
-  index?: number,
-) => readonly [string, () => Promise<void>];
+) => (times?: number, index?: number) => readonly [string, () => Promise<void>];
 
 type ConstructContexts2_F<
   Pc = any,
@@ -207,10 +199,7 @@ type Option<
     <T extends EventArgT<E>>(
       type: T,
     ): (
-      ...data: Extract<
-        ToEventsR<E, A>,
-        { type: T }
-      >['payload'] extends infer P
+      ...data: Extract<ToEventsR<E, A>, { type: T }>["payload"] extends infer P
         ? object extends P
           ? []
           : [payload: P]
@@ -220,10 +209,7 @@ type Option<
     index: <T extends EventArgT<E>>(
       type: T,
     ) => (
-      ...data: Extract<
-        ToEventsR<E, A>,
-        { type: T }
-      >['payload'] extends infer P
+      ...data: Extract<ToEventsR<E, A>, { type: T }>["payload"] extends infer P
         ? object extends P
           ? [index: number]
           : [index: number, payload: P]
@@ -238,7 +224,7 @@ type ConstructTestsResult<
   T extends object = object,
 > = T &
   Record<
-    'start' | 'stop' | 'dispose' | 'pause' | 'resume',
+    "start" | "stop" | "dispose" | "pause" | "resume",
     (index?: number) => TestArr
   > & {
     send: (_event: EventArg<E>, index?: number) => TestArr;
@@ -263,7 +249,7 @@ type ConstructTestsResult<
     : EmptyObject);
 
 type ConstructTestsResult2 = Record<
-  'start' | 'stop' | 'dispose' | 'pause' | 'resume',
+  "start" | "stop" | "dispose" | "pause" | "resume",
   (index?: number) => TestArr
 > & {
   send: (_event: EventObject, index?: number) => TestArr;
@@ -289,13 +275,7 @@ export const constructTests = <
   const E extends EventsMap = EventsMap,
   const A extends ActorsConfigMap = ActorsConfigMap,
   T extends object = object,
-  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<
-    C,
-    E,
-    A,
-    Pc,
-    Tc
-  >,
+  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<C, E, A, Pc, Tc>,
   Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
   Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 >(
@@ -305,19 +285,19 @@ export const constructTests = <
 ): ConstructTestsResult<C, E, T> => {
   let _index = startIndex;
   const index = (__index?: number) => {
-    if (__index !== undefined) return __index + '';
+    if (__index !== undefined) return __index + "";
     const out = buildIndex(_index, Math.max(100, _index + 5));
     _index++;
     return out;
   };
 
   const errorsOrWarnings = (
-    type: '_errorsCollector' | '_warningsCollector',
+    type: "_errorsCollector" | "_warningsCollector",
   ) => {
-    const str = type === '_errorsCollector' ? 'errors' : 'warnings';
+    const str = type === "_errorsCollector" ? "errors" : "warnings";
     return expandFn(
       (...warnings: string[]) => {
-        const invite = `#${index()} => Expect ${str} : ${warnings.join(', ')}`;
+        const invite = `#${index()} => Expect ${str} : ${warnings.join(", ")}`;
         return tupleOf(invite, () => {
           const cases = warnings.map(
             (warning, index) =>
@@ -331,14 +311,14 @@ export const constructTests = <
               ] as const,
           );
 
-          test.each([...cases])('%s', (_, warning) => {
+          test.each([...cases])("%s", (_, warning) => {
             expect(service[type]).toContain(warning);
           });
         });
       },
       {
         index: (_index: number, ...warnings: string[]) => {
-          const invite = `#${index(_index)} => Expect ${str} : ${warnings.join(', ')}`;
+          const invite = `#${index(_index)} => Expect ${str} : ${warnings.join(", ")}`;
           return tupleOf(invite, () => {
             const cases = warnings.map(
               (warning, index) =>
@@ -364,7 +344,7 @@ export const constructTests = <
                 );
               },
             );
-            test.each([...cases])('%s', (_, warning) => {
+            test.each([...cases])("%s", (_, warning) => {
               expect(service[type]).toContain(warning);
             });
           });
@@ -390,10 +370,10 @@ export const constructTests = <
         const _selector = selector ?? _defaultSelector;
 
         const _value = isNo
-          ? 'undefined'
+          ? "undefined"
           : JSON.stringify(value).substring(0, 15);
 
-        const _name = name ?? 'context';
+        const _name = name ?? "context";
         const invite = `#${index(_index)} => ${_name} equal : ${_value}`;
 
         return tupleOf(invite, () => {
@@ -409,10 +389,10 @@ export const constructTests = <
       index,
 
       sender: expandFn(
-        type => {
+        (type) => {
           return (...___payload: any[]) => {
             const __payload = _any(___payload);
-            const data = __payload[0] ?? 'no payload';
+            const data = __payload[0] ?? "no payload";
 
             const _payload = JSON.stringify(data).substring(0, 15);
             const invite = `#${index()} => send ${type} event with payload : ${_payload}`;
@@ -426,12 +406,9 @@ export const constructTests = <
             return (...___payload: any[]) => {
               const __payload = _any(___payload);
 
-              const _payload = JSON.stringify(__payload[1]).substring(
-                0,
-                15,
-              );
+              const _payload = JSON.stringify(__payload[1]).substring(0, 15);
               const _index =
-                __payload[0] < 10 ? '0' + __payload[0] : __payload[0];
+                __payload[0] < 10 ? "0" + __payload[0] : __payload[0];
               const invite = `#${index(_index)} => send ${type} event with payload : ${_payload}`;
               const payload = __payload[1] ?? {};
               const event = { type, payload } as EventArg<E>;
@@ -442,8 +419,8 @@ export const constructTests = <
       ),
     }),
 
-    useWarnings: errorsOrWarnings('_warningsCollector'),
-    useErrors: errorsOrWarnings('_errorsCollector'),
+    useWarnings: errorsOrWarnings("_warningsCollector"),
+    useErrors: errorsOrWarnings("_errorsCollector"),
 
     useStateValue: (value, _index) => {
       const _value = JSON.stringify(value);
@@ -463,48 +440,44 @@ export const constructTests = <
       });
     },
 
-    start: _index => {
+    start: (_index) => {
       const invite = `#${index(_index)} => Start the service`;
       return tupleOf(invite, service.start);
     },
 
-    stop: _index => {
+    stop: (_index) => {
       const invite = `#${index(_index)} => Stop the service`;
       return tupleOf(invite, service.stop);
     },
 
-    dispose: _index => {
+    dispose: (_index) => {
       const invite = `#${index(_index)} => Dispose the service`;
       return tupleOf(invite, service.stop);
     },
 
-    pause: _index => {
+    pause: (_index) => {
       const invite = `#${index(_index)} => Pause the service`;
       return tupleOf(invite, service.pause);
     },
 
-    resume: _index => {
+    resume: (_index) => {
       const invite = `#${index(_index)} => Resume the service`;
       return tupleOf(invite, service.resume);
     },
 
     useTags: expandFn(
       (...tags) => {
-        const invite = `#${index()} => Tags are : ${tags.join(', ')}`;
+        const invite = `#${index()} => Tags are : ${tags.join(", ")}`;
         return tupleOf(invite, () => {
-          expect(service.tags).toEqual(
-            expect.arrayContaining(tags as any),
-          );
+          expect(service.tags).toEqual(expect.arrayContaining(tags as any));
         });
       },
       {
         index: (index: number, ...tags: any[]) => {
-          const _index = index < 10 ? '0' + index : index;
-          const invite = `#${_index} => Tags are : ${tags.join(', ')}`;
+          const _index = index < 10 ? "0" + index : index;
+          const invite = `#${_index} => Tags are : ${tags.join(", ")}`;
           return tupleOf(invite, () => {
-            expect(service.tags).toEqual(
-              expect.arrayContaining(tags as any),
-            );
+            expect(service.tags).toEqual(expect.arrayContaining(tags as any));
           });
         },
       },

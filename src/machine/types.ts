@@ -1,4 +1,4 @@
-import type { Action2, FromActionConfig } from '#actions';
+import type { Action2, FromActionConfig } from "#actions";
 import type {
   DeepRequired,
   Equals,
@@ -6,14 +6,14 @@ import type {
   NotUndefined,
   PrimitiveObject,
   Ru,
-} from '#bemedev/globals/types';
-import type { DelayFunction2 } from '#delays';
+} from "#bemedev/globals/types";
+import type { DelayFunction2 } from "#delays";
 import type {
   EmitterDef,
   EmitterFunction2,
   EmitterReturn,
   EmittersMap,
-} from '#emitters';
+} from "#emitters";
 import type {
   ActorsConfigMap,
   EventObject,
@@ -21,13 +21,13 @@ import type {
   PromiseeDef,
   ToEventObject,
   ToEvents,
-} from '#events';
-import type { PredicateS, PredicateS2 } from '#guards';
+} from "#events";
+import type { PredicateS, PredicateS2 } from "#guards";
 import type {
   PromiseFunction,
   PromiseFunction2,
   PromiseReturn,
-} from '#promises';
+} from "#promises";
 import type {
   ActivityConfig,
   BaseConfig,
@@ -39,7 +39,7 @@ import type {
   NodeConfig,
   NodeConfigCompound,
   NodeConfigParallel,
-} from '#states';
+} from "#states";
 import type {
   ExtractActionKeysFromTransitions,
   ExtractChildKeysFromTransitions,
@@ -49,9 +49,9 @@ import type {
   ExtractPromiseeSrcKeyFromTransitions,
   Transition,
   TransitionsConfig,
-} from '#transitions';
-import type { Decompose, Recompose } from '@bemedev/decompose';
-import type { Observable } from 'rxjs';
+} from "#transitions";
+import type { Decompose, Recompose } from "@bemedev/decompose";
+import type { Observable } from "rxjs";
 import type {
   Describer,
   FnMap,
@@ -61,7 +61,7 @@ import type {
   KeyU,
   RecordS,
   ReduceArray,
-} from '~types';
+} from "~types";
 
 /**
  * Type representing the main JSON config.
@@ -93,7 +93,7 @@ export type Config = NodeConfig & {
 export type ChildEvents<
   K extends string,
   A extends ActorsConfigMap = ActorsConfigMap,
-> = NotUndefined<A['children']>[K] extends infer P ? P : never;
+> = NotUndefined<A["children"]>[K] extends infer P ? P : never;
 
 export type ChildFunction<
   E extends EventObject = EventObject,
@@ -126,8 +126,7 @@ export type NoExtraKeysConfigDef<T extends ConfigDef> = T & {
   [K in Exclude<keyof T, keyof ConfigDef>]: never;
 } & {
   states?: {
-    [K in keyof T['states']]: T['states'][K] extends infer TK extends
-      ConfigDef
+    [K in keyof T["states"]]: T["states"][K] extends infer TK extends ConfigDef
       ? NoExtraKeysConfigDef<TK>
       : never;
   };
@@ -142,22 +141,21 @@ export type NoExtraKeysConfigNode<T extends NodeConfig> = T & {
   [K in Exclude<keyof T, keyof NodeConfig>]: never;
 } & {
   states?: {
-    [K in keyof T['states']]: T['states'][K] extends infer TK extends
-      NodeConfig
+    [K in keyof T["states"]]: T["states"][K] extends infer TK extends NodeConfig
       ? NoExtraKeysConfigNode<TK>
       : never;
   };
 };
 export type NoExtraKeysConfig<T extends Config> = T & {
-  [K in Exclude<keyof T, keyof Config | '__tsSchema'>]: never;
+  [K in Exclude<keyof T, keyof Config | "__tsSchema">]: never;
 } & {
   states?: Record<string, NoExtraKeysConfigNode<NodeConfig>>;
 };
 export type TransformConfigDef<T extends ConfigDef> = BaseConfig &
-  TransitionsConfig<T['targets']> & {
-    readonly initial?: T['initial'];
+  TransitionsConfig<T["targets"]> & {
+    readonly initial?: T["initial"];
     readonly states?: {
-      [Key in keyof T['states']]: T['states'][Key] extends infer TK extends
+      [Key in keyof T["states"]]: T["states"][Key] extends infer TK extends
         ConfigDef
         ? TransformConfigDef<TK>
         : never;
@@ -178,17 +176,13 @@ export type TransformConfigDef<T extends ConfigDef> = BaseConfig &
  */
 type _GetKeyActionsFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]:
-    | ExtractActionKeysFromTransitions<
-        Extract<Flat[key], TransitionsConfig>
-      >
+    | ExtractActionKeysFromTransitions<Extract<Flat[key], TransitionsConfig>>
     | ExtractActionsFromActivity<
         Extract<Flat[key], { activities: ActivityConfig }>
       >
+    | FromActionConfig<ReduceArray<Extract<Flat[key], { entry: any }>["entry"]>>
     | FromActionConfig<
-        ReduceArray<Extract<Flat[key], { entry: any }>['entry']>
-      >
-    | FromActionConfig<
-        ReduceArray<Extract<Flat[key], { exit: any }>['exit']>
+        ReduceArray<Extract<Flat[key], { exit: any }>["exit"]>
       > extends infer V
     ? unknown extends V
       ? never
@@ -208,9 +202,7 @@ type _GetKeyActionsFromFlat<Flat extends FlatMapN> = {
  */
 type _GetKeyGuardsFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]:
-    | ExtractGuardKeysFromTransitions<
-        Extract<Flat[key], TransitionsConfig>
-      >
+    | ExtractGuardKeysFromTransitions<Extract<Flat[key], TransitionsConfig>>
     | ExtractGuardsFromActivity<
         Extract<Flat[key], { activities: ActivityConfig }>
       > extends infer V
@@ -276,9 +268,7 @@ type _GetEventKeysFromFlat<Flat extends FlatMapN> = {
  */
 type _GetDelayKeysFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]:
-    | ExtractDelayKeysFromTransitions<
-        Extract<Flat[key], TransitionsConfig>
-      >
+    | ExtractDelayKeysFromTransitions<Extract<Flat[key], TransitionsConfig>>
     | ExtractDelaysFromActivity<Flat[key]> extends infer V
     ? unknown extends V
       ? never
@@ -338,7 +328,7 @@ export type GetPromiseSrcsFromFlat<
     Tc,
     T,
     {
-      eventsMap: NotUndefined<A['children']>[key];
+      eventsMap: NotUndefined<A["children"]>[key];
     }
   >;
 };
@@ -347,9 +337,7 @@ export type GetEmitterSrcsKeyFromFlat<
   Flat extends FlatMapN,
   A extends ActorsConfigMap = ActorsConfigMap,
 > = {
-  [key in _GetEmitterSrcKeyFromFlat<Flat>]: Observable<
-    EmitterReturn<key, A>
-  >;
+  [key in _GetEmitterSrcKeyFromFlat<Flat>]: Observable<EmitterReturn<key, A>>;
 };
 
 /* Record<
@@ -412,7 +400,7 @@ export type GetEventsFromConfig<C extends Config> = GetEventsFromFlat<
  * @see {@linkcode ConfigFrom} for extracting the config from the machine.
  * @see {@linkcode GetEventsFromConfig} for extracting events from the machine.
  */
-export type GetEventsFromMachine<T extends KeyU<'config'>> =
+export type GetEventsFromMachine<T extends KeyU<"config">> =
   GetEventsFromConfig<ConfigFrom<T>>;
 
 /**
@@ -467,7 +455,7 @@ export type GetPromiseeSrcKeysFromConfig<C extends Config> =
  * @see {@linkcode ConfigFrom} for extracting the config from the machine.
  * @see {@linkcode GetPromiseeSrcKeysFromConfig} for extracting promises from the machine.
  */
-export type GetPromiseesSrcFromMachine<T extends KeyU<'config'>> =
+export type GetPromiseesSrcFromMachine<T extends KeyU<"config">> =
   GetPromiseeSrcKeysFromConfig<ConfigFrom<T>>;
 
 export type GetEmittersSrcKeyFromFlat<Flat extends FlatMapN> = Record<
@@ -515,25 +503,25 @@ export type GetEmittersSrcFromConfig<C extends Config> =
  * @see {@linkcode ConfigFrom} for extracting the config from the machine.
  * @see {@linkcode GetEmittersSrcFromConfig} for extracting promises from the machine.
  */
-export type GetEmittersSrcFromMachine<T extends KeyU<'config'>> =
+export type GetEmittersSrcFromMachine<T extends KeyU<"config">> =
   GetEmittersSrcFromConfig<ConfigFrom<T>>;
 
 export type GetChildrenSrcKeysFromFlat<
   Flat extends FlatMapN,
   G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
 > = {
-  [key in G['src']]: Record<Extract<G, { src: key }>['on'], any>;
+  [key in G["src"]]: Record<Extract<G, { src: key }>["on"], any>;
 };
 
 export type GetChildrenSrcKeysFromFlat2<
   Flat extends FlatMapN,
   G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
 > = {
-  [key in G['src']]: Extract<G, { src: key }> extends infer E extends G
+  [key in G["src"]]: Extract<G, { src: key }> extends infer E extends G
     ? {
-        on: Record<E['on'], any>;
-        context: keyof E['contexts'];
-        parentPcontext: E['contexts'][keyof E['contexts']];
+        on: Record<E["on"], any>;
+        context: keyof E["contexts"];
+        parentPcontext: E["contexts"][keyof E["contexts"]];
       }
     : never;
 };
@@ -547,14 +535,14 @@ export type GetChildrenSrcFromFlat<
   T extends string = string,
   G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
 > = {
-  [key in G['src']]: ChildFunction2<
+  [key in G["src"]]: ChildFunction2<
     E,
     Pc,
     Tc,
     T,
     {
       eventsMap: ChildEvents<key & string, A>;
-      context: Recomposer<keyof Extract<G, { src: key }>['contexts']>;
+      context: Recomposer<keyof Extract<G, { src: key }>["contexts"]>;
     }
   >;
 };
@@ -582,7 +570,7 @@ export type GetChildrenSrcFromConfig<C extends Config> =
  * @see {@linkcode ConfigFrom} for extracting the config from the machine.
  * @see {@linkcode GetChildrenSrcFromConfig} for extracting child machines from the machine.
  */
-export type GetChildrenSrcFromMachine<T extends KeyU<'config'>> =
+export type GetChildrenSrcFromMachine<T extends KeyU<"config">> =
   GetChildrenSrcFromConfig<ConfigFrom<T>>;
 
 export type GetActorsFromFlat<
@@ -608,7 +596,7 @@ export type GetActorsFromConfig<
 > = GetActorsFromFlat<FlatMapN<C>, E, A, Pc, Tc, T>;
 
 export type GetActorsFromMachine<
-  M extends KeyU<'config'>,
+  M extends KeyU<"config">,
   E extends EventObject = EventObject,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
@@ -623,39 +611,38 @@ export type GetActorsSrcKeysFromFlat<Flat extends FlatMapN> = {
 };
 
 export type Recomposer<P extends Keys> =
-  Equals<P, '.'> extends true
+  Equals<P, "."> extends true
     ? any
-    : Equals<P, ''> extends true
+    : Equals<P, ""> extends true
       ? any
-      : Recompose<Record<Exclude<P, '' | '.'>, unknown>>;
+      : Recompose<Record<Exclude<P, "" | ".">, unknown>>;
 
 export type GetActorsSrcKeysFromFlat2<
   Flat extends FlatMapN,
   G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
 > = {
   children: {
-    [key in G['src']]: Record<Extract<G, { src: key }>['on'], any>;
+    [key in G["src"]]: Record<Extract<G, { src: key }>["on"], any>;
   };
   emitters: GetEmittersSrcKeyFromFlat<Flat>;
   promisees: GetPromiseesSrcKeyFromFlat<Flat>;
-  pContext: Recomposer<G['contexts'][keyof G['contexts']]>;
+  pContext: Recomposer<G["contexts"][keyof G["contexts"]]>;
 };
 
-export type GetActorKeysFromConfig<C extends Config> =
-  GetActorsSrcKeysFromFlat<FlatMapN<C>>;
+export type GetActorKeysFromConfig<C extends Config> = GetActorsSrcKeysFromFlat<
+  FlatMapN<C>
+>;
 
 export type GetActorKeysFromConfig2<C extends Config> =
   GetActorsSrcKeysFromFlat2<FlatMapN<C>>;
 
-export type GetActorKeysFromMachine<T extends KeyU<'config'>> =
+export type GetActorKeysFromMachine<T extends KeyU<"config">> =
   GetActorKeysFromConfig<ConfigFrom<T>>;
 
 /**
  * Second version decomposition of a type.
  */
-export type Decompose2<T> = T extends Ru
-  ? Decompose<DeepRequired<T>>
-  : never;
+export type Decompose2<T> = T extends Ru ? Decompose<DeepRequired<T>> : never;
 
 export type ChildConfigDef = EventsMap;
 
@@ -679,15 +666,13 @@ export type Child<
  * Not used in the codebase, but provided for completeness.
  */
 export type FnMapFrom<
-  T extends KeyU<
-    '__eventsO' | 'pContext' | 'context' | 'actorsMap' | '__tag'
-  >,
+  T extends KeyU<"__eventsO" | "pContext" | "context" | "actorsMap" | "__tag">,
   R = any,
   Ex extends string = string,
 > = FnMapR<
-  Extract<T['__eventsO'], EventObject>,
+  Extract<T["__eventsO"], EventObject>,
   ContextFrom<T>,
-  Extract<T['__tag'], string>,
+  Extract<T["__tag"], string>,
   R,
   Ex
 >;
@@ -744,15 +729,15 @@ export type MachineOptions<
  *
  * @see {@linkcode SimpleMachineOptions2} for the structure of the machine options.
  */
-export type MachineOptionsFrom<T extends KeyU<'options'>> = Extract<
-  T['options'],
+export type MachineOptionsFrom<T extends KeyU<"options">> = Extract<
+  T["options"],
   SimpleMachineOptions2
 >;
 
 /**
  * Alias of {@linkcode MachineOptionsFrom}.
  */
-export type MoF<T extends KeyU<'options'>> = MachineOptionsFrom<T>;
+export type MoF<T extends KeyU<"options">> = MachineOptionsFrom<T>;
 
 /**
  * Getting config from a machine.
@@ -761,17 +746,14 @@ export type MoF<T extends KeyU<'options'>> = MachineOptionsFrom<T>;
  *
  * @see {@linkcode Config} for the structure of the machine config.
  */
-export type ConfigFrom<T extends KeyU<'config'>> = Extract<
-  T['config'],
-  Config
->;
+export type ConfigFrom<T extends KeyU<"config">> = Extract<T["config"], Config>;
 
 /**
  * Getting private context from a machine.
  *
  * @template : {@linkcode KeyU}<'pContext'> [T] - type of the machine events map
  */
-export type PrivateContextFrom<T extends KeyU<'pContext'>> = T['pContext'];
+export type PrivateContextFrom<T extends KeyU<"pContext">> = T["pContext"];
 
 /**
  * Getting context from a machine.
@@ -780,8 +762,8 @@ export type PrivateContextFrom<T extends KeyU<'pContext'>> = T['pContext'];
  *
  * @see {@linkcode PrimitiveObject} for the structure of the context.
  */
-export type ContextFrom<T extends KeyU<'context'>> = Extract<
-  T['context'],
+export type ContextFrom<T extends KeyU<"context">> = Extract<
+  T["context"],
   PrimitiveObject
 >;
 
@@ -792,8 +774,8 @@ export type ContextFrom<T extends KeyU<'context'>> = Extract<
  *
  * @see {@linkcode EventsMap} for the structure of the events map.
  */
-export type EventsMapFrom<T extends KeyU<'eventsMap'>> = Extract<
-  T['eventsMap'],
+export type EventsMapFrom<T extends KeyU<"eventsMap">> = Extract<
+  T["eventsMap"],
   EventsMap
 >;
 
@@ -804,10 +786,10 @@ export type EventsMapFrom<T extends KeyU<'eventsMap'>> = Extract<
  *
  * @see {@linkcode StateFrom} for extracting the state from the machine.
  */
-export type StateFrom<T extends KeyU<'__state'>> = T['__state'];
+export type StateFrom<T extends KeyU<"__state">> = T["__state"];
 
-export type DecomposedStateFrom<T extends KeyU<'__decomposedState'>> =
-  T['__decomposedState'];
+export type DecomposedStateFrom<T extends KeyU<"__decomposedState">> =
+  T["__decomposedState"];
 
 /**
  * Getting extended state from a machine.
@@ -816,14 +798,14 @@ export type DecomposedStateFrom<T extends KeyU<'__decomposedState'>> =
  *
  * @see {@linkcode StateExtendedFrom} for extracting the extended state from the machine.
  */
-export type StateExtendedFrom<T extends KeyU<'__stateExtended'>> =
-  T['__stateExtended'];
+export type StateExtendedFrom<T extends KeyU<"__stateExtended">> =
+  T["__stateExtended"];
 
 /** * Getting stateP from a machine.
  * @template : {@linkcode KeyU}<'__stateP'> [T] - type of the machine stateP
  * @see {@linkcode StatePFrom} for extracting the stateP from the machine.
  */
-export type StatePFrom<T extends KeyU<'__stateP'>> = T['__stateP'];
+export type StatePFrom<T extends KeyU<"__stateP">> = T["__stateP"];
 
 /**
  * Getting statePextended from a machine.
@@ -832,8 +814,8 @@ export type StatePFrom<T extends KeyU<'__stateP'>> = T['__stateP'];
  *
  * @see {@linkcode StatePextendedFrom} for extracting the statePextended from the machine.
  */
-export type StatePextendedFrom<T extends KeyU<'__statePextended'>> =
-  T['__statePextended'];
+export type StatePextendedFrom<T extends KeyU<"__statePextended">> =
+  T["__statePextended"];
 
 /**
  * Getting promisees map from a machine.
@@ -842,8 +824,8 @@ export type StatePextendedFrom<T extends KeyU<'__statePextended'>> =
  *
  * @see {@linkcode ActorsConfigMap} for the structure of the promisees map.
  */
-export type ActorsMapFrom<T extends KeyU<'actorsMap'>> = Extract<
-  T['actorsMap'],
+export type ActorsMapFrom<T extends KeyU<"actorsMap">> = Extract<
+  T["actorsMap"],
   ActorsConfigMap
 >;
 
@@ -853,7 +835,7 @@ export type ActorsMapFrom<T extends KeyU<'actorsMap'>> = Extract<
  * @template : {@linkcode KeyU}<'__events'> [T] - type of the machine events
  *
  */
-export type EventsFrom<T extends KeyU<'__events'>> = T['__events'];
+export type EventsFrom<T extends KeyU<"__events">> = T["__events"];
 
 /**
  * Get all actions map from a machine.
@@ -866,8 +848,12 @@ export type EventsFrom<T extends KeyU<'__events'>> = T['__events'];
  * @see {@linkcode ActionParamsFrom} for extracting action parameters from the machine.
  * @see {@linkcode ActionKeysFrom} for extracting action keys from the machine.
  */
-export type ActionsMapFrom<T extends KeyU<'actions'>> = NotUndefined<
-  T['actions']
+export type ActionsMapFrom<T extends KeyU<"actions">> = NotUndefined<
+  T["actions"]
+>;
+
+export type AddOptionsFrom<T extends KeyU<"addOptions">> = NotUndefined<
+  T["addOptions"]
 >;
 
 /**
@@ -877,8 +863,8 @@ export type ActionsMapFrom<T extends KeyU<'actions'>> = NotUndefined<
  *
  * @see {@linkcode NotUndefined} for ensuring the action function is not undefined.
  */
-export type ActionFnFrom<T extends KeyU<'__actionFn'>> = NotUndefined<
-  T['__actionFn']
+export type ActionFnFrom<T extends KeyU<"__actionFn">> = NotUndefined<
+  T["__actionFn"]
 >;
 
 /**
@@ -888,8 +874,9 @@ export type ActionFnFrom<T extends KeyU<'__actionFn'>> = NotUndefined<
  *
  * @see {@linkcode NotUndefined} for ensuring the action parameters are not undefined.
  */
-export type ActionParamsFrom<T extends KeyU<'__actionParams'>> =
-  NotUndefined<T['__actionParams']>;
+export type ActionParamsFrom<T extends KeyU<"__actionParams">> = NotUndefined<
+  T["__actionParams"]
+>;
 
 /**
  * Get the action keys from a machine.
@@ -898,8 +885,7 @@ export type ActionParamsFrom<T extends KeyU<'__actionParams'>> =
  *
  * @see {@linkcode ActionsMapFrom} for extracting actions from the machine.
  */
-export type ActionKeysFrom<T extends KeyU<'__actionKey'>> =
-  T['__actionKey'];
+export type ActionKeysFrom<T extends KeyU<"__actionKey">> = T["__actionKey"];
 
 /**
  * Get all predicates map from a machine.
@@ -908,8 +894,8 @@ export type ActionKeysFrom<T extends KeyU<'__actionKey'>> =
  *
  * @see {@linkcode NotUndefined}
  */
-export type PredicatesMapFrom<T extends KeyU<'predicates'>> = NotUndefined<
-  T['predicates']
+export type PredicatesMapFrom<T extends KeyU<"predicates">> = NotUndefined<
+  T["predicates"]
 >;
 
 /**
@@ -919,8 +905,8 @@ export type PredicatesMapFrom<T extends KeyU<'predicates'>> = NotUndefined<
  *
  * @see {@linkcode NotUndefined} for ensuring the predicate function is not undefined.
  */
-export type PredicateSFrom<T extends KeyU<'__predicate'>> = NotUndefined<
-  T['__predicate']
+export type PredicateSFrom<T extends KeyU<"__predicate">> = NotUndefined<
+  T["__predicate"]
 >;
 
 /**
@@ -931,7 +917,7 @@ export type PredicateSFrom<T extends KeyU<'__predicate'>> = NotUndefined<
  * @see {@linkcode NotUndefined} for ensuring the predicates map is not undefined.
  * @see {@linkcode PredicatesMapFrom} for extracting guards from the machine.
  */
-export type GuardKeysFrom<T extends KeyU<'__guardKey'>> = T['__guardKey'];
+export type GuardKeysFrom<T extends KeyU<"__guardKey">> = T["__guardKey"];
 
 /**
  * Get all delays map from a machine.
@@ -940,9 +926,7 @@ export type GuardKeysFrom<T extends KeyU<'__guardKey'>> = T['__guardKey'];
  *
  * @see {@linkcode NotUndefined} for ensuring the delays map is not undefined.
  */
-export type DelaysMapFrom<T extends KeyU<'delays'>> = NotUndefined<
-  T['delays']
->;
+export type DelaysMapFrom<T extends KeyU<"delays">> = NotUndefined<T["delays"]>;
 
 /**
  * Get the delay keys from a machine.
@@ -952,7 +936,7 @@ export type DelaysMapFrom<T extends KeyU<'delays'>> = NotUndefined<
  * @see {@linkcode NotUndefined} for ensuring the delays map is not undefined.
  * @see {@linkcode DelaysMapFrom} for extracting delays from the machine.
  */
-export type DelayKeysFrom<T extends KeyU<'__delayKey'>> = T['__delayKey'];
+export type DelayKeysFrom<T extends KeyU<"__delayKey">> = T["__delayKey"];
 
 /**
  * Get the delay function from a machine.
@@ -961,9 +945,7 @@ export type DelayKeysFrom<T extends KeyU<'__delayKey'>> = T['__delayKey'];
  *
  * @see {@linkcode NotUndefined} for ensuring the delay function is not undefined.
  */
-export type DelayFnFrom<T extends KeyU<'__delay'>> = NotUndefined<
-  T['__delay']
->;
+export type DelayFnFrom<T extends KeyU<"__delay">> = NotUndefined<T["__delay"]>;
 
 /**
  * Get all promises map from a machine.
@@ -972,8 +954,8 @@ export type DelayFnFrom<T extends KeyU<'__delay'>> = NotUndefined<
  *
  * @see {@linkcode NotUndefined} for ensuring the promises map is not undefined.
  */
-export type PromisesMapFrom<T extends KeyU<'promises'>> = NotUndefined<
-  T['promises']
+export type PromisesMapFrom<T extends KeyU<"promises">> = NotUndefined<
+  T["promises"]
 >;
 
 /**
@@ -984,9 +966,7 @@ export type PromisesMapFrom<T extends KeyU<'promises'>> = NotUndefined<
  * @see {@linkcode NotUndefined} for ensuring the promises map is not undefined.
  * @see {@linkcode PromisesMapFrom} for extracting promises from the machine.
  */
-export type PromiseKeysFrom<T extends KeyU<'__src'>> = NotUndefined<
-  T['__src']
->;
+export type PromiseKeysFrom<T extends KeyU<"__src">> = NotUndefined<T["__src"]>;
 
 /**
  * Get the machines map from a machine.
@@ -995,8 +975,8 @@ export type PromiseKeysFrom<T extends KeyU<'__src'>> = NotUndefined<
  *
  * @see {@linkcode NotUndefined} for ensuring the machines map is not undefined.
  */
-export type MachinesMapFrom<T extends KeyU<'machines'>> = NotUndefined<
-  T['machines']
+export type MachinesMapFrom<T extends KeyU<"machines">> = NotUndefined<
+  T["machines"]
 >;
 
 /**
@@ -1004,8 +984,7 @@ export type MachinesMapFrom<T extends KeyU<'machines'>> = NotUndefined<
  *
  * @template : {@linkcode KeyU}<'__childKey'> [T] - type of the machine child keys.
  */
-export type ChildrenKeysFrom<T extends KeyU<'__childKey'>> =
-  T['__childKey'];
+export type ChildrenKeysFrom<T extends KeyU<"__childKey">> = T["__childKey"];
 
 /**
  * Simple representation machine options
@@ -1044,9 +1023,9 @@ export type SimpleMachineOptions<
  * This type is more flexible than {@linkcode SimpleMachineOptions}
  */
 export type SimpleMachineOptions2 = Partial<
-  Record<'actions' | 'predicates' | 'delays', any> &
+  Record<"actions" | "predicates" | "delays", any> &
     Record<
-      'actors',
+      "actors",
       {
         children?: RecordS<any>;
         emitters?: RecordS<any>;
@@ -1057,8 +1036,7 @@ export type SimpleMachineOptions2 = Partial<
 
 export type ExtractContextsKeyFromChild<
   T extends { contexts: Record<string, string> },
-> = keyof T['contexts'];
+> = keyof T["contexts"];
 
-export type ExtractEventsKeyFromChild<
-  T extends { on: Record<string, any> },
-> = keyof T['on'];
+export type ExtractEventsKeyFromChild<T extends { on: Record<string, any> }> =
+  keyof T["on"];

@@ -11,6 +11,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.2.2] - 26/03/2026** => _11:00_
+
+</summary>
+
+- **Feat**: Ajout du champ `addOptions: any` à l'interface `AnyMachine`
+  dans `machine.types.ts`
+- **Feat**: Ajout du nouveau type exporté `AddOptionsFrom<T>` dans
+  `types.ts`
+- **Feat**: Ajout de nombreux types utilitaires dans `types.ts` :
+  `GetEventsFromMachine`, `GetPromiseesSrcFromMachine`,
+  `GetEmittersSrcFromMachine`, `GetChildrenSrcFromMachine`,
+  `GetActorKeysFromMachine`, `Decompose2`, `MachineOptionsFrom` / `MoF`,
+  `ConfigFrom`, `PrivateContextFrom`, `ContextFrom`, `EventsMapFrom`,
+  `StateFrom`, `DecomposedStateFrom`, `StateExtendedFrom`, `StatePFrom`,
+  `StatePextendedFrom`, `ActorsMapFrom`, `EventsFrom`
+- **Feat**: Ajout des helpers `constructStateValue`, `constructSend` et de
+  la constante `defaultI` dans `fixtures/index.ts`
+- **Refactor**: Ajout de `jsxSingleQuote: true` dans `oxfmt.config.ts`
+- **Refactor**: Restructuration des imports dans `fixtures/index.ts`
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.2.1] - 26/03/2026** => _03:35_
 
 </summary>

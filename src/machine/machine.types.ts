@@ -82,6 +82,7 @@ export interface AnyMachine<
   __events: any;
   __state: any;
   __decomposedState: any;
+  addOptions: any;
   actions: any;
   predicates: any;
   delays: any;
