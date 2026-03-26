@@ -1,4 +1,11 @@
 ---
+name: organize-tests
+description:
+  Apply and enforce all test-organization conventions defined in
+  `.github/instructions/organize-tests.instructions.md` to every
+  `*.test.ts` file in the codebase. Use when adding new tests, refactoring
+  existing tests, or ensuring test files conform to project conventions
+  before committing or during code review.
 ---
 
 # Organize Tests

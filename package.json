@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -78,6 +78,7 @@
   "devDependencies": {
     "@bemedev/build-tests": "^0.1.2",
     "@bemedev/fsf": "^1.0.1",
+    "@bemedev/rolldown-config": "^0.4.2",
     "@bemedev/rollup-config": "^0.2.2",
     "@bemedev/sequence": "^0.1.0",
     "@bemedev/vitest-alias": "^0.0.3",

@@ -48,6 +48,9 @@ importers:
       '@bemedev/fsf':
         specifier: ^1.0.1
         version: 1.0.1
+      '@bemedev/rolldown-config':
+        specifier: ^0.4.2
+        version: 0.4.2(glob@13.0.6)(rolldown@1.0.0-rc.12)(rollup@4.60.0)(typescript@6.0.2)
       '@bemedev/rollup-config':
         specifier: ^0.2.2
         version: 0.2.2(glob@13.0.6)(rollup@4.60.0)(typescript@6.0.2)
@@ -175,6 +178,14 @@ packages:
   '@bemedev/interval2@0.1.3':
     resolution: {integrity: sha512-RWbferVoFH0CkpeNZ7DW2MFdl04clqp4Q9WaiQAqlW8kgsizQltXhy780QDtWkQi+cRLWZ9j/ItYcVJ1nr+vDQ==}
     engines: {node: '>=20'}
+
+  '@bemedev/rolldown-config@0.4.2':
+    resolution: {integrity: sha512-52L9gqbN1MMZpBHyAYhkkw9FTrCAHVUskTKhZFu70fnLzuPXBt36RUp5vrhrO7RPOWL+sq5Bhwi28pdfiRvQ1w==}
+    engines: {node: '>=24'}
+    peerDependencies:
+      glob: ^13.0.6
+      rolldown: 1.0.0-rc.12
+      typescript: ^6.0.2
 
   '@bemedev/rollup-config@0.2.2':
     resolution: {integrity: sha512-bpJgtRVYtGaHYPglG+6zJQZaf0ijqx5gTbOvgXNIq5Nsud9p7aa+MMzFMNxd9DONGuq2Y0Z/8mAR2GsEe2kLWA==}
@@ -1651,6 +1662,12 @@ packages:
     peerDependencies:
       rollup: ^2.56.3||^3.0.0||^4.0.0
 
+  rollup-plugin-circular-dependencies@2.0.1:
+    resolution: {integrity: sha512-o37z2SZOZSOUoBRpheVtY3K3klS9QJNdAH9Yj0BiaOaMhrKibwiq085bha0W76PUDdlZ9tasmxs/FtAbJCzNlA==}
+    engines: {node: '>=20.12.0'}
+    peerDependencies:
+      rollup: ^3.0.0||^4.0.0
+
   rollup-plugin-node-externals@8.1.2:
     resolution: {integrity: sha512-EuB6/lolkMLK16gvibUjikERq5fCRVIGwD2xue/CrM8D0pz5GXD2V6N8IrgxegwbcUoKkUFI8VYCEEv8MMvgpA==}
     engines: {node: '>= 21 || ^20.6.0 || ^18.19.0'}
@@ -2001,6 +2018,19 @@ snapshots:
   '@bemedev/interval2@0.1.3':
     dependencies:
       '@bemedev/sleep': 0.1.2
+
+  '@bemedev/rolldown-config@0.4.2(glob@13.0.6)(rolldown@1.0.0-rc.12)(rollup@4.60.0)(typescript@6.0.2)':
+    dependencies:
+      glob: 13.0.6
+      rolldown: 1.0.0-rc.12
+      rollup-plugin-circular-dependencies: 2.0.1(rollup@4.60.0)
+      rollup-plugin-node-externals: 8.1.2(rollup@4.60.0)
+      rollup-plugin-tsc-alias: 1.1.4(rollup@4.60.0)
+      rollup-plugin-tsconfig-paths: 1.5.2(rollup@4.60.0)(typescript@6.0.2)
+      tsc-alias: 1.8.16
+      typescript: 6.0.2
+    transitivePeerDependencies:
+      - rollup
 
   '@bemedev/rollup-config@0.2.2(glob@13.0.6)(rollup@4.60.0)(typescript@6.0.2)':
     dependencies:
@@ -3181,6 +3211,11 @@ snapshots:
       '@rolldown/binding-win32-x64-msvc': 1.0.0-rc.12
 
   rollup-plugin-circular-dependencies@1.2.0(rollup@4.60.0):
+    dependencies:
+      '@rollup/pluginutils': 5.3.0(rollup@4.60.0)
+      rollup: 4.60.0
+
+  rollup-plugin-circular-dependencies@2.0.1(rollup@4.60.0):
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.60.0)
       rollup: 4.60.0

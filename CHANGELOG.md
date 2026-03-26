@@ -11,6 +11,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.2.0] - 26/03/2026** => _03:22_
+
+</summary>
+
+- **Refactor**: Simplification radicale de `rolldown.config.ts` en
+  utilisant `@bemedev/rolldown-config` — suppression de ~180 lignes de
+  configuration manuelle
+- **Refactor**: Renommage des GitHub skills (underscores → tirets) :
+  `analyze_tests` → `analyze-tests`, `check_spacing` → `check-spacing`,
+  `organize_tests` → `organize-tests`, `update_docs` → `update-docs`
+- **Update**: Mise à jour de `tsconfig.json` pour inclure
+  `rolldown.config.ts`
+- **Config**: Ajout des paramètres OXC formatter dans
+  `.vscode/settings.json`
+- Update dependencies (`@bemedev/rolldown-config@^0.4.2`, `rolldown`)
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.1.0] - 25/03/2026** => _23:42_
 
 </summary>

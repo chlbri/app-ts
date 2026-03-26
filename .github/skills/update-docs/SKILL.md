@@ -1,4 +1,8 @@
 ---
+name: update-docs
+description:
+  Update `CHANGELOG.md` and `README.md` after a version upgrade by
+  analyzing recent git commits and comparing versions.
 ---
 
 # Update Docs

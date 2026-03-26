@@ -1,4 +1,8 @@
 ---
+name: translate
+description:
+  Translate any text file content to a target language while preserving the
+  integrity of code elements and special formatting.
 ---
 
 # Translate
