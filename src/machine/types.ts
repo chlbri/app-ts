@@ -1,11 +1,9 @@
 import type { Action2, FromActionConfig } from '#actions';
 import type {
-  DeepRequired,
   Equals,
   Keys,
   NotUndefined,
   PrimitiveObject,
-  Ru,
 } from '#bemedev/globals/types';
 import type { DelayFunction2 } from '#delays';
 import type {
@@ -50,7 +48,7 @@ import type {
   Transition,
   TransitionsConfig,
 } from '#transitions';
-import type { Decompose, Recompose } from '@bemedev/decompose';
+import type { Recompose } from '@bemedev/decompose';
 import type { Observable } from 'rxjs';
 import type {
   Describer,
@@ -649,13 +647,6 @@ export type GetActorKeysFromConfig2<C extends Config> =
 
 export type GetActorKeysFromMachine<T extends KeyU<'config'>> =
   GetActorKeysFromConfig<ConfigFrom<T>>;
-
-/**
- * Second version decomposition of a type.
- */
-export type Decompose2<T> = T extends Ru
-  ? Decompose<DeepRequired<T>>
-  : never;
 
 export type ChildConfigDef = EventsMap;
 

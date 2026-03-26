@@ -11,6 +11,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.3.0] - 26/03/2026** => _11:12_
+
+</summary>
+
+- **Refactor**: Reformatage global — passage aux guillemets simples dans
+  tous les fichiers source TypeScript (`src/`, `oxfmt.config.ts`)
+- **Refactor**: Reformatage des expressions de types TypeScript longs pour
+  respecter `printWidth: 75` (`types.ts`, `machine.types.ts`,
+  `fixtures/index.ts`)
+- **Refactor**: Compactage des mappages de chemins dans `tsconfig.json`
+  (tableaux inline à la place de tableaux multi-lignes)
+- **Update**: Mise à jour des dépendances (`pnpm-lock.yaml`)
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.2.2] - 26/03/2026** => _11:00_
 
 </summary>

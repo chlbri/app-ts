@@ -1,7 +1,7 @@
+import type { Action2, ActionConfig, ActionResult } from '#actions';
 import type {
   Equals,
   NOmit,
-  NotUndefined,
   Primitive,
   PrimitiveObject,
 } from '#bemedev/globals/types';
@@ -15,7 +15,11 @@ import type {
   ToEvents,
 } from '#events';
 import type { GuardConfig, PredicateS2, PredicateS3 } from '#guards';
-import type { ContextFrom, PrivateContextFrom } from '#machines';
+import type {
+  AnyMachine,
+  ContextFrom,
+  PrivateContextFrom,
+} from '#machines';
 import type { PromiseeResult, PromiseFunction2 } from '#promises';
 import type { ActivityConfig, NodeConfig, StateValue } from '#states';
 import type {
@@ -28,10 +32,8 @@ import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { Pausable } from '@bemedev/rx-pausable';
 import { Observable } from 'rxjs';
-import type { Action2, ActionConfig, ActionResult } from '#actions';
-import type { EmitterConfig, PromiseeConfig } from '../actor.types';
-import type { AnyMachine } from '#machines';
 import type { FnMapR, OptionalDefinition } from '~types';
+import type { EmitterConfig, PromiseeConfig } from '../actor.types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
 
@@ -219,10 +221,7 @@ export type Subscribe_F<
 export type Selector_F<T = any> = T extends Primitive
   ? undefined
   : <
-      D extends Decompose<
-        Required<NotUndefined<T>>,
-        { start: false; object: 'both' }
-      >,
+      D extends Decompose<T, { start: false; object: 'both' }>,
       K extends Extract<keyof D, string>,
       R = D[K],
     >(

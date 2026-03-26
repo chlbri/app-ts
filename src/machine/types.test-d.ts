@@ -94,7 +94,6 @@ type CE1 = ChildEvents<
 >;
 
 expectTypeOf<CE1>().toEqualTypeOf<{ NEXT: {}; PREVIOUS: {} }>();
-
 type DSF2 = keyof DecomposedStateFrom<typeof machine2>;
 
 expectTypeOf<DSF2>().toEqualTypeOf<

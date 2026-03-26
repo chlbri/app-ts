@@ -116,13 +116,13 @@ import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
   AllowedNames,
   Fn,
-  NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { EmitterFunction2, toEmitterSrc } from '#emitters';
 import type { Machine } from '#machine';
 import type {
   ActorsMapFrom,
+  AnyMachine,
   ChildFunction2,
   ExtractTagsFromConfig,
   GetActorKeysFromConfig,
@@ -136,7 +136,6 @@ import type {
   EmitterConfig,
   PromiseeConfig,
 } from '../actor.types';
-import type { AnyMachine } from '#machines';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
@@ -624,7 +623,7 @@ export class Interpreter<
    * @see {@linkcode getByKey} for retrieving values by key.
    */
 
-  get select(): Selector_F<NotUndefined<Tc>> {
+  get select(): Selector_F<Tc> {
     const check = isPrimitive(this.#context);
     if (check) return undefined as any;
     const out = (path: string) => getByKey(this.#state.context, path);
@@ -643,7 +642,7 @@ export class Interpreter<
    *
    * @see {@linkcode getByKey} for retrieving values by key.
    */
-  get _pSelect(): Selector_F<NotUndefined<Pc>> {
+  get _pSelect(): Selector_F<Pc> {
     if (IS_TEST) {
       const check = this.isReady && isPrimitive(this.#pContext);
       const pContext = this.#pContext;
