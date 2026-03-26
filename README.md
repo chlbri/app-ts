@@ -1,8 +1,8 @@
 # @bemedev/app-ts
 
-> [!CAUTION] **Do not use version 2.1.0.** This version contains build\> configuration issues (`rolldown.config.ts`) and should be avoided.
-> Please use version **2.2.0** or higher.
-
+> [!CAUTION] **Do not use version 2.1.0.** This version contains build\>
+> configuration issues (`rolldown.config.ts`) and should be avoided. Please
+> use version **2.2.0** or higher.
 
 A TypeScript library for building finite state machines with a rich,
 type-safe API. Manages states, transitions, context, asynchronous
@@ -656,15 +656,20 @@ const machine = createMachine(
     },
     context: { iterator: 'number' },
   }),
-).provideOptions(({ assign, pauseActivity, resumeActivity, stopActivity }) => ({
-  actions: {
-    inc: assign('context.iterator', ({ context }) => context?.iterator + 1),
-    pause: pauseActivity('/idle::DELAY'),
-    resume: resumeActivity('/idle::DELAY'),
-    stop: stopActivity('/idle::DELAY'),
-  },
-  delays: { DELAY: 100 },
-}));
+).provideOptions(
+  ({ assign, pauseActivity, resumeActivity, stopActivity }) => ({
+    actions: {
+      inc: assign(
+        'context.iterator',
+        ({ context }) => context?.iterator + 1,
+      ),
+      pause: pauseActivity('/idle::DELAY'),
+      resume: resumeActivity('/idle::DELAY'),
+      stop: stopActivity('/idle::DELAY'),
+    },
+    delays: { DELAY: 100 },
+  }),
+);
 ```
 
 The activity `inc` runs every 100 ms while in `idle`. Sending `PAUSE`
@@ -764,8 +769,8 @@ const machine = createMachine(
       interval: () =>
         interval(200).pipe(
           take(5),
-          map((v) => v + 1),
-          map((v) => v * 5),
+          map(v => v + 1),
+          map(v => v * 5),
         ),
     },
   },
@@ -943,8 +948,8 @@ const machine = createMachine(
     promises: {
       fetch: async ({ context }) => {
         return fakeDB
-          .filter((item) => item.name.includes(context.input))
-          .map((item) => item.name);
+          .filter(item => item.name.includes(context.input))
+          .map(item => item.name);
       },
     },
   },
