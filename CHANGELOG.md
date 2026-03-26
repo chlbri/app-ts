@@ -11,6 +11,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.2.1] - 26/03/2026** => _03:35_
+
+</summary>
+
+- **Feat**: Ajout du champ `__decomposedState: any` à l'interface
+  `AnyMachine` dans `machine.types.ts`
+- **Refactor**: Uniformisation des guillemets (simple → double) dans
+  `machine.types.ts`
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.2.0] - 26/03/2026** => _03:22_
 
 </summary>

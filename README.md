@@ -1,8 +1,8 @@
 # @bemedev/app-ts
 
-> [!CAUTION] **Ne pas utiliser la version 2.1.0.** Cette version contient
-> des problèmes de configuration du build (`rolldown.config.ts`) et doit
-> être évitée. Veuillez utiliser la version **2.2.0** ou supérieure.
+> [!CAUTION] **Do not use version 2.1.0.** This version contains build\> configuration issues (`rolldown.config.ts`) and should be avoided.
+> Please use version **2.2.0** or higher.
+
 
 A TypeScript library for building finite state machines with a rich,
 type-safe API. Manages states, transitions, context, asynchronous

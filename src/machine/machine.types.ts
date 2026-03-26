@@ -1,28 +1,24 @@
-import type { Action2, ActionConfig, ActionResult } from '#actions';
+import type { Action2, ActionConfig, ActionResult } from "#actions";
 
-import type { DefinedValue } from '#guards';
-import type { NodeConfig, StateExtended, StateValue } from '#states';
-import type { Decompose } from '@bemedev/decompose';
+import type { DefinedValue } from "#guards";
+import type { NodeConfig, StateExtended, StateValue } from "#states";
+import type { Decompose } from "@bemedev/decompose";
 
 import type {
   Fn,
   PrimitiveObject,
   Ru,
   SubTypeLow,
-} from '#bemedev/globals/types';
+} from "#bemedev/globals/types";
 import type {
   ActorsConfigMap,
   EventArg,
   EventArgAll,
   EventObject,
   EventsMap,
-} from '#events';
-import type { FnMap, FnR, ValuesOf } from '~types';
-import type {
-  Config,
-  EventsMapFrom,
-  SimpleMachineOptions2,
-} from './types';
+} from "#events";
+import type { FnMap, FnR, ValuesOf } from "~types";
+import type { Config, EventsMapFrom, SimpleMachineOptions2 } from "./types";
 /**
  * Types for all meaningful elements of the machine.
  *
@@ -46,14 +42,14 @@ export type Elements<
   events: E;
   actorsMap: A;
   context: Tc;
-  actions?: Mo['actions'];
-  predicates?: Mo['predicates'];
-  delays?: Mo['delays'];
-  actors?: Mo['actors'];
+  actions?: Mo["actions"];
+  predicates?: Mo["predicates"];
+  delays?: Mo["delays"];
+  actors?: Mo["actors"];
 };
 
 export type GetIO_F = (
-  key: 'exit' | 'entry',
+  key: "exit" | "entry",
   node?: NodeConfig,
 ) => ActionConfig[];
 
@@ -85,6 +81,7 @@ export interface AnyMachine<
   actorsMap: A;
   __events: any;
   __state: any;
+  __decomposedState: any;
   actions: any;
   predicates: any;
   delays: any;
@@ -110,7 +107,7 @@ export type AssignAction_F<
       pContext: Pc;
       context: Tc;
     },
-    { object: 'both'; start: false; sep: '.' }
+    { object: "both"; start: false; sep: "." }
   >,
   K extends keyof D = keyof D,
 >(
@@ -146,7 +143,7 @@ export type ByKey_F<
   T extends string = string,
 > = <
   S extends StateExtended<E, Pc, Tc, T>,
-  D = Decompose<S, { object: 'both'; start: false; sep: '.' }>,
+  D = Decompose<S, { object: "both"; start: false; sep: "." }>,
   K extends keyof D & string = keyof D & string,
 >(
   key: K,
@@ -163,7 +160,7 @@ export type FilterAction_F<
       pContext: Pc;
       context: Tc;
     },
-    { object: 'object'; start: false; sep: '.' }
+    { object: "object"; start: false; sep: "." }
   >,
   K extends keyof D & string = keyof D & string,
 >(
@@ -189,7 +186,7 @@ export type EraseAction_F<
         pContext: Pc;
         context: Tc;
       },
-      { object: 'both'; start: false; sep: '.' }
+      { object: "both"; start: false; sep: "." }
     >,
     object
   >,
@@ -212,13 +209,7 @@ export type SendAction_F<
 > = <M extends AnyMachine>(
   _?: M,
 ) => (
-  fn: FnMap<
-    E,
-    Pc,
-    Tc,
-    T,
-    { to: string; event: EventArg<EventsMapFrom<M>> }
-  >,
+  fn: FnMap<E, Pc, Tc, T, { to: string; event: EventArg<EventsMapFrom<M>> }>,
 ) => Action2<E, Pc, Tc, T>;
 
 export type ValueCheckerGuard_F<
@@ -273,10 +264,10 @@ export type BatchAction_F<
 export type LegacyOptions<
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = Readonly<{
-  actions?: Mo['actions'];
-  predicates?: Mo['predicates'];
-  delays?: Mo['delays'];
-  actors?: Mo['actors'];
+  actions?: Mo["actions"];
+  predicates?: Mo["predicates"];
+  delays?: Mo["delays"];
+  actors?: Mo["actors"];
 }>;
 
 export type AddOption<
@@ -372,27 +363,27 @@ export type ExtendedActionsParams<
 }>;
 
 export type TimeActionsTypes =
-  | 'pauseActivity'
-  | 'resumeActivity'
-  | 'stopActivity'
-  | 'pauseTimer'
-  | 'resumeTimer'
-  | 'stopTimer';
+  | "pauseActivity"
+  | "resumeActivity"
+  | "stopActivity"
+  | "pauseTimer"
+  | "resumeTimer"
+  | "stopTimer";
 
 export type _ActionTypes =
-  | 'assign'
-  | 'void'
-  | 'sendTo'
-  | 'resend'
-  | 'forceSend'
-  | 'debounce'
+  | "assign"
+  | "void"
+  | "sendTo"
+  | "resend"
+  | "forceSend"
+  | "debounce"
   | TimeActionsTypes;
 
 export type ActionTypes = `actions.${_ActionTypes}`;
 
 export type AppTypes =
   | ActionTypes
-  | 'guards'
-  | 'pContext'
-  | 'context'
-  | 'promisees';
+  | "guards"
+  | "pContext"
+  | "context"
+  | "promisees";
