@@ -25,9 +25,9 @@ export type ToChildSrc_F = <
 
 /**
  * Converts a child configuration to a child machine object.
- * @param _child of type {@linkcode EmitterSrcConfig}, the machine configuration to convert.
- * @param children of type {@linkcode EmitterMap}, the map of emitters to look up the emitter configuration.
- * @returns an emitter object with an id, or undefined if the emitter is not found.
+ * @param _child - the machine configuration to convert.
+ * @param children - the map of children to look up the configuration.
+ * @returns a child function, or undefined if not found.
  *
  * @see {@linkcode EventsMap} for the events map
  * @see {@linkcode ActorsConfigMap} for the actors map

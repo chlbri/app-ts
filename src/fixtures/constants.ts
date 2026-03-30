@@ -7,7 +7,6 @@ export const defaultT = {
   eventsMap: {},
   actorsMap: {
     children: {},
-    emitters: {},
     promisees: {},
   },
 } as const;

@@ -310,7 +310,6 @@ export type AddOption<
   resumeTimer: TimeAction_F<E, Pc, Tc, T>;
   stopTimer: TimeAction_F<E, Pc, Tc, T>;
   // merge: DirectMerge_F<Pc, Tc>;
-  // emitter: Emitter<E, P, Pc, Tc>;
 };
 
 export type AddOptionsParam_F<
@@ -323,7 +322,7 @@ export type AddOptionsParam_F<
   option: AddOption<E, Pc, Tc, T>,
   /**
    * Access to previously defined options from previous addOptions or provideOptions calls.
-   * Provides actions, predicates, emitters, machines, promises, and delays.
+   * Provides actions, predicates, machines, promises, and delays.
    */
   legacyOptions: {
     _legacy: LegacyOptions<Mo>;

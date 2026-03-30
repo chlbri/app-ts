@@ -25,7 +25,6 @@ export const machine = createMachine(
     eventsMap: { NEXT: {} },
     actorsMap: {
       children: {},
-      emitters: {},
       promisees: {},
     },
   },

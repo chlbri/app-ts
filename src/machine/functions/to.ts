@@ -29,12 +29,12 @@ export type ToChild_F = <
 ) => Child<Eo, Pc, Tc, T, R>;
 
 /**
- * Converts an emitter config to an emitter object with a source and transitions.
+ * Converts a child config to a child object with a source and transitions.
  * @param events of type {@linkcode EventsMap}, the events map.
  * @param actorsMap of type {@linkcode ActorsConfigMap}, the actors map.
- * @param src of type {@linkcode EmitterSrcConfig}, the emitter configuration to convert.
- * @param emitters of type {@linkcode SimpleMachineOptions}, the machine options.
- * @returns an emitter object with a source and transitions.
+ * @param src - the child configuration to convert.
+ * @param options of type {@linkcode SimpleMachineOptions}, the machine options.
+ * @returns a child object with a source and transitions.
  *
  * @see {@linkcode toChildSrc} for converting the source.
  * @see {@linkcode toTransition} for converting transitions.

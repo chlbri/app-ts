@@ -111,11 +111,11 @@ export interface ActorsConfigMap {
  */
 
 /**
- * Represents a union type of all events, promisees, emitters, and child events.
- * It combines the transformed events, promisees, emitters, and child events into a single type.
+ * Represents a union type of all events, promisees, and child events.
+ * It combines the transformed events, promisees, and child events into a single type.
  * @template : {@linkcode EventsMap} [E], the map of events.
- * @template : {@linkcode ActorsConfigMap} [A], the configuration map for actors which includes children, emitters, and promisees.
- * @returns A union type of events, promisee-events, emitter-events, and child-events.
+ * @template : {@linkcode ActorsConfigMap} [A], the configuration map for actors which includes children and promisees.
+ * @returns A union type of events, promisee-events, and child-events.
  */
 export type ToEventsR<
   E extends EventsMap,

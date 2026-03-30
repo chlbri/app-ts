@@ -15,7 +15,7 @@ import { applyConfig } from '../registry';
  * ```ts
  * export default defineConfig({
  *   mode: 'strict',
- *   plugins: [emittersPlugin],
+ *   plugins: [myPlugin],
  * });
  * ```
  */
