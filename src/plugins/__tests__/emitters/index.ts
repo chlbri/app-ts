@@ -1,0 +1,1 @@
+export { emittersPlugin } from './plugin';

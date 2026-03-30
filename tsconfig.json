@@ -43,6 +43,7 @@
       "#machine": ["./src/machine/machine.ts"],
       "#machines": ["./src/machine/index.ts"],
       "#config": ["./src/config/index.ts"],
+      "#plugins": ["./src/plugins/index.ts"],
       "#bemedev/*": ["./src/libs/bemedev/*"]
     }
   }

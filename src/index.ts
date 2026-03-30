@@ -1,5 +1,6 @@
 export * from '#interpreters';
 export * from '#machines';
+export * from '#plugins';
 export {
   typings,
   deepEqual,
