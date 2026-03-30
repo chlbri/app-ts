@@ -24,16 +24,12 @@ describe('#01 => emitters plugin', () => {
   });
 
   describe('#02 => registration', () => {
-    test('#01 => register emitters plugin', () => {
-      registerPlugin(emittersPlugin);
-    });
-
-    test('#02 => hasPlugin returns true', () => {
+    test('#01 => hasPlugin returns true', () => {
       registerPlugin(emittersPlugin);
       expect(hasPlugin('emitters')).toBe(true);
     });
 
-    test('#03 => getPlugin returns the plugin', () => {
+    test('#02 => getPlugin returns the plugin', () => {
       registerPlugin(emittersPlugin);
       expect(getPlugin('emitters')).toBe(emittersPlugin);
     });

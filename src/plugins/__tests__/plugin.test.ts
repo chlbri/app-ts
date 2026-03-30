@@ -40,26 +40,22 @@ describe('#02 => registry', () => {
   });
 
   describe('#01 => registerPlugin', () => {
-    test('#01 => register a plugin', () => {
-      registerPlugin(plugin);
-    });
-
-    test('#02 => hasPlugin returns true', () => {
+    test('#01 => hasPlugin returns true', () => {
       registerPlugin(plugin);
       expect(hasPlugin('reg-plugin')).toBe(true);
     });
 
-    test('#03 => getPlugin returns the plugin', () => {
+    test('#02 => getPlugin returns the plugin', () => {
       registerPlugin(plugin);
       expect(getPlugin('reg-plugin')).toBe(plugin);
     });
 
-    test('#04 => getPlugins has length 1', () => {
+    test('#03 => getPlugins has length 1', () => {
       registerPlugin(plugin);
       expect(getPlugins()).toHaveLength(1);
     });
 
-    test('#05 => duplicate is ignored', () => {
+    test('#04 => duplicate is ignored', () => {
       registerPlugin(plugin);
       registerPlugin(plugin);
       expect(getPlugins()).toHaveLength(1);
