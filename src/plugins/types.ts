@@ -37,7 +37,8 @@ export type Plugin<
  */
 export type AppConfig<M extends Mode = Mode> = {
   readonly mode?: M;
-  readonly plugins?: readonly Plugin[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly plugins?: readonly Plugin<string, any>[];
 };
 
 /**
@@ -54,7 +55,8 @@ export type PluginOptions<P extends Plugin> = P['options'];
  * Helper type to extract plugin names from a config.
  */
 export type PluginNames<C extends AppConfig> =
-  C['plugins'] extends readonly Plugin[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  C['plugins'] extends readonly Plugin<string, any>[]
     ? PluginName<C['plugins'][number]>
     : never;
 

@@ -5,7 +5,8 @@ import type { AppConfig, Plugin } from './types';
  * Internal registry that stores all registered plugins
  * and the resolved global configuration.
  */
-const _plugins: Plugin[] = [];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _plugins: Plugin<string, any>[] = [];
 let _mode: Mode = 'strict';
 
 /**
@@ -13,7 +14,8 @@ let _mode: Mode = 'strict';
  *
  * @param plugin - The plugin to register.
  */
-export const registerPlugin = (plugin: Plugin): void => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const registerPlugin = (plugin: Plugin<string, any>): void => {
   const exists = _plugins.some(p => p.name === plugin.name);
   if (exists) return;
   _plugins.push(plugin);
@@ -25,7 +27,8 @@ export const registerPlugin = (plugin: Plugin): void => {
  *
  * @returns A readonly copy of the registered plugins array.
  */
-export const getPlugins = (): readonly Plugin[] => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getPlugins = (): readonly Plugin<string, any>[] => {
   return [..._plugins];
 };
 
@@ -44,7 +47,10 @@ export const hasPlugin = (name: string): boolean => {
  * @param name - The name of the plugin to retrieve.
  * @returns The plugin, or undefined if not found.
  */
-export const getPlugin = (name: string): Plugin | undefined => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getPlugin = (
+  name: string,
+): Plugin<string, any> | undefined => {
   return _plugins.find(p => p.name === name);
 };
 

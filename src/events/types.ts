@@ -3,7 +3,6 @@ import type {
   PrimitiveObject,
   Unionize,
 } from '#bemedev/globals/types';
-import type { EmitterConfigMap } from '#emitters';
 import type { ChildConfigMap } from '#machines';
 import type {
   ALWAYS_EVENT,
@@ -85,8 +84,13 @@ type _PromiseesR<T extends PromiseeMap> =
       : never
     : never;
 
-type _EmitterConfigR<T extends EmitterConfigMap> =
-  Unionize<T> extends infer U extends EmitterConfigMap
+type _EmitterConfigR<
+  T extends Record<string, { next: unknown; error: unknown }>,
+> =
+  Unionize<T> extends infer U extends Record<
+    string,
+    { next: unknown; error: unknown }
+  >
     ? U extends any
       ?
           | {
@@ -108,11 +112,20 @@ type _ChildConfigR<T extends ChildConfigMap> = {
     : never;
 }[keyof T & string];
 
-export type ActorsConfigMap = {
+/**
+ * Base interface for actor configuration maps.
+ * Supports declaration merging — plugins augment this interface
+ * to add new actor types (e.g. the emitters plugin adds `emitters`).
+ *
+ * @example Adding emitters via plugin (tsconfig):
+ * ```json
+ * { "compilerOptions": { "types": ["app-ts-emitters"] } }
+ * ```
+ */
+export interface ActorsConfigMap {
   children?: ChildConfigMap;
-  emitters?: EmitterConfigMap;
   promisees?: PromiseeMap;
-};
+}
 
 /**
  * Represents a union type of all events and promisees.
@@ -136,7 +149,14 @@ export type ToEventsR<
 > =
   | EventsR<E>
   | _PromiseesR<NotUndefined<A['promisees']>>
-  | _EmitterConfigR<NotUndefined<A['emitters']>>
+  | (A extends {
+      emitters?: infer Em extends Record<
+        string,
+        { next: unknown; error: unknown }
+      >;
+    }
+      ? _EmitterConfigR<NonNullable<Em>>
+      : never)
   | _ChildConfigR<NotUndefined<A['children']>> extends infer U extends
   EventObject
   ? never extends Ex

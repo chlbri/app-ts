@@ -1,7 +1,4 @@
-import type {
-  NotUndefined,
-  PrimitiveObject,
-} from '#bemedev/globals/types';
+import type { PrimitiveObject } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventObject } from '#events';
 import type { Transition } from '#transitions';
 import type { Observable } from 'rxjs';
@@ -46,10 +43,12 @@ export type Emitter<
 export type EmitterReturn<
   K extends string,
   A extends ActorsConfigMap = ActorsConfigMap,
-> = NotUndefined<A['emitters']>[K]['next'] extends infer P
-  ? unknown extends P
-    ? never
-    : P
+> = A extends { emitters?: infer Em }
+  ? Em extends Record<K, { next: infer P }>
+    ? unknown extends P
+      ? never
+      : P
+    : never
   : never;
 
 export type EmitterFunction<
