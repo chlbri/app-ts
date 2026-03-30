@@ -91,7 +91,6 @@ import type {
   AddSubscriber_F,
   AnyInterpreter,
   Collected0,
-  CollectedPausable,
   CollectedService,
   CreateInterval2_F,
   DiffNext,
@@ -118,7 +117,6 @@ import type {
   Fn,
   PrimitiveObject,
 } from '#bemedev/globals/types';
-import { EmitterFunction2, toEmitterSrc } from '#emitters';
 import type { Machine } from '#machine';
 import type {
   ActorsMapFrom,
@@ -129,13 +127,8 @@ import type {
   MachineOptions,
 } from '#machines';
 import type { FinallyConfig, PromiseeResult } from '#promises';
-import { createPausable } from '@bemedev/rx-pausable';
 import { createScheduler } from '@bemedev/scheduler';
-import type {
-  ChildConfig,
-  EmitterConfig,
-  PromiseeConfig,
-} from '../actor.types';
+import type { ChildConfig, PromiseeConfig } from '../actor.types';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
@@ -359,7 +352,6 @@ export class Interpreter<
       tags: this.tags,
     };
 
-    this.#collectEmitterConfigs();
     this.#collectChildrenConfig();
     this.#throwing();
   }
@@ -732,10 +724,8 @@ export class Interpreter<
    */
   start = async () => {
     this.#collectChildren();
-    this.#collectPausables();
     this.#throwing();
     this.#startStatus();
-    this.#startPausables();
     this.#flush();
     this.#startInitialEntries();
     this.#startChildren();
@@ -776,18 +766,13 @@ export class Interpreter<
     };
 
     this.#collectChildren();
-    this.#collectPausables();
     this.#selfTransitionsCounter++;
     this.#pauseAllActivities();
     this.#performActivities();
-    this.#stopPausables(filter);
-    this.#pausePausables(({ from }) => this.#isInsideValue(from));
     this.#pauseChildren(({ from }) => this.#isInsideValue(from));
     this.#stopChildren(filter);
     this.#startChildren();
     this.#resumeChildren(({ from }) => !this.#isInsideValue(from));
-    this.#startPausables();
-    this.#resumePausables(({ from }) => this.#isInsideValue(from));
 
     this.#abortablePromisees
       .filter(({ from }) => {
@@ -1432,37 +1417,6 @@ export class Interpreter<
     return this.#currentActivities?.forEach(this.#start);
   };
 
-  #startPausables = () => {
-    this.#collectedPausables.forEach(({ pausable }) => pausable.start());
-  };
-
-  #resumePausables = (
-    filter: (value: CollectedPausable) => boolean = () => true,
-  ) => {
-    this.#collectedPausables
-      .filter(filter)
-      .forEach(({ pausable }) => pausable.resume());
-  };
-
-  #stopPausables = (
-    filter: Parameters<Array<CollectedPausable>['filter']>[0] = () => true,
-  ) => {
-    this.#collectedPausables.filter(filter).forEach(({ pausable, id }) => {
-      pausable.stop();
-      this.#collectedPausables = this.#collectedPausables.filter(
-        f => f.id !== id,
-      );
-    });
-  };
-
-  #pausePausables = (
-    filter: (value: CollectedPausable) => boolean = () => true,
-  ) => {
-    this.#collectedPausables
-      .filter(filter)
-      .forEach(({ pausable }) => pausable.pause());
-  };
-
   /**
    * Get all brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
    */
@@ -1564,33 +1518,6 @@ export class Interpreter<
     return out;
   }
 
-  #collectedEmitterConfigs: [
-    from: string,
-    ...promisees: (EmitterConfig & { id: string })[],
-  ][] = [];
-
-  #collectEmitterConfigs = () => {
-    const entriesFlat = Object.entries(this.#machine.flat);
-    const entries: [
-      from: string,
-      ...promisees: (EmitterConfig & { id: string })[],
-    ][] = [];
-
-    entriesFlat.forEach(([from, node]) => {
-      const actors = Object.entries(node.actors ?? {});
-      const promisees = toArray
-        .typed(actors)
-        .map(([id, actor]) => ({ ...actor, id }))
-        .filter(actor => 'next' in actor);
-      if (node.actors) {
-        entries.push([from, ...promisees]);
-      }
-    });
-
-    this.#collectedEmitterConfigs.push(...entries);
-    return entries;
-  };
-
   #collectedChildrenConfig: [
     from: string,
     ...promisees: (ChildConfig & { id: string })[],
@@ -1616,76 +1543,6 @@ export class Interpreter<
 
     this.#collectedChildrenConfig.push(...entries);
     return entries;
-  };
-
-  #collectedPausables: CollectedPausable[] = [];
-
-  #collectPausables = () => {
-    type _Emitter = EmitterConfig & {
-      emitterFn: EmitterFunction2<Eo, Pc, Tc, Ta>;
-      id: string;
-    };
-    return this.#collectedEmitterConfigs
-      .filter(([from]) => this.#isInsideValue(from))
-      .filter(([from]) => {
-        const froms = this.#collectedPausables.map(({ from }) => from);
-        return !froms.includes(from);
-      })
-      .map(([from, ..._emitters]) => {
-        const emitters = _emitters
-          .map(({ id, ...rest }) => {
-            return { emitterFn: this.toEmitterSrc(id), ...rest, id };
-          })
-          .filter(({ emitterFn }) => !!emitterFn) as _Emitter[];
-
-        return [from, ...emitters] as const;
-      })
-      .map(([from, ..._emitters]) => {
-        const emitters = _emitters.map(({ emitterFn, ...rest }) => {
-          return { observable: this.#executeEmitter(emitterFn), ...rest };
-        });
-
-        return [from, ...emitters] as const;
-      })
-      .map(([from, ...emitters]) => {
-        const pausables = emitters.map(
-          ({ observable, error, next, complete, id }) => {
-            const pausable = createPausable(observable, {
-              next: payload => {
-                const event = {
-                  type: `${id}::next`,
-                  payload,
-                } satisfies EventObject;
-
-                this.#changeEvent(_any(event));
-                const transitions = toArray<TransitionConfig>(next);
-                this.__performTransitions(...transitions);
-              },
-              error: payload => {
-                const event = {
-                  type: `${id}::error`,
-                  payload,
-                } satisfies EventObject;
-
-                this.#changeEvent(_any(event));
-                const transitions = toArray<TransitionConfig>(error);
-                this.__performTransitions(...transitions);
-              },
-              complete: () => this.#performFinally(complete),
-            });
-
-            return {
-              pausable,
-              id,
-              from,
-            };
-          },
-        );
-
-        this.#collectedPausables.push(...pausables);
-        return pausables;
-      })
-      .flat();
   };
 
   #collectedChildren: CollectedService[] = [];
@@ -1803,10 +1660,6 @@ export class Interpreter<
       });
   };
 
-  #executeEmitter = (emitter: EmitterFunction2<Eo, Pc, Tc, Ta>) => {
-    const instance = emitter(this.#cloneState);
-    return instance;
-  };
   #executeChild = (child: ChildFunction2<Eo, Pc, Tc, Ta>) => {
     const instance = child(this.#cloneState);
     return instance;
@@ -1860,7 +1713,6 @@ export class Interpreter<
     this.#makeBusy();
     this.#subscribers.forEach(this.#close);
     this.#pauseChildren();
-    this.#pausePausables();
     this.#timeoutActions.forEach(this.#pause);
     this.#setStatus('paused');
   };
@@ -1872,7 +1724,6 @@ export class Interpreter<
       this.#subscribers.forEach(this.#open);
       this.#timeoutActions.forEach(this.#resume);
       this.#resumeChildren();
-      this.#resumePausables();
       this.#makeWork();
     }
   };
@@ -1884,7 +1735,6 @@ export class Interpreter<
     this.#stopChildren();
     this._cachedIntervals.forEach(this.#dispose);
     this.#timeoutActions.forEach(this.#stop);
-    this.#stopPausables();
     this.#setStatus('stopped');
     this.#stopSchedulers();
   };
@@ -2397,22 +2247,6 @@ export class Interpreter<
         machines as any,
       ),
       `Machine (${reduceDescriber(machine)}) is not defined`,
-    );
-  };
-
-  toEmitterSrc = (emitter: string) => {
-    const events = this.#machine.eventsMap;
-    const actorsMap = this.#machine.actorsMap;
-    const emitters = this.#machine.emitters;
-
-    return this.#returnWithWarning(
-      toEmitterSrc<E, A, Pc, Tc, Ta>(
-        events,
-        actorsMap,
-        emitter,
-        emitters as any,
-      ),
-      `Emitter (${reduceDescriber(emitter)}) is not defined`,
     );
   };
 

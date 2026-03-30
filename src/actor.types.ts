@@ -5,17 +5,6 @@ export type CommonActor = {
   readonly description?: string;
 };
 
-export type _EmitterConfig<Paths extends string = string> = CommonActor & {
-  readonly next: SingleOrArrayT<Paths>;
-  readonly error?: SingleOrArrayT<Paths>;
-  readonly complete?: FinallyConfig<Paths>;
-};
-
-export type EmitterConfig<Paths extends string = string> =
-  _EmitterConfig<Paths> extends infer E
-    ? E & { [K in Exclude<keyof E, keyof _EmitterConfig>]: never }
-    : never;
-
 export type _PromiseeConfig<Paths extends string = string> =
   CommonActor & {
     // Max wait time to perform the promise
@@ -50,6 +39,5 @@ export type ChildConfig<Paths extends string = string> =
     : never;
 
 export type ActorConfig<Paths extends string = string> =
-  | EmitterConfig<Paths>
   | PromiseeConfig<Paths>
   | ChildConfig<Paths>;

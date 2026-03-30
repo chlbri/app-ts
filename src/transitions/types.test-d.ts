@@ -1,7 +1,6 @@
 import type {
   DelayedTransitions,
   ExtractChildKeysFromTransitions,
-  ExtractEmitterSrcKeyFromTransitions,
   ExtractPromiseeSrcKeyFromTransitions,
   GetEventKeysFromDelayed,
   GetEventKeysFromTransitions,
@@ -68,9 +67,6 @@ const ttest3 = {
       catch: [{ guards: 'guard8', actions: 'build8' }, { actions: 'k' }],
       finally: [{ guards: 'guard9', actions: 'build9' }, { actions: 'l' }],
     },
-    em1: {
-      next: '/dfdfd',
-    },
     m1: {
       on: {
         EVENT1: { actions: 'action1' },
@@ -102,8 +98,6 @@ expectTypeOf<TTest3>().toEqualTypeOf<
   | 'actors.source2.then.[1]'
   | 'actors.source2.catch.[0]'
   | 'actors.source2.catch.[1]'
-  | 'actors.em1.next'
-  | 'actors.em1.error'
   | 'actors.m1.on.EVENT1'
   | 'actors.m1.on.EVENT34.[0]'
   | 'actors.m1.on.EVENT34.[1]'
@@ -165,17 +159,11 @@ const transition2 = {
       then: '/',
       catch: '/',
     },
-    emitter1: {
-      next: '/',
-    },
   },
 } as const satisfies TransitionsConfig;
 
 type TTS2 = ExtractPromiseeSrcKeyFromTransitions<typeof transition2>;
 expectTypeOf<TTS2>().toEqualTypeOf<'promise2' | 'promise3'>();
-
-type TTS3 = ExtractEmitterSrcKeyFromTransitions<typeof transition2>;
-expectTypeOf<TTS3>().toEqualTypeOf<'emitter1'>();
 
 type TTS4 = ExtractChildKeysFromTransitions<typeof transition2>;
 expectTypeOf<TTS4>().toEqualTypeOf<{

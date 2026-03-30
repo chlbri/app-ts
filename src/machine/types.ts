@@ -7,12 +7,6 @@ import type {
 } from '#bemedev/globals/types';
 import type { DelayFunction2 } from '#delays';
 import type {
-  EmitterDef,
-  EmitterFunction2,
-  EmitterReturn,
-  EmittersMap,
-} from '#emitters';
-import type {
   ActorsConfigMap,
   EventObject,
   EventsMap,
@@ -42,14 +36,12 @@ import type {
   ExtractActionKeysFromTransitions,
   ExtractChildKeysFromTransitions,
   ExtractDelayKeysFromTransitions,
-  ExtractEmitterSrcKeyFromTransitions,
   ExtractGuardKeysFromTransitions,
   ExtractPromiseeSrcKeyFromTransitions,
   Transition,
   TransitionsConfig,
 } from '#transitions';
 import type { Recompose } from '@bemedev/decompose';
-import type { Observable } from 'rxjs';
 import type {
   Describer,
   FnMap,
@@ -236,16 +228,6 @@ type _GetPromiseeSrcKeysFromFlat<Flat extends FlatMapN> = {
     : never;
 }[keyof Flat];
 
-type _GetEmitterSrcKeyFromFlat<Flat extends FlatMapN> = {
-  [key in keyof Flat]: ExtractEmitterSrcKeyFromTransitions<
-    Extract<Flat[key], TransitionsConfig>
-  > extends infer V
-    ? unknown extends V
-      ? never
-      : V
-    : never;
-}[keyof Flat];
-
 type _GetChildKeysFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]: ExtractChildKeysFromTransitions<
     Extract<Flat[key], TransitionsConfig>
@@ -340,20 +322,6 @@ export type GetPromiseSrcsFromFlat<
     }
   >;
 };
-
-export type GetEmitterSrcsKeyFromFlat<
-  Flat extends FlatMapN,
-  A extends ActorsConfigMap = ActorsConfigMap,
-> = {
-  [key in _GetEmitterSrcKeyFromFlat<Flat>]: Observable<
-    EmitterReturn<key, A>
-  >;
-};
-
-/* Record<
-  _GetPromiseeSrcKeyFromFlat<Flat>,
-  PromiseFunction<E, A, Pc, Tc>
-> */
 
 /**
  * Provide a record of all delays by key and {@linkcode DelayFunction} function.
@@ -468,54 +436,6 @@ export type GetPromiseeSrcKeysFromConfig<C extends Config> =
 export type GetPromiseesSrcFromMachine<T extends KeyU<'config'>> =
   GetPromiseeSrcKeysFromConfig<ConfigFrom<T>>;
 
-export type GetEmittersSrcKeyFromFlat<Flat extends FlatMapN> = Record<
-  _GetEmitterSrcKeyFromFlat<Flat>,
-  EmitterDef
->;
-
-export type GetEmittersSrcFromFlat<
-  Flat extends FlatMapN,
-  E extends EventObject = EventObject,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  T extends string = string,
-> = {
-  [key in _GetEmitterSrcKeyFromFlat<Flat>]: EmitterFunction2<
-    E,
-    Pc,
-    Tc,
-    T,
-    EmitterReturn<key, A>
-  >;
-};
-
-/**
- * Get all emitters from a machine config.
- *
- * @template : {@linkcode Config} [C] - type of the machine config
- * @returns A type representing all emitters from the machine config.
- *
- * @see {@linkcode FlatMapN} for the flat map structure.
- * @see {@linkcode GetEmittersSrcKeyFromFlat} for extracting promises from the flat map.
- * @see {@linkcode FlatMapN} for extracting the config from a machine config.
- */
-export type GetEmittersSrcFromConfig<C extends Config> =
-  GetEmittersSrcKeyFromFlat<FlatMapN<C>>;
-
-/**
- * Get all emitters from a machine.
- *
- * @template : {@linkcode KeyU}<'config'> [T] - type of the machine
- *
- * @returns A type representing all emitters from the machine.
- *
- * @see {@linkcode ConfigFrom} for extracting the config from the machine.
- * @see {@linkcode GetEmittersSrcFromConfig} for extracting promises from the machine.
- */
-export type GetEmittersSrcFromMachine<T extends KeyU<'config'>> =
-  GetEmittersSrcFromConfig<ConfigFrom<T>>;
-
 export type GetChildrenSrcKeysFromFlat<
   Flat extends FlatMapN,
   G extends _GetChildKeysFromFlat<Flat> = _GetChildKeysFromFlat<Flat>,
@@ -592,7 +512,6 @@ export type GetActorsFromFlat<
   T extends string = string,
 > = {
   children: Partial<GetChildrenSrcFromFlat<Flat, E, A, Pc, Tc, T>>;
-  emitters: Partial<GetEmittersSrcFromFlat<Flat, E, A, Pc, Tc, T>>;
   promises: Partial<GetPromisesFromFlat<Flat, E, A, Pc, Tc, T>>;
 };
 
@@ -616,7 +535,6 @@ export type GetActorsFromMachine<
 
 export type GetActorsSrcKeysFromFlat<Flat extends FlatMapN> = {
   children: GetChildrenSrcKeysFromFlat<Flat>;
-  emitters: GetEmittersSrcKeyFromFlat<Flat>;
   promisees: GetPromiseesSrcKeyFromFlat<Flat>;
 };
 
@@ -634,7 +552,6 @@ export type GetActorsSrcKeysFromFlat2<
   children: {
     [key in G['src']]: Record<Extract<G, { src: key }>['on'], any>;
   };
-  emitters: GetEmittersSrcKeyFromFlat<Flat>;
   promisees: GetPromiseesSrcKeyFromFlat<Flat>;
   pContext: Recomposer<G['contexts'][keyof G['contexts']]>;
 };
@@ -1024,7 +941,6 @@ export type SimpleMachineOptions<
   delays: Partial<RecordS<DelayFunction2<Eo, Pc, Tc, T>>>;
   actors: Partial<{
     children: RecordS<ChildFunction2<Eo, Pc, Tc, T>>;
-    emitters: EmittersMap<Eo, Pc, Tc, T>;
     promises: RecordS<PromiseFunction2<Eo, Pc, Tc, T>>;
   }>;
 }>;
@@ -1044,7 +960,6 @@ export type SimpleMachineOptions2 = Partial<
       'actors',
       {
         children?: RecordS<any>;
-        emitters?: RecordS<any>;
         promises?: RecordS<any>;
       }
     >

@@ -84,26 +84,6 @@ type _PromiseesR<T extends PromiseeMap> =
       : never
     : never;
 
-type _EmitterConfigR<
-  T extends Record<string, { next: unknown; error: unknown }>,
-> =
-  Unionize<T> extends infer U extends Record<
-    string,
-    { next: unknown; error: unknown }
-  >
-    ? U extends any
-      ?
-          | {
-              type: `${keyof U & string}::next`;
-              payload: U[keyof U]['next'];
-            }
-          | {
-              type: `${keyof U & string}::error`;
-              payload: U[keyof U]['error'];
-            }
-      : never
-    : never;
-
 type _ChildConfigR<T extends ChildConfigMap> = {
   [key in keyof T & string]: Unionize<T[key]> extends infer U
     ? U extends any
@@ -115,12 +95,7 @@ type _ChildConfigR<T extends ChildConfigMap> = {
 /**
  * Base interface for actor configuration maps.
  * Supports declaration merging — plugins augment this interface
- * to add new actor types (e.g. the emitters plugin adds `emitters`).
- *
- * @example Adding emitters via plugin (tsconfig):
- * ```json
- * { "compilerOptions": { "types": ["app-ts-emitters"] } }
- * ```
+ * to add new actor types.
  */
 export interface ActorsConfigMap {
   children?: ChildConfigMap;
@@ -149,14 +124,6 @@ export type ToEventsR<
 > =
   | EventsR<E>
   | _PromiseesR<NotUndefined<A['promisees']>>
-  | (A extends {
-      emitters?: infer Em extends Record<
-        string,
-        { next: unknown; error: unknown }
-      >;
-    }
-      ? _EmitterConfigR<NonNullable<Em>>
-      : never)
   | _ChildConfigR<NotUndefined<A['children']>> extends infer U extends
   EventObject
   ? never extends Ex

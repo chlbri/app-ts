@@ -21,7 +21,6 @@ test('resolveNode -> coverage', () => {
     entry: [inc],
     exit: [inc],
     children: [],
-    emitters: [],
     on: [],
     promises: [],
     states: [],

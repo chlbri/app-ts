@@ -605,10 +605,6 @@ class Machine<
     return this.#actors?.children;
   }
 
-  get emitters() {
-    return this.#actors?.emitters;
-  }
-
   // #region Providers
 
   #getInitialKeys = () => {
@@ -656,9 +652,6 @@ class Machine<
 
   #addChildren = (children?: NotUndefined<Mo['actors']>['children']) =>
     (this.#actors = merge(this.#actors, { children }));
-
-  #addEmitters = (emitters?: NotUndefined<Mo['actors']>['emitters']) =>
-    (this.#actors = merge(this.#actors, { emitters }));
 
   /**
    * Create options for the machine.
@@ -830,7 +823,6 @@ class Machine<
     this.#addDelays(out?.delays);
     this.#addPromises(out?.actors?.promises);
     this.#addChildren(out?.actors?.children);
-    this.#addEmitters(out?.actors?.emitters);
 
     return out as any;
   };
@@ -938,7 +930,6 @@ class Machine<
     out.#addDelays(delays);
     out.#addPromises(actors?.promises);
     out.#addChildren(actors?.children);
-    out.#addEmitters(actors?.emitters);
 
     return out as any;
   };

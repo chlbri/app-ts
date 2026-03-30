@@ -7,24 +7,20 @@ import type {
 } from '#bemedev/globals/types';
 import type { EventObject } from '#events';
 import type {
-  ExtractActionsFromFinally,
   ExtractActionKeysFromPromisee,
   ExtractGuardKeysFromPromisee,
   ExtractMaxFromPromisee,
   GetEventKeysFromPromisee,
   Promisee,
 } from '#promises';
-import type { Observable } from 'rxjs';
 import type { Action, ActionConfig, FromActionConfig } from '#actions';
 import type {
   ActorConfig,
   ChildConfig,
-  EmitterConfig,
   PromiseeConfig,
 } from '../actor.types';
 import type { FromGuard, GuardConfig, Predicate } from '#guards';
 
-import type { Emitter } from '#emitters';
 import type { Child } from '#machines';
 import type {
   Identify,
@@ -235,19 +231,14 @@ export type TransitionsConfig<Paths extends string = string> = {
   readonly actors?: RecordS<ActorConfig<Paths>>;
 };
 
-export type GetEventKeysFromEmitter<T extends EmitterConfig> =
-  GetEventKeysFromDelayed<Pick<T, 'next' | 'error'>>;
-
 export type GetEventKeysFromMachineConfig<T extends ChildConfig> =
   `on.${GetEventKeysFromDelayed<T['on']>}`;
 
-export type GetEventKeysFromActor<T> = T extends EmitterConfig
-  ? GetEventKeysFromEmitter<T>
-  : T extends ChildConfig
-    ? GetEventKeysFromMachineConfig<T>
-    : T extends PromiseeConfig
-      ? GetEventKeysFromPromisee<T>
-      : never;
+export type GetEventKeysFromActor<T> = T extends ChildConfig
+  ? GetEventKeysFromMachineConfig<T>
+  : T extends PromiseeConfig
+    ? GetEventKeysFromPromisee<T>
+    : never;
 
 export type GetEventKeysFromTransitions<T> =
   | ('on' extends keyof T
@@ -294,21 +285,14 @@ type _ExtractActionsFromMap<T> = ExtractActionsFromTransition<
   >
 >;
 
-export type ExtractActionKeysFromEmitter<T extends EmitterConfig> =
-  | _ExtractActionsFromMap<T['next']>
-  | _ExtractActionsFromMap<T['error']>
-  | ExtractActionsFromFinally<NotUndefined<T['complete']>>;
-
 export type ExtractActionKeysFromChild<T extends ChildConfig> =
   ExtractActionKeysFromDelayed<T['on']>;
 
-export type ExtractActionKeysFromActor<T> = T extends EmitterConfig
-  ? ExtractActionKeysFromEmitter<T>
-  : T extends ChildConfig
-    ? ExtractActionKeysFromChild<T>
-    : T extends PromiseeConfig
-      ? ExtractActionKeysFromPromisee<T>
-      : never;
+export type ExtractActionKeysFromActor<T> = T extends ChildConfig
+  ? ExtractActionKeysFromChild<T>
+  : T extends PromiseeConfig
+    ? ExtractActionKeysFromPromisee<T>
+    : never;
 /**
  * Extracts actions keys from a {@linkcode TransitionsConfig}.
  *
@@ -346,21 +330,14 @@ type _ExtractGuardKeysFromMap<T> = ExtractGuardKeysFromTransition<
   >
 >;
 
-export type ExtractGuardKeysFromEmitter<T extends EmitterConfig> =
-  | _ExtractGuardKeysFromMap<T['next']>
-  | _ExtractGuardKeysFromMap<T['error']>
-  | ExtractGuardKeysFromDelayed<T['complete']>;
-
 export type ExtractGuardsKeysFromChild<T extends ChildConfig> =
   ExtractGuardKeysFromDelayed<T['on']>;
 
-export type ExtractGuardsKeysFromActor<T> = T extends EmitterConfig
-  ? ExtractGuardKeysFromEmitter<T>
-  : T extends ChildConfig
-    ? ExtractGuardsKeysFromChild<T>
-    : T extends PromiseeConfig
-      ? ExtractGuardKeysFromPromisee<T>
-      : never;
+export type ExtractGuardsKeysFromActor<T> = T extends ChildConfig
+  ? ExtractGuardsKeysFromChild<T>
+  : T extends PromiseeConfig
+    ? ExtractGuardKeysFromPromisee<T>
+    : never;
 
 /**
  * Extracts guard keys from a {@linkcode TransitionsConfig}.
@@ -413,10 +390,6 @@ export type ExtractPromiseeSrcKeyFromTransitions<
   T extends TransitionsConfig,
 > = ExtractSrcKeyFromTransitions<T, { then: any }>;
 
-export type ExtractEmitterSrcKeyFromTransitions<
-  T extends TransitionsConfig,
-> = ExtractSrcKeyFromTransitions<T, { next: any }>;
-
 export type ExtractChildKeysFromActors<
   T extends NotUndefined<TransitionsConfig['actors']>,
 > = {
@@ -455,19 +428,6 @@ export type Transition<
   readonly description?: string;
 };
 
-export type Emiter4<
-  E extends EventObject = EventObject,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  T extends string = string,
-> = {
-  src: Observable<any>;
-  description?: string;
-  then: Transition<E, Pc, Tc, T>[];
-  catch: Transition<E, Pc, Tc, T>[];
-  finally: Transition<E, Pc, Tc, T>[];
-};
-
 /**
  * Represents all transitions inside a state config with full defined functions.
  *
@@ -490,6 +450,5 @@ export type Transitions<
   always: Transition<E, Pc, Tc, T>[];
   after: Identify<Transition<E, Pc, Tc, T>>[];
   promises: Promisee<E, Pc, Tc, T>[];
-  emitters: Emitter<E, Pc, Tc, T>[];
   children: Child<E, Pc, Tc, T>[];
 };

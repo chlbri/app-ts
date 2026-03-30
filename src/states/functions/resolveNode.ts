@@ -1,7 +1,6 @@
 import { toAction } from '#actions';
 import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import { toEmitter } from '#emitters';
 import type {
   ActorsConfigMap,
   EventsMap,
@@ -85,10 +84,6 @@ export const resolveNode: ResolveNode_F = (
     .filter(actor => 'then' in actor)
     .map(promise => toPromise(events, actorsMap, promise, options));
 
-  const emitters = actors
-    .filter(actor => 'next' in actor)
-    .map(emitter => toEmitter(events, actorsMap, emitter, options));
-
   const children = actors
     .filter(actor => 'on' in actor || 'contexts' in actor)
     .map(child => toChild(events, actorsMap, child, options));
@@ -103,7 +98,6 @@ export const resolveNode: ResolveNode_F = (
     always,
     after,
     promises,
-    emitters,
     children,
   });
 

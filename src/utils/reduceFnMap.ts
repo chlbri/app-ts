@@ -34,15 +34,6 @@ export const toEventsMap: ToEventMap_F = (events, _actors) => {
     {} as any,
   );
 
-  const emitters = Object.entries(_actors.emitters || {}).reduce(
-    (acc, [key, value]) => {
-      acc[`${key}::next`] = value.next;
-      acc[`${key}::error`] = value.error;
-      return acc;
-    },
-    {} as any,
-  );
-
   const children = Object.entries(_actors.children || {}).reduce(
     (acc, [key, value]) => {
       Object.entries(value).forEach(([childKey, childValue]) => {
@@ -53,7 +44,7 @@ export const toEventsMap: ToEventMap_F = (events, _actors) => {
     {} as any,
   );
 
-  return { ...events, ...promisees, ...emitters, ...children };
+  return { ...events, ...promisees, ...children };
 };
 
 export type ReduceFnMap_F = <
