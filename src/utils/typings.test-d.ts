@@ -1037,8 +1037,6 @@ describe('Typing utils', () => {
         },
         typings.optional(typings.array('boolean')),
       );
-      
-      type TT = inferT<typeof complexTuple>;
 
       expectTypeOf<inferT<typeof complexTuple>>().branded.toEqualTypeOf<
         [
