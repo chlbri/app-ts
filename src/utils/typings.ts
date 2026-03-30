@@ -14,6 +14,7 @@ type PrimitiveS =
   | 'number'
   | 'boolean'
   | 'null'
+  | 'void'
   | 'undefined'
   | 'symbol';
 
@@ -21,15 +22,17 @@ type TransformPrimitiveS<T extends PrimitiveS> = T extends 'string'
   ? string
   : T extends 'number'
     ? number
-    : T extends 'boolean'
-      ? boolean
-      : T extends 'null'
-        ? null
-        : T extends 'undefined'
-          ? undefined
-          : T extends 'symbol'
-            ? symbol
-            : never;
+    : T extends 'number'
+      ? number
+      : T extends 'boolean'
+        ? boolean
+        : T extends 'null'
+          ? null
+          : T extends 'undefined'
+            ? undefined
+            : T extends 'symbol'
+              ? symbol
+              : never;
 
 type Types = PrimitiveS | 'primitive';
 
@@ -44,7 +47,7 @@ const transformTypes = <T extends Types>(type: T): TransformTypes<T> => {
 };
 
 export const CUSTOM = '$$app-ts => custom$$' as const;
-export const MAYBE = '$$app-ts => maybe$$' as const;
+export const OPTIONAL = '$$app-ts => maybe$$' as const;
 export const PARTIAL = '$$app-ts => partial$$' as const;
 export const ARRAY = '$$app-ts => array$$' as const;
 
@@ -62,15 +65,15 @@ type __PrimitiveObject =
   | Custom
   | PartialCustom;
 
-export type Maybe<
+export type Optional<
   T extends __PrimitiveObject | ArrayCustom | __PrimitiveObject[] =
     __PrimitiveObject,
 > = {
-  [MAYBE]: T;
+  [OPTIONAL]: T;
 };
 
 export type ArrayCustom<
-  T extends __PrimitiveObject | Maybe = __PrimitiveObject,
+  T extends __PrimitiveObject | Optional = __PrimitiveObject,
 > = {
   [ARRAY]: T;
 };
@@ -79,7 +82,7 @@ type PrimitiveObjectMap = {
   [key: Keys]: SoRa<_PrimitiveObject>;
 };
 
-type _PrimitiveObject = __PrimitiveObject | Maybe | ArrayCustom;
+type _PrimitiveObject = __PrimitiveObject | Optional | ArrayCustom;
 
 /**
  * A type that represents a primitive object, which can be a primitive value or an object
@@ -120,7 +123,7 @@ type __TransformPrimitiveObject<T> = T extends Types
         ? TransformPrimitiveObject<A>[]
         : T extends PartialCustom
           ? Partial<__TransformPrimitiveObject<NOmit<T, typeof PARTIAL>>>
-          : T extends Maybe<infer TMaybe>
+          : T extends Optional<infer TMaybe>
             ? __TransformPrimitiveObject<TMaybe> | undefined
             : {
                 [K in keyof T]: __TransformPrimitiveObject<T[K]>;
@@ -147,11 +150,7 @@ type UndefinyObject<T extends object> = {
   [K in keyof T as HasUndefined<T[K]> extends true ? K : never]?: Undefiny<
     Exclude<T[K], undefined>
   >;
-} extends infer F
-  ? {
-      [K in keyof F]: F[K];
-    }
-  : never;
+};
 
 type Undefiny<T> = T extends AnyArray
   ? ReduceTupleU<T>
@@ -175,8 +174,8 @@ export const transformPrimitiveObject = <T extends PrimitiveObjectT>(
 
   const checkObject = typeof obj === 'object';
   if (checkObject) {
-    if (MAYBE in _obj) {
-      return transformPrimitiveObject(_obj[MAYBE]);
+    if (OPTIONAL in _obj) {
+      return transformPrimitiveObject(_obj[OPTIONAL]);
     }
 
     const isCustom = Object.keys(obj).every(key => key === CUSTOM);
@@ -267,12 +266,19 @@ typings.record = <const K extends Keys[], V extends PrimitiveObjectT>(
 
 typings.any = <T extends PrimitiveObjectT>(value: T) => value;
 
-typings.maybe = <T extends __PrimitiveObject | __PrimitiveObject[]>(
+typings.optional = <T extends __PrimitiveObject | __PrimitiveObject[]>(
   value?: T,
 ) =>
   ({
-    [MAYBE]: value,
-  }) as Maybe<T>;
+    [OPTIONAL]: value,
+  }) as Optional<T>;
+
+/**
+ * @deprecated
+ *
+ * Use optional instead
+ */
+typings.maybe = typings.optional;
 
 typings.litterals = <const T extends (string | number | boolean)[]>(
   ...values: T
@@ -286,13 +292,13 @@ typings.union = <
   return values[0] as T[number];
 };
 
-typings.array = <T extends __PrimitiveObject | Maybe>(value: T) =>
+typings.array = <T extends __PrimitiveObject | Optional>(value: T) =>
   ({ [ARRAY]: value }) as ArrayCustom<T>;
 
 typings.tuple = <
   T extends [
-    __PrimitiveObject | Maybe | ArrayCustom,
-    ...(__PrimitiveObject | Maybe | ArrayCustom)[],
+    __PrimitiveObject | Optional | ArrayCustom,
+    ...(__PrimitiveObject | Optional | ArrayCustom)[],
   ],
 >(
   ...values: T

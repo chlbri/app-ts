@@ -11,6 +11,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.3.1] - 29/03/2026** => _23:52_
+
+</summary>
+
+- **Rename**: `typings.maybe()` → `typings.optional()` et `Maybe<T>` →
+  `Optional<T>` (même marqueur interne `OPTIONAL`, rétro-compatible)
+- **Feat**: Ajout du type primitif `'void'` dans `typings.ts`
+- **Refactor**: Simplification de `Selector_F<T>` — suppression du wrapper
+  `NotUndefined` dans `interpreter.ts` et `interpreter.types.ts`
+- **Refactor**: Suppression du type `Decompose2<T>` et de l'import
+  `Decompose` inutilisé dans `types.ts`
+- **Fix**: Correction du chemin d'import de `AnyMachine` (`#machines` →
+  `#machine`) dans `interpreter.ts`
+- **Test**: Ajout de `.branded` aux comparaisons `expectTypeOf` pour une
+  vérification de types plus précise
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.3.0] - 26/03/2026** => _11:12_
 
 </summary>

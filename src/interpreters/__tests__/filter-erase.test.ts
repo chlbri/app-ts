@@ -314,7 +314,7 @@ describe('Filter and Erase actions', () => {
         },
         typings({
           context: {
-            name: typings.maybe('string'),
+            name: typings.optional('string'),
             data: 'number',
           },
           eventsMap: {
@@ -392,7 +392,7 @@ describe('Filter and Erase actions', () => {
           context: {
             user: {
               name: 'string',
-              email: typings.maybe('string'),
+              email: typings.optional('string'),
             },
           },
           eventsMap: {

@@ -3,7 +3,7 @@ import { typings } from '#utils';
 export const pphoneNumber = typings.any({
   countryCode: 'number',
   number: 'string',
-  network: typings.maybe('string'),
+  network: typings.optional('string'),
 });
 
 export const personality = typings.litterals('individual', 'company');
@@ -17,12 +17,12 @@ export const intermediary = typings.intersection(
   {
     id: 'string',
     wallet: 'string',
-    sacrifice: typings.maybe('number'),
+    sacrifice: typings.optional('number'),
     contacts: typings.any({
       phoneNumbers: typings.array(pphoneNumber),
-      emails: typings.maybe(typings.array('string')),
-      socials: typings.maybe(typings.array(social)),
-      websites: typings.maybe(typings.array('string')),
+      emails: typings.optional(typings.array('string')),
+      socials: typings.optional(typings.array(social)),
+      websites: typings.optional(typings.array('string')),
     }),
   },
   typings.discriminatedUnion(
@@ -31,8 +31,8 @@ export const intermediary = typings.intersection(
       personality: typings.litterals('individual'),
       nationalID: 'string',
       name: typings.any({
-        firstName: typings.maybe('string'),
-        lastName: typings.maybe('string'),
+        firstName: typings.optional('string'),
+        lastName: typings.optional('string'),
       }),
     },
     {
@@ -57,7 +57,7 @@ export const location = typings.partial({
 export const currency = typings.any({
   display: 'string',
   bank: 'string',
-  description: typings.maybe('string'),
+  description: typings.optional('string'),
 });
 
 export const asset = typings.any({
@@ -65,7 +65,7 @@ export const asset = typings.any({
   description: 'string',
   value: 'number',
   currency,
-  location: typings.maybe(location),
+  location: typings.optional(location),
 
   medias: typings.partial({
     photos: typings.array('string'),

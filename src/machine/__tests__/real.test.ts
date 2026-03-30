@@ -966,8 +966,8 @@ describe('REAL LIFE TESTS', () => {
     const field = typings.any({
       label: 'string',
       type: fieldType,
-      options: typings.maybe(['string']),
-      data: typings.maybe(
+      options: typings.optional(['string']),
+      data: typings.optional(
         typings.partial({
           data: [csvData],
           headers: ['string'],

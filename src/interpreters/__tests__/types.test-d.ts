@@ -17,17 +17,17 @@ type TTConfig = ConfigFrom<Machine3>;
 expectTypeOf<TTConfig>().toEqualTypeOf<Config3>();
 
 type TTPrivate = PrivateContextFrom<Machine3>;
-expectTypeOf<TTPrivate>().toEqualTypeOf<{
+expectTypeOf<TTPrivate>().branded.toEqualTypeOf<{
   readonly data: string;
 }>();
 
 type TTC = ContextFrom<Machine3>;
-expectTypeOf<TTC>().toEqualTypeOf<{
+expectTypeOf<TTC>().branded.toEqualTypeOf<{
   readonly age: number;
 }>();
 
 type TTEm = EventsMapFrom<Machine3>;
-expectTypeOf<TTEm>().toEqualTypeOf<{
+expectTypeOf<TTEm>().branded.toEqualTypeOf<{
   readonly EVENT: {
     readonly password: string;
     readonly username: string;
@@ -40,7 +40,7 @@ expectTypeOf<TTEm>().toEqualTypeOf<{
 }>();
 
 type TTE = EventsFrom<Machine3>;
-expectTypeOf<TTE>().toEqualTypeOf<
+expectTypeOf<TTE>().branded.toEqualTypeOf<
   | {
       type: 'EVENT';
       payload: {

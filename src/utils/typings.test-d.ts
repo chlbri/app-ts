@@ -52,7 +52,7 @@ describe('Typing utils', () => {
         age: 'number';
       }>;
 
-      expectTypeOf<TTT5>().toEqualTypeOf<{
+      expectTypeOf<TTT5>().branded.toEqualTypeOf<{
         age?: number;
       }>();
     });
@@ -75,12 +75,12 @@ describe('Typing utils', () => {
 
     test('#01 =>', () => {
       const pC = {
-        nodes: typings.maybe(
+        nodes: typings.optional(
           typings.array(typings.intersection(nodeJSON, { id: 'string' })),
         ),
       };
 
-      expectTypeOf<inferT<typeof pC>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof pC>>().branded.toEqualTypeOf<{
         nodes?: Array<{
           position: { x: number; y: number };
           data: { label?: string; content: string };
@@ -95,7 +95,7 @@ describe('Typing utils', () => {
     it('#01 => Array of objects', () => {
       const arr = typings.array({ id: 'number', value: 'string' });
 
-      expectTypeOf<inferT<typeof arr>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof arr>>().branded.toEqualTypeOf<
         Array<{ id: number; value: string }>
       >();
     });
@@ -111,7 +111,7 @@ describe('Typing utils', () => {
     it('#03 => Tuple with Maybe types', () => {
       const tup = typings.tuple(
         'string',
-        typings.maybe('number'),
+        typings.optional('number'),
         'boolean',
       );
 
@@ -121,7 +121,7 @@ describe('Typing utils', () => {
     });
 
     it('#04 => Array of Maybe primitives', () => {
-      const arr = typings.array(typings.maybe('string'));
+      const arr = typings.array(typings.optional('string'));
 
       expectTypeOf<inferT<typeof arr>>().toEqualTypeOf<
         Array<string | undefined>
@@ -134,7 +134,7 @@ describe('Typing utils', () => {
         { name: 'string', age: 'number' },
       );
 
-      expectTypeOf<inferT<typeof tup>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof tup>>().branded.toEqualTypeOf<
         [{ x: number; y: number }, { name: string; age: number }]
       >();
     });
@@ -160,7 +160,7 @@ describe('Typing utils', () => {
         },
       });
 
-      expectTypeOf<inferT<typeof deep>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof deep>>().branded.toEqualTypeOf<{
         level1: {
           level2: {
             level3: {
@@ -177,14 +177,14 @@ describe('Typing utils', () => {
       const complex = typings.any({
         users: typings.array({
           id: 'string',
-          profile: typings.maybe({
-            avatar: typings.maybe('string'),
+          profile: typings.optional({
+            avatar: typings.optional('string'),
             bio: 'string',
           }),
         }),
       });
 
-      expectTypeOf<inferT<typeof complex>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof complex>>().branded.toEqualTypeOf<{
         users: {
           id: string;
           profile?: {
@@ -201,7 +201,7 @@ describe('Typing utils', () => {
         { age: 'number', email: 'string' },
       );
 
-      expectTypeOf<inferT<typeof user>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof user>>().branded.toEqualTypeOf<{
         id: string;
         name: string;
         age: number;
@@ -218,7 +218,7 @@ describe('Typing utils', () => {
         bool: 'boolean',
       });
 
-      expectTypeOf<inferT<typeof allPrimitives>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof allPrimitives>>().branded.toEqualTypeOf<{
         str: string;
         num: number;
         bool: boolean;
@@ -234,7 +234,7 @@ describe('Typing utils', () => {
 
       type Result = inferT<typeof specialPrimitives>;
 
-      expectTypeOf<Result>().toEqualTypeOf<{
+      expectTypeOf<Result>().branded.toEqualTypeOf<{
         nul: null;
         undef?: undefined;
         sym: symbol;
@@ -243,12 +243,12 @@ describe('Typing utils', () => {
 
     it('#02 => Maybe with all primitives', () => {
       const maybes = typings.any({
-        str: typings.maybe('string'),
-        num: typings.maybe('number'),
-        bool: typings.maybe('boolean'),
+        str: typings.optional('string'),
+        num: typings.optional('number'),
+        bool: typings.optional('boolean'),
       });
 
-      expectTypeOf<inferT<typeof maybes>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof maybes>>().branded.toEqualTypeOf<{
         str?: string;
         num?: number;
         bool?: boolean;
@@ -262,7 +262,7 @@ describe('Typing utils', () => {
         booleans: typings.array('boolean'),
       });
 
-      expectTypeOf<inferT<typeof arrays>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof arrays>>().branded.toEqualTypeOf<{
         strings: string[];
         numbers: number[];
         booleans: boolean[];
@@ -277,7 +277,7 @@ describe('Typing utils', () => {
         { type: 'string', value: 'number' },
       );
 
-      expectTypeOf<inferT<typeof union>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof union>>().branded.toEqualTypeOf<
         { type: string; value: string } | { type: string; value: number }
       >();
     });
@@ -290,7 +290,7 @@ describe('Typing utils', () => {
         { kind: typings.litterals('string'), flag: 'boolean' },
       );
 
-      expectTypeOf<inferT<typeof discriminated>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof discriminated>>().branded.toEqualTypeOf<
         | { kind: string; value: string }
         | { kind: string; count: number }
         | { kind: 'string'; flag: boolean }
@@ -299,11 +299,11 @@ describe('Typing utils', () => {
 
     it('#03 => Union with Maybe types', () => {
       const unionMaybe = typings.union(
-        { type: 'string', optional: typings.maybe('string') },
-        { type: 'string', optional: typings.maybe('number') },
+        { type: 'string', optional: typings.optional('string') },
+        { type: 'string', optional: typings.optional('number') },
       );
 
-      expectTypeOf<inferT<typeof unionMaybe>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof unionMaybe>>().branded.toEqualTypeOf<
         | { type: string; optional?: string }
         | { type: string; optional?: number }
       >();
@@ -319,7 +319,7 @@ describe('Typing utils', () => {
         age: 'number',
       });
 
-      expectTypeOf<inferT<typeof partial>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof partial>>().branded.toEqualTypeOf<{
         id?: string;
         name?: string;
         age?: number;
@@ -330,10 +330,10 @@ describe('Typing utils', () => {
       const partialMaybe = typings.any({
         [PARTIAL]: undefined,
         required: 'string',
-        optional: typings.maybe('number'),
+        optional: typings.optional('number'),
       });
 
-      expectTypeOf<inferT<typeof partialMaybe>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof partialMaybe>>().branded.toEqualTypeOf<{
         required?: string;
         optional?: number;
       }>();
@@ -348,7 +348,7 @@ describe('Typing utils', () => {
         },
       });
 
-      expectTypeOf<inferT<typeof nestedPartial>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof nestedPartial>>().branded.toEqualTypeOf<{
         outer: {
           inner?: string;
           nested?: number;
@@ -363,7 +363,7 @@ describe('Typing utils', () => {
         name: 'string',
       });
 
-      expectTypeOf<inferT<typeof arrPartial>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof arrPartial>>().branded.toEqualTypeOf<
         Array<{
           id?: string;
           name?: string;
@@ -399,7 +399,7 @@ describe('Typing utils', () => {
         code: 'number',
       });
 
-      expectTypeOf<inferT<typeof obj>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof obj>>().branded.toEqualTypeOf<{
         status: 'active' | 'inactive';
         code: number;
       }>();
@@ -408,7 +408,7 @@ describe('Typing utils', () => {
     it('#05 => Custom type wrapper', () => {
       const custom = typings.custom<{ special: string }>();
 
-      expectTypeOf<inferT<typeof custom>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof custom>>().branded.toEqualTypeOf<{
         special: string;
       }>();
     });
@@ -446,7 +446,7 @@ describe('Typing utils', () => {
     });
 
     it('#09 => Maybe Date', () => {
-      const maybeDate = typings.maybe(typings.custom<Date>());
+      const maybeDate = typings.optional(typings.custom<Date>());
       type Result = inferT<typeof maybeDate>;
 
       // Verify it can be Date or undefined
@@ -466,7 +466,7 @@ describe('Typing utils', () => {
       const nativeTypes = typings.any({
         id: 'string',
         signal: typings.custom<AbortSignal>(),
-        controller: typings.maybe(typings.custom<AbortController>()),
+        controller: typings.optional(typings.custom<AbortController>()),
         timestamp: typings.custom<Date>(),
         pattern: typings.custom<RegExp>(),
       });
@@ -523,7 +523,7 @@ describe('Typing utils', () => {
       type Result = inferT<typeof union>;
 
       // Verify union structure exists
-      expectTypeOf<Result>().toEqualTypeOf<
+      expectTypeOf<Result>().branded.toEqualTypeOf<
         | { type: string; value: string }
         | { type: string; value: Date }
         | { type: string; value: number }
@@ -585,14 +585,14 @@ describe('Typing utils', () => {
         events: typings.array({
           id: 'string',
           timestamp: typings.custom<Date>(),
-          data: typings.maybe({
+          data: typings.optional({
             controller: typings.custom<AbortController>(),
             signal: typings.custom<AbortSignal>(),
           }),
         }),
         metadata: {
           created: typings.custom<Date>(),
-          pattern: typings.maybe(typings.custom<RegExp>()),
+          pattern: typings.optional(typings.custom<RegExp>()),
         },
       });
 
@@ -635,7 +635,7 @@ describe('Typing utils', () => {
         { age: 'number', email: 'string' },
       );
 
-      expectTypeOf<inferT<typeof intersect>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof intersect>>().branded.toEqualTypeOf<{
         id: string;
         name: string;
         age: number;
@@ -645,11 +645,11 @@ describe('Typing utils', () => {
 
     it('#02 => Intersection with Maybe fields', () => {
       const intersectMaybe = typings.intersection(
-        { id: 'string', optional: typings.maybe('string') },
-        { name: 'string', optional: typings.maybe('string') },
+        { id: 'string', optional: typings.optional('string') },
+        { name: 'string', optional: typings.optional('string') },
       );
 
-      expectTypeOf<inferT<typeof intersectMaybe>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof intersectMaybe>>().branded.toEqualTypeOf<{
         id: string;
         optional?: string;
         name: string;
@@ -668,7 +668,9 @@ describe('Typing utils', () => {
         },
       );
 
-      expectTypeOf<inferT<typeof intersectNested>>().toEqualTypeOf<{
+      expectTypeOf<
+        inferT<typeof intersectNested>
+      >().branded.toEqualTypeOf<{
         id: string;
         config: { theme: string };
         name: string;
@@ -681,7 +683,7 @@ describe('Typing utils', () => {
     it('#01 => Simple record with string values', () => {
       const rec = typings.record('string', 'a', 'b', 'c');
 
-      expectTypeOf<inferT<typeof rec>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof rec>>().branded.toEqualTypeOf<{
         a: string;
         b: string;
         c: string;
@@ -696,7 +698,7 @@ describe('Typing utils', () => {
         'z',
       );
 
-      expectTypeOf<inferT<typeof recObj>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof recObj>>().branded.toEqualTypeOf<{
         x: { id: string; value: number };
         y: { id: string; value: number };
         z: { id: string; value: number };
@@ -710,7 +712,7 @@ describe('Typing utils', () => {
         'feature2',
       );
 
-      expectTypeOf<inferT<typeof recNested>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof recNested>>().branded.toEqualTypeOf<{
         feature1: { value: string; enabled: boolean };
         feature2: { value: string; enabled: boolean };
       }>();
@@ -724,8 +726,8 @@ describe('Typing utils', () => {
           id: 'string',
           attributes: {
             name: 'string',
-            email: typings.maybe('string'),
-            tags: typings.maybe(typings.array('string')),
+            email: typings.optional('string'),
+            tags: typings.optional(typings.array('string')),
           },
         }),
         meta: {
@@ -736,7 +738,7 @@ describe('Typing utils', () => {
         },
       });
 
-      expectTypeOf<inferT<typeof apiResponse>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof apiResponse>>().branded.toEqualTypeOf<{
         data: Array<{
           id: string;
           attributes: {
@@ -759,16 +761,16 @@ describe('Typing utils', () => {
         values: {
           username: 'string',
           email: 'string',
-          age: typings.maybe('number'),
+          age: typings.optional('number'),
         },
-        errors: typings.maybe(
+        errors: typings.optional(
           typings.record(typings.array('string'), 'username', 'email'),
         ),
         touched: typings.record('boolean', 'username', 'email', 'age'),
         isSubmitting: 'boolean',
       });
 
-      expectTypeOf<inferT<typeof formState>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof formState>>().branded.toEqualTypeOf<{
         values: {
           username: string;
           email: string;
@@ -792,10 +794,10 @@ describe('Typing utils', () => {
         FETCH: { url: 'string', method: 'string' },
         SUCCESS: { status: 'number', data: 'string' },
         ERROR: { message: 'string', code: 'number' },
-        RETRY: typings.maybe({ attempt: 'number' }),
+        RETRY: typings.optional({ attempt: 'number' }),
       });
 
-      expectTypeOf<inferT<typeof eventMap>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof eventMap>>().branded.toEqualTypeOf<{
         FETCH: { url: string; method: string };
         SUCCESS: { status: number; data: string };
         ERROR: { message: string; code: number };
@@ -812,18 +814,18 @@ describe('Typing utils', () => {
         posts: typings.array({
           id: 'string',
           title: 'string',
-          content: typings.maybe('string'),
-          comments: typings.maybe(
+          content: typings.optional('string'),
+          comments: typings.optional(
             typings.array({
               id: 'string',
               text: 'string',
-              author: typings.maybe('string'),
+              author: typings.optional('string'),
             }),
           ),
         }),
       });
 
-      expectTypeOf<inferT<typeof userType>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof userType>>().branded.toEqualTypeOf<{
         id: string;
         name: string;
         posts: Array<{
@@ -856,8 +858,8 @@ describe('Typing utils', () => {
     });
 
     it('#03 => Deeply nested Maybe types', () => {
-      const deepMaybe = typings.maybe(
-        typings.maybe(typings.maybe('string')),
+      const deepMaybe = typings.optional(
+        typings.optional(typings.optional('string')),
       );
 
       expectTypeOf<inferT<typeof deepMaybe>>().toEqualTypeOf<
@@ -867,7 +869,7 @@ describe('Typing utils', () => {
 
     it('#04 => Array of Maybe array', () => {
       const arrMaybeArr = typings.array(
-        typings.maybe(typings.array('number')),
+        typings.optional(typings.array('number')),
       );
 
       expectTypeOf<inferT<typeof arrMaybeArr>>().toEqualTypeOf<
@@ -878,12 +880,12 @@ describe('Typing utils', () => {
     it('#05 => Complex array with maybe and nested', () => {
       const complexArr = typings.array({
         id: 'string',
-        nested: typings.maybe({
+        nested: typings.optional({
           deep: 'number',
         }),
       });
 
-      expectTypeOf<inferT<typeof complexArr>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof complexArr>>().branded.toEqualTypeOf<
         Array<{
           id: string;
           nested?: { deep: number };
@@ -909,11 +911,11 @@ describe('Typing utils', () => {
         'number',
         'boolean',
         { x: 'number', y: 'number' },
-        typings.maybe('string'),
+        typings.optional('string'),
         typings.array('number'),
       );
 
-      expectTypeOf<inferT<typeof megaTuple>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof megaTuple>>().branded.toEqualTypeOf<
         [
           string,
           number,
@@ -927,14 +929,14 @@ describe('Typing utils', () => {
 
     it('#08 => Deeply nested Maybe in objects', () => {
       const deepMaybeObj = typings.any({
-        level1: typings.maybe({
-          level2: typings.maybe({
+        level1: typings.optional({
+          level2: typings.optional({
             value: 'string',
           }),
         }),
       });
 
-      expectTypeOf<inferT<typeof deepMaybeObj>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof deepMaybeObj>>().branded.toEqualTypeOf<{
         level1?: {
           level2?: {
             value: string;
@@ -949,7 +951,7 @@ describe('Typing utils', () => {
         value: 'number',
       });
 
-      expectTypeOf<inferT<typeof mixed>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof mixed>>().branded.toEqualTypeOf<
         string | number | { id: string; value: number }
       >();
     });
@@ -960,7 +962,7 @@ describe('Typing utils', () => {
         cube: typings.array(typings.array(typings.array('number'))),
       });
 
-      expectTypeOf<inferT<typeof multiArr>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof multiArr>>().branded.toEqualTypeOf<{
         matrix: number[][];
         cube: number[][][];
       }>();
@@ -978,12 +980,12 @@ describe('Typing utils', () => {
         },
         {
           type: 'string',
-          value: typings.maybe('number'),
+          value: typings.optional('number'),
           enabled: 'boolean',
         },
       );
 
-      expectTypeOf<inferT<typeof complexUnion>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof complexUnion>>().branded.toEqualTypeOf<
         | {
             type: string;
             items: string[];
@@ -1012,7 +1014,9 @@ describe('Typing utils', () => {
         },
       );
 
-      expectTypeOf<inferT<typeof complexIntersect>>().toEqualTypeOf<{
+      expectTypeOf<
+        inferT<typeof complexIntersect>
+      >().branded.toEqualTypeOf<{
         id: string;
         tags: string[];
         metadata: {
@@ -1026,13 +1030,13 @@ describe('Typing utils', () => {
       const complexTuple = typings.tuple(
         typings.array({ id: 'string', name: 'string' }),
         {
-          config: typings.maybe('string'),
+          config: typings.optional('string'),
           values: typings.tuple('number', 'number', 'number'),
         },
-        typings.maybe(typings.array('boolean')),
+        typings.optional(typings.array('boolean')),
       );
 
-      expectTypeOf<inferT<typeof complexTuple>>().toEqualTypeOf<
+      expectTypeOf<inferT<typeof complexTuple>>().branded.toEqualTypeOf<
         [
           Array<{ id: string; name: string }>,
           {
@@ -1048,14 +1052,14 @@ describe('Typing utils', () => {
       const recUnion = typings.record(
         typings.union(
           { status: 'string', message: 'string' },
-          { code: 'number', details: typings.maybe('string') },
+          { code: 'number', details: typings.optional('string') },
         ),
         'api1',
         'api2',
         'api3',
       );
 
-      expectTypeOf<inferT<typeof recUnion>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof recUnion>>().branded.toEqualTypeOf<{
         api1:
           | { status: string; message: string }
           | { code: number; details?: string };
@@ -1077,7 +1081,7 @@ describe('Typing utils', () => {
               profile: {
                 [PARTIAL]: undefined,
                 name: 'string',
-                bio: typings.maybe('string'),
+                bio: typings.optional('string'),
               },
             },
             {
@@ -1088,13 +1092,13 @@ describe('Typing utils', () => {
             },
           ),
         ),
-        metadata: typings.maybe({
+        metadata: typings.optional({
           total: 'number',
           pages: typings.tuple('number', 'number'),
         }),
       });
 
-      expectTypeOf<inferT<typeof ultimate>>().toEqualTypeOf<{
+      expectTypeOf<inferT<typeof ultimate>>().branded.toEqualTypeOf<{
         users: Array<{
           id: string;
           profile: {
