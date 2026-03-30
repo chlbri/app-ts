@@ -30,8 +30,8 @@ export type EventObject<T = any> = {
 export type EventsMap = Record<string, PrimitiveObject>;
 
 export type PromiseeDef = {
-  then: PrimitiveObject;
-  catch: PrimitiveObject;
+  then: PrimitiveObject | void;
+  catch: PrimitiveObject | void;
 };
 
 export type PromiseeMap = Record<string, PromiseeDef>;

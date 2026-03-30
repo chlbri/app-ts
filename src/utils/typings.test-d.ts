@@ -1,6 +1,8 @@
 import {
   PARTIAL,
   PartialCustom,
+  transform,
+  transformPrimitiveObject,
   typings,
   type TransformPrimitiveObject,
   type inferT,
@@ -1035,6 +1037,8 @@ describe('Typing utils', () => {
         },
         typings.optional(typings.array('boolean')),
       );
+      
+      type TT = inferT<typeof complexTuple>;
 
       expectTypeOf<inferT<typeof complexTuple>>().branded.toEqualTypeOf<
         [
@@ -1116,5 +1120,12 @@ describe('Typing utils', () => {
         };
       }>();
     });
+  });
+
+  test('#14 => void', () => {
+    expectTypeOf(transformPrimitiveObject('void')).toEqualTypeOf<void>();
+    expectTypeOf(transform({ fn: 'void' })).branded.toEqualTypeOf<{
+      fn: void;
+    }>();
   });
 });

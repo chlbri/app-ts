@@ -1,5 +1,6 @@
 import type {
   AnyArray,
+  Equals,
   Keys,
   NOmit,
   NotUndefined,
@@ -13,8 +14,8 @@ type PrimitiveS =
   | 'string'
   | 'number'
   | 'boolean'
-  | 'null'
   | 'void'
+  | 'null'
   | 'undefined'
   | 'symbol';
 
@@ -22,8 +23,8 @@ type TransformPrimitiveS<T extends PrimitiveS> = T extends 'string'
   ? string
   : T extends 'number'
     ? number
-    : T extends 'number'
-      ? number
+    : T extends 'void'
+      ? void
       : T extends 'boolean'
         ? boolean
         : T extends 'null'
@@ -141,7 +142,14 @@ type ReduceTupleU<T extends AnyArray> = T extends [
       : number extends T['length']
         ? T
         : Undefiny<T[number]>[];
-type HasUndefined<T> = undefined extends T ? true : false;
+
+type HasUndefined<T> =
+  Equals<void, T> extends true
+    ? false
+    : undefined extends T
+      ? true
+      : false;
+
 type UndefinyObject<T extends object> = {
   [K in keyof T as HasUndefined<T[K]> extends true ? never : K]: Undefiny<
     T[K]
@@ -193,6 +201,8 @@ export const transformPrimitiveObject = <T extends PrimitiveObjectT>(
 
   return transformTypes(_obj) as any;
 };
+
+export const transform = transformPrimitiveObject;
 
 type UndefinyT<T> = PrimitiveObjectT extends T ? 'undefined' : T;
 

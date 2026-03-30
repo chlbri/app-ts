@@ -11,6 +11,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.3.2] - 30/03/2026** => _00:37_
+
+</summary>
+
+- **Fix**: Correction de `TransformPrimitiveS<'void'>` — était mappé sur
+  `number` au lieu de `void` dans `typings.ts`
+- **Fix**: `HasUndefined<void>` retourne désormais `false` — `void` ne doit
+  pas rendre une propriété optionnelle
+- **Feat**: `PromiseeDef.then` et `.catch` acceptent maintenant `void` en
+  plus de `PrimitiveObject` dans `events/types.ts`
+- **Feat**: Ajout de l'alias `transform` exporté pour
+  `transformPrimitiveObject`
+- **Test**: Ajout du cas de test pour la transformation du type `'void'`
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.3.1] - 29/03/2026** => _23:52_
 
 </summary>
