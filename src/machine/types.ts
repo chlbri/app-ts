@@ -10,7 +10,6 @@ import type {
   EmitterDef,
   EmitterFunction2,
   EmitterReturn,
-  EmittersMap,
 } from '#emitters';
 import type {
   ActorsConfigMap,
@@ -592,7 +591,7 @@ export type GetActorsFromFlat<
   T extends string = string,
 > = {
   children: Partial<GetChildrenSrcFromFlat<Flat, E, A, Pc, Tc, T>>;
-  emitters: Partial<GetEmittersSrcFromFlat<Flat, E, A, Pc, Tc, T>>;
+  // emitters: Partial<GetEmittersSrcFromFlat<Flat, E, A, Pc, Tc, T>>;
   promises: Partial<GetPromisesFromFlat<Flat, E, A, Pc, Tc, T>>;
 };
 
@@ -712,7 +711,7 @@ export type FnMapFrom<
  * @see {@linkcode GetMachinesFromConfig} for extracting child services from the machine config
  * @see {@linkcode Partial} - intern type to make all properties optional.
  */
-export type MachineOptions<
+export interface MachineOptions<
   C extends Config = Config,
   E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
@@ -721,12 +720,12 @@ export type MachineOptions<
   T extends string = string,
   Flat extends FlatMapN<C, false> = FlatMapN<C, false>,
   Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
-> = Partial<{
-  actions: Partial<GetActionsFromFlat<Flat, Eo, Pc, Tc, T>>;
-  predicates: Partial<GetGuardsFromFlat<Flat, Eo, Pc, Tc, T>>;
-  delays: Partial<GetDelaysFromFlat<Flat, Eo, Pc, Tc, T>>;
-  actors: Partial<GetActorsFromFlat<Flat, Eo, A, Pc, Tc, T>>;
-}>;
+> {
+  actions?: Partial<GetActionsFromFlat<Flat, Eo, Pc, Tc, T>>;
+  predicates?: Partial<GetGuardsFromFlat<Flat, Eo, Pc, Tc, T>>;
+  delays?: Partial<GetDelaysFromFlat<Flat, Eo, Pc, Tc, T>>;
+  actors?: Partial<GetActorsFromFlat<Flat, Eo, A, Pc, Tc, T>>;
+}
 
 /**
  * Getting the options from a machine.
@@ -1024,7 +1023,6 @@ export type SimpleMachineOptions<
   delays: Partial<RecordS<DelayFunction2<Eo, Pc, Tc, T>>>;
   actors: Partial<{
     children: RecordS<ChildFunction2<Eo, Pc, Tc, T>>;
-    emitters: EmittersMap<Eo, Pc, Tc, T>;
     promises: RecordS<PromiseFunction2<Eo, Pc, Tc, T>>;
   }>;
 }>;
@@ -1044,7 +1042,6 @@ export type SimpleMachineOptions2 = Partial<
       'actors',
       {
         children?: RecordS<any>;
-        emitters?: RecordS<any>;
         promises?: RecordS<any>;
       }
     >

@@ -108,11 +108,11 @@ type _ChildConfigR<T extends ChildConfigMap> = {
     : never;
 }[keyof T & string];
 
-export type ActorsConfigMap = {
+export interface ActorsConfigMap {
   children?: ChildConfigMap;
   emitters?: EmitterConfigMap;
   promisees?: PromiseeMap;
-};
+}
 
 /**
  * Represents a union type of all events and promisees.
@@ -121,6 +121,12 @@ export type ActorsConfigMap = {
  * @template : {@linkcode PromiseeMap} [P], the map of promisees.
  * @returns A union type of events and promisee-events.
  */
+
+export type _ToEventsR<E extends EventsMap, A extends ActorsConfigMap> =
+  | EventsR<E>
+  | _PromiseesR<NotUndefined<A['promisees']>>
+  // | _EmitterConfigR<NotUndefined<A['emitters']>>
+  | _ChildConfigR<NotUndefined<A['children']>>;
 
 /**
  * Represents a union type of all events, promisees, emitters, and child events.
@@ -134,15 +140,11 @@ export type ToEventsR<
   A extends ActorsConfigMap,
   Ex extends string = never,
 > =
-  | EventsR<E>
-  | _PromiseesR<NotUndefined<A['promisees']>>
-  | _EmitterConfigR<NotUndefined<A['emitters']>>
-  | _ChildConfigR<NotUndefined<A['children']>> extends infer U extends
-  EventObject
-  ? never extends Ex
-    ? U
-    : Exclude<U, { type: Ex }>
-  : never;
+  _ToEventsR<E, A> extends infer U extends EventObject
+    ? never extends Ex
+      ? U
+      : Exclude<U, { type: Ex }>
+    : never;
 
 export type ToEvents<
   E extends EventsMap,

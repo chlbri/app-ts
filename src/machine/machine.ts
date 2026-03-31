@@ -42,7 +42,7 @@ import { decompose, getByKey, type Decompose } from '@bemedev/decompose';
 
 import type { Action } from '#actions';
 import type { DelayFunction } from '#delays';
-import { EventsR, ActorsConfigMap, ToEventObject } from '#events';
+import { ActorsConfigMap, EventsR, ToEventObject } from '#events';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import type { PredicateS } from '#guards';
@@ -85,8 +85,7 @@ import type {
  *
  * @implements {@linkcode AnyMachine}<{@linkcode E} , {@linkcode A} , {@linkcode Pc} , {@linkcode Tc} >
  */
-
-class Machine<
+export class Machine<
   const C extends Config = Config,
   const Pc = any,
   const Tc extends PrimitiveObject = PrimitiveObject,
@@ -724,9 +723,7 @@ class Machine<
         filter: (key, fn) => {
           return ({ context, pContext }) => {
             const currentValue = getByKey.low({ context, pContext }, key);
-
             const predicate = fn as any;
-
             let filteredValue: any;
 
             if (Array.isArray(currentValue)) {
@@ -920,13 +917,12 @@ class Machine<
       predicates,
       actions,
       delays,
-
       events,
       actors,
       actorsMap,
     } = this.#elements;
 
-    const out = new Machine<C, Pc, Tc, E, A, Mo>(config);
+    const out = new Machine<C, Pc, Tc, E, A>(config);
 
     out.#pContext = pContext;
     out.#context = context;
@@ -1201,8 +1197,6 @@ export const getEntries = partialCall(getIO, 'entry');
  */
 export const getExits = partialCall(getIO, 'exit');
 
-export type { Machine };
-
 export type CreateMachine_F = <
   const C2 extends NoExtraKeysConfigDef<ConfigDef> =
     NoExtraKeysConfigDef<ConfigDef>,
@@ -1213,13 +1207,6 @@ export type CreateMachine_F = <
   A0 extends GetActorKeysFromConfig2<C> = GetActorKeysFromConfig2<C>,
   A extends NOmit<A0, 'pContext'> = NOmit<A0, 'pContext'>,
   Pc extends A0['pContext'] = A0['pContext'],
-  Mo extends MachineOptions<C, EventM, A, Pc, Tc> = MachineOptions<
-    C,
-    EventM,
-    A,
-    Pc,
-    Tc
-  >,
 >(
   config: NoExtraKeysConfig<C & { __tsSchema?: NoExtraKeysConfigDef<C2> }>,
   types: { pContext: Pc; context: Tc; eventsMap: EventM; actorsMap: A },
@@ -1229,8 +1216,7 @@ export type CreateMachine_F = <
   Pc,
   Tc,
   EventM,
-  A,
-  Mo
+  A
 >;
 
 /**

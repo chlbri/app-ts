@@ -248,7 +248,7 @@ export interface AnyInterpreter<
   renew: any;
   value: StateValue;
   context: any;
-  start: () => Promise<void>;
+  start: () => void;
   pause: () => void;
   resume: () => void;
   stop: () => void;

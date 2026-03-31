@@ -330,13 +330,15 @@ export type AddOptionsParam_F<
   },
 ) => Mo | undefined;
 
-export type AddOptions_F<
+export interface AddOptions_F<
   E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
-> = (option: AddOptionsParam_F<E, Pc, Tc, T, Mo>) => Mo | undefined;
+> {
+  (option: AddOptionsParam_F<E, Pc, Tc, T, Mo>): Mo | undefined;
+}
 
 /**
  * Represents a scheduled action with its data and execution time.

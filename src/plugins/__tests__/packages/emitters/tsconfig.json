@@ -1,0 +1,33 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    "module": "esnext",
+    "importHelpers": true,
+    "target": "ESNext",
+    "declaration": true,
+    "sourceMap": true,
+    "noErrorTruncation": true,
+    "outDir": "./lib",
+    "resolveJsonModule": true,
+    "strict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "moduleResolution": "Bundler",
+    "types": [
+      "vitest/globals",
+      "node"
+    ],
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declarationMap": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

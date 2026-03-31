@@ -730,7 +730,7 @@ export class Interpreter<
   /**
    * Start this {@linkcode Interpreter} service.
    */
-  start = async () => {
+  start = () => {
     this.#collectChildren();
     this.#collectPausables();
     this.#throwing();
@@ -740,7 +740,7 @@ export class Interpreter<
     this.#startInitialEntries();
     this.#startChildren();
     this.#throwing();
-    this._next();
+    this.#next();
   };
 
   /**
@@ -759,7 +759,7 @@ export class Interpreter<
   /**
    * Performs all self transitions and activities of this {@linkcode Interpreter} service.
    */
-  #next = () => {
+  protected __next = () => {
     const filter: Parameters<
       Array<{ from: string; id: string }>['filter']
     >[0] = ({ from, id }, _, all) => {
@@ -802,7 +802,7 @@ export class Interpreter<
    * Performs all self transitions and activities of this {@linkcode Interpreter} service.
    * @remarks Throw if the number of self transitions exceeds {@linkcode DEFAULT_MAX_SELF_TRANSITIONS}.
    */
-  protected _next = async () => {
+  #next = async () => {
     // eslint-disable-next-line no-useless-assignment
     let check = false;
     do {
@@ -813,7 +813,7 @@ export class Interpreter<
         this.#selfTransitionsCounter >= DEFAULT_MAX_SELF_TRANSITIONS;
       if (checkCounter) return this.#throwMaxCounter();
       this.#throwing();
-      await this.#next();
+      await this.__next();
 
       const currentValue = this.#value;
       check = !equal(previousValue, currentValue);
@@ -927,7 +927,6 @@ export class Interpreter<
     sentEvent,
   }: ExtendedActionsParams<E, Pc, Tc>) => {
     this.#performSendToAction(sentEvent);
-
     this.#performScheduledAction(scheduled);
     this.#performPauseActivityAction(pauseActivity);
     this.#performResumeActivityAction(resumeActivity);
@@ -935,13 +934,8 @@ export class Interpreter<
     this.#performPauseTimerAction(pauseTimer);
     this.#performResumeTimerAction(resumeTimer);
     this.#performStopTimerAction(stopTimer);
-
-    // ForceSendAction returns the result to make further actions
-    const result =
-      this.#performForceSendAction(forceSend) ??
-      this.#performResendAction(resend);
-
-    return result;
+    this.#performForceSendAction(forceSend);
+    this.#performResendAction(resend);
   };
 
   #executeAction: PerformAction_F<Eo, Pc, Tc, Ta> = action => {
@@ -1862,19 +1856,18 @@ export class Interpreter<
     this.#pauseChildren();
     this.#pausePausables();
     this.#timeoutActions.forEach(this.#pause);
-    this.#setStatus('paused');
+    return this.#setStatus('paused');
   };
 
   resume = () => {
-    if (this.#status === 'paused') {
-      this.#performActivities();
-      this.#makeBusy();
-      this.#subscribers.forEach(this.#open);
-      this.#timeoutActions.forEach(this.#resume);
-      this.#resumeChildren();
-      this.#resumePausables();
-      this.#makeWork();
-    }
+    if (this.#status !== 'paused') return;
+    this.#performActivities();
+    this.#makeBusy();
+    this.#subscribers.forEach(this.#open);
+    this.#timeoutActions.forEach(this.#resume);
+    this.#resumeChildren();
+    this.#resumePausables();
+    return this.#makeWork();
   };
 
   stop = () => {
@@ -1885,8 +1878,8 @@ export class Interpreter<
     this._cachedIntervals.forEach(this.#dispose);
     this.#timeoutActions.forEach(this.#stop);
     this.#stopPausables();
-    this.#setStatus('stopped');
     this.#stopSchedulers();
+    return this.#setStatus('stopped');
   };
 
   #makeBusy = (): WorkingStatus => {
@@ -2173,7 +2166,7 @@ export class Interpreter<
       this.#config = next;
       this.#performConfig(true);
       this.#makeWork();
-      this._next();
+      this.#next();
     } else this.#makeWork();
   };
 
