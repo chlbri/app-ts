@@ -1,5 +1,5 @@
 import _any from '#bemedev/features/common/castings/any';
-import { createTests } from '@bemedev/vitest-extended';
+import { createTests } from '@bemedev/dev-utils/vitest-extended';
 import { assignByKey, getByKey, mergeByKey } from './contexts';
 
 describe('functions', () => {
