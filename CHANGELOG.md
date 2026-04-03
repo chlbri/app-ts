@@ -11,6 +11,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.3.3] - 03/04/2026** => _12:05_
+
+</summary>
+
+- **Refactor**: Remplacement de `Observable<R>` par `Pausable<R>` comme type de retour des fonctions d'émetteur — les acteurs fournissent désormais directement un `Pausable` au lieu d'un `Observable`
+- **Feat**: Ajout du type `Pausable<R>` et `EmitterObserver<R>` dans `emitters/types.ts` — interface agnostique vis-à-vis de RxJS
+- **Remove**: Suppression de `EmitterFunction` (ancienne forme `FnMap`), `CollectedObservable` et `#executeEmitter` devenus obsolètes
+- **Remove**: Suppression de `src/.vitest.ts` — configuration vitest centralisée dans `vitest.config.ts`
+- **Refactor**: Migration de `createTests` de `@bemedev/vitest-extended` vers `@bemedev/dev-utils/vitest-extended` dans tous les fichiers de test
+- **Update**: Mise à jour des dépendances (`pnpm-lock.yaml`)
+- **Fix**: Correction des fixtures — `fakeWaiter` enveloppé dans un `try/catch` pour les fake timers
+- **Chore**: Déplacement des fichiers de skills de `.github/skills` vers `.claude/skills`
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.3.2] - 30/03/2026** => _00:37_
 
 </summary>

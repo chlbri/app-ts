@@ -40,7 +40,6 @@ export default defineConfig({
     coverage: {
       enabled: true,
       reportsDirectory: '.coverage',
-
       provider: 'v8',
     },
   },

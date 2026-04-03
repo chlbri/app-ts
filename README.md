@@ -28,7 +28,7 @@ transitions.
 
 | Actor type | Shape                 | Trigger           | Direction                        |
 | ---------- | --------------------- | ----------------- | -------------------------------- |
-| `emitters` | `() => Observable<T>` | State entry       | **Source → Machine** (read-only) |
+| `emitters` | `() => Pausable<T>`   | State entry       | **Source → Machine** (read-only) |
 | `promises` | `() => Promise<T>`    | State entry       | **Source → Machine** (one-shot)  |
 | `children` | `() => Interpreter`   | Machine lifecycle | **Bidirectional** (via `sendTo`) |
 
@@ -36,18 +36,18 @@ transitions.
 
 This is the single most important architectural choice to understand.
 
-An **emitter** is a passive Observable source. It produces values on its
-own schedule. The machine **only reacts** to those values — it never sends
-events _to_ the emitter, never modifies it, never controls its output.
+An **emitter** is a pausable stream source. It produces values on its own
+schedule. The machine **only reacts** to those values — it never sends events
+_to_ the emitter, never modifies it, never controls its output.
 
 ```
 ┌─────────────┐    emissions    ┌──────────────┐
-│  Observable  │ ─────────────► │   Machine     │
+│  Pausable    │ ─────────────► │   Machine     │
 │  (emitter)   │                │  next/error/  │
 │              │  ◄── nothing   │  complete     │
 └─────────────┘                 └──────────────┘
         ▲                              │
-        │ subscribe on entry           │ unsubscribe on exit
+        │ subscribe on entry           │ stop on exit
         └──────────────────────────────┘
 ```
 
@@ -55,16 +55,16 @@ events _to_ the emitter, never modifies it, never controls its output.
 
 1. The machine config declares an emitter name and its handlers (`next`,
    `error`, `complete`).
-2. `provideOptions` wires the name to a factory: `() => Observable<T>`.
+2. `provideOptions` wires the name to a factory: `() => Pausable<T>`.
 3. When the interpreter enters the state → the factory is called, the
-   Observable is subscribed.
+   `Pausable` is subscribed and started.
 4. Each emission becomes an internal event routed to the matching handler
    (`next` → actions, `error` → actions, `complete` → actions or target).
-5. The machine **never** sends events _to_ the Observable. It is strictly
+5. The machine **never** sends events _to_ the `Pausable`. It is strictly
    one-way.
-6. When the interpreter exits the state (or stops) → the Observable is
-   unsubscribed.
-7. Re-entering the state creates a **new** subscription from scratch.
+6. When the interpreter exits the state (or stops) → the `Pausable` is
+   stopped.
+7. Re-entering the state creates a **new** `Pausable` from scratch.
 
 This differs fundamentally from:
 
@@ -684,9 +684,9 @@ that state visit.
 
 > **Key concept — emitters are NEVER touched during the flow.**
 
-Emitters are passive Observable sources. The machine subscribes to them on
+Emitters are pausable stream sources. The machine subscribes to them on
 state entry and **only reacts** to their emissions. It never sends events
-_to_ the Observable, never modifies it, never controls its output.
+_to_ the `Pausable`, never modifies it, never controls its output.
 
 ### 9.1 How emitters work
 
@@ -702,30 +702,39 @@ _to_ the Observable, never modifies it, never controls its output.
    }
    ```
 
-2. **Implementation** — provide the Observable factory:
+2. **Implementation** — provide a `Pausable<T>` factory:
 
    ```typescript
+   import { createPausable } from '@bemedev/rx-pausable'; // optional RxJS helper
+
    .provideOptions(() => ({
      actors: {
        emitters: {
          interval: () =>
-           interval(200).pipe(
-             take(5),
-             map(v => v + 1),
-             map(v => v * 5),
+           createPausable(
+             interval(200).pipe(
+               take(5),
+               map(v => v + 1),
+               map(v => v * 5),
+             ),
            ),
        },
      },
    }))
    ```
 
+   > `Pausable<T>` is a framework-agnostic interface exported by this library.
+   > Any object satisfying `{ subscribe, start, stop, pause, resume }` works.
+   > `createPausable` (from `@bemedev/rx-pausable`) is a convenience wrapper
+   > for RxJS observables — it is **not** a required dependency.
+
 3. **Runtime** — the interpreter manages the full lifecycle:
-   - **Enter state** → factory called → `subscribe()`
+   - **Enter state** → factory called → `subscribe()` then `start()`
    - Each `next` emission → routed to `next` handler (actions/target)
    - An `error` emission → routed to `error` handler
    - A `complete` emission → routed to `complete` handler
-   - **Exit state** (or interpreter stops) → `unsubscribe()`
-   - **Re-enter state** → a **new** subscription from scratch
+   - **Exit state** (or interpreter stops) → `stop()`
+   - **Re-enter state** → a **new** `Pausable` from scratch
 
 ### 9.2 Simple emitter — accumulating values
 
@@ -733,6 +742,7 @@ _Derived from `src/emitters/__tests__/data.ts` and `simple.test.ts`_
 
 ```typescript
 import { createMachine, typings, interpret } from '@bemedev/app-ts';
+import { createPausable } from '@bemedev/rx-pausable';
 import { interval, map, take } from 'rxjs';
 
 const machine = createMachine(
@@ -767,10 +777,12 @@ const machine = createMachine(
   actors: {
     emitters: {
       interval: () =>
-        interval(200).pipe(
-          take(5),
-          map(v => v + 1),
-          map(v => v * 5),
+        createPausable(
+          interval(200).pipe(
+            take(5),
+            map(v => v + 1),
+            map(v => v * 5),
+          ),
         ),
     },
   },
@@ -778,7 +790,7 @@ const machine = createMachine(
 
 const service = interpret(machine, { context: 0 });
 service.start();
-// The RxJS interval emits autonomously every 200 ms:
+// The interval emits autonomously every 200 ms:
 //   emission 0 → (0+1)*5 = 5  → context: 0 + 5  = 5
 //   emission 1 → (1+1)*5 = 10 → context: 5 + 10 = 15
 //   emission 2 → (2+1)*5 = 15 → context: 15 + 15 = 30
@@ -793,10 +805,11 @@ service.start();
 
 _Derived from `src/emitters/__tests__/error.test.ts`_
 
-When the Observable errors, the `error` handler fires. The machine itself
-is not "broken" — it simply routes the error value to the declared actions.
+When the source errors, the `error` handler fires. The machine itself is
+not "broken" — it simply routes the error value to the declared actions.
 
 ```typescript
+import { createPausable } from '@bemedev/rx-pausable';
 import { Subject } from 'rxjs';
 
 const sub = new Subject<number>();
@@ -822,7 +835,7 @@ const machine = createMachine(
   }),
 ).provideOptions(({ assign, voidAction }) => ({
   actors: {
-    emitters: { interval: () => sub },
+    emitters: { interval: () => createPausable(sub) },
   },
   actions: {
     assigN: assign('context', {
@@ -1319,6 +1332,35 @@ type TransitionConfig =
     }
   | TransitionConfig[]; // Multiple candidates (first match wins)
 ```
+
+### Emitter Types
+
+The library exports a framework-agnostic `Pausable<T>` interface. Any object
+satisfying this shape can be used as an emitter factory return value — no RxJS
+dependency required.
+
+```typescript
+import type { Pausable, EmitterObserver } from '@bemedev/app-ts';
+
+// EmitterObserver<R>
+type EmitterObserver<R> = {
+  next: (value: R) => void;
+  error: (err: any) => void;
+  complete: () => void;
+};
+
+// Pausable<R>
+type Pausable<R> = {
+  subscribe: (observer: EmitterObserver<R>) => void;
+  start: () => void;  // begin consuming the source
+  stop: () => void;   // stop and clean up
+  pause: () => void;  // buffer incoming events
+  resume: () => void; // replay buffer then resume
+};
+```
+
+> When using RxJS, wrap any `Observable<T>` with `createPausable` from
+> `@bemedev/rx-pausable` (a separate, optional package).
 
 ### Typings Utilities Reference
 
