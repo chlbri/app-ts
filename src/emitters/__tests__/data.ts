@@ -1,5 +1,6 @@
 import { createMachine } from '#machine';
 import { notU, typings } from '#utils';
+import { createPausable } from '@bemedev/rx-pausable';
 import { interval } from 'rxjs/internal/observable/interval';
 import { map } from 'rxjs/internal/operators/map';
 import { take } from 'rxjs/internal/operators/take';
@@ -60,10 +61,12 @@ export const machineEmitter2 = machineEmitter1.provideOptions(
     actors: {
       emitters: {
         interval: () =>
-          interval(WAITERS.short).pipe(
-            take(5),
-            map(v => v + 1),
-            map(v => v * 5),
+          createPausable(
+            interval(WAITERS.short).pipe(
+              take(5),
+              map(v => v + 1),
+              map(v => v * 5),
+            ),
           ),
       },
     },
@@ -120,10 +123,12 @@ export const machineEmitter3 = createMachine(
   actors: {
     emitters: {
       interval1: () =>
-        interval(WAITERS.short).pipe(
-          take(5),
-          map(v => v + 1),
-          map(v => v * 5),
+        createPausable(
+          interval(WAITERS.short).pipe(
+            take(5),
+            map(v => v + 1),
+            map(v => v * 5),
+          ),
         ),
     },
   },

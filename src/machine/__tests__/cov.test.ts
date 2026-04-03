@@ -4,7 +4,7 @@ import { interpret } from '#interpreters';
 import { createMachine, getEntries, Machine } from '#machine';
 
 import { nothing, reduceDescriber } from '#utils';
-import { createTests } from '@bemedev/vitest-extended';
+import { createTests } from '@bemedev/dev-utils/vitest-extended';
 import equal from 'fast-deep-equal';
 import path from 'path';
 import { constructTests, defaultT } from '../../fixtures';

@@ -3,6 +3,7 @@ import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
+import { createPausable } from '@bemedev/rx-pausable';
 import { Subject } from 'rxjs';
 
 vi.useFakeTimers();
@@ -47,7 +48,7 @@ describe('Error transitions testing)', () => {
         context: 'number',
       }),
     ).provideOptions(({ assign, voidAction }) => ({
-      actors: { emitters: { interval: () => sub } },
+      actors: { emitters: { interval: () => createPausable(sub) } },
 
       actions: {
         assigN: assign('context', {

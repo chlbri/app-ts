@@ -5,7 +5,6 @@ import type {
   ToEventObject,
   ToEvents,
 } from '#events';
-import { reduceFnMap } from '#utils';
 import type { EmitterFunction2, EmittersMap } from '../types';
 
 export type ToEmitterSrc_F = <
@@ -24,12 +23,10 @@ export type ToEmitterSrc_F = <
 ) => EmitterFunction2<Eo, Pc, Tc, T, R> | undefined;
 
 export const toEmitterSrc: ToEmitterSrc_F = (
-  events,
-  actorsMap,
+  _events,
+  _actorsMap,
   emitter,
   emitters,
 ) => {
-  const fn = emitters?.[emitter];
-  const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
-  return func;
+  return emitters?.[emitter] as any;
 };
