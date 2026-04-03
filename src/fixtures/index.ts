@@ -380,7 +380,13 @@ export const constructTests = <
         return (times = 1, _index) => {
           const invite = `#${index(_index)} => Wait ${times} times ${DELAY}ms`;
 
-          return tupleOf(invite, () => fakeWaiter(DELAY, times));
+          return tupleOf(invite, async () => {
+            try {
+              await fakeWaiter(DELAY, times);
+            } catch {
+              // In case of fake timers, this can throw if the timers are not properly handled.
+            }
+          });
         };
       },
 

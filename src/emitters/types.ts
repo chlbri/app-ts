@@ -3,9 +3,9 @@ import type {
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import type { ActorsConfigMap, EventObject } from '#events';
+import type { StateExtended } from '#states';
 import type { Transition } from '#transitions';
-import type { Observable } from 'rxjs';
-import type { Describer, FnMap, FnR, RecordS } from '~types';
+import type { RecordS } from '~types';
 
 export type Subscriber = {
   unsubscribe: () => void;
@@ -16,11 +16,45 @@ export type Subscribable = {
 };
 
 /**
- * Type representing a describer for a emitter.
- *
- * @see {@linkcode Describer} for more details.
+ * Observer wired into a {@linkcode Pausable} via its `subscribe` method.
+ * Mirrors the shape expected by `@bemedev/rx-pausable`'s SubArgs.
  */
-export type EmitterSrcConfig = Describer | string;
+export type EmitterObserver<R = any> = {
+  next: (value: R) => void;
+  error: (err: any) => void;
+  complete: () => void;
+};
+
+/**
+ * Minimal pausable interface — intentionally framework-agnostic so the lib
+ * does not pull in RxJS as a peer dependency.
+ *
+ * Implementations (e.g. the class returned by `createPausable` from
+ * `@bemedev/rx-pausable`) must satisfy this shape.
+ *
+ * @template R - The value type emitted by the underlying source.
+ */
+export type Pausable<R = any> = {
+  /** Wire the observer that will receive forwarded events. */
+  subscribe: (observer: EmitterObserver<R>) => void;
+  /** Start consuming the source — has no effect if not stopped. */
+  start: () => void;
+  /** Stop the stream and remove any pending timers. */
+  stop: () => void;
+  /**
+   * Suspend forwarding while buffering incoming events.
+   * Has no effect if already paused or stopped.
+   */
+  pause: () => void;
+  /**
+   * Replay buffered events then resume live forwarding.
+   * Has no effect if not paused.
+   */
+  resume: () => void;
+};
+
+/** The string id that references an emitter source in the options map. */
+export type EmitterSrcConfig = string;
 
 export type EmitterDef = {
   next: PrimitiveObject;
@@ -52,21 +86,13 @@ export type EmitterReturn<
     : P
   : never;
 
-export type EmitterFunction<
-  E extends EventObject = EventObject,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  T extends string = string,
-  R = any,
-> = FnMap<E, Pc, Tc, T, Observable<R>, `${string}::${'next' | 'error'}`>;
-
 export type EmitterFunction2<
   E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-> = FnR<E, Pc, Tc, T, Observable<R>>;
+> = (state: StateExtended<E, Pc, Tc, T>) => Pausable<R>;
 
 export type EmittersMap<
   E extends EventObject = EventObject,

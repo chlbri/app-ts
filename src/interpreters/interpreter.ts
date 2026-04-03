@@ -118,7 +118,7 @@ import type {
   Fn,
   PrimitiveObject,
 } from '#bemedev/globals/types';
-import { EmitterFunction2, toEmitterSrc } from '#emitters';
+import { toEmitterSrc, type EmitterFunction2 } from '#emitters';
 import type { Machine } from '#machine';
 import type {
   ActorsMapFrom,
@@ -129,7 +129,6 @@ import type {
   MachineOptions,
 } from '#machines';
 import type { FinallyConfig, PromiseeResult } from '#promises';
-import { createPausable } from '@bemedev/rx-pausable';
 import { createScheduler } from '@bemedev/scheduler';
 import type {
   ChildConfig,
@@ -1640,17 +1639,13 @@ export class Interpreter<
 
         return [from, ...emitters] as const;
       })
-      .map(([from, ..._emitters]) => {
-        const emitters = _emitters.map(({ emitterFn, ...rest }) => {
-          return { observable: this.#executeEmitter(emitterFn), ...rest };
-        });
-
-        return [from, ...emitters] as const;
-      })
       .map(([from, ...emitters]) => {
         const pausables = emitters.map(
-          ({ observable, error, next, complete, id }) => {
-            const pausable = createPausable(observable, {
+          ({ emitterFn, error, next, complete, id }) => {
+            const pausable = emitterFn(this.#cloneState);
+
+            // Wire the interpreter's transition callbacks into the pausable.
+            pausable.subscribe({
               next: payload => {
                 const event = {
                   type: `${id}::next`,
@@ -1673,6 +1668,24 @@ export class Interpreter<
               },
               complete: () => this.#performFinally(complete),
             });
+
+            // // Branch on the interpreter's current status so that pausables
+            // // collected during an active session start immediately, while
+            // // those collected during initial start-up are left in 'stopped'
+            // // state and started by the subsequent #startPausables() call.
+            // switch (this.#status) {
+            //   case 'started':
+            //   case 'working':
+            //   case 'sending':
+            //   case 'busy':
+            //     pausable.start();
+            //     break;
+            //   case 'paused':
+            //     pausable.start();
+            //     pausable.pause();
+            //     break;
+            //   // 'idle' | 'starting' | 'stopped' → #startPausables() handles it
+            // }
 
             return {
               pausable,
@@ -1803,10 +1816,6 @@ export class Interpreter<
       });
   };
 
-  #executeEmitter = (emitter: EmitterFunction2<Eo, Pc, Tc, Ta>) => {
-    const instance = emitter(this.#cloneState);
-    return instance;
-  };
   #executeChild = (child: ChildFunction2<Eo, Pc, Tc, Ta>) => {
     const instance = child(this.#cloneState);
     return instance;

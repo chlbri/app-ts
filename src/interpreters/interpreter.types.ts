@@ -30,8 +30,7 @@ import type {
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
-import type { Pausable } from '@bemedev/rx-pausable';
-import { Observable } from 'rxjs';
+import type { Pausable } from '#emitters';
 import type { FnMapR, OptionalDefinition } from '~types';
 import type { EmitterConfig, PromiseeConfig } from '../actor.types';
 import { type InterpreterFrom } from './interpreter';
@@ -292,11 +291,6 @@ export type DiffNext = {
   sv: StateValue;
   diffEntries: ActionConfig[];
   diffExits: ActionConfig[];
-};
-
-export type CollectedObservable = EmitterConfig & {
-  from: string;
-  observable: Observable<any>;
 };
 
 export type CollectedPausable = {

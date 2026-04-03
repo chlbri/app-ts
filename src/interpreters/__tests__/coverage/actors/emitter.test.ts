@@ -2,6 +2,7 @@ import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { notU, typings } from '#utils';
+import { createPausable } from '@bemedev/rx-pausable';
 import { interval } from 'rxjs/internal/observable/interval';
 import { map } from 'rxjs/internal/operators/map';
 import { take } from 'rxjs/internal/operators/take';
@@ -51,9 +52,11 @@ describe('Coverage actors', () => {
       actors: {
         emitters: {
           interval: () =>
-            interval(SHORT).pipe(
-              take(3),
-              map(v => v + 1),
+            createPausable(
+              interval(SHORT).pipe(
+                take(3),
+                map(v => v + 1),
+              ),
             ),
         },
       },
