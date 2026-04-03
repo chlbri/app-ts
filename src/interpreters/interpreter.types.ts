@@ -1,32 +1,32 @@
 import type { Action2, ActionConfig, ActionResult } from '#actions';
 import type {
-    Equals,
-    NOmit,
-    Primitive,
-    PrimitiveObject,
+  Equals,
+  NOmit,
+  Primitive,
+  PrimitiveObject,
 } from '#bemedev/globals/types';
 import type { DelayFunction2, DelayFunction3 } from '#delays';
 import type { Pausable } from '#emitters';
 import type {
-    ActorsConfigMap,
-    EventArg,
-    EventObject,
-    EventsMap,
-    ToEventObject,
-    ToEvents,
+  ActorsConfigMap,
+  EventArg,
+  EventObject,
+  EventsMap,
+  ToEventObject,
+  ToEvents,
 } from '#events';
 import type { GuardConfig, PredicateS2, PredicateS3 } from '#guards';
 import type {
-    AnyMachine,
-    ContextFrom,
-    PrivateContextFrom,
+  AnyMachine,
+  ContextFrom,
+  PrivateContextFrom,
 } from '#machines';
 import type { PromiseeResult, PromiseFunction2 } from '#promises';
 import type { ActivityConfig, NodeConfig, StateValue } from '#states';
 import type {
-    AlwaysConfig,
-    DelayedTransitions,
-    TransitionConfig,
+  AlwaysConfig,
+  DelayedTransitions,
+  TransitionConfig,
 } from '#transitions';
 import type { TimeoutPromise } from '@bemedev/basifun';
 import type { Decompose } from '@bemedev/decompose';

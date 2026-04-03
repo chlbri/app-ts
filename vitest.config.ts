@@ -33,7 +33,6 @@ export default defineConfig({
     globals: true,
     logHeapUsage: true,
     setupFiles: ['./vitest.setup.ts'],
-
     typecheck: {
       enabled: true,
       ignoreSourceErrors: true,
