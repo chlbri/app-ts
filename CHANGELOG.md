@@ -11,7 +11,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
-## **[2.3.3] - 03/04/2026** => _12:05_
+## **[2.3.4] - 03/04/2026** => _12:05_
 
 </summary>
 
