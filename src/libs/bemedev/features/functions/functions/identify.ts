@@ -1,6 +1,6 @@
-import type { Identitfy } from '../../../globals/types';
+import type { Identify } from '../../../globals/types';
 
-type Identify_F = <const T>(arg?: Record<string, T>) => Identitfy<T>[];
+type Identify_F = <const T>(arg?: Record<string, T>) => Identify<T>[];
 
 /**
  * identify variable - Auto-generated expression

@@ -451,3 +451,8 @@ export type Equals<T, U> = T extends U
 export type Classe = {
   [Symbol.hasInstance]: Fn<any, boolean>;
 };
+
+export class UndefinedHelper {
+  readonly __NO_TYPE__ = '@bemedev/addons/NO_TYPE';
+  private constructor() {}
+}

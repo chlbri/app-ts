@@ -9,6 +9,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.4.1] - 06/04/2026** => _23:27_
+
+</summary>
+
+- **Fix**: Remplacement de `partialCall(fn, arg)` par
+  `partialCall.paramArray(fn, arg)` dans `interpreter.ts` et `machine.ts`
+  — mise à jour suite au changement d'API de `partialCall`
+- **Fix**: Correction de la typo `Identitfy` → `Identify` dans
+  `identify.ts`
+- **Feat**: Ajout de la classe `UndefinedHelper` dans
+  `src/libs/bemedev/features/common/types.ts` — marqueur de valeur
+  indéfinie pour les tuples partiels
+- **Feat**: Nouveaux types dans
+  `src/libs/bemedev/features/functions/types.ts` — utilitaires de tuples
+  partiels (`_Requirify`, `Parts`, `PartDiff`), types de promesses avec
+  timeout (`TimeoutPromise`, `TypeFromTimeout`, `TypeFromTimeouts`) et
+  types de callbacks (`CallBackError`, `CallBackResult`, `Callback`,
+  `CbParams`, `ResultFrom`)
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.4.0] - 06/04/2026** => _23:17_
 
 </summary>

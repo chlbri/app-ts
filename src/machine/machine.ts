@@ -1195,12 +1195,12 @@ const getIO: GetIO_F = (key, node) => {
 /**
  * Retrieves all entry actions from a node.
  */
-export const getEntries = partialCall(getIO, 'entry');
+export const getEntries = partialCall.paramArray(getIO, 'entry');
 
 /**
  * Retrieves all exit actions from a node.
  */
-export const getExits = partialCall(getIO, 'exit');
+export const getExits = partialCall.paramArray(getIO, 'exit');
 
 export type { Machine };
 

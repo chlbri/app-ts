@@ -1250,7 +1250,9 @@ export class Interpreter<
           const check4 = !isDefined(delayF);
           if (check4) {
             const promise = async () =>
-              Promise.resolve().then(partialCall(handlePromise, 'catch'));
+              Promise.resolve().then(
+                partialCall.paramArray(handlePromise, 'catch'),
+              );
             return promises.push(promise);
           }
           const max = this.#performDelay(delayF);
@@ -1265,8 +1267,8 @@ export class Interpreter<
           });
 
           return wT()
-            .then(partialCall(handlePromise, 'then'))
-            .catch(partialCall(handlePromise, 'catch'));
+            .then(partialCall.paramArray(handlePromise, 'then'))
+            .catch(partialCall.paramArray(handlePromise, 'catch'));
         };
         return promises.push(promise);
       },

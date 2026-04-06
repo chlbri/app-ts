@@ -5,8 +5,7 @@
 - **Language**: Use strictly English for all commit messages
 - **Clarity**: Concise and descriptive messages
 - **Format**: Follow the Conventional Commits convention
-- **Tools**: Use the VS Code extension
-  `adam-bender.commit-message-editor`
+- **Tools**: Use the VS Code extension `adam-bender.commit-message-editor`
 
 ### Commit Format
 
@@ -26,20 +25,20 @@
 
 #### Available Commit Types
 
-| Type       | Description                                | Version Impact       |
-| ---------- | ------------------------------------------ | -------------------- |
-| `feat`     | New feature                                | Minor version        |
-| `fix`      | Standard bug fix                           | Patch version        |
-| `hotfix`   | Critical bug fix                           | Patch version        |
-| `docs`     | Documentation modification/addition        | Patch version        |
-| `build`    | Build file modifications                   | No versioning        |
-| `chore`    | Maintenance tasks                          | No versioning        |
-| `ci`       | CI/CD modifications (Travis, Circle, etc.) | No versioning        |
-| `perf`     | Performance improvements                   | Patch version        |
-| `refactor` | Refactoring without additions/fixes        | No versioning        |
-| `revert`   | Revert to a previous commit                | Patch version        |
-| `style`    | Code style modifications                   | No versioning        |
-| `test`     | Adding/removing tests                      | Patch version        |
+| Type       | Description                                | Version Impact |
+| ---------- | ------------------------------------------ | -------------- |
+| `feat`     | New feature                                | Minor version  |
+| `fix`      | Standard bug fix                           | Patch version  |
+| `hotfix`   | Critical bug fix                           | Patch version  |
+| `docs`     | Documentation modification/addition        | Patch version  |
+| `build`    | Build file modifications                   | No versioning  |
+| `chore`    | Maintenance tasks                          | No versioning  |
+| `ci`       | CI/CD modifications (Travis, Circle, etc.) | No versioning  |
+| `perf`     | Performance improvements                   | Patch version  |
+| `refactor` | Refactoring without additions/fixes        | No versioning  |
+| `revert`   | Revert to a previous commit                | Patch version  |
+| `style`    | Code style modifications                   | No versioning  |
+| `test`     | Adding/removing tests                      | Patch version  |
 
 #### Scope (optional)
 
