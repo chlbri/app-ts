@@ -8,7 +8,7 @@ import type {
 } from '#events';
 import type { SimpleMachineOptions } from '#machines';
 import { toTransition } from '#transitions';
-import { toArray } from '@bemedev/basifun';
+import toArray from '#bemedev/features/arrays/castings/toArray';
 import type { Emitter } from '../types';
 import { toEmitterSrc } from './src';
 

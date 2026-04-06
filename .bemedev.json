@@ -107,6 +107,11 @@
     "features.objects.castings.trueObject",
     "globals.utils.is.object",
     "features.booleans.typings.index",
-    "features.booleans.typings.type"
+    "features.booleans.typings.type",
+    "features.functions.functions.identify",
+    "features.arrays.castings.toArray",
+    "features.functions.functions.switch",
+    "features.functions.functions.partialCall",
+    "features.functions.functions.partialCallO"
   ]
 }

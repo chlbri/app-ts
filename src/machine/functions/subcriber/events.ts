@@ -1,4 +1,4 @@
-import { toArray } from '@bemedev/basifun';
+import toArray from '#bemedev/features/arrays/castings/toArray';
 import type { RecordS } from '~types';
 import { EVENTS_FULL } from '../../constants';
 

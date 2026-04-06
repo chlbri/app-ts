@@ -27,6 +27,7 @@
       "#fixtures": ["./src/fixtures/index.ts"],
       "#fixturesData": ["./src/interpreters/__tests__/data/index.ts"],
       "#utils": ["./src/utils/index.ts"],
+      "#utils/*": ["./src/utils/*"],
       "#constants": ["./src/constants/index.ts"],
       "#promises": ["./src/promises/index.ts"],
       "#children": ["./src/children/index.ts"],

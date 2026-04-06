@@ -7,7 +7,7 @@ import type {
   ToEvents,
 } from '#events';
 import { toTransition } from '#transitions';
-import { toArray } from '@bemedev/basifun';
+import toArray from '#bemedev/features/arrays/castings/toArray';
 import type { SimpleMachineOptions } from '#machines';
 import type { Promisee } from '../types';
 import { toPromiseSrc } from './src';

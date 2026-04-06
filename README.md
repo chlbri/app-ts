@@ -26,19 +26,19 @@ transitions.
 
 ### Actors — three kinds of external work
 
-| Actor type | Shape                 | Trigger           | Direction                        |
-| ---------- | --------------------- | ----------------- | -------------------------------- |
-| `emitters` | `() => Pausable<T>`   | State entry       | **Source → Machine** (read-only) |
-| `promises` | `() => Promise<T>`    | State entry       | **Source → Machine** (one-shot)  |
-| `children` | `() => Interpreter`   | Machine lifecycle | **Bidirectional** (via `sendTo`) |
+| Actor type | Shape               | Trigger           | Direction                        |
+| ---------- | ------------------- | ----------------- | -------------------------------- |
+| `emitters` | `() => Pausable<T>` | State entry       | **Source → Machine** (read-only) |
+| `promises` | `() => Promise<T>`  | State entry       | **Source → Machine** (one-shot)  |
+| `children` | `() => Interpreter` | Machine lifecycle | **Bidirectional** (via `sendTo`) |
 
 ### Emitters importance is NOT touched during the flow
 
 This is the single most important architectural choice to understand.
 
 An **emitter** is a pausable stream source. It produces values on its own
-schedule. The machine **only reacts** to those values — it never sends events
-_to_ the emitter, never modifies it, never controls its output.
+schedule. The machine **only reacts** to those values — it never sends
+events _to_ the emitter, never modifies it, never controls its output.
 
 ```
 ┌─────────────┐    emissions    ┌──────────────┐
@@ -723,10 +723,11 @@ _to_ the `Pausable`, never modifies it, never controls its output.
    }))
    ```
 
-   > `Pausable<T>` is a framework-agnostic interface exported by this library.
-   > Any object satisfying `{ subscribe, start, stop, pause, resume }` works.
-   > `createPausable` (from `@bemedev/rx-pausable`) is a convenience wrapper
-   > for RxJS observables — it is **not** a required dependency.
+   > `Pausable<T>` is a framework-agnostic interface exported by this
+   > library. Any object satisfying
+   > `{ subscribe, start, stop, pause, resume }` works. `createPausable`
+   > (from `@bemedev/rx-pausable`) is a convenience wrapper for RxJS
+   > observables — it is **not** a required dependency.
 
 3. **Runtime** — the interpreter manages the full lifecycle:
    - **Enter state** → factory called → `subscribe()` then `start()`
@@ -1335,9 +1336,9 @@ type TransitionConfig =
 
 ### Emitter Types
 
-The library exports a framework-agnostic `Pausable<T>` interface. Any object
-satisfying this shape can be used as an emitter factory return value — no RxJS
-dependency required.
+The library exports a framework-agnostic `Pausable<T>` interface. Any
+object satisfying this shape can be used as an emitter factory return value
+— no RxJS dependency required.
 
 ```typescript
 import type { Pausable, EmitterObserver } from '@bemedev/app-ts';
@@ -1352,9 +1353,9 @@ type EmitterObserver<R> = {
 // Pausable<R>
 type Pausable<R> = {
   subscribe: (observer: EmitterObserver<R>) => void;
-  start: () => void;  // begin consuming the source
-  stop: () => void;   // stop and clean up
-  pause: () => void;  // buffer incoming events
+  start: () => void; // begin consuming the source
+  stop: () => void; // stop and clean up
+  pause: () => void; // buffer incoming events
   resume: () => void; // replay buffer then resume
 };
 ```

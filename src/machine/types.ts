@@ -55,12 +55,11 @@ import type {
   FnMap,
   FnMapR,
   FnR,
-  Identify,
   KeyU,
   RecordS,
   ReduceArray,
 } from '~types';
-
+import { Identify } from '#bemedev/globals/types';
 /**
  * Type representing the main JSON config.
  *

@@ -792,3 +792,5 @@ export type Rn = Record<Keys, never>;
  * @author chlbri (bri_lvi@icloud.com)
  */
 export type Ra = Record<Keys, any>;
+
+export type Identify<T> = T extends object ? T & { __id: string } : T;

@@ -6,6 +6,30 @@ The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+<details>
+<summary>
+
+## **[2.4.0] - 06/04/2026** => _23:17_
+
+</summary>
+
+- **Refactor**: Remplacement de la dépendance `@bemedev/basifun` par
+  `@bemedev/better-promise` pour les utilitaires de promesses
+  (`TimeoutPromise`, `anyPromises`, `asyncfy`, `withTimeout`)
+- **Refactor**: Internalisation des utilitaires précédemment fournis par
+  `@bemedev/basifun` — `toArray`, `partialCall`, `switchV`, `isDefined` et
+  `identify` sont désormais résolus via les alias `#bemedev/features/…`
+- **Feat**: Ajout du type `Identify<T>` dans
+  `src/libs/bemedev/features/objects/types.ts`
+- **Feat**: Nouvelles implémentations locales sous
+  `src/libs/bemedev/features/arrays/castings/` et
+  `src/libs/bemedev/features/functions/functions/`
+- **Update**: Ajout de l'alias de chemin `#utils/*` dans `tsconfig.json`
+- **Update**: `@bemedev/dev-utils` ^0.5.0 → ^0.5.2
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
 <br/>
 
 <details>
@@ -15,14 +39,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Refactor**: Remplacement de `Observable<R>` par `Pausable<R>` comme type de retour des fonctions d'émetteur — les acteurs fournissent désormais directement un `Pausable` au lieu d'un `Observable`
-- **Feat**: Ajout du type `Pausable<R>` et `EmitterObserver<R>` dans `emitters/types.ts` — interface agnostique vis-à-vis de RxJS
-- **Remove**: Suppression de `EmitterFunction` (ancienne forme `FnMap`), `CollectedObservable` et `#executeEmitter` devenus obsolètes
-- **Remove**: Suppression de `src/.vitest.ts` — configuration vitest centralisée dans `vitest.config.ts`
-- **Refactor**: Migration de `createTests` de `@bemedev/vitest-extended` vers `@bemedev/dev-utils/vitest-extended` dans tous les fichiers de test
+- **Refactor**: Remplacement de `Observable<R>` par `Pausable<R>` comme
+  type de retour des fonctions d'émetteur — les acteurs fournissent
+  désormais directement un `Pausable` au lieu d'un `Observable`
+- **Feat**: Ajout du type `Pausable<R>` et `EmitterObserver<R>` dans
+  `emitters/types.ts` — interface agnostique vis-à-vis de RxJS
+- **Remove**: Suppression de `EmitterFunction` (ancienne forme `FnMap`),
+  `CollectedObservable` et `#executeEmitter` devenus obsolètes
+- **Remove**: Suppression de `src/.vitest.ts` — configuration vitest
+  centralisée dans `vitest.config.ts`
+- **Refactor**: Migration de `createTests` de `@bemedev/vitest-extended`
+  vers `@bemedev/dev-utils/vitest-extended` dans tous les fichiers de test
 - **Update**: Mise à jour des dépendances (`pnpm-lock.yaml`)
-- **Fix**: Correction des fixtures — `fakeWaiter` enveloppé dans un `try/catch` pour les fake timers
-- **Chore**: Déplacement des fichiers de skills de `.github/skills` vers `.claude/skills`
+- **Fix**: Correction des fixtures — `fakeWaiter` enveloppé dans un
+  `try/catch` pour les fake timers
+- **Chore**: Déplacement des fichiers de skills de `.github/skills` vers
+  `.claude/skills`
 - <u>Test coverage **_100%_**</u>
 
 </details>

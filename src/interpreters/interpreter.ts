@@ -68,13 +68,14 @@ import {
 import {
   anyPromises,
   asyncfy,
-  isDefined,
-  partialCall,
-  switchV,
-  toArray,
   withTimeout,
   type TimeoutPromise,
-} from '@bemedev/basifun';
+} from '@bemedev/better-promise';
+import toArray from '#bemedev/features/arrays/castings/toArray';
+import { partialCall } from '#bemedev/features/functions/functions/partialCall';
+import { switchV } from '#bemedev/features/functions/functions/switch';
+import isDefined from '#bemedev/features/common/castings/is/defined';
+
 import { assignByKey, decomposeSV } from '@bemedev/decompose';
 import {
   createInterval,

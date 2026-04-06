@@ -28,7 +28,7 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '#transitions';
-import type { TimeoutPromise } from '@bemedev/basifun';
+import type { TimeoutPromise } from '@bemedev/better-promise';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { FnMapR, OptionalDefinition } from '~types';

@@ -9,7 +9,7 @@ import type {
 import { toPredicate, type GuardConfig } from '#guards';
 import type { SimpleMachineOptions } from '#machines';
 import type { Transition, TransitionConfig } from '#transitions';
-import { toArray } from '@bemedev/basifun';
+import toArray from '#bemedev/features/arrays/castings/toArray';
 
 export type ToTransition_F = <
   E extends EventsMap = EventsMap,

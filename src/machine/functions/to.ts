@@ -11,7 +11,7 @@ import _any from '#bemedev/features/common/castings/any';
 import type { SimpleMachineOptions } from '#machines';
 import type { Child } from '../types';
 import { toChildSrc } from './src';
-import { identify } from '@bemedev/basifun/objects/identify';
+import { identify } from '#bemedev/features/functions/functions/identify';
 
 export type ToChild_F = <
   E extends EventsMap = EventsMap,

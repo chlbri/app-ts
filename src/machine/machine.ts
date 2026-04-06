@@ -37,7 +37,8 @@ import {
   type StateValue,
 } from '#states';
 import { merge, reduceFnMap } from '#utils';
-import { partialCall, toArray } from '@bemedev/basifun';
+import toArray from '#bemedev/features/arrays/castings/toArray';
+import { partialCall } from '#bemedev/features/functions/functions/partialCall';
 import { decompose, getByKey, type Decompose } from '@bemedev/decompose';
 
 import type { Action } from '#actions';

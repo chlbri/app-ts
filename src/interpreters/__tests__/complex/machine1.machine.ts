@@ -1,6 +1,6 @@
 import { createMachine } from '#machine';
 import { typings } from '#utils';
-import type { inferT } from 'src/utils/typings';
+import type { inferT } from '#utils/typings';
 import { SCHEMAS } from './machine1.machine.gen';
 import { asset, intermediary } from './machine1.machine.typings';
 

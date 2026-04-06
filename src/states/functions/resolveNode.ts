@@ -11,8 +11,8 @@ import type {
 import { toChild } from '#machines';
 import { toPromise } from '#promises';
 import { toTransition } from '#transitions';
-import { toArray } from '@bemedev/basifun';
-import { identify } from '@bemedev/basifun/objects/identify';
+import toArray from '#bemedev/features/arrays/castings/toArray';
+import { identify } from '#bemedev/features/functions/functions/identify';
 import type { SimpleMachineOptions } from '#machines';
 import type { Node, NodeConfig } from '../types';
 import { stateType } from './stateType';
