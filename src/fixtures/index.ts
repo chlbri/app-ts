@@ -465,7 +465,7 @@ export const constructTests = <
       const invite = `#${index(_index)}=> send ${event}`;
 
       return tupleOf(invite, () => {
-        return service.send(_any(_event));
+        service.send(_any(_event));
       });
     },
 

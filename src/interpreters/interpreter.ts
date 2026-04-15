@@ -2185,8 +2185,8 @@ export class Interpreter<
       this.#config = next;
       this.#performConfig(true);
       this.#makeWork();
-      this._next();
-    } else this.#makeWork();
+      return this._next();
+    } else return this.#makeWork();
   };
 
   /**
@@ -2198,7 +2198,7 @@ export class Interpreter<
    * If the event cannot be performed, it will not be sent.
    * If the event is sent, it will be processed and the state will be updated.
    */
-  send = (_event: EventArg<E>) => {
+  send = async (_event: EventArg<E>) => {
     const check = this.#cannotPerformEvents(_event);
     if (check) return;
 

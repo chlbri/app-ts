@@ -14,8 +14,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 </summary>
 
 - **Fix**: Remplacement de `partialCall(fn, arg)` par
-  `partialCall.paramArray(fn, arg)` dans `interpreter.ts` et `machine.ts`
-  — mise à jour suite au changement d'API de `partialCall`
+  `partialCall.paramArray(fn, arg)` dans `interpreter.ts` et `machine.ts` —
+  mise à jour suite au changement d'API de `partialCall`
 - **Fix**: Correction de la typo `Identitfy` → `Identify` dans
   `identify.ts`
 - **Feat**: Ajout de la classe `UndefinedHelper` dans
