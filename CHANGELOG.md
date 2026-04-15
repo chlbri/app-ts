@@ -9,6 +9,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.4.2] - 15/04/2026** => _22:42_
+
+</summary>
+
+- **Refactor**: Renommage du champ `then` en `resolves` dans la
+  configuration des promisees (`_PromiseeConfig`, `PromiseeDef`, `Promisee`)
+  — mise à jour de tous les usages dans les types, tests et configurations
+- **Fix**: Suppression du `return` inutile avant `service.send()` dans
+  `src/fixtures/index.ts`
+- **Refactor**: Reformatage de l'indentation dans
+  `src/transitions/types.ts` pour améliorer la lisibilité
+- **Update**: `@bemedev/dev-utils` ^0.5.2 → ^0.5.3
+- **Update**: `@types/node` ^25.5.2 → ^25.6.0
+- **Update**: `globals` ^17.4.0 → ^17.5.0
+- **Update**: `oxfmt` ^0.43.0 → ^0.45.0
+- **Update**: `oxlint` ^1.58.0 → ^1.60.0
+- **Update**: `rolldown` 1.0.0-rc.13 → 1.0.0-rc.15
+- **Update**: `nanoid` ^5.1.7 → ^5.1.9
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.4.1] - 06/04/2026** => _23:27_
 
 </summary>

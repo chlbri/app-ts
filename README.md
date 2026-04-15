@@ -910,7 +910,7 @@ Timeline:
 | Direction       | Source → Machine only       | Source → Machine only     | Bidirectional                  |
 | Cardinality     | 0..∞ emissions              | Exactly 1 resolution      | Ongoing event exchange         |
 | Machine control | **None** — read-only        | Triggered on state entry  | `sendTo` sends events to child |
-| Subscription    | `subscribe` / `unsubscribe` | One-shot `then` / `catch` | `interpret` / `stop`           |
+| Subscription    | `subscribe` / `unsubscribe` | One-shot `resolves` / `catch` | `interpret` / `stop`           |
 | Pause / Resume  | Via `@bemedev/rx-pausable`  | N/A                       | Via child interpreter          |
 
 <br/>
@@ -920,7 +920,7 @@ Timeline:
 ## 10. Actors: Promises
 
 A promise actor is a one-shot async task triggered on state entry. The
-machine waits for resolution and routes the result to `then`, `catch`, or
+machine waits for resolution and routes the result to `resolves`, `catch`, or
 `finally` handlers.
 
 ```typescript
@@ -932,7 +932,7 @@ const machine = createMachine(
       fetch: {
         actors: {
           fetch: {
-            then: {
+            resolves: {
               actions: 'insertData',
               target: '/idle',
             },
@@ -951,7 +951,7 @@ const machine = createMachine(
     actorsMap: {
       promises: {
         fetch: {
-          then: typings.array('string'),
+          resolves: typings.array('string'),
           catch: 'primitive',
         },
       },
@@ -982,7 +982,7 @@ const machine = createMachine(
 
 1. Interpreter enters the state containing the promise actor.
 2. The factory `async ({ context, event }) => ...` is called once.
-3. On success → `then` handler fires (actions + optional target).
+3. On success → `resolves` handler fires (actions + optional target).
 4. On rejection → `catch` handler fires.
 5. The promise is **not** retried automatically — you handle retry via
    transitions.
