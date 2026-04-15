@@ -72,7 +72,12 @@ export const toEmitter: ToEmitter_F = (
     return toTransition(events, actorsMap, { actions: config }, options);
   });
 
-  const out = { src, then: next, catch: error, finally: complete } as any;
+  const out = {
+    src,
+    resolves: next,
+    catch: error,
+    finally: complete,
+  } as any;
 
   const { description } = emitter;
   if (description) out.description = description;

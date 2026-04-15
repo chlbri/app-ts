@@ -19,7 +19,7 @@ import type { FnMap, FnR, RecordS, SingleOrArrayL } from '~types';
 export type PromiseReturn<
   K extends string,
   A extends ActorsConfigMap = ActorsConfigMap,
-> = NotUndefined<A['promisees']>[K]['then'] extends infer P
+> = NotUndefined<A['promisees']>[K]['resolves'] extends infer P
   ? unknown extends P
     ? never
     : P
@@ -102,7 +102,7 @@ export type FinallyConfig<Paths extends string = string> =
  */
 
 export type GetEventKeysFromPromisee<T extends PromiseeConfig> =
-  GetEventKeysFromDelayed<Pick<T, 'then' | 'catch'>>;
+  GetEventKeysFromDelayed<Pick<T, 'catch'> & { then: T['resolves'] }>;
 
 /**
  * Extracts actions from a map of promisee configurations.
@@ -154,7 +154,7 @@ export type ExtractActionsFromFinally<T extends FinallyConfig> =
  * @see {@linkcode NotUndefined} for handling undefined values in the promisee configuration.
  */
 export type ExtractActionKeysFromPromisee<T extends PromiseeConfig> =
-  | _ExtractActionsFromMap<T['then']>
+  | _ExtractActionsFromMap<T['resolves']>
   | _ExtractActionsFromMap<T['catch']>
   | ExtractActionsFromFinally<NotUndefined<T['finally']>>;
 
@@ -183,7 +183,7 @@ export type ExtractMaxFromPromisee<T extends { max: string }> = T['max'];
  * @see {@linkcode ExtractGuardKeysFromDelayed} for extracting guards from a delayed part.
  */
 export type ExtractGuardKeysFromPromisee<T extends PromiseeConfig> =
-  | ExtractGuardKeysFromDelayed<T['then']>
+  | ExtractGuardKeysFromDelayed<T['resolves']>
   | ExtractGuardKeysFromDelayed<T['catch']>
   | ExtractGuardKeysFromDelayed<T['finally']>;
 
@@ -209,7 +209,7 @@ export type Promisee<
 > = {
   src: PromiseFunction2<E, Pc, Tc, T, R>;
   description?: string;
-  then: Transition<E, Pc, Tc, T>[];
+  resolves: Transition<E, Pc, Tc, T>[];
   catch: Transition<E, Pc, Tc, T>[];
   finally: Transition<E, Pc, Tc, T>[];
 };

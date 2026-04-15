@@ -42,7 +42,7 @@ export const machine23 = createMachine(
               fetch: {
                 actors: {
                   fetch: {
-                    then: {
+                    resolves: {
                       actions: {
                         name: 'insertData',
                         description: 'Database insert',

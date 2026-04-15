@@ -30,7 +30,7 @@ export type EventObject<T = any> = {
 export type EventsMap = Record<string, PrimitiveObject>;
 
 export type PromiseeDef = {
-  then: PrimitiveObject | void;
+  resolves: PrimitiveObject | void;
   catch: PrimitiveObject | void;
 };
 
@@ -76,7 +76,7 @@ type _PromiseesR<T extends PromiseeMap> =
       ?
           | {
               type: `${keyof U & string}::then`;
-              payload: U[keyof U]['then'];
+              payload: U[keyof U]['resolves'];
             }
           | {
               type: `${keyof U & string}::catch`;

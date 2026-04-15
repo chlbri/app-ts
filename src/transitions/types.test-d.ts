@@ -59,12 +59,18 @@ const ttest3 = {
   ],
   actors: {
     source1: {
-      then: [{ guards: 'guard4', actions: 'build4' }, { actions: 'g' }],
+      resolves: [
+        { guards: 'guard4', actions: 'build4' },
+        { actions: 'g' },
+      ],
       catch: [{ guards: 'guard5', actions: 'build5' }, { actions: 'h' }],
       finally: [{ guards: 'guard6', actions: 'build6' }, { actions: 'i' }],
     },
     source2: {
-      then: [{ guards: 'guard7', actions: 'build7' }, { actions: 'j' }],
+      resolves: [
+        { guards: 'guard7', actions: 'build7' },
+        { actions: 'j' },
+      ],
       catch: [{ guards: 'guard8', actions: 'build8' }, { actions: 'k' }],
       finally: [{ guards: 'guard9', actions: 'build9' }, { actions: 'l' }],
     },
@@ -120,7 +126,7 @@ const transition1 = {
       },
     },
     promise2: {
-      then: '/',
+      resolves: '/',
       catch: '/',
     },
     machine122: {
@@ -158,11 +164,11 @@ const transition2 = {
       },
     },
     promise2: {
-      then: '/',
+      resolves: '/',
       catch: '/',
     },
     promise3: {
-      then: '/',
+      resolves: '/',
       catch: '/',
     },
     emitter1: {

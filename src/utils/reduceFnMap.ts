@@ -27,7 +27,7 @@ type ToEventMap_F = <
 export const toEventsMap: ToEventMap_F = (events, _actors) => {
   const promisees = Object.entries(_actors.promisees || {}).reduce(
     (acc, [key, value]) => {
-      acc[`${key}::then`] = value.then;
+      acc[`${key}::then`] = value.resolves;
       acc[`${key}::catch`] = value.catch;
       return acc;
     },

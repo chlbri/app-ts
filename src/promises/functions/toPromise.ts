@@ -53,8 +53,8 @@ export const toPromise: ToPromise_F = (
     options?.actors?.promises,
   );
 
-  const then = toArray
-    .typed(promise.then)
+  const resolves = toArray
+    .typed(promise.resolves)
     .map(config =>
       toTransition(events, actorsMap, config as any, options),
     );
@@ -72,7 +72,7 @@ export const toPromise: ToPromise_F = (
     return toTransition(events, actorsMap, { actions: config }, options);
   });
 
-  const out = { src, then, catch: _catch, finally: _finally } as any;
+  const out = { src, resolves, catch: _catch, finally: _finally } as any;
 
   const { description } = promise;
   if (description) out.description = description;

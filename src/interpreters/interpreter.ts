@@ -1210,7 +1210,7 @@ export class Interpreter<
     const promises: (() => Promise<PR | undefined>)[] = [];
 
     promisees.forEach(
-      ({ id, then, catch: _catch, finally: _finally, max: maxS }) => {
+      ({ id, resolves, catch: _catch, finally: _finally, max: maxS }) => {
         const promiseF = this.toPromiseSrcFn(id);
         if (!promiseF) return;
 
@@ -1223,7 +1223,7 @@ export class Interpreter<
             this.#changeEvent(_any(event));
 
             const transitions = toArray.typed(
-              type === 'then' ? then : _catch,
+              type === 'then' ? resolves : _catch,
             );
 
             const target = this.__performTransitions(
@@ -1364,7 +1364,7 @@ export class Interpreter<
       const promisees = toArray
         .typed(actors)
         .map(([id, value]) => ({ ...value, id }))
-        .filter(actor => 'then' in actor);
+        .filter(actor => 'resolves' in actor);
       if (node.actors) {
         entries.push([from, ...promisees]);
       }

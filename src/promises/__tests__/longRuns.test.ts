@@ -25,7 +25,7 @@ describe('Tests for longrun promises', () => {
           promise: {
             actors: {
               longRunTask: {
-                then: '/success',
+                resolves: '/success',
                 catch: '/failure',
               },
             },
@@ -43,7 +43,7 @@ describe('Tests for longrun promises', () => {
         actorsMap: {
           promisees: {
             longRunTask: {
-              then: 'primitive',
+              resolves: 'primitive',
               catch: 'primitive',
             },
           },
@@ -134,7 +134,7 @@ describe('Tests for longrun promises', () => {
           promise: {
             actors: {
               longRunTask: {
-                then: '/success',
+                resolves: '/success',
                 catch: '/failure',
               },
             },
@@ -152,7 +152,7 @@ describe('Tests for longrun promises', () => {
         actorsMap: {
           promisees: {
             longRunTask: {
-              then: 'primitive',
+              resolves: 'primitive',
               catch: 'primitive',
             },
           },

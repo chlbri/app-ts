@@ -44,7 +44,7 @@ export const config21 = createConfig({
             fetch: {
               actors: {
                 fetch: {
-                  then: {
+                  resolves: {
                     actions: {
                       name: 'insertData',
                       description: 'Database insert',
@@ -130,7 +130,7 @@ export const machine21 = createMachine(
       },
       promisees: {
         fetch: {
-          then: typings.array('string'),
+          resolves: typings.array('string'),
           catch: 'primitive',
         },
       },

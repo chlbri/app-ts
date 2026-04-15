@@ -68,7 +68,7 @@ describe('Self Transitions', () => {
           idle: {
             actors: {
               resolvePromise: {
-                then: '/active',
+                resolves: '/active',
                 catch: '/active',
               },
             },
@@ -80,7 +80,7 @@ describe('Self Transitions', () => {
         actorsMap: {
           promisees: {
             resolvePromise: {
-              then: 'primitive',
+              resolves: 'primitive',
               catch: 'primitive',
             },
           },

@@ -12,10 +12,10 @@ const fixtureTypings = <const T extends string>(value: T) =>
     actorsMap: {
       promisees: {
         [value]: {
-          then: 'primitive',
+          resolves: 'primitive',
           catch: 'primitive',
         },
-      } as Record<T, { then: 'primitive'; catch: 'primitive' }>,
+      } as Record<T, { resolves: 'primitive'; catch: 'primitive' }>,
     },
   });
 
@@ -32,7 +32,7 @@ describe('promisee', () => {
           idle: {
             actors: {
               notDefined: {
-                then: '/active',
+                resolves: '/active',
                 catch: '/active',
                 description: 'notDefined',
               },
@@ -66,7 +66,7 @@ describe('promisee', () => {
           idle: {
             actors: {
               rejectPromise: {
-                then: '/active',
+                resolves: '/active',
                 catch: '/inactive',
               },
             },
@@ -100,7 +100,7 @@ describe('promisee', () => {
           idle: {
             actors: {
               resolvePromise: {
-                then: '/active',
+                resolves: '/active',
                 catch: '/inactive',
               },
             },
@@ -134,7 +134,7 @@ describe('promisee', () => {
           idle: {
             actors: {
               rejectPromise: {
-                then: '/active',
+                resolves: '/active',
                 catch: '/inactive',
               },
             },
@@ -151,7 +151,7 @@ describe('promisee', () => {
         actorsMap: {
           promisees: {
             rejectPromise: {
-              then: 'primitive',
+              resolves: 'primitive',
               catch: 'primitive',
             },
           },
@@ -199,7 +199,7 @@ describe('promisee', () => {
           idle: {
             actors: {
               rejectPromise: {
-                then: '/active',
+                resolves: '/active',
                 catch: '/inactive',
                 max: 'DELAY',
               },
@@ -307,7 +307,7 @@ describe('promisee', () => {
             idle: {
               actors: {
                 rejectPromise: {
-                  then: '/active',
+                  resolves: '/active',
                   catch: '/inactive',
                   finally: 'finalAction',
                 },
@@ -362,7 +362,7 @@ describe('promisee', () => {
             idle: {
               actors: {
                 rejectPromise: {
-                  then: '/active',
+                  resolves: '/active',
                   catch: '/active',
                   finally: { actions: 'finalAction', guards: 'guard' },
                 },

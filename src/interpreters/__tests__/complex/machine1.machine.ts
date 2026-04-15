@@ -61,7 +61,7 @@ export const machine = createMachine(
         actors: {
           checkOnline: {
             description: 'Check if we are online',
-            then: {
+            resolves: {
               actions: 'setOnlineStatus',
             },
             catch: {
@@ -71,7 +71,7 @@ export const machine = createMachine(
           },
           getIntermediaries: {
             description: 'Fetch intermediaries from the blockchain',
-            then: {
+            resolves: {
               target: '/working',
               actions: 'addIntermediaries',
             },
@@ -118,7 +118,7 @@ export const machine = createMachine(
             actors: {
               checkOnline: {
                 description: 'Check if we are online',
-                then: {
+                resolves: {
                   actions: 'setOnlineStatus',
                 },
                 catch: {
@@ -128,7 +128,7 @@ export const machine = createMachine(
               },
               addIntermediary: {
                 description: 'Add the intermediary to the blockchain',
-                then: {
+                resolves: {
                   target: '/working/idle',
                   actions: ['addIntermediary', 'end.add'],
                 },
@@ -178,15 +178,15 @@ export const machine = createMachine(
     actorsMap: {
       promisees: {
         checkOnline: {
-          then: 'boolean',
+          resolves: 'boolean',
           catch: 'boolean',
         },
         getIntermediaries: {
-          then: typings.array(intermediary),
+          resolves: typings.array(intermediary),
           catch: 'primitive',
         },
         addIntermediary: {
-          then: intermediary,
+          resolves: intermediary,
           catch: 'primitive',
         },
       },

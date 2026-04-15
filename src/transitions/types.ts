@@ -325,19 +325,19 @@ export type ExtractActionKeysFromActor<T> = T extends EmitterConfig
  * @see {@linkcode Extract}
  */
 export type ExtractActionKeysFromTransitions<T extends TransitionsConfig> =
-  | ExtractActionKeysFromDelayed<T['on']>
-  | ExtractActionKeysFromDelayed<T['after']>
-  | ExtractActionsFromTransition<
-      Extract<
-        ReduceArray<T['always']>,
-        { actions: SingleOrArrayL<ActionConfig> }
+    | ExtractActionKeysFromDelayed<T['on']>
+    | ExtractActionKeysFromDelayed<T['after']>
+    | ExtractActionsFromTransition<
+        Extract<
+          ReduceArray<T['always']>,
+          { actions: SingleOrArrayL<ActionConfig> }
+        >
       >
-    >
-  | (NotUndefined<T['actors']> extends infer Ta
-      ? {
-          [K in keyof Ta]: ExtractActionKeysFromActor<Ta[K]>;
-        }[keyof Ta]
-      : never);
+    | (NotUndefined<T['actors']> extends infer Ta
+        ? {
+            [K in keyof Ta]: ExtractActionKeysFromActor<Ta[K]>;
+          }[keyof Ta]
+        : never);
 
 type _ExtractGuardKeysFromMap<T> = ExtractGuardKeysFromTransition<
   Extract<
@@ -411,7 +411,7 @@ export type ExtractSrcKeyFromTransitions<
  * */
 export type ExtractPromiseeSrcKeyFromTransitions<
   T extends TransitionsConfig,
-> = ExtractSrcKeyFromTransitions<T, { then: any }>;
+> = ExtractSrcKeyFromTransitions<T, { resolves: any }>;
 
 export type ExtractEmitterSrcKeyFromTransitions<
   T extends TransitionsConfig,

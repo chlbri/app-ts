@@ -26,11 +26,11 @@ describe('#01 => reducers', () => {
       const actors: ActorsConfigMap = {
         promisees: {
           promise1: {
-            then: stringsT.type,
+            resolves: stringsT.type,
             catch: stringsT.type,
           },
           promise2: {
-            then: { success: boolean },
+            resolves: { success: boolean },
             catch: { error: stringsT.type },
           },
         },
@@ -235,7 +235,7 @@ describe('#01 => reducers', () => {
       const actors: ActorsConfigMap = {
         promisees: {
           promise1: {
-            then: stringsT.type,
+            resolves: stringsT.type,
             catch: boolean,
           },
         },
@@ -447,7 +447,7 @@ describe('#01 => reducers', () => {
       const actors: ActorsConfigMap = {
         promisees: {
           promise1: {
-            then: stringsT.type,
+            resolves: stringsT.type,
             catch: boolean,
           },
         },

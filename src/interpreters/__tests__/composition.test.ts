@@ -447,7 +447,7 @@ describe('Composition', () => {
             },
             actors: {
               src: {
-                then: { actions: 'inc' },
+                resolves: { actions: 'inc' },
                 catch: { actions: 'inc' },
               },
             },
@@ -460,7 +460,7 @@ describe('Composition', () => {
         actorsMap: {
           ...defaultT.actorsMap,
           promisees: {
-            src: { then: undefined, catch: undefined },
+            src: { resolves: undefined, catch: undefined },
           },
         },
       },

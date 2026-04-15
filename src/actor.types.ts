@@ -20,7 +20,7 @@ export type _PromiseeConfig<Paths extends string = string> =
   CommonActor & {
     // Max wait time to perform the promise
     readonly max?: string;
-    readonly then: SingleOrArrayT<Paths>;
+    readonly resolves: SingleOrArrayT<Paths>;
     readonly catch: SingleOrArrayT<Paths>;
     readonly finally?: FinallyConfig<Paths>;
   };

@@ -82,7 +82,7 @@ export const resolveNode: ResolveNode_F = (
   const actors = identify(config.actors);
 
   const promises = actors
-    .filter(actor => 'then' in actor)
+    .filter(actor => 'resolves' in actor)
     .map(promise => toPromise(events, actorsMap, promise, options));
 
   const emitters = actors

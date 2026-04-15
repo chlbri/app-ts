@@ -86,7 +86,7 @@ type CE1 = ChildEvents<
     };
     promisees: {
       data: {
-        then: '/';
+        resolves: '/';
         catch: '/';
       };
     };

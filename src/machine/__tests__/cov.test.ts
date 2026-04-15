@@ -556,7 +556,7 @@ describe('machine coverage', () => {
                       fetch: {
                         catch: '/working/fetch/idle',
                         // oxlint-disable-next-line unicorn/no-thenable
-                        then: {
+                        resolves: {
                           actions: {
                             description: 'Database insert',
                             name: 'insertData',
@@ -658,7 +658,7 @@ describe('machine coverage', () => {
                         fetch: {
                           catch: '/working/fetch/idle',
                           // oxlint-disable-next-line unicorn/no-thenable
-                          then: {
+                          resolves: {
                             actions: {
                               name: 'insertData',
                               description: 'Database insert',
@@ -741,7 +741,7 @@ describe('machine coverage', () => {
                     fetch: {
                       catch: '/working/fetch/idle',
                       // oxlint-disable-next-line unicorn/no-thenable
-                      then: {
+                      resolves: {
                         actions: {
                           name: 'insertData',
                           description: 'Database insert',
@@ -808,7 +808,7 @@ describe('machine coverage', () => {
                 fetch: {
                   catch: '/working/fetch/idle',
                   // oxlint-disable-next-line unicorn/no-thenable
-                  then: {
+                  resolves: {
                     actions: {
                       name: 'insertData',
                       description: 'Database insert',
@@ -837,7 +837,7 @@ describe('machine coverage', () => {
             fetch: {
               catch: '/working/fetch/idle',
               // oxlint-disable-next-line unicorn/no-thenable
-              then: {
+              resolves: {
                 actions: {
                   name: 'insertData',
                   description: 'Database insert',

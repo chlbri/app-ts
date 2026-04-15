@@ -49,7 +49,7 @@ export const config3 = createConfig({
       ],
       actors: {
         promise1: {
-          then: { actions: 'action1' },
+          resolves: { actions: 'action1' },
           catch: [
             { guards: 'ert', actions: 'action14' },
             '/state1/state12',
@@ -67,7 +67,7 @@ export const config3 = createConfig({
           ],
         },
         promise2: {
-          then: [
+          resolves: [
             { actions: 'action4', guards: 'guard2' },
             { actions: 'action3' },
           ],
@@ -111,11 +111,11 @@ export const machine3 = createMachine(
       },
       promisees: {
         promise1: {
-          then: 'string',
+          resolves: 'string',
           catch: 'primitive',
         },
         promise2: {
-          then: 'string',
+          resolves: 'string',
           catch: 'primitive',
         },
       },
