@@ -17,9 +17,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   paramrage génériques était incomplet après la refonte en v2.5.1
 - **Fix**: Propagation de `Eo` à travers `MachineOptions` via le paramètre
   `Mo` — assure la cohérence des types à la compilation
-- **Fix**: Contrainte de `Ta` affinée en `Ta extends ExtractTagsFromConfig<C>`
-  — remplace la borne générique `Ta extends string` pour une validation
-  correcte des tags
+- **Fix**: Contrainte de `Ta` affinée en
+  `Ta extends ExtractTagsFromConfig<C>` — remplace la borne générique
+  `Ta extends string` pour une validation correcte des tags
 - <u>Test coverage **_100%_**</u>
 
 </details>

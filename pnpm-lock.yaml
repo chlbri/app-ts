@@ -44,13 +44,13 @@ importers:
         version: 0.1.2(vitest@3.2.4)
       '@bemedev/dev-utils':
         specifier: ^0.5.3
-        version: 0.5.3(@vitest/coverage-v8@3.2.4(vitest@3.2.4))(rolldown@1.0.0-rc.16)(rollup@4.60.1)(typescript@6.0.2)(vite@7.3.2(@types/node@25.6.0)(lightningcss@1.32.0)(tsx@4.21.0))(vitest@3.2.4)
+        version: 0.5.3(@vitest/coverage-v8@3.2.4(vitest@3.2.4))(rolldown@1.0.0-rc.16)(rollup@4.60.1)(typescript@6.0.3)(vite@7.3.2(@types/node@25.6.0)(lightningcss@1.32.0)(tsx@4.21.0))(vitest@3.2.4)
       '@bemedev/fsf':
         specifier: ^1.0.1
         version: 1.0.1
       '@bemedev/rolldown-config':
         specifier: ^0.5.0
-        version: 0.5.0(glob@13.0.6)(rolldown@1.0.0-rc.16)(rollup@4.60.1)(typescript@6.0.2)
+        version: 0.5.0(glob@13.0.6)(rolldown@1.0.0-rc.16)(rollup@4.60.1)(typescript@6.0.3)
       '@bemedev/rx-pausable':
         specifier: ^1.2.0
         version: 1.2.0
@@ -112,8 +112,8 @@ importers:
         specifier: ^4.21.0
         version: 4.21.0
       typescript:
-        specifier: ^6.0.2
-        version: 6.0.2
+        specifier: ^6.0.3
+        version: 6.0.3
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@25.6.0)(@vitest/ui@3.2.4)(lightningcss@1.32.0)(tsx@4.21.0)
@@ -1794,8 +1794,8 @@ packages:
     peerDependencies:
       typescript: ^4.7.2 || ^5 || ^6
 
-  typescript@6.0.2:
-    resolution: {integrity: sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ==}
+  typescript@6.0.3:
+    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -1941,7 +1941,7 @@ snapshots:
       '@bemedev/types': 0.4.2
       ts-deepmerge: 7.0.3
 
-  '@bemedev/dev-utils@0.5.3(@vitest/coverage-v8@3.2.4(vitest@3.2.4))(rolldown@1.0.0-rc.16)(rollup@4.60.1)(typescript@6.0.2)(vite@7.3.2(@types/node@25.6.0)(lightningcss@1.32.0)(tsx@4.21.0))(vitest@3.2.4)':
+  '@bemedev/dev-utils@0.5.3(@vitest/coverage-v8@3.2.4(vitest@3.2.4))(rolldown@1.0.0-rc.16)(rollup@4.60.1)(typescript@6.0.3)(vite@7.3.2(@types/node@25.6.0)(lightningcss@1.32.0)(tsx@4.21.0))(vitest@3.2.4)':
     dependencies:
       '@vitest/coverage-v8': 3.2.4(vitest@3.2.4)
       cmd-ts: 0.15.0
@@ -1951,11 +1951,11 @@ snapshots:
       rollup-plugin-circular-dependencies: 2.0.1(rollup@4.60.1)
       rollup-plugin-node-externals: 9.0.1(rollup@4.60.1)(vite@7.3.2(@types/node@25.6.0)(lightningcss@1.32.0)(tsx@4.21.0))
       rollup-plugin-tsc-alias: 1.1.4(rollup@4.60.1)
-      rollup-plugin-tsconfig-paths: 1.5.2(rollup@4.60.1)(typescript@6.0.2)
+      rollup-plugin-tsconfig-paths: 1.5.2(rollup@4.60.1)(typescript@6.0.3)
       shelljs: 0.10.0
       sort-keys: 6.0.0
       tsc-alias: 1.8.16
-      typescript: 6.0.2
+      typescript: 6.0.3
       vitest: 3.2.4(@types/node@25.6.0)(@vitest/ui@3.2.4)(lightningcss@1.32.0)(tsx@4.21.0)
     transitivePeerDependencies:
       - rollup
@@ -1971,16 +1971,16 @@ snapshots:
     dependencies:
       '@bemedev/sleep': 0.1.2
 
-  '@bemedev/rolldown-config@0.5.0(glob@13.0.6)(rolldown@1.0.0-rc.16)(rollup@4.60.1)(typescript@6.0.2)':
+  '@bemedev/rolldown-config@0.5.0(glob@13.0.6)(rolldown@1.0.0-rc.16)(rollup@4.60.1)(typescript@6.0.3)':
     dependencies:
       glob: 13.0.6
       rolldown: 1.0.0-rc.16
       rollup-plugin-circular-dependencies: 2.0.1(rollup@4.60.1)
       rollup-plugin-node-externals: 8.1.2(rollup@4.60.1)
       rollup-plugin-tsc-alias: 1.1.4(rollup@4.60.1)
-      rollup-plugin-tsconfig-paths: 1.5.2(rollup@4.60.1)(typescript@6.0.2)
+      rollup-plugin-tsconfig-paths: 1.5.2(rollup@4.60.1)(typescript@6.0.3)
       tsc-alias: 1.8.16
-      typescript: 6.0.2
+      typescript: 6.0.3
     transitivePeerDependencies:
       - rollup
 
@@ -3117,10 +3117,10 @@ snapshots:
       rollup: 4.60.1
       tsc-alias: 1.8.16
 
-  rollup-plugin-tsconfig-paths@1.5.2(rollup@4.60.1)(typescript@6.0.2):
+  rollup-plugin-tsconfig-paths@1.5.2(rollup@4.60.1)(typescript@6.0.3):
     dependencies:
       rollup: 4.60.1
-      typescript-paths: 1.5.2(typescript@6.0.2)
+      typescript-paths: 1.5.2(typescript@6.0.3)
     transitivePeerDependencies:
       - typescript
 
@@ -3295,11 +3295,11 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  typescript-paths@1.5.2(typescript@6.0.2):
+  typescript-paths@1.5.2(typescript@6.0.3):
     dependencies:
-      typescript: 6.0.2
+      typescript: 6.0.3
 
-  typescript@6.0.2: {}
+  typescript@6.0.3: {}
 
   undici-types@7.19.2: {}
 
