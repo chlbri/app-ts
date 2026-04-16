@@ -432,7 +432,7 @@ export type GetPromisesFromFlat<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = {
-  [key in _GetPromiseeSrcKeysFromFlat<Flat>]?: PromiseFunction2<
+  [key in _GetPromiseeSrcKeysFromFlat<Flat>]?: PromiseFunction<
     E,
     Pc,
     Tc,
