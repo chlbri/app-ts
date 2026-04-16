@@ -93,15 +93,16 @@ class Machine<
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
-  Ta extends string = ExtractTagsFromConfig<C>,
+  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
   Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
-  Mo extends MachineOptions<C, E, A, Pc, Tc, Ta> = MachineOptions<
+  Mo extends MachineOptions<C, E, A, Pc, Tc, Ta, Eo> = MachineOptions<
     C,
     E,
     A,
     Pc,
     Tc,
-    Ta
+    Ta,
+    Eo
   >,
 > implements AnyMachine<E, A, Pc, Tc> {
   /**
@@ -928,7 +929,7 @@ class Machine<
       actorsMap,
     } = this.#elements;
 
-    const out = new Machine<C, Pc, Tc, E, A, Ta>(config);
+    const out = new Machine<C, Pc, Tc, E, A, Ta, Eo, Mo>(config);
 
     out.#pContext = pContext;
     out.#context = context;

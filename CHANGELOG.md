@@ -9,6 +9,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.5.2] - 16/04/2026** => _10:21_
+
+</summary>
+
+- **Fix**: Restauration de `Eo` dans le champ privé `#machine` de
+  `Interpreter` — la suppression introduite en v2.5.1 provoquait des
+  erreurs de type à la compilation
+- **Fix**: Propagation de `Eo` dans l'appel à `toPredicate` dans
+  `interpreter.ts` — correction des erreurs de type génériques résiduelles
+- **Fix**: Contrainte de `Ta` corrigée dans `Machine` — `Ta extends string`
+  remplacé par `Ta extends ExtractTagsFromConfig<C>` pour une borne exacte
+- **Fix**: `Eo` propagé dans `MachineOptions` via le paramètre `Mo` de
+  `Machine` — `MachineOptions<C, E, A, Pc, Tc, Ta>` devient
+  `MachineOptions<C, E, A, Pc, Tc, Ta, Eo>`
+- **Fix**: `Machine.clone()` restaure les paramètres de type complets —
+  `new Machine<C, Pc, Tc, E, A, Ta, Eo, Mo>` au lieu de la forme raccourcie
+  qui omettait `Eo` et `Mo`
+- **Refactor**: Script `upgrade` aligné sur `config:vitest`
+- **Update**: `rolldown` 1.0.0-rc.15 → 1.0.0-rc.16
+- **Update**: `rimraf` ^6.1.3 ajouté en dépendance de développement
+- **Chore**: `poolOptions: {}` ajouté dans `vitest.config.ts`
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.5.1] - 16/04/2026** => _03:03_
 
 </summary>
@@ -22,8 +52,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Refactor**: Réordonnancement des paramètres de type dans `Machine` —
   `Ta` (tags) précède désormais `Eo` pour une cohérence avec `Interpreter`
 - **Refactor**: Nettoyage des imports inutilisés dans `fixtures/index.ts`
-  (`ToEventObject`, `ToEvents`, `MachineOptions`) et dans
-  `interpreter.ts` (`MachineOptions`)
+  (`ToEventObject`, `ToEvents`, `MachineOptions`) et dans `interpreter.ts`
+  (`MachineOptions`)
 - **Chore**: Ajout du script `config:vitest` dans `package.json` et
   refactorisation de `upgrade:fast` pour l'utiliser
 - <u>Test coverage **_100%_**</u>

@@ -172,7 +172,7 @@ export class Interpreter<
   /**
    * The {@linkcode Machine} machine being interpreted.
    */
-  #machine: Machine<C, Pc, Tc, E, A, Ta>;
+  #machine: Machine<C, Pc, Tc, E, A, Ta, Eo>;
 
   /**
    * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.
@@ -2350,7 +2350,7 @@ export class Interpreter<
     const actorsMap = this.#machine.actorsMap;
     const predicates = this.#machine.predicates;
 
-    const { predicate, errors } = toPredicate<E, A, Pc, Tc, Ta>(
+    const { predicate, errors } = toPredicate<E, A, Pc, Tc, Ta, Eo>(
       events,
       actorsMap,
       guard,

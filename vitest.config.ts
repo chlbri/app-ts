@@ -28,6 +28,7 @@ export default defineConfig({
   test: {
     bail: 10,
     maxConcurrency: 10,
+    poolOptions: {},
     passWithNoTests: true,
     slowTestThreshold: 3000,
     globals: true,
