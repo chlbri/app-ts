@@ -505,8 +505,6 @@ describe('machine coverage', () => {
       '__delayKey',
       '__delay',
       '__definedValue',
-      '__src',
-      '__promise',
       '__machine',
     ] as const satisfies (keyof Machine)[];
 

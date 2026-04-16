@@ -10,7 +10,6 @@ import {
 
 import toArray from '#bemedev/features/arrays/castings/toArray';
 import isDefined from '#bemedev/features/common/castings/is/defined';
-import { partialCall } from '#bemedev/features/functions/functions/partialCall';
 import { switchV } from '#bemedev/features/functions/functions/switch';
 import { toDelay } from '#delays';
 import {
@@ -43,7 +42,6 @@ import {
   type PrivateContextFrom,
   type ScheduledData,
 } from '#machines';
-import { toPromiseSrc } from '#promises';
 import {
   flatMap,
   initialConfig,
@@ -104,8 +102,6 @@ import type {
   PerformAlway_F,
   PerformDelay_F,
   PerformPredicate_F,
-  PerformPromise_F,
-  PerformPromisee_F,
   PerformTransition_F,
   PerformTransitions_F,
   Selector_F,
@@ -127,13 +123,9 @@ import type {
   ExtractTagsFromConfig,
   GetActorKeysFromConfig,
 } from '#machines';
-import type { FinallyConfig, PromiseeResult } from '#promises';
+import type { FinallyConfig } from '#actor';
 import { createScheduler } from '@bemedev/scheduler';
-import type {
-  ChildConfig,
-  EmitterConfig,
-  PromiseeConfig,
-} from '../actor.types';
+import type { ChildConfig, EmitterConfig } from '../actor.types';
 import { createSubscriber, type SubscriberClass } from './subscriber';
 
 /**
@@ -780,12 +772,6 @@ export class Interpreter<
     this.#startPausables();
     this.#resumePausables(({ from }) => this.#isInsideValue(from));
 
-    this.#abortablePromisees
-      .filter(({ from }) => {
-        return !this.#isInsideValue(from);
-      })
-      .forEach(({ abort }) => abort());
-
     return this.#performSelfTransitions();
   };
 
@@ -935,11 +921,11 @@ export class Interpreter<
     return result;
   };
 
-  #executeAction: PerformAction_F<Eo, Pc, Tc, Ta> = action => {
+  #executeAction: PerformAction_F<Eo, Pc, Tc, Ta> = async action => {
     this.#makeBusy();
 
     const { pContext, context, ...extendeds } =
-      this.#performAction(action);
+      await this.#performAction(action);
 
     this.#mergeContexts({ pContext, context });
     this.#performsExtendedActions(extendeds);
@@ -1156,11 +1142,6 @@ export class Interpreter<
     return false;
   };
 
-  #performPromiseSrc: PerformPromise_F<Eo, Pc, Tc, Ta> = promise => {
-    this._iterate();
-    return promise(this.#cloneState);
-  };
-
   #performFinally = (_finally?: FinallyConfig) => {
     const check1 = _finally === undefined;
     if (check1) return;
@@ -1194,86 +1175,6 @@ export class Interpreter<
   get longRuns() {
     return this.#machine.longRuns;
   }
-
-  #performPromisee: PerformPromisee_F<Eo> = (from, ...promisees) => {
-    type PR = PromiseeResult<Eo>;
-
-    const promises: (() => Promise<PR | undefined>)[] = [];
-
-    promisees.forEach(
-      ({ id, resolves, catch: _catch, finally: _finally, max: maxS }) => {
-        const promiseF = this.toPromiseSrcFn(id);
-        if (!promiseF) return;
-
-        const handlePromise = (type: 'then' | 'catch', payload: any) => {
-          const out = () => {
-            const event = {
-              type: `${id}::${type}`,
-              payload,
-            };
-            this.#changeEvent(_any(event));
-
-            const transitions = toArray.typed(
-              type === 'then' ? resolves : _catch,
-            );
-
-            const target = this.__performTransitions(
-              ...(transitions as any),
-            );
-
-            this.#performFinally(_finally);
-            return { event: this.#event, target };
-          };
-
-          if (this.#cannotPerform(from)) return;
-          return out();
-        };
-
-        const _promise = () => this.#performPromiseSrc(promiseF);
-
-        const MAX_POMS = this.#machine.longRuns
-          ? []
-          : [DEFAULT_MAX_TIME_PROMISE];
-
-        const check3 = isDefined(maxS);
-        if (check3) {
-          const delayF = this.toDelayFn(maxS);
-          const check4 = !isDefined(delayF);
-          if (check4) {
-            const promise = async () =>
-              Promise.resolve().then(
-                partialCall.paramArray(handlePromise, 'catch'),
-              );
-            return promises.push(promise);
-          }
-          const max = this.#performDelay(delayF);
-          MAX_POMS.push(max);
-        }
-
-        const promise = () => {
-          const wT = withTimeout(_promise, from, ...MAX_POMS);
-          this.#abortablePromisees.push({
-            from,
-            abort: () => wT.abort(),
-          });
-
-          return wT()
-            .then(partialCall.paramArray(handlePromise, 'then'))
-            .catch(partialCall.paramArray(handlePromise, 'catch'));
-        };
-        return promises.push(promise);
-      },
-    );
-
-    const check5 = promises.length < 1;
-
-    if (check5) return;
-
-    const promise = () => Promise.all(promises.map(p => p()));
-    return promise;
-  };
-
-  #abortablePromisees: { abort: () => void; from: string }[] = [];
 
   /**
    * Checks if sent events cannot be performed.
@@ -1342,27 +1243,6 @@ export class Interpreter<
     const always = toArray<TransitionConfig>(alway);
     return this.__performTransitions(...always);
   };
-
-  get #collectedPromisees() {
-    const entriesFlat = Object.entries(this.#flat);
-    const entries: [
-      from: string,
-      ...promisees: (PromiseeConfig & { id: string })[],
-    ][] = [];
-
-    entriesFlat.forEach(([from, node]) => {
-      const actors = Object.entries(node.actors ?? {});
-      const promisees = toArray
-        .typed(actors)
-        .map(([id, value]) => ({ ...value, id }))
-        .filter(actor => 'resolves' in actor);
-      if (node.actors) {
-        entries.push([from, ...promisees]);
-      }
-    });
-
-    return entries;
-  }
 
   get #collectedActivities() {
     const entriesFlat = Object.entries(this.#flat);
@@ -1460,7 +1340,7 @@ export class Interpreter<
    * Get all brut self transitions of the current {@linkcode NodeConfigWithInitials} config state of this {@linkcode Interpreter} service.
    */
   get #collectedSelfTransitions0() {
-    const entries = new Map<string, Collected0<Eo>>();
+    const entries = new Map<string, Collected0>();
 
     this.#collectedAlways.forEach(([from, always]) => {
       entries.set(from, { always: () => this.#performAlways(always) });
@@ -1471,17 +1351,6 @@ export class Interpreter<
       if (inner) {
         inner.after = this.#performAfter(from, after);
       } else entries.set(from, { after: this.#performAfter(from, after) });
-    });
-
-    this.#collectedPromisees.forEach(([from, ...promisees]) => {
-      const inner = entries.get(from);
-      if (inner) {
-        inner.promisee = this.#performPromisee(from, ...promisees);
-      } else {
-        entries.set(from, {
-          promisee: this.#performPromisee(from, ...promisees),
-        });
-      }
     });
 
     return entries;
@@ -1506,7 +1375,7 @@ export class Interpreter<
       ([from]) => this.#isInsideValue(from),
     );
 
-    const out = entries.map(([from, { after, always, promisee }]) => {
+    const out = entries.map(([from, { after, always }]) => {
       const promise = async () => {
         if (always) {
           const target = always();
@@ -1528,21 +1397,6 @@ export class Interpreter<
               );
           };
           promises.push(withTimeout(_after, 'after'));
-        }
-
-        if (promisee) {
-          const _promisee = async () => {
-            return promisee().then(transitions => {
-              for (const transition of transitions) {
-                if (!transition) continue;
-                const target = transition.target;
-                if (target !== false) {
-                  this.#performConfig(target);
-                }
-              }
-            });
-          };
-          promises.push(withTimeout(_promisee, 'promisee'));
         }
 
         const check1 = promises.length < 1;
@@ -1859,7 +1713,6 @@ export class Interpreter<
 
   pause = () => {
     this.#pauseAllActivities();
-    this.#abortablePromisees.forEach(({ abort }) => abort());
     this.#makeBusy();
     this.#subscribers.forEach(this.#close);
     this.#pauseChildren();
@@ -2358,22 +2211,6 @@ export class Interpreter<
     );
 
     return this.#returnWithWarning(predicate, ...errors);
-  };
-
-  toPromiseSrcFn = (src: string) => {
-    const events = this.#machine.eventsMap;
-    const actorsMap = this.#machine.actorsMap;
-    const promises = this.#machine.promises;
-
-    return this.#returnWithWarning(
-      toPromiseSrc<E, A, Pc, Tc, Ta>(
-        events,
-        actorsMap,
-        src,
-        promises as any,
-      ),
-      `Promise (${src}) is not defined`,
-    );
   };
 
   toDelayFn = (delay: string) => {

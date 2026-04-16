@@ -1,7 +1,6 @@
 import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
 import { decomposeSV } from '#utils';
-import { sleep } from '@bemedev/sleep';
 import { BLOCK_IMMO_INTERMEDIARY, machine } from './machine1.machine';
 import {
   ASSET_1,
@@ -27,29 +26,6 @@ describe('Complex machine 1', () => {
   afterAll(service.stop);
   test(...start());
 
-  test('#01 => service add options', () => {
-    service.addOptions(() => ({
-      actors: {
-        promises: {
-          checkOnline: async () => {
-            await sleep(100); // Simulation réseau
-            return true;
-          },
-          getIntermediaries: async () => {
-            await sleep(200);
-            return [];
-          },
-          addIntermediary: {
-            ADD_INTERMEDIARY: async ({ payload }) => {
-              await sleep(100); // Simulation blockchain
-              return payload;
-            },
-          },
-        },
-      },
-    }));
-  });
-
   test('#02 => provide asset', () => {
     service.send({
       type: 'START',
@@ -70,7 +46,7 @@ describe('Complex machine 1', () => {
       });
 
       test('#02 => The Block_Immo intermediary is present', () => {
-        expect(service.select('intermediaries')[0]).toEqual(
+        expect(service.select('intermediaries')![0]).toEqual(
           BLOCK_IMMO_INTERMEDIARY,
         );
       });
@@ -120,13 +96,13 @@ describe('Complex machine 1', () => {
       });
 
       test('#02 => The Block_Immo intermediary is present', () => {
-        expect(service.select('intermediaries')[0]).toEqual(
+        expect(service.select('intermediaries')![0]).toEqual(
           BLOCK_IMMO_INTERMEDIARY,
         );
       });
 
       test('#03 => The new intermediary is present', () => {
-        expect(service.select('intermediaries')[1]).toEqual(
+        expect(service.select('intermediaries')![1]).toEqual(
           INTERMEDIARY_1,
         );
       });
@@ -175,13 +151,13 @@ describe('Complex machine 1', () => {
       });
 
       test('#02 => The Block_Immo intermediary is present', () => {
-        expect(service.select('intermediaries')[1]).toEqual(
+        expect(service.select('intermediaries')![1]).toEqual(
           BLOCK_IMMO_INTERMEDIARY,
         );
       });
 
       test('#03 => The new intermediary is present', () => {
-        expect(service.select('intermediaries')[0]).toEqual(
+        expect(service.select('intermediaries')![0]).toEqual(
           INTERMEDIARY_2,
         );
       });
@@ -222,13 +198,13 @@ describe('Complex machine 1', () => {
       });
 
       test('#02 => The Block_Immo intermediary is present', () => {
-        expect(service.select('intermediaries')[1]).toEqual(
+        expect(service.select('intermediaries')![1]).toEqual(
           BLOCK_IMMO_INTERMEDIARY,
         );
       });
 
       test('#03 => The new intermediary is present', () => {
-        expect(service.select('intermediaries')[0]).toEqual(
+        expect(service.select('intermediaries')![0]).toEqual(
           INTERMEDIARY_2,
         );
       });
@@ -269,19 +245,19 @@ describe('Complex machine 1', () => {
       });
 
       test('#02 => The Block_Immo intermediary is present', () => {
-        expect(service.select('intermediaries')[1]).toEqual(
+        expect(service.select('intermediaries')![1]).toEqual(
           BLOCK_IMMO_INTERMEDIARY,
         );
       });
 
       test('#03 => The new intermediary is present', () => {
-        expect(service.select('intermediaries')[0]).toEqual(
+        expect(service.select('intermediaries')![0]).toEqual(
           INTERMEDIARY_2,
         );
       });
 
       test('#04 => The new intermediary is present', () => {
-        expect(service.select('intermediaries')[2]).toEqual(
+        expect(service.select('intermediaries')![2]).toEqual(
           INTERMEDIARY_1,
         );
       });

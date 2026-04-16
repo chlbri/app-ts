@@ -40,17 +40,8 @@ export const machine23 = createMachine(
                 },
               },
               fetch: {
-                actors: {
-                  fetch: {
-                    resolves: {
-                      actions: {
-                        name: 'insertData',
-                        description: 'Database insert',
-                      },
-                      target: '/working/fetch/idle',
-                    },
-                    catch: '/working/fetch/idle',
-                  },
+                on: {
+                  FETCH: '/working/fetch/idle',
                 },
               },
             },

@@ -18,7 +18,6 @@ import {
   isValue,
   type DefinedValue,
 } from '#guards';
-import { type PromiseFunction } from '#promises';
 import type {
   State,
   StateExtended,
@@ -437,42 +436,12 @@ class Machine<
   /**
    * @deprecated
    *
-   * This property provides any promise key for this {@linkcode Machine} as a type.
-   *
-   * @remarks Used for typing purposes only.
-   */
-  get __src() {
-    return this.#typingsByKey('promises');
-  }
-
-  /**
-   * @deprecated
-   *
    * This property provides any child key for this {@linkcode Machine} as a type.
    *
    * @remarks Used for typing purposes only.
    */
   get __childKey() {
     return this.#typingsByKey('children');
-  }
-
-  /**
-   * @deprecated
-   *
-   * This property provides the promise function for this {@linkcode Machine} as a type.
-   *
-   * @remarks Used for typing purposes only.
-   *
-   * @see {@linkcode PromiseFunction}
-   * @see {@linkcode ActorsConfigMap}
-   * @see {@linkcode PrimitiveObject}
-   * @see {@linkcode E}
-   * @see {@linkcode A}
-   * @see {@linkcode Pc}
-   * @see {@linkcode Tc}
-   */
-  get __promise() {
-    return _unknown<PromiseFunction<Eo, Pc, Tc, Ta>>();
   }
 
   /**
@@ -600,10 +569,6 @@ class Machine<
     return this.#delays;
   }
 
-  get promises(): NotUndefined<Mo['actors']>['promises'] {
-    return this.#actors?.promises;
-  }
-
   get children() {
     return this.#actors?.children;
   }
@@ -653,9 +618,6 @@ class Machine<
 
   #addDelays = (delays?: Mo['delays']) =>
     (this.#delays = merge(this.#delays, delays));
-
-  #addPromises = (promises?: NotUndefined<Mo['actors']>['promises']) =>
-    (this.#actors = merge(this.#actors, { promises }));
 
   #addChildren = (children?: NotUndefined<Mo['actors']>['children']) =>
     (this.#actors = merge(this.#actors, { children }));
@@ -768,13 +730,13 @@ class Machine<
         sendTo,
 
         debounce: (fn, { id, ms = 100 }) => {
-          return ({ context, pContext, ...rest }) => {
+          return async ({ context, pContext, ...rest }) => {
             const state = this.#cloneStateExtended({
               context,
               pContext,
               ...rest,
             });
-            const data = fn(state);
+            const data = await fn(state);
 
             const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
 
@@ -831,7 +793,6 @@ class Machine<
     this.#addActions(out?.actions);
     this.#addPredicates(out?.predicates);
     this.#addDelays(out?.delays);
-    this.#addPromises(out?.actors?.promises);
     this.#addChildren(out?.actors?.children);
     this.#addEmitters(out?.actors?.emitters);
 
@@ -939,7 +900,6 @@ class Machine<
     out.#addPredicates(predicates);
     out.#addActions(actions);
     out.#addDelays(delays);
-    out.#addPromises(actors?.promises);
     out.#addChildren(actors?.children);
     out.#addEmitters(actors?.emitters);
 

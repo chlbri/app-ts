@@ -29,13 +29,6 @@ export type EventObject<T = any> = {
  */
 export type EventsMap = Record<string, PrimitiveObject>;
 
-export type PromiseeDef = {
-  resolves: PrimitiveObject | void;
-  catch: PrimitiveObject | void;
-};
-
-export type PromiseeMap = Record<string, PromiseeDef>;
-
 export type InitEvent = typeof INIT_EVENT;
 export type MaxExceededEvent = typeof MAX_EXCEEDED_EVENT_TYPE;
 export type AlwaysEvent = typeof ALWAYS_EVENT;
@@ -59,29 +52,6 @@ export type EventsR<T extends EventsMap> =
   Unionize<T> extends infer U
     ? U extends any
       ? { type: keyof U & string; payload: U[keyof U] }
-      : never
-    : never;
-
-/**
- * Transforms a map of promisees into a union type of event objects.
- * Each event object has a type and payload.
- * @template : {@linkcode PromiseeMap} [T], the map to transform.
- *
- * @see {@linkcode Unionize} for the utility type that creates a union type from
- * the keys of the map.
- */
-type _PromiseesR<T extends PromiseeMap> =
-  Unionize<T> extends infer U extends PromiseeMap
-    ? U extends any
-      ?
-          | {
-              type: `${keyof U & string}::then`;
-              payload: U[keyof U]['resolves'];
-            }
-          | {
-              type: `${keyof U & string}::catch`;
-              payload: U[keyof U]['catch'];
-            }
       : never
     : never;
 
@@ -111,23 +81,14 @@ type _ChildConfigR<T extends ChildConfigMap> = {
 export type ActorsConfigMap = {
   children?: ChildConfigMap;
   emitters?: EmitterConfigMap;
-  promisees?: PromiseeMap;
 };
 
 /**
- * Represents a union type of all events and promisees.
- * It combines the transformed events and promisees into a single type.
+ * Represents a union type of all events, emitters, and child events.
+ * It combines the transformed events, emitters, and child events into a single type.
  * @template : {@linkcode EventsMap} [E], the map of events.
- * @template : {@linkcode PromiseeMap} [P], the map of promisees.
- * @returns A union type of events and promisee-events.
- */
-
-/**
- * Represents a union type of all events, promisees, emitters, and child events.
- * It combines the transformed events, promisees, emitters, and child events into a single type.
- * @template : {@linkcode EventsMap} [E], the map of events.
- * @template : {@linkcode ActorsConfigMap} [A], the configuration map for actors which includes children, emitters, and promisees.
- * @returns A union type of events, promisee-events, emitter-events, and child-events.
+ * @template : {@linkcode ActorsConfigMap} [A], the configuration map for actors which includes children and emitters.
+ * @returns A union type of events, emitter-events, and child-events.
  */
 export type ToEventsR<
   E extends EventsMap,
@@ -135,7 +96,6 @@ export type ToEventsR<
   Ex extends string = never,
 > =
   | EventsR<E>
-  | _PromiseesR<NotUndefined<A['promisees']>>
   | _EmitterConfigR<NotUndefined<A['emitters']>>
   | _ChildConfigR<NotUndefined<A['children']>> extends infer U extends
   EventObject

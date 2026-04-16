@@ -37,9 +37,10 @@ export type ActionResult<
 }>;
 
 /**
- * The sync-or-async return type of an action's body.
+ * An action may return synchronously or asynchronously.
  *
- * @see {@linkcode ActionResult} for the merged partial contexts.
+ * Any action (user-provided or produced by an `addOptions` helper except
+ * `debounce`) may return `ActionResult` or a promise that resolves to one.
  */
 export type MaybeAsyncActionResult<
   Pc = any,
@@ -74,3 +75,10 @@ export type Action2<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = FnR<E, Pc, Tc, T, MaybeAsyncActionResult<Pc, Tc>>;
+
+export type Action22<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = FnR<E, Pc, Tc, T, ActionResult<Pc, Tc>>;

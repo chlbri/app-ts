@@ -19,8 +19,6 @@ expectTypeOf<TT2>().toEqualTypeOf<
   | 'FINISH'
   | 'FETCH'
   | 'WRITE'
-  | 'fetch::then'
-  | 'fetch::catch'
   | 'machine1::on::NEXT'
 >();
 
@@ -84,12 +82,6 @@ type CE1 = ChildEvents<
         PREVIOUS: {};
       };
     };
-    promisees: {
-      data: {
-        resolves: '/';
-        catch: '/';
-      };
-    };
   }
 >;
 
@@ -97,20 +89,19 @@ expectTypeOf<CE1>().toEqualTypeOf<{ NEXT: {}; PREVIOUS: {} }>();
 type DSF2 = keyof DecomposedStateFrom<typeof machine2>;
 
 expectTypeOf<DSF2>().toEqualTypeOf<
-  | 'tags'
   | 'context'
+  | 'tags'
   | 'value'
-  | 'context.iterator'
-  | 'context.input'
-  | 'context.data'
-  | `context.data.[${number}]`
   | 'status'
   | 'event'
+  | 'context.input'
+  | 'context.iterator'
+  | 'context.data'
+  | `context.data.[${number}]`
   | `tags.[${number}]`
   | 'event.type'
   | 'event.payload'
   | 'event.payload.value'
-  | `event.payload.[${number}]`
 >();
 
 type AO2 = AddOptionsFrom<typeof machine2>;

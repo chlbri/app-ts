@@ -1,9 +1,24 @@
-import type { FinallyConfig } from '#promises';
-import type { SingleOrArrayT } from '#transitions';
+import type { ActionConfig } from '#actions';
+import type { SingleOrArrayT, TransitionConfigMapA } from '#transitions';
+import type { Require } from '#bemedev/globals/types';
 
 export type CommonActor = {
   readonly description?: string;
 };
+
+/**
+ * The finally part of a completion configuration.
+ *
+ * @see {@linkcode TransitionConfigMapA} for the type of transition configurations.
+ * @see {@linkcode ActionConfig} for the type of action configurations.
+ */
+export type FinallyConfig<Paths extends string = string> =
+  TransitionConfigMapA<Paths> extends infer F extends
+    TransitionConfigMapA<Paths>
+    ?
+        | (F | ActionConfig)
+        | readonly [...Require<F, 'guards'>[], F | ActionConfig]
+    : never;
 
 export type _EmitterConfig<Paths extends string = string> = CommonActor & {
   readonly next: SingleOrArrayT<Paths>;
@@ -14,20 +29,6 @@ export type _EmitterConfig<Paths extends string = string> = CommonActor & {
 export type EmitterConfig<Paths extends string = string> =
   _EmitterConfig<Paths> extends infer E
     ? E & { [K in Exclude<keyof E, keyof _EmitterConfig>]: never }
-    : never;
-
-export type _PromiseeConfig<Paths extends string = string> =
-  CommonActor & {
-    // Max wait time to perform the promise
-    readonly max?: string;
-    readonly resolves: SingleOrArrayT<Paths>;
-    readonly catch: SingleOrArrayT<Paths>;
-    readonly finally?: FinallyConfig<Paths>;
-  };
-
-export type PromiseeConfig<Paths extends string = string> =
-  _PromiseeConfig<Paths> extends infer P
-    ? P & { [K in Exclude<keyof P, keyof _PromiseeConfig>]: never }
     : never;
 
 export type ExtractSrcFromActor<T extends { src: string }> = T['src'];
@@ -51,5 +52,4 @@ export type ChildConfig<Paths extends string = string> =
 
 export type ActorConfig<Paths extends string = string> =
   | EmitterConfig<Paths>
-  | PromiseeConfig<Paths>
   | ChildConfig<Paths>;

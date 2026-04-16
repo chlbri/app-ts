@@ -47,43 +47,6 @@ export const config3 = createConfig({
         },
         '/state1/state11',
       ],
-      actors: {
-        promise1: {
-          resolves: { actions: 'action1' },
-          catch: [
-            { guards: 'ert', actions: 'action14' },
-            '/state1/state12',
-          ],
-          finally: [
-            {
-              actions: 'action13',
-              guards: 'guar34',
-            },
-            {
-              guards: 'guard4',
-              actions: 'action13',
-            },
-            'action22',
-          ],
-        },
-        promise2: {
-          resolves: [
-            { actions: 'action4', guards: 'guard2' },
-            { actions: 'action3' },
-          ],
-          catch: [
-            { guards: 'ert', actions: 'action15' },
-            '/state1/state12',
-          ],
-          finally: [
-            {
-              guards: 'guard',
-              actions: 'action12',
-            },
-            'action20',
-          ],
-        },
-      },
     },
   },
   actors: {
@@ -107,16 +70,6 @@ export const machine3 = createMachine(
       children: {
         machine1: {
           NEXT: 'boolean',
-        },
-      },
-      promisees: {
-        promise1: {
-          resolves: 'string',
-          catch: 'primitive',
-        },
-        promise2: {
-          resolves: 'string',
-          catch: 'primitive',
         },
       },
     },

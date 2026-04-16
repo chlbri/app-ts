@@ -90,7 +90,6 @@ export interface AnyMachine<
   actions: any;
   predicates: any;
   delays: any;
-  promises: any;
   children: any;
   renew: any;
   initialConfig: NodeConfig;
@@ -392,9 +391,4 @@ export type _ActionTypes =
 
 export type ActionTypes = `actions.${_ActionTypes}`;
 
-export type AppTypes =
-  | ActionTypes
-  | 'guards'
-  | 'pContext'
-  | 'context'
-  | 'promisees';
+export type AppTypes = ActionTypes | 'guards' | 'pContext' | 'context';

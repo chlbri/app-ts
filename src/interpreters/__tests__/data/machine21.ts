@@ -3,7 +3,6 @@ import { createMachine } from '#machine';
 import { createConfig } from '#machines';
 import { notU, typings } from '#utils';
 import { DELAY } from './constants';
-import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
 
 // #region machine21
@@ -42,17 +41,8 @@ export const config21 = createConfig({
               },
             },
             fetch: {
-              actors: {
-                fetch: {
-                  resolves: {
-                    actions: {
-                      name: 'insertData',
-                      description: 'Database insert',
-                    },
-                    target: '/working/fetch/idle',
-                  },
-                  catch: '/working/fetch/idle',
-                },
+              on: {
+                FETCH: '/working/fetch/idle',
               },
             },
           },
@@ -128,12 +118,6 @@ export const machine21 = createMachine(
           NEXT: 'primitive',
         },
       },
-      promisees: {
-        fetch: {
-          resolves: typings.array('string'),
-          catch: 'primitive',
-        },
-      },
     },
   }),
 ).provideOptions(
@@ -152,12 +136,6 @@ export const machine21 = createMachine(
       write: assign('context.input', {
         WRITE: ({ payload: { value } }) => value,
       }),
-      insertData: assign('context.data', {
-        'fetch::then': ({ payload, context }) => {
-          context?.data?.push(...payload);
-          return context?.data;
-        },
-      }),
       send: sendTo(machine1)(() => ({ to: 'machine1', event: 'NEXT' })),
     },
     predicates: {
@@ -165,14 +143,6 @@ export const machine21 = createMachine(
       isInputNotEmpty: isNotValue('context.input', ''),
     },
     actors: {
-      promises: {
-        fetch: async ({ context }) => {
-          const input = notU(context?.input);
-          return fakeDB
-            .filter(item => item.name.includes(input))
-            .map(item => item.name);
-        },
-      },
       children: {
         machine1: () =>
           interpret(machine1, {

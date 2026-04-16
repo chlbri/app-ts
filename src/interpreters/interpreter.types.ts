@@ -1,4 +1,9 @@
-import type { Action2, ActionConfig, ActionResult } from '#actions';
+import type {
+  Action2,
+  ActionConfig,
+  ActionResult,
+  MaybeAsyncActionResult,
+} from '#actions';
 import type {
   Equals,
   NOmit,
@@ -21,7 +26,6 @@ import type {
   ContextFrom,
   PrivateContextFrom,
 } from '#machines';
-import type { PromiseeResult, PromiseFunction2 } from '#promises';
 import type { ActivityConfig, NodeConfig, StateValue } from '#states';
 import type {
   AlwaysConfig,
@@ -32,7 +36,6 @@ import type { TimeoutPromise } from '@bemedev/better-promise';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { FnMapR, OptionalDefinition } from '~types';
-import type { PromiseeConfig } from '../actor.types';
 import { type InterpreterFrom } from './interpreter';
 import type { SubscriberClass, SubscriberOptions } from './subscriber';
 
@@ -84,7 +87,7 @@ export type PerformActionLater_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = (action: Action2<E, Pc, Tc, T>) => ActionResult<Pc, Tc>;
+> = (action: Action2<E, Pc, Tc, T>) => MaybeAsyncActionResult<Pc, Tc>;
 
 export type PerformAction_F<
   E extends EventObject = EventObject,
@@ -121,13 +124,6 @@ export type PerformDelay_F<
   T extends string = string,
 > = (delay: DelayFunction3<E, Pc, Tc, T>) => number;
 
-export type PerformPromise_F<
-  E extends EventObject = EventObject,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  T extends string = string,
-> = (promise: PromiseFunction2<E, Pc, Tc, T>) => Promise<any>;
-
 export type ExecuteActivities_F = (
   from: string,
   activity: ActivityConfig,
@@ -150,23 +146,10 @@ export type TransitionAfterResult<
 
 export type PerformAlway_F = (always: AlwaysConfig) => string | false;
 
-export type Collected0<E extends EventObject> = {
+export type Collected0 = {
   after?: TimeoutPromise<string | false>;
-  promisee?: () => Promise<(PromiseeResult<E> | undefined)[]>;
   always?: () => string | false;
 };
-
-export type ToPromiseSrc_F<
-  E extends EventObject = EventObject,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  T extends string = string,
-> = (promise: string) => PromiseFunction2<E, Pc, Tc, T>;
-
-export type PerformPromisee_F<E extends EventObject> = (
-  from: string,
-  ...promisees: (PromiseeConfig & { id: string })[]
-) => (() => Promise<(PromiseeResult<E> | undefined)[]>) | undefined;
 
 export type Contexts<
   Pc = any,

@@ -3,7 +3,6 @@ import { notU, typings } from '#utils';
 import { createConfig } from '#machines';
 import { createMachine } from '#machine';
 import { DELAY } from './constants';
-import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
 // #region machine2
 
@@ -42,17 +41,8 @@ export const config2 = createConfig({
               },
             },
             fetch: {
-              actors: {
-                fetch: {
-                  resolves: {
-                    actions: {
-                      name: 'insertData',
-                      description: 'Database insert',
-                    },
-                    target: '/working/fetch/idle',
-                  },
-                  catch: '/working/fetch/idle',
-                },
+              on: {
+                FETCH: '/working/fetch/idle',
               },
             },
           },
@@ -128,12 +118,6 @@ export const machine2 = createMachine(
           NEXT: 'primitive',
         },
       },
-      promisees: {
-        fetch: {
-          resolves: typings.array('string'),
-          catch: 'primitive',
-        },
-      },
     },
   }),
 ).provideOptions(({ isNotValue, isValue, assign, voidAction }) => ({
@@ -151,25 +135,12 @@ export const machine2 = createMachine(
     write: assign('context.input', {
       WRITE: ({ payload: { value } }) => value,
     }),
-    insertData: assign('context.data', {
-      'fetch::then': ({ payload, context }) => {
-        context?.data?.push(...payload);
-        return context?.data;
-      },
-    }),
   },
   predicates: {
     isInputEmpty: isValue('context.input', ''),
     isInputNotEmpty: isNotValue('context.input', ''),
   },
   actors: {
-    promises: {
-      fetch: async ({ context }) => {
-        return fakeDB
-          .filter(item => item.name.includes(context!.input!))
-          .map(item => item.name);
-      },
-    },
     children: {
       machine1: () => interpret(machine1, { context: { iterator: 0 } }),
     },
@@ -220,9 +191,6 @@ export const _machine2 = createMachine(
           NEXT: 'primitive',
         },
       },
-      promisees: {
-        fetch: { resolves: typings.array('string'), catch: 'primitive' },
-      },
     },
   }),
 ).provideOptions(
@@ -249,12 +217,6 @@ export const _machine2 = createMachine(
       write: assign('context.input', {
         WRITE: ({ payload: { value } }) => value,
       }),
-      insertData: assign('context.data', {
-        'fetch::then': ({ payload, context }) => {
-          context?.data?.push(...payload);
-          return context?.data;
-        },
-      }),
       debounce: batch(
         voidAction(() => console.log('Debounced action executed')),
         _debounce(
@@ -268,13 +230,6 @@ export const _machine2 = createMachine(
       isInputNotEmpty: isNotValue('context.input', ''),
     },
     actors: {
-      promises: {
-        fetch: async ({ context }) => {
-          return fakeDB
-            .filter(item => item.name.includes(context!.input!))
-            .map(item => item.name);
-        },
-      },
       children: {
         machine1: () => interpret(machine1, { context: { iterator: 0 } }),
       },

@@ -11,16 +11,16 @@ kept inside the repo for durable reference.
   `actors.promises`, `longRuns`, and associated tests.
 - **Widen** `Action` / `Action2` / `ActionResult` to allow either
   `ActionResult<Pc, Tc>` or `Promise<ActionResult<Pc, Tc>>`.
-- **Make** the interpreter's action pipeline
-  (`#performAction` → `#executeAction` → `#performActions`) async and
-  sequentially awaited.
+- **Make** the interpreter's action pipeline (`#performAction` →
+  `#executeAction` → `#performActions`) async and sequentially awaited.
 - **Extend** every `addOptions` action helper that takes a user function
-  with an optional third `errorFn` parameter (skipped on `debounce`,
-  which stays sync-only; skipped on guards, which stay sync).
+  with an optional third `errorFn` parameter (skipped on `debounce`, which
+  stays sync-only; skipped on guards, which stay sync).
 
 ## Locked Design Decisions
 
 1. **Error handling via 3rd arg.** Example (assign):
+
    ```ts
    assign<'user', User, FetchError>(
      'user',
@@ -30,66 +30,67 @@ kept inside the repo for durable reference.
      }),
    );
    ```
+
    The error type `Err` is a user generic, default `any`. On rejection:
    - `errorFn` present → its `ActionResult` is merged.
-   - `errorFn` absent → error flows to the existing `_addError` channel;
-     no merge.
+   - `errorFn` absent → error flows to the existing `_addError` channel; no
+     merge.
 
-2. **No transition-arm helper.** Users branch via try/catch + resend,
-   or via `errorFn`.
+2. **No transition-arm helper.** Users branch via try/catch + resend, or
+   via `errorFn`.
 
-3. **Debounce stays synchronous** — `fn` parameter is `Action2` sync;
-   no async overload; compile error if an async fn is passed.
+3. **Debounce stays synchronous** — `fn` parameter is `Action2` sync; no
+   async overload; compile error if an async fn is passed.
 
 4. **Version bump = v3.0.0** (breaking).
 
 ## Helper Signature Summary
 
-| Helper       | Sync (unchanged)           | New async overload                                          |
-| ------------ | -------------------------- | ----------------------------------------------------------- |
-| `assign`     | `(key, fn)`                | `<Err=any>(key, asyncFn, errorFn?)`                         |
-| `voidAction` | `(fn?)`                    | `<Err=any>(asyncFn, errorFn?)`                              |
-| `batch`      | `(...actions)`             | accepts async sub-actions; no new arg (err per sub-action)  |
-| `filter`     | `(key, predicate)`         | `<Err=any>(key, asyncPredicate, errorFn?)`                  |
-| `sendTo`     | `(machine?)(fn)`           | `(machine?)<Err=any>(asyncFn, errorFn?)`                    |
-| `erase`      | `(key)` — no fn            | — (no fn, no change)                                        |
-| `debounce`   | `(fn, { ms, id })`         | ❌ sync-only; no async overload                              |
-| `resend`     | `(event)` — no fn          | —                                                           |
-| `forceSend`  | `(event)` — no fn          | —                                                           |
-| time helpers | `(id)` — no fn             | —                                                           |
-| guards       | all sync                   | — (out of scope)                                            |
+| Helper       | Sync (unchanged)   | New async overload                                         |
+| ------------ | ------------------ | ---------------------------------------------------------- |
+| `assign`     | `(key, fn)`        | `<Err=any>(key, asyncFn, errorFn?)`                        |
+| `voidAction` | `(fn?)`            | `<Err=any>(asyncFn, errorFn?)`                             |
+| `batch`      | `(...actions)`     | accepts async sub-actions; no new arg (err per sub-action) |
+| `filter`     | `(key, predicate)` | `<Err=any>(key, asyncPredicate, errorFn?)`                 |
+| `sendTo`     | `(machine?)(fn)`   | `(machine?)<Err=any>(asyncFn, errorFn?)`                   |
+| `erase`      | `(key)` — no fn    | — (no fn, no change)                                       |
+| `debounce`   | `(fn, { ms, id })` | ❌ sync-only; no async overload                            |
+| `resend`     | `(event)` — no fn  | —                                                          |
+| `forceSend`  | `(event)` — no fn  | —                                                          |
+| time helpers | `(id)` — no fn     | —                                                          |
+| guards       | all sync           | — (out of scope)                                           |
 
 ## File Change Matrix
 
-| Path                                                                          | Action                                                     |
-| ----------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `src/promises/`                                                               | delete (types, functions/src, functions/toPromise, tests)  |
-| `src/actor.types.ts`                                                          | drop `_PromiseeConfig`, `PromiseeConfig` from `ActorConfig` |
-| `src/events/` (actors map types)                                              | drop `promisees` key                                       |
-| `src/actions/types.ts`                                                        | widen `ActionResult`/`Action`/`Action2`                    |
-| `src/machine/machine.ts`                                                      | remove `#addPromises`; widen helpers; async helper wrapper |
-| `src/machine/machine.types.ts`                                                | overload `AssignAction_F`, `VoidAction_F`, `FilterAction_F`, `SendAction_F` |
-| `src/interpreters/interpreter.ts`                                             | async pipeline; remove `#performPromisee`/`#performPromiseSrc` |
-| `src/interpreters/__tests__/selftransitions/promisee.test.ts`                 | delete                                                     |
-| `src/promises/__tests__/longRuns.test.ts`                                     | delete                                                     |
-| `src/actions/__tests__/actions.test.ts` + `action.batch.cov.test.ts`          | add async coverage                                         |
-| `src/actions/__tests__/async-actions.test.ts`                                 | **new** — all 6 helpers async + errorFn path               |
-| `src/machine/__tests__/addOptions-return.test.ts`                             | remove `promises` assertions                               |
-| `src/interpreters/__tests__/coverage/addOptions-return.test.ts`               | remove `promises` assertions                               |
-| `src/interpreters/__tests__/legacy-options.test.ts`                           | drop `_legacy.actors.promises`                             |
-| `src/fixtures/constants.ts`                                                   | drop `promisees` from `defaultT.actors`                    |
-| `README.md`                                                                   | rewrite async section                                      |
-| `CHANGELOG.md`                                                                | v3.0.0 entry                                               |
-| `package.json`                                                                | `version: 3.0.0`                                           |
+| Path                                                                 | Action                                                                      |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `src/promises/`                                                      | delete (types, functions/src, functions/toPromise, tests)                   |
+| `src/actor.types.ts`                                                 | drop `_PromiseeConfig`, `PromiseeConfig` from `ActorConfig`                 |
+| `src/events/` (actors map types)                                     | drop `promisees` key                                                        |
+| `src/actions/types.ts`                                               | widen `ActionResult`/`Action`/`Action2`                                     |
+| `src/machine/machine.ts`                                             | remove `#addPromises`; widen helpers; async helper wrapper                  |
+| `src/machine/machine.types.ts`                                       | overload `AssignAction_F`, `VoidAction_F`, `FilterAction_F`, `SendAction_F` |
+| `src/interpreters/interpreter.ts`                                    | async pipeline; remove `#performPromisee`/`#performPromiseSrc`              |
+| `src/interpreters/__tests__/selftransitions/promisee.test.ts`        | delete                                                                      |
+| `src/promises/__tests__/longRuns.test.ts`                            | delete                                                                      |
+| `src/actions/__tests__/actions.test.ts` + `action.batch.cov.test.ts` | add async coverage                                                          |
+| `src/actions/__tests__/async-actions.test.ts`                        | **new** — all 6 helpers async + errorFn path                                |
+| `src/machine/__tests__/addOptions-return.test.ts`                    | remove `promises` assertions                                                |
+| `src/interpreters/__tests__/coverage/addOptions-return.test.ts`      | remove `promises` assertions                                                |
+| `src/interpreters/__tests__/legacy-options.test.ts`                  | drop `_legacy.actors.promises`                                              |
+| `src/fixtures/constants.ts`                                          | drop `promisees` from `defaultT.actors`                                     |
+| `README.md`                                                          | rewrite async section                                                       |
+| `CHANGELOG.md`                                                       | v3.0.0 entry                                                                |
+| `package.json`                                                       | `version: 3.0.0`                                                            |
 
 ## Migration Table (CHANGELOG)
 
-| Before (v2.x)                                                 | After (v3.0)                                                                                                  |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `actors: { promises: { fetchUser: async () => … } }`          | `actions: { fetchUser: assign('user', async () => …, (err, s) => ({ context: { ...s.context, err } })) }`     |
-| state: `{ promises: [{ src: 'fetchUser', resolves, catch }] }` | state: `{ entry: 'fetchUser' }`; branch via `errorFn` or try/catch + resend                                  |
-| `PromiseeConfig`, `PromiseFunction`, `PromisesMap`            | removed                                                                                                       |
-| `debounce(async fn, …)`                                       | ❌ compile error — debounce is sync-only                                                                       |
+| Before (v2.x)                                                  | After (v3.0)                                                                                              |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `actors: { promises: { fetchUser: async () => … } }`           | `actions: { fetchUser: assign('user', async () => …, (err, s) => ({ context: { ...s.context, err } })) }` |
+| state: `{ promises: [{ src: 'fetchUser', resolves, catch }] }` | state: `{ entry: 'fetchUser' }`; branch via `errorFn` or try/catch + resend                               |
+| `PromiseeConfig`, `PromiseFunction`, `PromisesMap`             | removed                                                                                                   |
+| `debounce(async fn, …)`                                        | ❌ compile error — debounce is sync-only                                                                  |
 
 ## Verification Checklist
 

@@ -29,7 +29,6 @@
       "#utils": ["./src/utils/index.ts"],
       "#utils/*": ["./src/utils/*"],
       "#constants": ["./src/constants/index.ts"],
-      "#promises": ["./src/promises/index.ts"],
       "#children": ["./src/children/index.ts"],
       "#delays": ["./src/delays/index.ts"],
       "#actor": ["./src/actor.types.ts"],
