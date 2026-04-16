@@ -718,8 +718,8 @@ export type MachineOptions<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Flat extends FlatMapN<C, false> = FlatMapN<C, false>,
   Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Flat extends FlatMapN<C, false> = FlatMapN<C, false>,
 > = Partial<{
   actions: Partial<GetActionsFromFlat<Flat, Eo, Pc, Tc, T>>;
   predicates: Partial<GetGuardsFromFlat<Flat, Eo, Pc, Tc, T>>;

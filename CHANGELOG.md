@@ -9,13 +9,43 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.5.0] - 16/04/2026** => _01:41_
+
+</summary>
+
+- **Feat**: Les `tags` sont désormais correctement inférés dans les
+  callbacks de `provideOptions` — le paramètre `tags` reçoit le type
+  union des littéraux déclarés (ex. `"un" | "deux"`) au lieu de
+  `string` générique, permettant la comparaison et le narrowing
+- **Refactor**: Réorganisation des paramètres de type dans `Machine`,
+  `Interpreter` et `constructTests` — `Eo` et `Ta` déplacés avant
+  `Mo` pour que `Mo` puisse référencer `Ta` et être correctement typé
+  avec `MachineOptions<C, E, A, Pc, Tc, Ta>`
+- **Refactor**: `MachineOptions` — permutation des paramètres `Flat`
+  et `Eo` pour cohérence interne
+- **Refactor**: `CreateMachine_F` — suppression du paramètre de type
+  `Mo` (retour simplifié vers `Machine<C, Pc, Tc, EventM, A>`)
+- **Refactor**: `InterpreterFrom<M>` — suppression du paramètre
+  `MachineOptionsFrom<M>` (interface simplifiée)
+- **Refactor**: `primitives.test-d.ts` — assertions de type mises à
+  jour de `.toMatchTypeOf()` vers `.branded.toEqualTypeOf()` et
+  `.toExtend()` pour des vérifications plus strictes
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<summary>
+
 ## **[2.4.2] - 15/04/2026** => _22:42_
 
 </summary>
 
 - **Refactor**: Renommage du champ `then` en `resolves` dans la
-  configuration des promisees (`_PromiseeConfig`, `PromiseeDef`, `Promisee`)
-  — mise à jour de tous les usages dans les types, tests et configurations
+  configuration des promisees (`_PromiseeConfig`, `PromiseeDef`,
+  `Promisee`) — mise à jour de tous les usages dans les types, tests et
+  configurations
 - **Fix**: Suppression du `return` inutile avant `service.send()` dans
   `src/fixtures/index.ts`
 - **Refactor**: Reformatage de l'indentation dans

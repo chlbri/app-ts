@@ -905,13 +905,13 @@ Timeline:
 
 ### 9.5 Emitters vs Promises vs Children
 
-| Aspect          | Emitters                    | Promises                  | Children                       |
-| --------------- | --------------------------- | ------------------------- | ------------------------------ |
-| Direction       | Source → Machine only       | Source → Machine only     | Bidirectional                  |
-| Cardinality     | 0..∞ emissions              | Exactly 1 resolution      | Ongoing event exchange         |
-| Machine control | **None** — read-only        | Triggered on state entry  | `sendTo` sends events to child |
+| Aspect          | Emitters                    | Promises                      | Children                       |
+| --------------- | --------------------------- | ----------------------------- | ------------------------------ |
+| Direction       | Source → Machine only       | Source → Machine only         | Bidirectional                  |
+| Cardinality     | 0..∞ emissions              | Exactly 1 resolution          | Ongoing event exchange         |
+| Machine control | **None** — read-only        | Triggered on state entry      | `sendTo` sends events to child |
 | Subscription    | `subscribe` / `unsubscribe` | One-shot `resolves` / `catch` | `interpret` / `stop`           |
-| Pause / Resume  | Via `@bemedev/rx-pausable`  | N/A                       | Via child interpreter          |
+| Pause / Resume  | Via `@bemedev/rx-pausable`  | N/A                           | Via child interpreter          |
 
 <br/>
 
@@ -920,8 +920,8 @@ Timeline:
 ## 10. Actors: Promises
 
 A promise actor is a one-shot async task triggered on state entry. The
-machine waits for resolution and routes the result to `resolves`, `catch`, or
-`finally` handlers.
+machine waits for resolution and routes the result to `resolves`, `catch`,
+or `finally` handlers.
 
 ```typescript
 const machine = createMachine(
@@ -1114,6 +1114,34 @@ service.start();
 service.tags; // ['idle']
 service.send('NEXT');
 service.tags; // ['working', 'busy']
+```
+
+### Tags in action callbacks
+
+As of v2.5.0, tag literals are propagated into `provideOptions` callbacks
+as a **typed union**, enabling narrowing directly inside actions:
+
+```typescript
+const machine = createMachine(
+  {
+    initial: 'idle',
+    states: {
+      idle: { on: { START: '/working' } },
+      working: {
+        tags: ['working', 'busy'],
+        on: { DONE: '/idle' },
+      },
+    },
+  },
+  typings({ eventsMap: { START: 'primitive', DONE: 'primitive' } }),
+).provideOptions(({ voidAction }) => ({
+  actions: {
+    log: voidAction(({ tags }) => {
+      // tags: "working" | "busy" | undefined — not just string
+      if (tags === 'busy') { /* handle busy state */ }
+    }),
+  },
+}));
 ```
 
 <br/>

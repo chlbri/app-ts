@@ -36,7 +36,6 @@ import {
   type EventsMapFrom,
   type ExtendedActionsParams,
   type GetEventsFromConfig,
-  type MachineOptionsFrom,
   type PrivateContextFrom,
   type ScheduledData,
 } from '#machines';
@@ -168,20 +167,21 @@ export class Interpreter<
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
-  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
+  Mo extends MachineOptions<C, E, A, Pc, Tc, Ta> = MachineOptions<
     C,
     E,
     A,
     Pc,
-    Tc
+    Tc,
+    Ta
   >,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
-  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 > implements AnyInterpreter<E, A, Pc, Tc> {
   /**
    * The {@linkcode Machine} machine being interpreted.
    */
-  #machine: Machine<C, Pc, Tc, E, A, Mo, Eo>;
+  #machine: Machine<C, Pc, Tc, E, A, Eo, Ta, Mo>;
 
   /**
    * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.
@@ -2480,8 +2480,7 @@ export type InterpreterFrom<M extends AnyMachine> = Interpreter<
   PrivateContextFrom<M>,
   ContextFrom<M>,
   EventsMapFrom<M>,
-  ActorsMapFrom<M>,
-  MachineOptionsFrom<M>
+  ActorsMapFrom<M>
 >;
 
 /**

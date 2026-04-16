@@ -93,15 +93,16 @@ class Machine<
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
-  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Ta extends string = ExtractTagsFromConfig<C>,
+  Mo extends MachineOptions<C, E, A, Pc, Tc, Ta> = MachineOptions<
     C,
     E,
     A,
     Pc,
-    Tc
+    Tc,
+    Ta
   >,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
-  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 > implements AnyMachine<E, A, Pc, Tc> {
   /**
    * The configuration of the machine for this {@linkcode Machine}.
@@ -927,7 +928,7 @@ class Machine<
       actorsMap,
     } = this.#elements;
 
-    const out = new Machine<C, Pc, Tc, E, A, Mo>(config);
+    const out = new Machine<C, Pc, Tc, E, A, Eo, Ta, Mo>(config);
 
     out.#pContext = pContext;
     out.#context = context;
@@ -1214,13 +1215,6 @@ export type CreateMachine_F = <
   A0 extends GetActorKeysFromConfig2<C> = GetActorKeysFromConfig2<C>,
   A extends NOmit<A0, 'pContext'> = NOmit<A0, 'pContext'>,
   Pc extends A0['pContext'] = A0['pContext'],
-  Mo extends MachineOptions<C, EventM, A, Pc, Tc> = MachineOptions<
-    C,
-    EventM,
-    A,
-    Pc,
-    Tc
-  >,
 >(
   config: NoExtraKeysConfig<C & { __tsSchema?: NoExtraKeysConfigDef<C2> }>,
   types: { pContext: Pc; context: Tc; eventsMap: EventM; actorsMap: A },
@@ -1230,8 +1224,7 @@ export type CreateMachine_F = <
   Pc,
   Tc,
   EventM,
-  A,
-  Mo
+  A
 >;
 
 /**

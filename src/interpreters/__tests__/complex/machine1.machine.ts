@@ -58,6 +58,7 @@ export const machine = createMachine(
         },
       },
       checking: {
+        tags: ['un', 'deux'],
         actors: {
           checkOnline: {
             description: 'Check if we are online',
@@ -195,7 +196,12 @@ export const machine = createMachine(
 ).provideOptions(({ assign, erase, batch }) => ({
   actions: {
     provideAsset: assign('context.asset', {
-      START: ({ payload }) => payload.asset,
+      START: ({ payload, tags }) => {
+        if (tags === 'deux') {
+          /**EMPTY */
+        }
+        return payload.asset;
+      },
     }),
 
     reset: batch(

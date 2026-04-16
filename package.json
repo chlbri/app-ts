@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -65,7 +65,7 @@
     "rm:lib": "pnpx rimraf ./lib",
     "rolldown": "rolldown -c",
     "test:coverage": "vitest run",
-    "test": "pnpm run test:coverage --no-coverage",
+    "test": "pnpm run test:coverage",
     "test:no-type": "pnpm run test:coverage -c \"vitest.config.notype.ts\" --no-coverage",
     "test:only": "pnpm run test:coverage --no-coverage",
     "test:ui": "vitest --ui",

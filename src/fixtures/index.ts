@@ -289,17 +289,18 @@ export const constructTests = <
   const E extends EventsMap = EventsMap,
   const A extends ActorsConfigMap = ActorsConfigMap,
   T extends object = object,
-  Mo extends MachineOptions<C, E, A, Pc, Tc> = MachineOptions<
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
+  Mo extends MachineOptions<C, E, A, Pc, Tc, Ta> = MachineOptions<
     C,
     E,
     A,
     Pc,
-    Tc
+    Tc,
+    Ta
   >,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
-  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
 >(
-  service: Interpreter<C, Pc, Tc, E, A, Mo, Eo, Ta>,
+  service: Interpreter<C, Pc, Tc, E, A, Eo, Ta, Mo>,
   helper?: (option: Option<C, E, A, Pc, Tc>) => T,
   startIndex = 0,
 ): ConstructTestsResult<C, E, T> => {
