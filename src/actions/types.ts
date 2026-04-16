@@ -36,12 +36,22 @@ export type ActionResult<
   context: Tc;
 }>;
 
+/**
+ * The sync-or-async return type of an action's body.
+ *
+ * @see {@linkcode ActionResult} for the merged partial contexts.
+ */
+export type MaybeAsyncActionResult<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = ActionResult<Pc, Tc> | Promise<ActionResult<Pc, Tc>>;
+
 export type Action<
   E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = FnMap<E, Pc, Tc, T, ActionResult<Pc, Tc>>;
+> = FnMap<E, Pc, Tc, T, MaybeAsyncActionResult<Pc, Tc>>;
 
 /**
  * Represents a collection of actions, where each action is identified by a string key.
@@ -63,4 +73,4 @@ export type Action2<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = FnR<E, Pc, Tc, T, ActionResult<Pc, Tc>>;
+> = FnR<E, Pc, Tc, T, MaybeAsyncActionResult<Pc, Tc>>;
