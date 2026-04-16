@@ -1,6 +1,6 @@
 {
   "name": "@bemedev/app-ts",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "A reprogramming method to code better",
   "author": {
     "email": "bri_lvi@icloud.com",
@@ -47,6 +47,7 @@
     "ci:admin": "pnpm run rm && pnpm run upgrade:fast && pnpm run ci",
     "config": "pnpm install",
     "config:off": "pnpm run config --offline",
+    "config:vitest": "pnpm add -D @vitest/coverage-v8@3.2.4 @vitest/ui@3.2.4 vitest@3.2.4",
     "_lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint": "pnpm run fmt && pnpm run lint:fix",
@@ -73,7 +74,7 @@
     "test:type:watch": "vitest -c \"vitest.config.type.ts\"",
     "test:watch": "vitest",
     "upgrade": "pnpm dlx @bemedev/upgrade-npm-package && pnpm add -D @vitest/coverage-v8@3.2.4 vitest@3.2.4",
-    "upgrade:fast": "pnpm up --latest && pnpm add -D @vitest/coverage-v8@3.2.4 @vitest/ui@3.2.4 vitest@3.2.4"
+    "upgrade:fast": "pnpm up --latest && pnpm run config:vitest"
   },
   "devDependencies": {
     "@bemedev/build-tests": "^0.1.2",

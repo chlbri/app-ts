@@ -8,6 +8,10 @@ import {
   DEFAULT_MIN_ACTIVITY_TIME,
 } from '#constants';
 
+import toArray from '#bemedev/features/arrays/castings/toArray';
+import isDefined from '#bemedev/features/common/castings/is/defined';
+import { partialCall } from '#bemedev/features/functions/functions/partialCall';
+import { switchV } from '#bemedev/features/functions/functions/switch';
 import { toDelay } from '#delays';
 import {
   ALWAYS_EVENT,
@@ -70,10 +74,6 @@ import {
   withTimeout,
   type TimeoutPromise,
 } from '@bemedev/better-promise';
-import toArray from '#bemedev/features/arrays/castings/toArray';
-import { partialCall } from '#bemedev/features/functions/functions/partialCall';
-import { switchV } from '#bemedev/features/functions/functions/switch';
-import isDefined from '#bemedev/features/common/castings/is/defined';
 
 import { assignByKey, decomposeSV } from '@bemedev/decompose';
 import {
@@ -126,7 +126,6 @@ import type {
   ChildFunction2,
   ExtractTagsFromConfig,
   GetActorKeysFromConfig,
-  MachineOptions,
 } from '#machines';
 import type { FinallyConfig, PromiseeResult } from '#promises';
 import { createScheduler } from '@bemedev/scheduler';
@@ -167,21 +166,13 @@ export class Interpreter<
   const Tc extends PrimitiveObject = PrimitiveObject,
   E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
   A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
   Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
-  Mo extends MachineOptions<C, E, A, Pc, Tc, Ta> = MachineOptions<
-    C,
-    E,
-    A,
-    Pc,
-    Tc,
-    Ta
-  >,
+  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
 > implements AnyInterpreter<E, A, Pc, Tc> {
   /**
    * The {@linkcode Machine} machine being interpreted.
    */
-  #machine: Machine<C, Pc, Tc, E, A, Eo, Ta, Mo>;
+  #machine: Machine<C, Pc, Tc, E, A, Ta>;
 
   /**
    * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.

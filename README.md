@@ -1138,7 +1138,9 @@ const machine = createMachine(
   actions: {
     log: voidAction(({ tags }) => {
       // tags: "working" | "busy" | undefined — not just string
-      if (tags === 'busy') { /* handle busy state */ }
+      if (tags === 'busy') {
+        /* handle busy state */
+      }
     }),
   },
 }));

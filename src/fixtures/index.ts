@@ -10,21 +10,18 @@ import type {
   EventArgT,
   EventObject,
   EventsMap,
-  ToEventObject,
-  ToEvents,
   ToEventsR,
 } from '#events';
 import type { Interpreter } from '#interpreter';
-import type { StateValue } from '#states';
-import { IS_TEST } from '#utils';
-import type { EmptyObject } from '@bemedev/decompose';
-import { sleep } from '@bemedev/sleep';
 import type {
   Config,
   ExtractTagsFromConfig,
   GetEventsFromConfig,
-  MachineOptions,
 } from '#machines';
+import type { StateValue } from '#states';
+import { IS_TEST } from '#utils';
+import type { EmptyObject } from '@bemedev/decompose';
+import { sleep } from '@bemedev/sleep';
 import { buildIndex, buildInvite } from './invite';
 
 export * from './constants';
@@ -289,18 +286,9 @@ export const constructTests = <
   const E extends EventsMap = EventsMap,
   const A extends ActorsConfigMap = ActorsConfigMap,
   T extends object = object,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
   Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
-  Mo extends MachineOptions<C, E, A, Pc, Tc, Ta> = MachineOptions<
-    C,
-    E,
-    A,
-    Pc,
-    Tc,
-    Ta
-  >,
 >(
-  service: Interpreter<C, Pc, Tc, E, A, Eo, Ta, Mo>,
+  service: Interpreter<C, Pc, Tc, E, A, Ta>,
   helper?: (option: Option<C, E, A, Pc, Tc>) => T,
   startIndex = 0,
 ): ConstructTestsResult<C, E, T> => {

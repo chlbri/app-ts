@@ -9,27 +9,53 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.5.1] - 16/04/2026** => _03:03_
+
+</summary>
+
+- **Refactor**: Suppression des paramètres de type `Mo` et `Eo` de la
+  signature publique d'`Interpreter` — `Eo` est conservé en interne mais
+  n'est plus exposé dans la classe ; `Mo` est entièrement retiré
+- **Refactor**: Simplification de `constructTests` — suppression des
+  paramètres `Eo` et `Mo`, le type d'`Interpreter` passé est réduit à
+  `Interpreter<C, Pc, Tc, E, A, Ta>`
+- **Refactor**: Réordonnancement des paramètres de type dans `Machine` —
+  `Ta` (tags) précède désormais `Eo` pour une cohérence avec `Interpreter`
+- **Refactor**: Nettoyage des imports inutilisés dans `fixtures/index.ts`
+  (`ToEventObject`, `ToEvents`, `MachineOptions`) et dans
+  `interpreter.ts` (`MachineOptions`)
+- **Chore**: Ajout du script `config:vitest` dans `package.json` et
+  refactorisation de `upgrade:fast` pour l'utiliser
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.5.0] - 16/04/2026** => _01:41_
 
 </summary>
 
 - **Feat**: Les `tags` sont désormais correctement inférés dans les
-  callbacks de `provideOptions` — le paramètre `tags` reçoit le type
-  union des littéraux déclarés (ex. `"un" | "deux"`) au lieu de
-  `string` générique, permettant la comparaison et le narrowing
+  callbacks de `provideOptions` — le paramètre `tags` reçoit le type union
+  des littéraux déclarés (ex. `"un" | "deux"`) au lieu de `string`
+  générique, permettant la comparaison et le narrowing
 - **Refactor**: Réorganisation des paramètres de type dans `Machine`,
-  `Interpreter` et `constructTests` — `Eo` et `Ta` déplacés avant
-  `Mo` pour que `Mo` puisse référencer `Ta` et être correctement typé
-  avec `MachineOptions<C, E, A, Pc, Tc, Ta>`
-- **Refactor**: `MachineOptions` — permutation des paramètres `Flat`
-  et `Eo` pour cohérence interne
-- **Refactor**: `CreateMachine_F` — suppression du paramètre de type
-  `Mo` (retour simplifié vers `Machine<C, Pc, Tc, EventM, A>`)
+  `Interpreter` et `constructTests` — `Eo` et `Ta` déplacés avant `Mo` pour
+  que `Mo` puisse référencer `Ta` et être correctement typé avec
+  `MachineOptions<C, E, A, Pc, Tc, Ta>`
+- **Refactor**: `MachineOptions` — permutation des paramètres `Flat` et
+  `Eo` pour cohérence interne
+- **Refactor**: `CreateMachine_F` — suppression du paramètre de type `Mo`
+  (retour simplifié vers `Machine<C, Pc, Tc, EventM, A>`)
 - **Refactor**: `InterpreterFrom<M>` — suppression du paramètre
   `MachineOptionsFrom<M>` (interface simplifiée)
-- **Refactor**: `primitives.test-d.ts` — assertions de type mises à
-  jour de `.toMatchTypeOf()` vers `.branded.toEqualTypeOf()` et
-  `.toExtend()` pour des vérifications plus strictes
+- **Refactor**: `primitives.test-d.ts` — assertions de type mises à jour de
+  `.toMatchTypeOf()` vers `.branded.toEqualTypeOf()` et `.toExtend()` pour
+  des vérifications plus strictes
 - <u>Test coverage **_100%_**</u>
 
 </details>
