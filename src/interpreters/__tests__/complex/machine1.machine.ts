@@ -1,6 +1,7 @@
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 import type { inferT } from '#utils/typings';
+import isOnline from 'is-online';
 import { SCHEMAS } from './machine1.machine.gen';
 import { asset, intermediary } from './machine1.machine.typings';
 
@@ -16,6 +17,8 @@ export const BLOCK_IMMO_INTERMEDIARY: inferT<typeof intermediary> = {
     websites: ['https://block-immo.fr'],
   },
 };
+
+const CHECK_DELAY = 300;
 
 export const machine = createMachine(
   {
@@ -58,10 +61,10 @@ export const machine = createMachine(
         },
       },
       checking: {
-        entry: ['setOnlineStatus', 'getIntermediaries'],
+        entry: 'setOnlineStatus',
         tags: ['un', 'deux'],
-        on: {
-          START: '/working',
+        after: {
+          CHECK_DELAY: '/working',
         },
       },
       working: {
@@ -86,6 +89,7 @@ export const machine = createMachine(
                     ],
                   },
                   target: '/working/adding',
+                  actions: 'addIntermediary',
                 },
                 {
                   actions: ['error.addIntermediary'],
@@ -94,8 +98,8 @@ export const machine = createMachine(
             },
           },
           adding: {
-            on: {
-              ADD_INTERMEDIARY: '/working/idle',
+            after: {
+              ADD_DELAY: '/working/idle',
             },
           },
         },
@@ -118,10 +122,8 @@ export const machine = createMachine(
       internetStatus: 'boolean',
       errors: typings.partial({
         noAsset: 'string',
-        fetchIntermediaries: 'string',
         intermediary: {
           offline: 'string',
-          online: 'string',
         },
       }),
     }),
@@ -159,6 +161,17 @@ export const machine = createMachine(
       'context.errors.noAsset',
       () => 'Asset is required to start the machine',
     ),
+
+    setOnlineStatus: assign('context.internetStatus', () =>
+      isOnline({ timeout: CHECK_DELAY / 2 }),
+    ),
+
+    addIntermediary: assign('context.intermediaries', {
+      ADD_INTERMEDIARY: async ({
+        payload,
+        context: { intermediaries = [] },
+      }) => [...intermediaries, payload],
+    }),
 
     'error.addIntermediary': assign(
       'context.errors.intermediary.offline',
@@ -199,5 +212,7 @@ export const machine = createMachine(
   },
   delays: {
     MAX_MUTATE: 1000,
+    CHECK_DELAY,
+    ADD_DELAY: 100,
   },
 }));
