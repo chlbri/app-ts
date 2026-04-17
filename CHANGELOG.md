@@ -9,6 +9,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[2.5.3] - 16/04/2026** => _23:49_
+
+</summary>
+
+- **Fix**: Restauration complète de `Eo` dans `Machine.clone()` — le
+  paramrage génériques était incomplet après la refonte en v2.5.1
+- **Fix**: Propagation de `Eo` à travers `MachineOptions` via le paramètre
+  `Mo` — assure la cohérence des types à la compilation
+- **Fix**: Contrainte de `Ta` affinée en
+  `Ta extends ExtractTagsFromConfig<C>` — remplace la borne générique
+  `Ta extends string` pour une validation correcte des tags
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.5.2] - 16/04/2026** => _10:21_
 
 </summary>
