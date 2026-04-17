@@ -1206,7 +1206,6 @@ export class Interpreter<
       const transitions = toArray.typed(transition);
 
       const _promise = async () => {
-        if (this.#cannotPerform(from)) return false;
         await sleep(delay);
         if (this.#cannotPerform(from)) return false;
 
