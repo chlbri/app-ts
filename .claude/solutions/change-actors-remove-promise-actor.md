@@ -14,9 +14,10 @@ kept inside the repo for durable reference.
 - **Make** the interpreter's action pipeline (`#performAction` →
   `#executeAction` → `#performActions`) async and sequentially awaited.
 - **Extend** every `addOptions` action helper that takes a user function
-  with an optional third `errorFn` parameter (skipped on guards, which stay sync).
-  `debounce` now also accepts `MaybeAsync` actions (the implementation already
-  uses `await fn(state)`; the `Action2` widening makes this possible).
+  with an optional third `errorFn` parameter (skipped on guards, which stay
+  sync). `debounce` now also accepts `MaybeAsync` actions (the
+  implementation already uses `await fn(state)`; the `Action2` widening
+  makes this possible).
 
 ## Locked Design Decisions
 
@@ -42,27 +43,28 @@ kept inside the repo for durable reference.
 
 3. **Debounce accepts MaybeAsync actions** — `fn` parameter is `Action2`,
    which now returns `MaybeAsyncActionResult`. The implementation uses
-   `await fn(state)`, so async actions are supported without any extra overload.
-   No `errorFn` 3rd arg is added to `debounce` (the scheduled data pattern
-   means errors are propagated via the `_addError` channel as with any async action).
+   `await fn(state)`, so async actions are supported without any extra
+   overload. No `errorFn` 3rd arg is added to `debounce` (the scheduled
+   data pattern means errors are propagated via the `_addError` channel as
+   with any async action).
 
 4. **Version bump = v3.0.0** (breaking).
 
 ## Helper Signature Summary
 
-| Helper       | Sync (unchanged)   | New async overload                                         |
-| ------------ | ------------------ | ---------------------------------------------------------- |
-| `assign`     | `(key, fn)`        | `<Err=any>(key, asyncFn, errorFn?)`                        |
-| `voidAction` | `(fn?)`            | `<Err=any>(asyncFn, errorFn?)`                             |
-| `batch`      | `(...actions)`     | accepts async sub-actions; no new arg (err per sub-action) |
-| `filter`     | `(key, predicate)` | `<Err=any>(key, asyncPredicate, errorFn?)`                 |
-| `sendTo`     | `(machine?)(fn)`   | `(machine?)<Err=any>(asyncFn, errorFn?)`                   |
-| `erase`      | `(key)` — no fn    | — (no fn, no change)                                       |
+| Helper       | Sync (unchanged)   | New async overload                                             |
+| ------------ | ------------------ | -------------------------------------------------------------- |
+| `assign`     | `(key, fn)`        | `<Err=any>(key, asyncFn, errorFn?)`                            |
+| `voidAction` | `(fn?)`            | `<Err=any>(asyncFn, errorFn?)`                                 |
+| `batch`      | `(...actions)`     | accepts async sub-actions; no new arg (err per sub-action)     |
+| `filter`     | `(key, predicate)` | `<Err=any>(key, asyncPredicate, errorFn?)`                     |
+| `sendTo`     | `(machine?)(fn)`   | `(machine?)<Err=any>(asyncFn, errorFn?)`                       |
+| `erase`      | `(key)` — no fn    | — (no fn, no change)                                           |
 | `debounce`   | `(fn, { ms, id })` | ✅ accepts async `fn` via `Action2` widening; no `errorFn` arg |
-| `resend`     | `(event)` — no fn  | —                                                          |
-| `forceSend`  | `(event)` — no fn  | —                                                          |
-| time helpers | `(id)` — no fn     | —                                                          |
-| guards       | all sync           | — (out of scope)                                           |
+| `resend`     | `(event)` — no fn  | —                                                              |
+| `forceSend`  | `(event)` — no fn  | —                                                              |
+| time helpers | `(id)` — no fn     | —                                                              |
+| guards       | all sync           | — (out of scope)                                               |
 
 ## File Change Matrix
 
