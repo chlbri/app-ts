@@ -17,8 +17,6 @@ vi.useFakeTimers();
 const TINY_DELAY = 20; // ms — resolves fast enough not to hit a 5 s max
 
 describe('Async action helpers', () => {
-  // ─── assign ───────────────────────────────────────────────────────────────
-
   describe('#01 => assign — async fn, no options', () => {
     const machine = createMachine(
       {
@@ -150,8 +148,6 @@ describe('Async action helpers', () => {
     });
   });
 
-  // ─── voidAction ────────────────────────────────────────────────────────────
-
   describe('#04 => voidAction — async fn, no options', () => {
     const sideEffect = vi.fn();
 
@@ -236,8 +232,6 @@ describe('Async action helpers', () => {
     });
   });
 
-  // ─── filter ────────────────────────────────────────────────────────────────
-
   describe('#06 => filter — async predicate, no options', () => {
     const machine = createMachine(
       {
@@ -275,60 +269,7 @@ describe('Async action helpers', () => {
     });
   });
 
-  describe('#07 => filter — async predicate + { error } handler', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              FILTER: { actions: 'filterFail', target: '/idle' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: { FILTER: 'primitive' },
-        context: { items: typings.array('number'), failed: 'boolean' },
-      }),
-    ).provideOptions(({ filter }) => ({
-      actions: {
-        filterFail: filter(
-          'context.items',
-          async (_item: number) => {
-            await sleep(TINY_DELAY);
-            throw new Error('predicate error');
-          },
-          {
-            error: (_err, state) => ({
-              context: {
-                ...state.context,
-                items: [],
-                failed: true,
-              },
-            }),
-          },
-        ),
-      },
-    }));
-
-    const service = interpret(machine, {
-      context: { items: [1, 2, 3], failed: false },
-    });
-
-    test('#00 => start', service.start);
-
-    test('#01 => filter error → errorFn merges fallback', async () => {
-      service.send('FILTER');
-      await vi.advanceTimersByTimeAsync(TINY_DELAY + 50);
-      expect(service.state.context?.failed).toBe(true);
-      expect(service.state.context?.items).toEqual([]);
-    });
-  });
-
-  // ─── sendTo ────────────────────────────────────────────────────────────────
-
-  describe('#08 => sendTo — async fn, no options', () => {
+  describe('#07 => sendTo — async fn, no options', () => {
     // sendTo is a curried helper — sendTo(machine?)(fn)
     // We test only that the async fn resolves without error and the
     // sentEvent reaches the interpreter (checked via warnings or lack thereof).
@@ -369,9 +310,7 @@ describe('Async action helpers', () => {
     });
   });
 
-  // ─── backward-compatibility: sync fn still works ──────────────────────────
-
-  describe('#09 => assign — sync fn still works (backward compat)', () => {
+  describe('#08 => assign — sync fn still works (backward compat)', () => {
     const machine = createMachine(
       {
         initial: 'idle',

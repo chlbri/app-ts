@@ -848,8 +848,8 @@ export class Interpreter<
    */
   #performForceSendAction = async (forceSend?: EventArg<E>) => {
     if (!forceSend) return;
-
     const values = Object.values(this.#machine.flat);
+
     for (const { on } of values) {
       const type = eventToType(forceSend);
       const transitions = toArray.typed(on?.[type]);
@@ -1963,7 +1963,7 @@ export class Interpreter<
 
     for (const [from, transitions] of flat2) {
       const cannotContinue = !this.#isInsideValue2(sv, from);
-      if (cannotContinue) return;
+      if (cannotContinue) continue;
 
       const target = await this.__performTransitions(
         ...toArray.typed(transitions),

@@ -192,7 +192,6 @@ export type FilterAction_F<
     { object: 'object'; start: false; sep: '.' }
   >,
   K extends keyof D & string = keyof D & string,
-  Err = any,
 >(
   key: K,
   fn: K extends string
@@ -202,7 +201,6 @@ export type FilterAction_F<
         ? (value: ValuesOf<D[K]>, all: D[K]) => boolean
         : never
     : never,
-  options?: AsyncOptions<Err, Pc, Tc>,
 ) => Action2<E, Pc, Tc, T>;
 
 export type EraseAction_F<

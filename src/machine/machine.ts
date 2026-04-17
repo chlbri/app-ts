@@ -711,99 +711,37 @@ class Machine<
               if (!out) out = await fn(state);
               else out = await fn({ ...out, ...rest });
             }
-
-            console.warn('out', '=>', out);
             return out;
           };
         },
 
-        filter: (key, fn, options?) => {
-          if (!options) {
-            return ({ context, pContext }) => {
-              const currentValue = getByKey.low(
-                { context, pContext },
-                key,
-              );
-
-              const predicate = fn as any;
-
-              let filteredValue: any;
-
-              if (Array.isArray(currentValue)) {
-                // Filter array elements
-                filteredValue = currentValue.filter(predicate);
-              } else if (
-                currentValue !== null &&
-                typeof currentValue === 'object'
-              ) {
-                // Filter object properties
-                filteredValue = Object.entries(currentValue).reduce(
-                  (acc, [objKey, value]) => {
-                    const check = predicate(value, currentValue);
-                    if (check) acc[objKey] = value;
-                    return acc;
-                  },
-                  {} as any,
-                );
-              }
-
-              return assignByKey(
-                { context, pContext },
-                key,
-                filteredValue,
-              );
-            };
-          }
-
-          const { error: errorFn, max } = options;
-
-          return async ({ context, pContext }) => {
+        filter: (key, fn) => {
+          return ({ context, pContext }) => {
             const currentValue = getByKey.low({ context, pContext }, key);
+
             const predicate = fn as any;
 
-            const execute = async () => {
-              let filteredValue: any;
+            let filteredValue: any;
 
-              if (Array.isArray(currentValue)) {
-                const checks = await Promise.all(
-                  currentValue.map((item, index, array) =>
-                    predicate(item, index, array),
-                  ),
-                );
-                filteredValue = currentValue.filter((_, i) => checks[i]);
-              } else if (
-                currentValue !== null &&
-                typeof currentValue === 'object'
-              ) {
-                const entries = Object.entries(currentValue);
-                filteredValue = {} as any;
-                for (const [objKey, value] of entries) {
-                  const keep = await predicate(value, currentValue);
-                  if (keep) filteredValue[objKey] = value;
-                }
-              }
-
-              return assignByKey(
-                { context, pContext },
-                key,
-                filteredValue,
+            if (Array.isArray(currentValue)) {
+              // Filter array elements
+              filteredValue = currentValue.filter(predicate);
+            } else if (
+              currentValue !== null &&
+              typeof currentValue === 'object'
+            ) {
+              // Filter object properties
+              filteredValue = Object.entries(currentValue).reduce(
+                (acc, [objKey, value]) => {
+                  const check = predicate(value, currentValue);
+                  if (check) acc[objKey] = value;
+                  return acc;
+                },
+                {} as any,
               );
-            };
-
-            try {
-              if (max !== undefined) {
-                const tp = withTimeout(
-                  execute,
-                  `filter-${String(key)}`,
-                  max,
-                );
-                return await tp();
-              }
-              return await execute();
-            } catch (e) {
-              if (errorFn) return _any(errorFn)(e, { context, pContext });
-              throw e;
             }
+
+            return assignByKey({ context, pContext }, key, filteredValue);
           };
         },
 

@@ -12,6 +12,16 @@ describe('functions', () => {
       'Success',
       success(
         {
+          invite: 'undefined',
+          parameters: [undefined, 'a', 1],
+          expected: undefined,
+        },
+        {
+          invite: 'null',
+          parameters: [null, 'a', 1],
+          expected: null,
+        },
+        {
           invite: 'small object',
           parameters: [{ a: 1, b: true }, 'a', 2],
           expected: { a: 2, b: true },
