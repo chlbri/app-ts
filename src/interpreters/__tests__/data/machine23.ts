@@ -40,9 +40,8 @@ export const machine23 = createMachine(
                 },
               },
               fetch: {
-                on: {
-                  FETCH: '/working/fetch/idle',
-                },
+                entry: 'insertData',
+                always: '/working/fetch/idle',
               },
             },
           },

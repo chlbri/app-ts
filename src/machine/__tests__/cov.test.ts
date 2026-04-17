@@ -550,19 +550,8 @@ describe('machine coverage', () => {
                 initial: 'idle',
                 states: {
                   fetch: {
-                    actors: {
-                      fetch: {
-                        catch: '/working/fetch/idle',
-                        // oxlint-disable-next-line unicorn/no-thenable
-                        resolves: {
-                          actions: {
-                            description: 'Database insert',
-                            name: 'insertData',
-                          },
-                          target: '/working/fetch/idle',
-                        },
-                      },
-                    },
+                    entry: 'insertData',
+                    always: '/working/fetch/idle',
                   },
                   idle: {
                     activities: {
@@ -652,19 +641,8 @@ describe('machine coverage', () => {
                   initial: 'idle',
                   states: {
                     fetch: {
-                      actors: {
-                        fetch: {
-                          catch: '/working/fetch/idle',
-                          // oxlint-disable-next-line unicorn/no-thenable
-                          resolves: {
-                            actions: {
-                              name: 'insertData',
-                              description: 'Database insert',
-                            },
-                            target: '/working/fetch/idle',
-                          },
-                        },
-                      },
+                      entry: 'insertData',
+                      always: '/working/fetch/idle',
                     },
                     idle: {
                       activities: {
@@ -735,19 +713,8 @@ describe('machine coverage', () => {
               initial: 'idle',
               states: {
                 fetch: {
-                  actors: {
-                    fetch: {
-                      catch: '/working/fetch/idle',
-                      // oxlint-disable-next-line unicorn/no-thenable
-                      resolves: {
-                        actions: {
-                          name: 'insertData',
-                          description: 'Database insert',
-                        },
-                        target: '/working/fetch/idle',
-                      },
-                    },
-                  },
+                  entry: 'insertData',
+                  always: '/working/fetch/idle',
                 },
                 idle: {
                   activities: {
@@ -802,19 +769,8 @@ describe('machine coverage', () => {
           initial: 'idle',
           states: {
             fetch: {
-              actors: {
-                fetch: {
-                  catch: '/working/fetch/idle',
-                  // oxlint-disable-next-line unicorn/no-thenable
-                  resolves: {
-                    actions: {
-                      name: 'insertData',
-                      description: 'Database insert',
-                    },
-                    target: '/working/fetch/idle',
-                  },
-                },
-              },
+              entry: 'insertData',
+              always: '/working/fetch/idle',
             },
             idle: {
               activities: {
@@ -831,19 +787,8 @@ describe('machine coverage', () => {
         },
 
         '/working/fetch/fetch': {
-          actors: {
-            fetch: {
-              catch: '/working/fetch/idle',
-              // oxlint-disable-next-line unicorn/no-thenable
-              resolves: {
-                actions: {
-                  name: 'insertData',
-                  description: 'Database insert',
-                },
-                target: '/working/fetch/idle',
-              },
-            },
-          },
+          entry: 'insertData',
+          always: '/working/fetch/idle',
         },
 
         '/working/fetch/idle': {

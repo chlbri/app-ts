@@ -1,6 +1,6 @@
+import { defaultT, fakeWaiter } from '#fixtures';
 import { createMachine } from '#machine';
 import { interpret } from '../../interpreter';
-import { defaultT } from '#fixtures';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -34,7 +34,6 @@ describe('Self Transitions', () => {
 
     service.start();
     expect(service.value).toEqual('idle');
-
     await vi.advanceTimersByTimeAsync(DELAY);
     expect(service.value).toEqual('active');
   });
@@ -56,6 +55,7 @@ describe('Self Transitions', () => {
     const service = interpret(machine);
 
     service.start();
+    await fakeWaiter(0);
     expect(service.value).toEqual('active');
   });
 });

@@ -24,6 +24,26 @@ import type {
   SimpleMachineOptions2,
 } from './types';
 /**
+ * Options for async action helpers.
+ * - `error`: called with the thrown error and current context snapshot when
+ *   the async function rejects. Its return value is merged as the ActionResult.
+ *   When omitted, the rejection propagates to the interpreter's `_addError` channel.
+ * - `max`: maximum milliseconds before the async action is forcibly aborted via
+ *   `TimeoutPromise`. When omitted, no timeout is applied.
+ */
+export type AsyncOptions<
+  Err = any,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = {
+  error?: (
+    error: Err,
+    state: ActionResult<Pc, Tc>,
+  ) => ActionResult<Pc, Tc>;
+  max?: number;
+};
+
+/**
  * Types for all meaningful elements of the machine.
  *
  * @template :  {@linkcode Config} [C] - type of the machine configuration
@@ -114,9 +134,11 @@ export type AssignAction_F<
     { object: 'both'; start: false; sep: '.' }
   >,
   K extends keyof D = keyof D,
+  Err = any,
 >(
   key: K,
-  fn: FnMap<E, Pc, Tc, T, D[K]>,
+  fn: FnMap<E, Pc, Tc, T, D[K] | Promise<D[K]>>,
+  options?: AsyncOptions<Err, Pc, Tc>,
 ) => Action2<E, Pc, Tc, T>;
 
 export type ResendAction_F<
@@ -138,7 +160,10 @@ export type VoidAction_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = (fn?: FnMap<E, Pc, Tc, T, void>) => Action2<E, Pc, Tc, T>;
+> = <Err = any>(
+  fn?: FnMap<E, Pc, Tc, T, void | Promise<void>>,
+  options?: AsyncOptions<Err, Pc, Tc>,
+) => Action2<E, Pc, Tc, T>;
 
 export type ByKey_F<
   E extends EventObject = EventObject,
@@ -167,6 +192,7 @@ export type FilterAction_F<
     { object: 'object'; start: false; sep: '.' }
   >,
   K extends keyof D & string = keyof D & string,
+  Err = any,
 >(
   key: K,
   fn: K extends string
@@ -176,6 +202,7 @@ export type FilterAction_F<
         ? (value: ValuesOf<D[K]>, all: D[K]) => boolean
         : never
     : never,
+  options?: AsyncOptions<Err, Pc, Tc>,
 ) => Action2<E, Pc, Tc, T>;
 
 export type EraseAction_F<
@@ -212,14 +239,16 @@ export type SendAction_F<
   T extends string = string,
 > = <M extends AnyMachine>(
   _?: M,
-) => (
+) => <Err = any>(
   fn: FnMap<
     E,
     Pc,
     Tc,
     T,
-    { to: string; event: EventArg<EventsMapFrom<M>> }
+    | { to: string; event: EventArg<EventsMapFrom<M>> }
+    | Promise<{ to: string; event: EventArg<EventsMapFrom<M>> }>
   >,
+  options?: AsyncOptions<Err, Pc, Tc>,
 ) => Action2<E, Pc, Tc, T>;
 
 export type ValueCheckerGuard_F<

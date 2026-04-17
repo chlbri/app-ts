@@ -413,7 +413,10 @@ export const constructTests = <
             const invite = `#${index()} => send ${type} event with payload : ${_payload}`;
             const payload = __payload[0] ?? {};
             const event = { type, payload } as EventArg<E>;
-            return tupleOf(invite, () => service.send(event));
+            return tupleOf(invite, async () => {
+              service.send(event);
+              await fakeWaiter(0);
+            });
           };
         },
         {
@@ -430,7 +433,10 @@ export const constructTests = <
               const invite = `#${index(_index)} => send ${type} event with payload : ${_payload}`;
               const payload = __payload[1] ?? {};
               const event = { type, payload } as EventArg<E>;
-              return tupleOf(invite, () => service.send(event));
+              return tupleOf(invite, async () => {
+                service.send(event);
+                await fakeWaiter(0);
+              });
             };
           },
         },
@@ -453,14 +459,18 @@ export const constructTests = <
       const event = JSON.stringify(_event);
       const invite = `#${index(_index)}=> send ${event}`;
 
-      return tupleOf(invite, () => {
+      return tupleOf(invite, async () => {
         service.send(_any(_event));
+        await fakeWaiter(0);
       });
     },
 
     start: _index => {
       const invite = `#${index(_index)} => Start the service`;
-      return tupleOf(invite, service.start);
+      return tupleOf(invite, async () => {
+        service.start();
+        await fakeWaiter(0);
+      });
     },
 
     stop: _index => {

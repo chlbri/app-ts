@@ -3,6 +3,7 @@ import { createMachine } from '#machine';
 import { createConfig } from '#machines';
 import { notU, typings } from '#utils';
 import { DELAY } from './constants';
+import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
 
 // #region machine21
@@ -41,9 +42,8 @@ export const config21 = createConfig({
               },
             },
             fetch: {
-              on: {
-                FETCH: '/working/fetch/idle',
-              },
+              entry: 'insertData',
+              always: '/working/fetch/idle',
             },
           },
         },
@@ -137,6 +137,11 @@ export const machine21 = createMachine(
         WRITE: ({ payload: { value } }) => value,
       }),
       send: sendTo(machine1)(() => ({ to: 'machine1', event: 'NEXT' })),
+      insertData: assign('context.data', ({ context }) =>
+        fakeDB
+          .filter(item => item.name.includes(context?.input ?? ''))
+          .map(item => item.name),
+      ),
     },
     predicates: {
       isInputEmpty: isValue('context.input', ''),

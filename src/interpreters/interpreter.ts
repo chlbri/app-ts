@@ -723,7 +723,7 @@ export class Interpreter<
     this.#startInitialEntries();
     this.#startChildren();
     this.#throwing();
-    this._next();
+    return this._next();
   };
 
   /**
@@ -830,7 +830,7 @@ export class Interpreter<
     return this.#sendTo(sentEvent.to, sentEvent.event);
   };
 
-  #performResendAction = (resend?: EventArg<E>) => {
+  #performResendAction = async (resend?: EventArg<E>) => {
     if (!resend) return;
     const cannot = this.#cannotPerformEvents(resend);
     if (cannot) return;
@@ -846,15 +846,15 @@ export class Interpreter<
    *
    * @see {@linkcode TransitionConfig} for more information about transitions.
    */
-  #performForceSendAction = (forceSend?: EventArg<E>) => {
+  #performForceSendAction = async (forceSend?: EventArg<E>) => {
     if (!forceSend) return;
 
     const values = Object.values(this.#machine.flat);
-    values.forEach(({ on }) => {
+    for (const { on } of values) {
       const type = eventToType(forceSend);
       const transitions = toArray.typed(on?.[type]);
-      this.__performTransitions(...(transitions as any));
-    });
+      await this.__performTransitions(...(transitions as any));
+    }
   };
 
   #performPauseActivityAction = (id?: string) => {
@@ -891,7 +891,7 @@ export class Interpreter<
     this.#timeoutActions.filter(f => f.id === id).forEach(this.#stop);
   };
 
-  #performsExtendedActions = ({
+  #performsExtendedActions = async ({
     forceSend,
     resend,
     scheduled,
@@ -915,8 +915,8 @@ export class Interpreter<
 
     // ForceSendAction returns the result to make further actions
     const result =
-      this.#performForceSendAction(forceSend) ??
-      this.#performResendAction(resend);
+      (await this.#performForceSendAction(forceSend)) ??
+      (await this.#performResendAction(resend));
 
     return result;
   };
@@ -928,7 +928,7 @@ export class Interpreter<
       await this.#performAction(action);
 
     this.#mergeContexts({ pContext, context });
-    this.#performsExtendedActions(extendeds);
+    await this.#performsExtendedActions(extendeds);
   };
 
   /**
@@ -944,11 +944,12 @@ export class Interpreter<
     } else throw error;
   }
 
-  #performActions = (...actions: ActionConfig[]) => {
-    actions
-      .map(this.toActionFn)
-      .filter(f => f !== undefined)
-      .forEach(this.#executeAction);
+  #performActions = async (...actions: ActionConfig[]) => {
+    const fns = actions.map(this.toActionFn).filter(f => f !== undefined);
+
+    for (const fn of fns) {
+      await this.#executeAction(fn);
+    }
   };
 
   #performPredicate: PerformPredicate_F<Eo, Pc, Tc, Ta> = predicate => {
@@ -1030,14 +1031,14 @@ export class Interpreter<
 
         const activities = toArray.typed(_activity);
 
-        const callback = () => {
+        const callback = async () => {
           for (const activity of activities) {
             const check2 = typeof activity === 'string';
             const check3 = isDescriber(activity);
             const check4 = check2 || check3;
 
             if (check4) {
-              this.#performActions(activity);
+              await this.#performActions(activity);
               continue;
             }
 
@@ -1046,7 +1047,7 @@ export class Interpreter<
             );
             if (check5) {
               const actions = toArray.typed(activity.actions);
-              this.#performActions(...actions);
+              await this.#performActions(...actions);
             }
           }
         };
@@ -1106,12 +1107,12 @@ export class Interpreter<
    */
   protected _cachedIntervals: Interval2[] = [];
 
-  #performTransition: PerformTransition_F = transition => {
+  #performTransition: PerformTransition_F = async transition => {
     const check = typeof transition == 'string';
     if (check) {
       const { diffEntries, diffExits } = this.#diffNext(transition);
-      this.#performActions(...toArray.typed(diffExits));
-      this.#performActions(...toArray.typed(diffEntries));
+      await this.#performActions(...toArray.typed(diffExits));
+      await this.#performActions(...toArray.typed(diffEntries));
       return transition;
     }
     const { guards, actions, target } = transition;
@@ -1122,19 +1123,19 @@ export class Interpreter<
     );
 
     if (response) {
-      this.#performActions(...toArray.typed(diffExits));
-      this.#performActions(...toArray.typed(actions));
-      this.#performActions(...toArray.typed(diffEntries));
+      await this.#performActions(...toArray.typed(diffExits));
+      await this.#performActions(...toArray.typed(actions));
+      await this.#performActions(...toArray.typed(diffEntries));
       return target ?? false;
     }
     return false;
   };
 
-  private __performTransitions: PerformTransitions_F = (
+  protected __performTransitions: PerformTransitions_F = async (
     ...transitions
   ) => {
     for (const _transition of transitions) {
-      const transition = this.#performTransition(_transition);
+      const transition = await this.#performTransition(_transition);
       const check1 = typeof transition === 'string';
       if (check1) return transition;
     }
@@ -1205,14 +1206,14 @@ export class Interpreter<
       const transitions = toArray.typed(transition);
 
       const _promise = async () => {
+        if (this.#cannotPerform(from)) return false;
         await sleep(delay);
+        if (this.#cannotPerform(from)) return false;
 
         const func = () =>
           this.__performTransitions(...(transitions as any));
 
-        if (this.#cannotPerform(from)) return false;
-
-        const out = func();
+        const out = await func();
 
         if (out === false) {
           const message = `No transitions reached from "${from}" by delay "${_delay}" !`;
@@ -1378,11 +1379,11 @@ export class Interpreter<
     const out = entries.map(([from, { after, always }]) => {
       const promise = async () => {
         if (always) {
-          const target = always();
+          const target = await always();
           if (target !== false) return this.#performConfig(target);
         }
 
-        const promises: TimeoutPromise<void>[] = [];
+        // const promises: TimeoutPromise<void>[] = [];
         if (after) {
           const _after = async () => {
             await after()
@@ -1396,19 +1397,15 @@ export class Interpreter<
                 ),
               );
           };
-          promises.push(withTimeout(_after, 'after'));
+          await _after();
         }
-
-        const check1 = promises.length < 1;
-        if (check1) return;
-
-        await anyPromises(from, ...promises)();
       };
 
-      return promise;
+      return withTimeout(promise, 'self-transition');
     });
 
-    return out;
+    if (out.length < 1) return;
+    return anyPromises('self-transition', ...out);
   }
 
   #collectedEmitterConfigs: [
@@ -1671,11 +1668,10 @@ export class Interpreter<
 
   #performSelfTransitions = async () => {
     this.#makeBusy();
-
-    const state1 = structuredClone(this.#state);
-    await Promise.all(this.#collectedSelfTransitions.map(f => f()));
-    const state2 = structuredClone(this.#state);
-    const check = !equal(state1, state2);
+    const previousState = structuredClone(this.#state);
+    await this.#collectedSelfTransitions?.();
+    const nextState = structuredClone(this.#state);
+    const check = !equal(previousState, nextState);
     if (check) this.#flush();
     this.#makeWork();
   };
@@ -1956,7 +1952,7 @@ export class Interpreter<
     return flat2;
   };
 
-  protected _send: _Send_F<Eo> = event => {
+  protected _send: _Send_F<Eo> = async event => {
     this.#sent = true;
     this.#changeEvent(event);
     this.#setStatus('sending');
@@ -1965,17 +1961,17 @@ export class Interpreter<
     const flat2 = this.#extractTransitions(event);
     // #endregion
 
-    flat2.forEach(([from, transitions]) => {
+    for (const [from, transitions] of flat2) {
       const cannotContinue = !this.#isInsideValue2(sv, from);
       if (cannotContinue) return;
 
-      const target = this.__performTransitions(
+      const target = await this.__performTransitions(
         ...toArray.typed(transitions),
       );
 
       const diffTarget = target === false ? undefined : target;
       sv = nextSV(sv, diffTarget);
-    });
+    }
 
     const next = switchV({
       condition: equal(this.#value, sv),
@@ -2021,9 +2017,9 @@ export class Interpreter<
    * @param _event - the {@linkcode EventArg} event to send.
    *
    */
-  #send = (_event: EventArg<E>) => {
+  #send = async (_event: EventArg<E>) => {
     const event = transformEventArg(_event);
-    const next = this._send(event as any);
+    const next = await this._send(event as any);
 
     if (isDefined(next)) {
       this.#config = next;
@@ -2045,7 +2041,6 @@ export class Interpreter<
   send = async (_event: EventArg<E>) => {
     const check = this.#cannotPerformEvents(_event);
     if (check) return;
-
     return this.#send(_event);
   };
 
@@ -2266,10 +2261,14 @@ export class Interpreter<
    *
    * @see {@linkcode send} for sending events to the current service.
    */
-  #sendTo = <T extends EventObject>(to: string, event: T) => {
-    return this.#collectedChildren
-      .filter(({ from, id }) => this.#isInsideValue(from) && id === to)
-      .forEach(({ service }) => service.send(event));
+  #sendTo = async <T extends EventObject>(to: string, event: T) => {
+    const collector = this.#collectedChildren.filter(
+      ({ from, id }) => this.#isInsideValue(from) && id === to,
+    );
+
+    for (const { service } of collector) {
+      await service.send(event);
+    }
   };
 
   // #region Disposable

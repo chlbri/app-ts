@@ -2,8 +2,8 @@ import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 
-describe('Legacy Options Access', () => {
-  test('#01 => should access previous actions via _legacy', () => {
+describe.concurrent('Legacy Options Access', () => {
+  test('#01 => should access previous actions via _legacy', async () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -53,14 +53,14 @@ describe('Legacy Options Access', () => {
     service.start();
     expect(service.state.context).toBe(0);
 
-    service.send('NEXT');
+    await service.send('NEXT');
     expect(service.state.context).toBe(1);
 
-    service.send('DOUBLE');
+    await service.send('DOUBLE');
     expect(service.state.context).toBe(3);
   });
 
-  test('#02 => should access previous actions via _legacy, replace the same action', () => {
+  test('#02 => should access previous actions via _legacy, replace the same action', async () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -106,14 +106,14 @@ describe('Legacy Options Access', () => {
     service.start();
     expect(service.state.context).toBe(0);
 
-    service.send('NEXT');
+    await service.send('NEXT');
     expect(service.state.context).toBe(2);
 
-    service.send('NEXT');
+    await service.send('NEXT');
     expect(service.state.context).toBe(4);
   });
 
-  test('#03 =>should access previous predicates via _legacy', () => {
+  test('#03 =>should access previous predicates via _legacy', async () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -168,11 +168,11 @@ describe('Legacy Options Access', () => {
     service.start();
     expect(service.state.value).toBe('idle');
 
-    service.send('CHECK');
+    await service.send('CHECK');
     expect(service.state.value).toBe('positive');
   });
 
-  test('#04 => should work with provideOptions', () => {
+  test('#04 => should work with provideOptions', async () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -219,14 +219,14 @@ describe('Legacy Options Access', () => {
     service.start();
     expect(service.state.context).toBe(1);
 
-    service.send('ADD');
+    await service.send('ADD');
     expect(service.state.context).toBe(3);
 
-    service.send('MULTIPLY');
+    await service.send('MULTIPLY');
     expect(service.state.context).toBe(6);
   });
 
-  test('#05 => _legacy should be immutable', () => {
+  test('#05 => _legacy should be immutable', async () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -256,7 +256,7 @@ describe('Legacy Options Access', () => {
     });
   });
 
-  test('#06 => should handle multiple calls with cumulative legacy', () => {
+  test('#06 => should handle multiple calls with cumulative legacy', async () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -315,18 +315,18 @@ describe('Legacy Options Access', () => {
     const service = interpret(machine, { context: 0 });
     service.start();
 
-    service.send('FIRST');
+    await service.send('FIRST');
     expect(service.state.context).toBe(1);
 
-    service.send('SECOND');
+    await service.send('SECOND');
     expect(service.state.context).toBe(11);
 
-    service.send('THIRD');
+    await service.send('THIRD');
     expect(service.state.context).toBe(111);
   });
 
   describe('#07 => Service (Interpreter) addOptions', () => {
-    test('#01 => should access previous actions via _legacy on service.addOptions', () => {
+    test('#01 => should access previous actions via _legacy on service.addOptions', async () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -377,14 +377,14 @@ describe('Legacy Options Access', () => {
       service.start();
       expect(service.state.context).toBe(0);
 
-      service.send('NEXT');
+      await service.send('NEXT');
       expect(service.state.context).toBe(1);
 
-      service.send('TRIPLE');
+      await service.send('TRIPLE');
       expect(service.state.context).toBe(4);
     });
 
-    test('#02 => should access previous actions via _legacy on service.addOptions, changes the same action', () => {
+    test('#02 => should access previous actions via _legacy on service.addOptions, changes the same action', async () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -418,7 +418,7 @@ describe('Legacy Options Access', () => {
       service.start();
       expect(service.state.context).toBe(0);
 
-      service.send('NEXT');
+      await service.send('NEXT');
       expect(service.state.context).toBe(1);
 
       // Second call to service.addOptions - access previous action via _legacy
@@ -434,7 +434,7 @@ describe('Legacy Options Access', () => {
         };
       });
 
-      service.send('NEXT');
+      await service.send('NEXT');
       expect(service.state.context).toBe(3);
 
       // Third call to service.addOptions - access previous action via _legacy
@@ -449,11 +449,11 @@ describe('Legacy Options Access', () => {
         };
       });
 
-      service.send('NEXT');
+      await service.send('NEXT');
       expect(service.state.context).toBe(9);
     });
 
-    test('#03 => should access previous predicates via _legacy on service.addOptions', () => {
+    test('#03 => should access previous predicates via _legacy on service.addOptions', async () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -508,11 +508,11 @@ describe('Legacy Options Access', () => {
       service.start();
       expect(service.state.value).toBe('idle');
 
-      service.send('CHECK');
+      await service.send('CHECK');
       expect(service.state.value).toBe('positive');
     });
 
-    test('#04 => should handle cumulative legacy on service.addOptions', () => {
+    test('#04 => should handle cumulative legacy on service.addOptions', async () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -557,16 +557,16 @@ describe('Legacy Options Access', () => {
 
       service.start();
 
-      service.send('FIRST');
+      await service.send('FIRST');
       expect(service.state.context).toBe(5);
 
-      service.send('SECOND');
+      await service.send('SECOND');
       expect(service.state.context).toBe(25);
     });
   });
 
   describe('#08 => Service (Interpreter) provideOptions', () => {
-    test('#01 => should access previous actions via _legacy on service.provideOptions', () => {
+    test('#01 => should access previous actions via _legacy on service.provideOptions', async () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -618,14 +618,14 @@ describe('Legacy Options Access', () => {
       service3.start();
       expect(service3.state.context).toBe(1);
 
-      service3.send('ADD');
+      await service3.send('ADD');
       expect(service3.state.context).toBe(4);
 
-      service3.send('MULTIPLY');
+      await service3.send('MULTIPLY');
       expect(service3.state.context).toBe(8);
     });
 
-    test('#02 => should return new service instance with provideOptions', () => {
+    test('#02 => should return new service instance with provideOptions', async () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -659,16 +659,16 @@ describe('Legacy Options Access', () => {
 
       // service1 should not have the increment action defined
       service1.start();
-      service1.send('INCREMENT');
+      await service1.send('INCREMENT');
       expect(service1.state.context).toBe(0); // No change
 
       // service2 should have the increment action
       service2.start();
-      service2.send('INCREMENT');
+      await service2.send('INCREMENT');
       expect(service2.state.context).toBe(1);
     });
 
-    test('#03 => should chain provideOptions with cumulative legacy', () => {
+    test('#03 => should chain provideOptions with cumulative legacy', async () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -729,17 +729,17 @@ describe('Legacy Options Access', () => {
 
       service4.start();
 
-      service4.send('OP1');
+      await service4.send('OP1');
       expect(service4.state.context).toBe(1);
 
-      service4.send('OP2');
+      await service4.send('OP2');
       expect(service4.state.context).toBe(11);
 
-      service4.send('OP3');
+      await service4.send('OP3');
       expect(service4.state.context).toBe(111);
     });
 
-    test('#04 => should preserve context and pContext across provideOptions', () => {
+    test('#04 => should preserve context and pContext across provideOptions', async () => {
       const machine = createMachine(
         {
           initial: 'idle',
@@ -773,7 +773,7 @@ describe('Legacy Options Access', () => {
       service2.start();
       expect(service2.state.context).toBe(10);
 
-      service2.send('INCREMENT');
+      await service2.send('INCREMENT');
       expect(service2.state.context).toBe(15);
     });
   });

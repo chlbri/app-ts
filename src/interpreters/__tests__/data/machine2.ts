@@ -3,6 +3,7 @@ import { notU, typings } from '#utils';
 import { createConfig } from '#machines';
 import { createMachine } from '#machine';
 import { DELAY } from './constants';
+import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
 // #region machine2
 
@@ -41,9 +42,8 @@ export const config2 = createConfig({
               },
             },
             fetch: {
-              on: {
-                FETCH: '/working/fetch/idle',
-              },
+              entry: 'insertData',
+              always: '/working/fetch/idle',
             },
           },
         },
@@ -135,6 +135,11 @@ export const machine2 = createMachine(
     write: assign('context.input', {
       WRITE: ({ payload: { value } }) => value,
     }),
+    insertData: assign('context.data', ({ context }) =>
+      fakeDB
+        .filter(item => item.name.includes(context?.input ?? ''))
+        .map(item => item.name),
+    ),
   },
   predicates: {
     isInputEmpty: isValue('context.input', ''),
@@ -217,6 +222,11 @@ export const _machine2 = createMachine(
       write: assign('context.input', {
         WRITE: ({ payload: { value } }) => value,
       }),
+      insertData: assign('context.data', ({ context }) =>
+        fakeDB
+          .filter(item => item.name.includes(context?.input ?? ''))
+          .map(item => item.name),
+      ),
       debounce: batch(
         voidAction(() => console.log('Debounced action executed')),
         _debounce(

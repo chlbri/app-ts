@@ -122,7 +122,6 @@ describe('Composition', () => {
         exit: [],
         initial: 'state1',
         on: [],
-        promises: [],
         states: [
           {
             __id: 'state1',
@@ -134,7 +133,6 @@ describe('Composition', () => {
             exit: [],
             initial: 'state11',
             on: [],
-            promises: [],
             states: [
               {
                 __id: 'state11',
@@ -146,7 +144,6 @@ describe('Composition', () => {
                 exit: [],
                 initial: 'state111',
                 on: [],
-                promises: [],
                 states: [
                   {
                     __id: 'state111',
@@ -157,7 +154,6 @@ describe('Composition', () => {
                     entry: [],
                     exit: [],
                     on: [],
-                    promises: [],
                     states: [],
                     tags: [],
                     type: 'atomic',

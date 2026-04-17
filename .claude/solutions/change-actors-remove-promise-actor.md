@@ -14,8 +14,9 @@ kept inside the repo for durable reference.
 - **Make** the interpreter's action pipeline (`#performAction` →
   `#executeAction` → `#performActions`) async and sequentially awaited.
 - **Extend** every `addOptions` action helper that takes a user function
-  with an optional third `errorFn` parameter (skipped on `debounce`, which
-  stays sync-only; skipped on guards, which stay sync).
+  with an optional third `errorFn` parameter (skipped on guards, which stay sync).
+  `debounce` now also accepts `MaybeAsync` actions (the implementation already
+  uses `await fn(state)`; the `Action2` widening makes this possible).
 
 ## Locked Design Decisions
 
@@ -39,8 +40,11 @@ kept inside the repo for durable reference.
 2. **No transition-arm helper.** Users branch via try/catch + resend, or
    via `errorFn`.
 
-3. **Debounce stays synchronous** — `fn` parameter is `Action2` sync; no
-   async overload; compile error if an async fn is passed.
+3. **Debounce accepts MaybeAsync actions** — `fn` parameter is `Action2`,
+   which now returns `MaybeAsyncActionResult`. The implementation uses
+   `await fn(state)`, so async actions are supported without any extra overload.
+   No `errorFn` 3rd arg is added to `debounce` (the scheduled data pattern
+   means errors are propagated via the `_addError` channel as with any async action).
 
 4. **Version bump = v3.0.0** (breaking).
 
@@ -54,7 +58,7 @@ kept inside the repo for durable reference.
 | `filter`     | `(key, predicate)` | `<Err=any>(key, asyncPredicate, errorFn?)`                 |
 | `sendTo`     | `(machine?)(fn)`   | `(machine?)<Err=any>(asyncFn, errorFn?)`                   |
 | `erase`      | `(key)` — no fn    | — (no fn, no change)                                       |
-| `debounce`   | `(fn, { ms, id })` | ❌ sync-only; no async overload                            |
+| `debounce`   | `(fn, { ms, id })` | ✅ accepts async `fn` via `Action2` widening; no `errorFn` arg |
 | `resend`     | `(event)` — no fn  | —                                                          |
 | `forceSend`  | `(event)` — no fn  | —                                                          |
 | time helpers | `(id)` — no fn     | —                                                          |
@@ -90,7 +94,7 @@ kept inside the repo for durable reference.
 | `actors: { promises: { fetchUser: async () => … } }`           | `actions: { fetchUser: assign('user', async () => …, (err, s) => ({ context: { ...s.context, err } })) }` |
 | state: `{ promises: [{ src: 'fetchUser', resolves, catch }] }` | state: `{ entry: 'fetchUser' }`; branch via `errorFn` or try/catch + resend                               |
 | `PromiseeConfig`, `PromiseFunction`, `PromisesMap`             | removed                                                                                                   |
-| `debounce(async fn, …)`                                        | ❌ compile error — debounce is sync-only                                                                  |
+| `debounce(async fn, …)`                                        | ✅ now accepted — `Action2` widening makes async `fn` valid                                               |
 
 ## Verification Checklist
 

@@ -47,6 +47,7 @@ import { EventsR, ActorsConfigMap, ToEventObject } from '#events';
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import type { PredicateS } from '#guards';
 import cloneDeep from 'clone-deep';
+import { withTimeout } from '@bemedev/better-promise';
 import { assignByKey, expandFnMap } from './functions';
 import type {
   AddOptions_F,
@@ -655,19 +656,50 @@ class Machine<
         isDefined,
         isNotDefined,
 
-        assign: (key, fn) => {
-          const out = _any(expandFnMap)(
+        assign: (key, fn, options?) => {
+          if (!options) {
+            return _any(expandFnMap)(
+              this.#eventsMap,
+              this.#actorsMap,
+              _any(key),
+              fn,
+            );
+          }
+
+          const { error: errorFn, max } = options;
+          const _fn = reduceFnMap(
             this.#eventsMap,
             this.#actorsMap,
-            _any(key),
-            fn,
+            fn as any,
           );
 
-          return out;
+          return async ({ pContext, context, ...rest }) => {
+            const all = cloneDeep({ pContext, context });
+
+            const execute = async () => {
+              const rawResult = await _fn({ pContext, context, ...rest });
+              return assignByKey(all, _any(key), rawResult);
+            };
+
+            try {
+              if (max !== undefined) {
+                const tp = withTimeout(
+                  execute,
+                  `assign-${String(key)}`,
+                  max,
+                );
+                return await tp();
+              }
+              return await execute();
+            } catch (e) {
+              if (errorFn) return _any(errorFn)(e, { pContext, context });
+              throw e;
+            }
+          };
         },
 
         batch: (...fns) => {
-          return ({ context, pContext, ...rest }) => {
+          return async ({ context, pContext, ...rest }) => {
             const state = this.#cloneStateExtended({
               context,
               pContext,
@@ -675,44 +707,103 @@ class Machine<
             });
 
             let out: any;
-            fns
-              .filter(f => !!f)
-              .forEach(fn => {
-                if (!out) out = fn(state);
-                else out = fn({ ...out, ...rest });
-              });
+            for (const fn of fns.filter(f => !!f)) {
+              if (!out) out = await fn(state);
+              else out = await fn({ ...out, ...rest });
+            }
 
+            console.warn('out', '=>', out);
             return out;
           };
         },
 
-        filter: (key, fn) => {
-          return ({ context, pContext }) => {
-            const currentValue = getByKey.low({ context, pContext }, key);
+        filter: (key, fn, options?) => {
+          if (!options) {
+            return ({ context, pContext }) => {
+              const currentValue = getByKey.low(
+                { context, pContext },
+                key,
+              );
 
+              const predicate = fn as any;
+
+              let filteredValue: any;
+
+              if (Array.isArray(currentValue)) {
+                // Filter array elements
+                filteredValue = currentValue.filter(predicate);
+              } else if (
+                currentValue !== null &&
+                typeof currentValue === 'object'
+              ) {
+                // Filter object properties
+                filteredValue = Object.entries(currentValue).reduce(
+                  (acc, [objKey, value]) => {
+                    const check = predicate(value, currentValue);
+                    if (check) acc[objKey] = value;
+                    return acc;
+                  },
+                  {} as any,
+                );
+              }
+
+              return assignByKey(
+                { context, pContext },
+                key,
+                filteredValue,
+              );
+            };
+          }
+
+          const { error: errorFn, max } = options;
+
+          return async ({ context, pContext }) => {
+            const currentValue = getByKey.low({ context, pContext }, key);
             const predicate = fn as any;
 
-            let filteredValue: any;
+            const execute = async () => {
+              let filteredValue: any;
 
-            if (Array.isArray(currentValue)) {
-              // Filter array elements
-              filteredValue = currentValue.filter(predicate);
-            } else if (
-              currentValue !== null &&
-              typeof currentValue === 'object'
-            ) {
-              // Filter object properties
-              filteredValue = Object.entries(currentValue).reduce(
-                (acc, [objKey, value]) => {
-                  const check = predicate(value, currentValue);
-                  if (check) acc[objKey] = value;
-                  return acc;
-                },
-                {} as any,
+              if (Array.isArray(currentValue)) {
+                const checks = await Promise.all(
+                  currentValue.map((item, index, array) =>
+                    predicate(item, index, array),
+                  ),
+                );
+                filteredValue = currentValue.filter((_, i) => checks[i]);
+              } else if (
+                currentValue !== null &&
+                typeof currentValue === 'object'
+              ) {
+                const entries = Object.entries(currentValue);
+                filteredValue = {} as any;
+                for (const [objKey, value] of entries) {
+                  const keep = await predicate(value, currentValue);
+                  if (keep) filteredValue[objKey] = value;
+                }
+              }
+
+              return assignByKey(
+                { context, pContext },
+                key,
+                filteredValue,
               );
-            }
+            };
 
-            return assignByKey({ context, pContext }, key, filteredValue);
+            try {
+              if (max !== undefined) {
+                const tp = withTimeout(
+                  execute,
+                  `filter-${String(key)}`,
+                  max,
+                );
+                return await tp();
+              }
+              return await execute();
+            } catch (e) {
+              if (errorFn) return _any(errorFn)(e, { context, pContext });
+              throw e;
+            }
           };
         },
 
@@ -1075,19 +1166,49 @@ class Machine<
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _?: T,
   ) => {
-    return fn => {
-      const fn2 = reduceFnMap(this.eventsMap, this.#actorsMap, fn);
-      return ({ context, pContext, ...rest }) => {
+    return (fn, options?) => {
+      if (!options) {
+        const fn2 = reduceFnMap(this.eventsMap, this.#actorsMap, fn);
+        return ({ context, pContext, ...rest }) => {
+          const state = this.#cloneStateExtended({
+            context,
+            pContext,
+            ...rest,
+          });
+          const { event, to } = fn2(state) as any;
+
+          const sentEvent = { to, event };
+
+          return _any({ context, pContext, sentEvent });
+        };
+      }
+
+      const { error: errorFn, max } = options;
+
+      return async ({ context, pContext, ...rest }) => {
         const state = this.#cloneStateExtended({
           context,
           pContext,
           ...rest,
         });
-        const { event, to } = fn2(state);
 
-        const sentEvent = { to, event };
+        const execute = async () => {
+          const fn2 = reduceFnMap(this.eventsMap, this.#actorsMap, fn);
+          const { event, to } = (await fn2(state)) as any;
+          const sentEvent = { to, event };
+          return _any({ context, pContext, sentEvent });
+        };
 
-        return _any({ context, pContext, sentEvent });
+        try {
+          if (max !== undefined) {
+            const tp = withTimeout(execute, 'sendTo', max);
+            return await tp();
+          }
+          return await execute();
+        } catch (e) {
+          if (errorFn) return _any(errorFn)(e, { context, pContext });
+          throw e;
+        }
       };
     };
   };
@@ -1103,18 +1224,49 @@ class Machine<
    *
    * @see {@linkcode VoidAction_F}
    */
-  #voidAction: VoidAction_F<Eo, Pc, Tc, Ta> = fn => {
-    return ({ context, pContext, ...rest }) => {
-      if (fn) {
-        const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
-        const state = this.#cloneStateExtended({
-          context,
-          pContext,
-          ...rest,
-        });
-        _fn(state);
+  #voidAction: VoidAction_F<Eo, Pc, Tc, Ta> = (fn?, options?) => {
+    if (!options) {
+      return ({ context, pContext, ...rest }) => {
+        if (fn) {
+          const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
+          const state = this.#cloneStateExtended({
+            context,
+            pContext,
+            ...rest,
+          });
+          _fn(state);
+        }
+        return _any({ context, pContext });
+      };
+    }
+
+    const { error: errorFn, max } = options;
+
+    return async ({ context, pContext, ...rest }) => {
+      const state = this.#cloneStateExtended({
+        context,
+        pContext,
+        ...rest,
+      });
+
+      const execute = async () => {
+        if (fn) {
+          const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
+          await _fn(state);
+        }
+        return _any({ context, pContext });
+      };
+
+      try {
+        if (max !== undefined) {
+          const tp = withTimeout(execute, 'voidAction', max);
+          return await tp();
+        }
+        return await execute();
+      } catch (e) {
+        if (errorFn) return _any(errorFn)(e, { context, pContext });
+        throw e;
       }
-      return _any({ context, pContext });
     };
   };
 

@@ -32,7 +32,6 @@ import type {
   DelayedTransitions,
   TransitionConfig,
 } from '#transitions';
-import type { TimeoutPromise } from '@bemedev/better-promise';
 import type { Decompose } from '@bemedev/decompose';
 import type { Interval2, IntervalParams } from '@bemedev/interval2';
 import type { FnMapR, OptionalDefinition } from '~types';
@@ -94,7 +93,7 @@ export type PerformAction_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = (action: Action2<E, Pc, Tc, T>) => void;
+> = (action: Action2<E, Pc, Tc, T>) => Promise<void>;
 
 export type ToPredicate_F<
   E extends EventObject = EventObject,
@@ -132,7 +131,7 @@ export type ExecuteActivities_F = (
 export type PerformAfter_F = (
   from: string,
   after: DelayedTransitions,
-) => TimeoutPromise<string | false> | undefined;
+) => (() => Promise<string | false>) | undefined;
 
 export type TransitionAfterResult<
   Pc = any,
@@ -144,11 +143,13 @@ export type TransitionAfterResult<
     }
   | undefined;
 
-export type PerformAlway_F = (always: AlwaysConfig) => string | false;
+export type PerformAlway_F = (
+  always: AlwaysConfig,
+) => Promise<string | false>;
 
 export type Collected0 = {
-  after?: TimeoutPromise<string | false>;
-  always?: () => string | false;
+  after?: (() => Promise<string | false>) | undefined;
+  always?: () => Promise<string | false>;
 };
 
 export type Contexts<
@@ -161,11 +162,11 @@ export type Contexts<
 
 export type PerformTransition_F = (
   transition: TransitionConfig,
-) => string | false;
+) => Promise<string | false>;
 
 export type PerformTransitions_F = (
   ...transitions: TransitionConfig[]
-) => string | false;
+) => Promise<string | false>;
 
 export type SleepContexts_F = <
   Pc = any,
@@ -176,7 +177,7 @@ export type SleepContexts_F = <
 
 export type _Send_F<E extends EventObject> = (
   event: E,
-) => NodeConfig | undefined;
+) => Promise<NodeConfig | undefined>;
 
 export type AddSubscriber_F<
   E extends EventsMap = EventsMap,
@@ -240,7 +241,7 @@ export interface AnyInterpreter<
 
   subscribe: AddSubscriber_F<E, A, Tc, T>;
 
-  send: (event: EventArg<E>) => void;
+  send: (event: EventArg<E>) => Promise<void>;
   toActionFn: (action: ActionConfig) => any;
   toPredicateFn: (guard: GuardConfig) => any;
   toPromiseSrcFn: (src: string) => any;

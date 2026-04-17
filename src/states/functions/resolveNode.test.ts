@@ -23,7 +23,6 @@ test('resolveNode -> coverage', () => {
     children: [],
     emitters: [],
     on: [],
-    promises: [],
     states: [],
     tags: [],
     type: 'atomic',

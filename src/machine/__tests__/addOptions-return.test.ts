@@ -100,7 +100,7 @@ describe('Machine addOptions return', () => {
     expect(result?.delays).toBeDefined();
   });
 
-  test('#04 => should still add options to machine even when capturing return value', () => {
+  test('#04 => should still add options to machine even when capturing return value', async () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -135,7 +135,7 @@ describe('Machine addOptions return', () => {
     service.start();
     expect(service.state.context).toBe(0);
 
-    service.send('INCREMENT');
+    await service.send('INCREMENT');
     expect(service.state.context).toBe(1);
   });
 });
