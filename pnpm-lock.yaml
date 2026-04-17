@@ -99,9 +99,6 @@ importers:
       rolldown:
         specifier: 1.0.0-rc.16
         version: 1.0.0-rc.16
-      rollup:
-        specifier: ^4.60.1
-        version: 4.60.1
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
