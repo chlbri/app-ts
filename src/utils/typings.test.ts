@@ -28,7 +28,7 @@ describe('Coverage', () => {
 
     const record = transformPrimitiveObject(_record);
 
-    expectTypeOf(record).toEqualTypeOf<{
+    expectTypeOf(record).branded.toEqualTypeOf<{
       Arthur: 'toto';
       Benoît: 'toto';
       Charles: 'toto';
@@ -103,7 +103,7 @@ describe('Coverage', () => {
     );
 
     const result = transformPrimitiveObject(_du);
-    expectTypeOf(result).toEqualTypeOf<
+    expectTypeOf(result).branded.toEqualTypeOf<
       { type: 'a'; value: string } | { type: 'b'; value: number }
     >();
   });
@@ -117,7 +117,10 @@ describe('Coverage', () => {
     expect(_inter).toStrictEqual({ name: 'string', age: 'number' });
 
     const result = transformPrimitiveObject(_inter);
-    expectTypeOf(result).toEqualTypeOf<{ name: string; age: number }>();
+    expectTypeOf(result).branded.toEqualTypeOf<{
+      name: string;
+      age: number;
+    }>();
   });
 
   it('#13 => partial preserves entries and produces Partial type', () => {
@@ -126,7 +129,10 @@ describe('Coverage', () => {
     expect(_partial).toStrictEqual({ name: 'string', age: 'number' });
 
     const result = transformPrimitiveObject(_partial);
-    expectTypeOf(result).toEqualTypeOf<{ name?: string; age?: number }>();
+    expectTypeOf(result).branded.toEqualTypeOf<{
+      name?: string;
+      age?: number;
+    }>();
   });
 
   it('#14 => any returns value as-is', () => {
@@ -151,7 +157,9 @@ describe('Coverage', () => {
     const result = typings({ context: { name: 'string' } });
 
     expect(result.context).toStrictEqual({ name: undefined });
-    expectTypeOf(result.context).toEqualTypeOf<{ name: string }>();
+    expectTypeOf(result.context).branded.toEqualTypeOf<{
+      readonly name: string;
+    }>();
   });
 
   it('#18 => typings() with optional context field', () => {
@@ -160,7 +168,9 @@ describe('Coverage', () => {
     });
 
     expect(result.context).toStrictEqual({ label: undefined });
-    expectTypeOf(result.context).toEqualTypeOf<{ label?: string }>();
+    expectTypeOf(result.context).branded.toEqualTypeOf<{
+      readonly label?: string;
+    }>();
   });
 
   it('#19 => typings() with tuple eventsMap', () => {
@@ -171,9 +181,8 @@ describe('Coverage', () => {
       ),
     });
 
-    expectTypeOf(result.eventsMap).toEqualTypeOf<
-      | { type: 'CLICK' }
-      | { type: 'SUBMIT'; data: string }
+    expectTypeOf(result.eventsMap).branded.toEqualTypeOf<
+      { type: 'CLICK' } | { type: 'SUBMIT'; data: string }
     >();
   });
 
@@ -189,7 +198,7 @@ describe('Coverage', () => {
       count: undefined,
       active: undefined,
     });
-    expectTypeOf(result).toEqualTypeOf<{
+    expectTypeOf(result).branded.toEqualTypeOf<{
       name: string;
       count: number;
       active: boolean;
