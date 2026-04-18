@@ -2,6 +2,8 @@ import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 
+vi.useFakeTimers();
+
 describe('Machine batch action', () => {
   const machine = createMachine(
     {
@@ -43,7 +45,9 @@ describe('Machine batch action', () => {
         assign('context', ({ context }) => context + 1),
         assign('context', ({ context }) => context + 1),
         assign('context', ({ context }) => context + 1),
-        assign('context', ({ context }) => context + 3),
+        assign('context', async ({ context }) => context + 3, {
+          error: () => 4,
+        }),
         voidAction(() =>
           console.warn('Tricky, last action increment by 3'),
         ),
@@ -59,18 +63,18 @@ describe('Machine batch action', () => {
     expect(service.state.context).toBe(0);
   });
 
-  test('#02 => send INC1 event, context should be at 1', () => {
-    service.send('INC1');
+  test('#02 => send INC1 event, context should be at 1', async () => {
+    await service.send('INC1');
     expect(service.state.context).toBe(1);
   });
 
-  test('#03 => send INC2 event, context should be at 3', () => {
-    service.send('INC2');
+  test('#03 => send INC2 event, context should be at 3', async () => {
+    await service.send('INC2');
     expect(service.state.context).toBe(3);
   });
 
-  test('#04 => send INC5 event, context should be at 8', () => {
-    service.send('INC5');
-    expect(service.state.context).toBe(10);
+  test('#04 => send INC5 event, context should be at 10', async () => {
+    await service.send('INC5');
+    expect(service.context).toBe(10);
   });
 });

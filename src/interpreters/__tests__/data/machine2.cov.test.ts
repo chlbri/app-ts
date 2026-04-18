@@ -268,7 +268,7 @@ describe('machine coverage', () => {
       });
 
       describe('#34 => Check the service', () => {
-        test(...useIterator(1000, 1));
+        test(...useIterator(1004, 1));
         // describe(...useConsole(2));
       });
 

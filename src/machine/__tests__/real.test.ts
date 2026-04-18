@@ -966,7 +966,7 @@ describe('REAL LIFE TESTS', () => {
     const field = typings.any({
       label: 'string',
       type: fieldType,
-      options: typings.optional(['string']),
+      options: typings.optional(typings.array('string')),
       data: typings.optional(
         typings.partial({
           data: [csvData],
@@ -1038,7 +1038,7 @@ describe('REAL LIFE TESTS', () => {
       typings({
         context: typings.partial({
           lang,
-          fields: [field],
+          fields: typings.array(field),
           responses: typings.soa('string'),
           states: typings.partial({
             fields: state,

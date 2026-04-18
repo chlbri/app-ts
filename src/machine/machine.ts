@@ -18,7 +18,6 @@ import {
   isValue,
   type DefinedValue,
 } from '#guards';
-import { type PromiseFunction } from '#promises';
 import type {
   State,
   StateExtended,
@@ -48,6 +47,7 @@ import { EventsR, ActorsConfigMap, ToEventObject } from '#events';
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import type { PredicateS } from '#guards';
 import cloneDeep from 'clone-deep';
+import { withTimeout } from '@bemedev/better-promise';
 import { assignByKey, expandFnMap } from './functions';
 import type {
   AddOptions_F,
@@ -437,42 +437,12 @@ class Machine<
   /**
    * @deprecated
    *
-   * This property provides any promise key for this {@linkcode Machine} as a type.
-   *
-   * @remarks Used for typing purposes only.
-   */
-  get __src() {
-    return this.#typingsByKey('promises');
-  }
-
-  /**
-   * @deprecated
-   *
    * This property provides any child key for this {@linkcode Machine} as a type.
    *
    * @remarks Used for typing purposes only.
    */
   get __childKey() {
     return this.#typingsByKey('children');
-  }
-
-  /**
-   * @deprecated
-   *
-   * This property provides the promise function for this {@linkcode Machine} as a type.
-   *
-   * @remarks Used for typing purposes only.
-   *
-   * @see {@linkcode PromiseFunction}
-   * @see {@linkcode ActorsConfigMap}
-   * @see {@linkcode PrimitiveObject}
-   * @see {@linkcode E}
-   * @see {@linkcode A}
-   * @see {@linkcode Pc}
-   * @see {@linkcode Tc}
-   */
-  get __promise() {
-    return _unknown<PromiseFunction<Eo, Pc, Tc, Ta>>();
   }
 
   /**
@@ -600,10 +570,6 @@ class Machine<
     return this.#delays;
   }
 
-  get promises(): NotUndefined<Mo['actors']>['promises'] {
-    return this.#actors?.promises;
-  }
-
   get children() {
     return this.#actors?.children;
   }
@@ -654,9 +620,6 @@ class Machine<
   #addDelays = (delays?: Mo['delays']) =>
     (this.#delays = merge(this.#delays, delays));
 
-  #addPromises = (promises?: NotUndefined<Mo['actors']>['promises']) =>
-    (this.#actors = merge(this.#actors, { promises }));
-
   #addChildren = (children?: NotUndefined<Mo['actors']>['children']) =>
     (this.#actors = merge(this.#actors, { children }));
 
@@ -693,19 +656,61 @@ class Machine<
         isDefined,
         isNotDefined,
 
-        assign: (key, fn) => {
-          const out = _any(expandFnMap)(
+        assign: (key, fn, options?) => {
+          if (!options) {
+            return _any(expandFnMap)(
+              this.#eventsMap,
+              this.#actorsMap,
+              _any(key),
+              fn,
+            );
+          }
+
+          const { error: errorFn, max } = options;
+          const _fn = reduceFnMap(
             this.#eventsMap,
             this.#actorsMap,
-            _any(key),
-            fn,
+            fn as any,
           );
 
-          return out;
+          return async ({ pContext, context, event, ...rest }) => {
+            const all = cloneDeep({ pContext, context });
+
+            const execute = async () => {
+              const rawResult = await _fn({
+                pContext,
+                context,
+                event,
+                ...rest,
+              });
+              return assignByKey(all, _any(key), rawResult);
+            };
+
+            try {
+              if (max !== undefined) {
+                const tp = withTimeout(
+                  execute,
+                  `assign-${String(key)}`,
+                  max,
+                );
+                return await tp();
+              }
+              return await execute();
+            } catch (e: any) {
+              const rawResult = errorFn({
+                context,
+                pContext,
+                payload: e,
+                ...rest,
+              });
+
+              return assignByKey(all, _any(key), rawResult);
+            }
+          };
         },
 
         batch: (...fns) => {
-          return ({ context, pContext, ...rest }) => {
+          return async ({ context, pContext, ...rest }) => {
             const state = this.#cloneStateExtended({
               context,
               pContext,
@@ -713,13 +718,10 @@ class Machine<
             });
 
             let out: any;
-            fns
-              .filter(f => !!f)
-              .forEach(fn => {
-                if (!out) out = fn(state);
-                else out = fn({ ...out, ...rest });
-              });
-
+            for (const fn of fns.filter(f => !!f)) {
+              if (!out) out = await fn(state);
+              else out = await fn({ ...out, ...rest });
+            }
             return out;
           };
         },
@@ -768,13 +770,13 @@ class Machine<
         sendTo,
 
         debounce: (fn, { id, ms = 100 }) => {
-          return ({ context, pContext, ...rest }) => {
+          return async ({ context, pContext, ...rest }) => {
             const state = this.#cloneStateExtended({
               context,
               pContext,
               ...rest,
             });
-            const data = fn(state);
+            const data = await fn(state);
 
             const scheduled: ScheduledData<Pc, Tc> = { data, ms, id };
 
@@ -831,7 +833,6 @@ class Machine<
     this.#addActions(out?.actions);
     this.#addPredicates(out?.predicates);
     this.#addDelays(out?.delays);
-    this.#addPromises(out?.actors?.promises);
     this.#addChildren(out?.actors?.children);
     this.#addEmitters(out?.actors?.emitters);
 
@@ -939,7 +940,6 @@ class Machine<
     out.#addPredicates(predicates);
     out.#addActions(actions);
     out.#addDelays(delays);
-    out.#addPromises(actors?.promises);
     out.#addChildren(actors?.children);
     out.#addEmitters(actors?.emitters);
 
@@ -1115,19 +1115,57 @@ class Machine<
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _?: T,
   ) => {
-    return fn => {
-      const fn2 = reduceFnMap(this.eventsMap, this.#actorsMap, fn);
-      return ({ context, pContext, ...rest }) => {
+    return (fn, options?) => {
+      if (!options) {
+        const fn2 = reduceFnMap(this.eventsMap, this.#actorsMap, fn);
+        return ({ context, pContext, ...rest }) => {
+          const state = this.#cloneStateExtended({
+            context,
+            pContext,
+            ...rest,
+          });
+          const { event, to } = fn2(state) as any;
+
+          const sentEvent = { to, event };
+
+          return _any({ context, pContext, sentEvent });
+        };
+      }
+
+      const { error: errorFn, max } = options;
+
+      return async ({ context, pContext, event, ...rest }) => {
+        const out = _any({ context, pContext });
         const state = this.#cloneStateExtended({
           context,
           pContext,
+          event,
           ...rest,
         });
-        const { event, to } = fn2(state);
 
-        const sentEvent = { to, event };
+        const execute = async () => {
+          const fn2 = reduceFnMap(this.eventsMap, this.#actorsMap, fn);
+          const { event, to } = (await fn2(state)) as any;
+          const sentEvent = { to, event };
+          return _any({ ...out, sentEvent });
+        };
 
-        return _any({ context, pContext, sentEvent });
+        try {
+          if (max !== undefined) {
+            const tp = withTimeout(execute, 'sendTo', max);
+            return await tp();
+          }
+          return await execute();
+        } catch (e: any) {
+          errorFn({
+            context,
+            pContext,
+            payload: e,
+            ...rest,
+          });
+
+          return out;
+        }
       };
     };
   };
@@ -1143,9 +1181,9 @@ class Machine<
    *
    * @see {@linkcode VoidAction_F}
    */
-  #voidAction: VoidAction_F<Eo, Pc, Tc, Ta> = fn => {
-    return ({ context, pContext, ...rest }) => {
-      if (fn) {
+  #voidAction: VoidAction_F<Eo, Pc, Tc, Ta> = (fn, options?) => {
+    if (!options) {
+      return ({ context, pContext, ...rest }) => {
         const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
         const state = this.#cloneStateExtended({
           context,
@@ -1153,8 +1191,44 @@ class Machine<
           ...rest,
         });
         _fn(state);
+
+        return _any({ context, pContext });
+      };
+    }
+
+    const { error: errorFn, max } = options;
+
+    return async ({ context, pContext, event, ...rest }) => {
+      const out = _any({ context, pContext });
+      const state = this.#cloneStateExtended({
+        context,
+        pContext,
+        event,
+        ...rest,
+      });
+
+      const execute = async () => {
+        const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
+        await _fn(state);
+        return out;
+      };
+
+      try {
+        if (max !== undefined) {
+          const tp = withTimeout(execute, 'voidAction', max);
+          return await tp();
+        }
+        return await execute();
+      } catch (e: any) {
+        errorFn({
+          context,
+          pContext,
+          payload: e,
+          ...rest,
+        });
+
+        return out;
       }
-      return _any({ context, pContext });
     };
   };
 

@@ -38,6 +38,7 @@ describe('Simple Machine2 (from Machine1)', () => {
 
         return tupleOf(invite, () => {
           expect(mockFn).toHaveBeenCalledWith('Complete action executed');
+          mockFn.mockClear();
         });
       },
     }),

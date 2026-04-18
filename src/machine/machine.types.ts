@@ -1,7 +1,12 @@
 import type { Action2, ActionConfig, ActionResult } from '#actions';
 
 import type { DefinedValue } from '#guards';
-import type { NodeConfig, StateExtended, StateValue } from '#states';
+import type {
+  NodeConfig,
+  StateExtended,
+  StatePextended,
+  StateValue,
+} from '#states';
 import type { Decompose } from '@bemedev/decompose';
 
 import type {
@@ -23,6 +28,25 @@ import type {
   EventsMapFrom,
   SimpleMachineOptions2,
 } from './types';
+/**
+ * Options for async action helpers.
+ * - `error`: called with the thrown error and current context snapshot when
+ *   the async function rejects. Its return value is merged as the ActionResult.
+ *   When omitted, the rejection propagates to the interpreter's `_addError` channel.
+ * - `max`: maximum milliseconds before the async action is forcibly aborted via
+ *   `TimeoutPromise`. When omitted, no timeout is applied.
+ */
+export type AsyncOptions<
+  Err extends PrimitiveObject = PrimitiveObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  R = any,
+> = {
+  error: (state: StatePextended<Err, Pc, Tc, T>) => R;
+  max?: number;
+};
+
 /**
  * Types for all meaningful elements of the machine.
  *
@@ -90,7 +114,6 @@ export interface AnyMachine<
   actions: any;
   predicates: any;
   delays: any;
-  promises: any;
   children: any;
   renew: any;
   initialConfig: NodeConfig;
@@ -115,9 +138,14 @@ export type AssignAction_F<
     { object: 'both'; start: false; sep: '.' }
   >,
   K extends keyof D = keyof D,
+  F extends D[K] | Promise<D[K]> = D[K] | Promise<D[K]>,
+  Err extends PrimitiveObject = PrimitiveObject,
 >(
   key: K,
-  fn: FnMap<E, Pc, Tc, T, D[K]>,
+  fn: FnMap<E, Pc, Tc, T, F>,
+  ...args: F extends Promise<D[K]>
+    ? [AsyncOptions<Err, Pc, Tc, T, D[K] | void>]
+    : []
 ) => Action2<E, Pc, Tc, T>;
 
 export type ResendAction_F<
@@ -139,7 +167,15 @@ export type VoidAction_F<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = (fn?: FnMap<E, Pc, Tc, T, void>) => Action2<E, Pc, Tc, T>;
+> = <
+  F extends void | Promise<void> = void | Promise<void>,
+  Err extends PrimitiveObject = PrimitiveObject,
+>(
+  fn: FnMap<E, Pc, Tc, T, F>,
+  ...args: F extends Promise<void>
+    ? [AsyncOptions<Err, Pc, Tc, T, void>]
+    : []
+) => Action2<E, Pc, Tc, T>;
 
 export type ByKey_F<
   E extends EventObject = EventObject,
@@ -213,14 +249,21 @@ export type SendAction_F<
   T extends string = string,
 > = <M extends AnyMachine>(
   _?: M,
-) => (
-  fn: FnMap<
-    E,
-    Pc,
-    Tc,
-    T,
-    { to: string; event: EventArg<EventsMapFrom<M>> }
-  >,
+) => <
+  F extends
+    | { to: string; event: EventArg<EventsMapFrom<M>> }
+    | Promise<{ to: string; event: EventArg<EventsMapFrom<M>> }> =
+    | { to: string; event: EventArg<EventsMapFrom<M>> }
+    | Promise<{ to: string; event: EventArg<EventsMapFrom<M>> }>,
+  Err extends PrimitiveObject = PrimitiveObject,
+>(
+  fn: FnMap<E, Pc, Tc, T, F>,
+  ...args: F extends Promise<{
+    to: string;
+    event: EventArg<EventsMapFrom<M>>;
+  }>
+    ? [AsyncOptions<Err, Pc, Tc, T, void>]
+    : []
 ) => Action2<E, Pc, Tc, T>;
 
 export type ValueCheckerGuard_F<
@@ -392,9 +435,4 @@ export type _ActionTypes =
 
 export type ActionTypes = `actions.${_ActionTypes}`;
 
-export type AppTypes =
-  | ActionTypes
-  | 'guards'
-  | 'pContext'
-  | 'context'
-  | 'promisees';
+export type AppTypes = ActionTypes | 'guards' | 'pContext' | 'context';

@@ -2,7 +2,7 @@ import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 
-describe('Interpreter addOptions return', () => {
+describe.concurrent('Interpreter addOptions return', () => {
   test('#01 => should return the options object from service.addOptions', () => {
     const machine = createMachine(
       {
@@ -106,7 +106,7 @@ describe('Interpreter addOptions return', () => {
     expect(result?.delays).toBeDefined();
   });
 
-  test('#04 => should still add options to service even when capturing return value', () => {
+  test('#04 => should still add options to service even when capturing return value', async () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -142,11 +142,11 @@ describe('Interpreter addOptions return', () => {
     service.start();
     expect(service.state.context).toBe(0);
 
-    service.send('INCREMENT');
+    await service.send('INCREMENT');
     expect(service.state.context).toBe(1);
   });
 
-  test('#05 => should return consistent type across multiple addOptions calls', () => {
+  test('#05 => should return consistent type across multiple addOptions calls', async () => {
     const machine = createMachine(
       {
         initial: 'idle',
@@ -192,10 +192,10 @@ describe('Interpreter addOptions return', () => {
 
     // Verify both work
     service.start();
-    service.send('FIRST');
+    await service.send('FIRST');
     expect(service.state.context).toBe(1);
 
-    service.send('SECOND');
+    await service.send('SECOND');
     expect(service.state.context).toBe(11);
   });
 });

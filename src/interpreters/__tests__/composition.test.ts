@@ -122,7 +122,6 @@ describe('Composition', () => {
         exit: [],
         initial: 'state1',
         on: [],
-        promises: [],
         states: [
           {
             __id: 'state1',
@@ -134,7 +133,6 @@ describe('Composition', () => {
             exit: [],
             initial: 'state11',
             on: [],
-            promises: [],
             states: [
               {
                 __id: 'state11',
@@ -146,7 +144,6 @@ describe('Composition', () => {
                 exit: [],
                 initial: 'state111',
                 on: [],
-                promises: [],
                 states: [
                   {
                     __id: 'state111',
@@ -157,7 +154,6 @@ describe('Composition', () => {
                     entry: [],
                     exit: [],
                     on: [],
-                    promises: [],
                     states: [],
                     tags: [],
                     type: 'atomic',
@@ -435,7 +431,6 @@ describe('Composition', () => {
   describe('#06 => Coverage getCollected0', () => {
     const inc = vi.fn().mockReturnValue({ pContext: {}, context: {} });
     const inc2 = vi.fn().mockReturnValue({ pContext: {}, context: {} });
-    const src = vi.fn(() => Promise.resolve(undefined));
 
     const machine = createMachine(
       {
@@ -445,12 +440,6 @@ describe('Composition', () => {
             after: {
               DELAY: { actions: 'inc2' },
             },
-            actors: {
-              src: {
-                resolves: { actions: 'inc' },
-                catch: { actions: 'inc' },
-              },
-            },
           },
         },
       },
@@ -459,9 +448,6 @@ describe('Composition', () => {
         context: { iterator: 0 },
         actorsMap: {
           ...defaultT.actorsMap,
-          promisees: {
-            src: { resolves: undefined, catch: undefined },
-          },
         },
       },
     ).provideOptions(() => ({
@@ -471,11 +457,6 @@ describe('Composition', () => {
       },
       delays: {
         DELAY: 1000,
-      },
-      actors: {
-        promises: {
-          src,
-        },
       },
     }));
 
@@ -487,30 +468,25 @@ describe('Composition', () => {
     test('#00 => Reset all mocks', () => {
       inc.mockClear();
       inc2.mockClear();
-      src.mockClear();
     });
 
     test('#01 => Start the service', () => {
       service.start();
     });
 
-    test('#02 => src is called 1 times', () => {
-      expect(src).toBeCalledTimes(1);
-    });
-
-    test('#03 => inc2 is not called', () => {
+    test('#02 => inc2 is not called', () => {
       expect(inc2).toBeCalledTimes(0);
     });
 
-    test('#04 => Wait 0', () => {
+    test('#03 => Wait 0', () => {
       return vi.advanceTimersByTimeAsync(1000);
     });
 
-    test('#05 => inc2 is called', () => {
+    test('#04 => inc2 is called', () => {
       expect(inc2).toBeCalledTimes(1);
     });
 
-    test('#06 => dispose', service.dispose);
+    test('#05 => dispose', service.dispose);
   });
 
   describe('#07 => sender', () => {

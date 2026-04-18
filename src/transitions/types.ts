@@ -6,21 +6,12 @@ import type {
   Require,
 } from '#bemedev/globals/types';
 import type { EventObject } from '#events';
-import type {
-  ExtractActionsFromFinally,
-  ExtractActionKeysFromPromisee,
-  ExtractGuardKeysFromPromisee,
-  ExtractMaxFromPromisee,
-  GetEventKeysFromPromisee,
-  Promisee,
-} from '#promises';
 import type { Observable } from 'rxjs';
 import type { Action, ActionConfig, FromActionConfig } from '#actions';
 import type {
   ActorConfig,
   ChildConfig,
   EmitterConfig,
-  PromiseeConfig,
 } from '../actor.types';
 import type { FromGuard, GuardConfig, Predicate } from '#guards';
 
@@ -245,9 +236,7 @@ export type GetEventKeysFromActor<T> = T extends EmitterConfig
   ? GetEventKeysFromEmitter<T>
   : T extends ChildConfig
     ? GetEventKeysFromMachineConfig<T>
-    : T extends PromiseeConfig
-      ? GetEventKeysFromPromisee<T>
-      : never;
+    : never;
 
 export type GetEventKeysFromTransitions<T> =
   | ('on' extends keyof T
@@ -282,10 +271,7 @@ export type GetEventKeysFromTransitions<T> =
  * @see {@linkcode NotUndefined} for ensuring the type is not undefined.
  */
 export type ExtractDelayKeysFromTransitions<T extends TransitionsConfig> =
-  | ExtractMaxFromPromisee<
-      Extract<ReduceArray<T['actors']>, { max: string }>
-    >
-  | (T['after'] extends undefined ? never : keyof T['after']);
+  T['after'] extends undefined ? never : keyof T['after'];
 
 type _ExtractActionsFromMap<T> = ExtractActionsFromTransition<
   Extract<
@@ -294,10 +280,20 @@ type _ExtractActionsFromMap<T> = ExtractActionsFromTransition<
   >
 >;
 
+/**
+ * Extracts actions from the finally part of a completion configuration.
+ */
+type _ExtractActionsFromFinally<T> =
+  ReduceArray<T> extends infer Tr
+    ? Tr extends ActionConfig
+      ? FromActionConfig<Tr>
+      : _ExtractActionsFromMap<Tr>
+    : never;
+
 export type ExtractActionKeysFromEmitter<T extends EmitterConfig> =
   | _ExtractActionsFromMap<T['next']>
   | _ExtractActionsFromMap<T['error']>
-  | ExtractActionsFromFinally<NotUndefined<T['complete']>>;
+  | _ExtractActionsFromFinally<NotUndefined<T['complete']>>;
 
 export type ExtractActionKeysFromChild<T extends ChildConfig> =
   ExtractActionKeysFromDelayed<T['on']>;
@@ -306,9 +302,7 @@ export type ExtractActionKeysFromActor<T> = T extends EmitterConfig
   ? ExtractActionKeysFromEmitter<T>
   : T extends ChildConfig
     ? ExtractActionKeysFromChild<T>
-    : T extends PromiseeConfig
-      ? ExtractActionKeysFromPromisee<T>
-      : never;
+    : never;
 /**
  * Extracts actions keys from a {@linkcode TransitionsConfig}.
  *
@@ -358,9 +352,7 @@ export type ExtractGuardsKeysFromActor<T> = T extends EmitterConfig
   ? ExtractGuardKeysFromEmitter<T>
   : T extends ChildConfig
     ? ExtractGuardsKeysFromChild<T>
-    : T extends PromiseeConfig
-      ? ExtractGuardKeysFromPromisee<T>
-      : never;
+    : never;
 
 /**
  * Extracts guard keys from a {@linkcode TransitionsConfig}.
@@ -399,19 +391,6 @@ export type ExtractSrcKeyFromTransitions<
 > = {
   [K in keyof A]: A[K] extends Filter ? K : never;
 }[keyof A];
-
-/**
- * Extracts source keys from a {@linkcode TransitionsConfig}.
- *
- * @template : {@linkcode TransitionsConfig} [T] - The transitions configuration type.
- * @returns The source keys extracted from the transitions configuration.
- *
- * @see {@linkcode NotUndefined} for ensuring the type is not undefined.
- * @see {@linkcode ReduceArray} for reducing arrays to their elements.
- * */
-export type ExtractPromiseeSrcKeyFromTransitions<
-  T extends TransitionsConfig,
-> = ExtractSrcKeyFromTransitions<T, { resolves: any }>;
 
 export type ExtractEmitterSrcKeyFromTransitions<
   T extends TransitionsConfig,
@@ -472,12 +451,10 @@ export type Emiter4<
  * Represents all transitions inside a state config with full defined functions.
  *
  * @template : {@linkcode EventsMap} [E] - The events map used in the transitions.
- * @template : {@linkcode PromiseeMap} [P] - The promisees map used in the transitions.
  * @template : [Pc] - The private context type for the transitions.
  * @template : {@linkcode PrimitiveObject} [Tc] - The context for the transitions
  *
  * @see {@linkcode Transition} for the structure of a single transition.
- * @see {@linkcode Promisee} for the structure of promises in the transitions.
  * @see {@linkcode Identify} for identifying properties in the transitions.
  */
 export type Transitions<
@@ -489,7 +466,6 @@ export type Transitions<
   on: Identify<Transition<E, Pc, Tc, T>>[];
   always: Transition<E, Pc, Tc, T>[];
   after: Identify<Transition<E, Pc, Tc, T>>[];
-  promises: Promisee<E, Pc, Tc, T>[];
   emitters: Emitter<E, Pc, Tc, T>[];
   children: Child<E, Pc, Tc, T>[];
 };

@@ -8,7 +8,6 @@ import type {
   EventsMapFrom,
   GuardKeysFrom,
   PrivateContextFrom,
-  PromiseKeysFrom,
 } from '../../machine/types';
 import type { Config3, Machine3 } from './data/machine3';
 
@@ -79,29 +78,15 @@ expectTypeOf<ActionKeys>().branded.toEqualTypeOf<
   | 'dodo6'
   | 'dodo7'
   | 'doré3'
-  | 'action1'
-  | 'action14'
-  | 'action13'
-  | 'action22'
-  | 'action4'
-  | 'action3'
-  | 'action15'
-  | 'action12'
-  | 'action20'
 >();
 
 type GuardKeys = GuardKeysFrom<Machine3>;
-expectTypeOf<GuardKeys>().toEqualTypeOf<
-  'guard' | 'guard2' | 'ert' | 'guar34' | 'guard4'
->();
+expectTypeOf<GuardKeys>().toEqualTypeOf<'guard2'>();
 
 type DelayKeys = DelayKeysFrom<Machine3>;
 expectTypeOf<DelayKeys>().toEqualTypeOf<
   'DELAY' | 'DELAY2' | 'DELAY3' | 'DELAY5' | 'DELAY17'
 >();
-
-type PromiseKeys = PromiseKeysFrom<Machine3>;
-expectTypeOf<PromiseKeys>().toEqualTypeOf<'promise1' | 'promise2'>();
 
 type MachineKeys = ChildrenKeysFrom<Machine3>;
 expectTypeOf<MachineKeys>().toEqualTypeOf<'machine1'>();

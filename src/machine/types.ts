@@ -16,16 +16,10 @@ import type {
   ActorsConfigMap,
   EventObject,
   EventsMap,
-  PromiseeDef,
   ToEventObject,
   ToEvents,
 } from '#events';
 import type { PredicateS, PredicateS2 } from '#guards';
-import type {
-  PromiseFunction,
-  PromiseFunction2,
-  PromiseReturn,
-} from '#promises';
 import type {
   ActivityConfig,
   BaseConfig,
@@ -44,7 +38,6 @@ import type {
   ExtractDelayKeysFromTransitions,
   ExtractEmitterSrcKeyFromTransitions,
   ExtractGuardKeysFromTransitions,
-  ExtractPromiseeSrcKeyFromTransitions,
   Transition,
   TransitionsConfig,
 } from '#transitions';
@@ -217,24 +210,6 @@ type _GetKeyGuardsFromFlat<Flat extends FlatMapN> = {
     : never;
 }[keyof Flat];
 
-/**
- * Type representing all promise keys from a flat map of nodes.
- * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes
- * @returns A type representing all promise keys from this flat map.
- *
- * @see {@linkcode TransitionsConfig} for the structure of transitions.
- * @see {@linkcode ExtractPromiseeSrcKeyFromTransitions} for extracting promise keys from transitions.
- */
-type _GetPromiseeSrcKeysFromFlat<Flat extends FlatMapN> = {
-  [key in keyof Flat]: ExtractPromiseeSrcKeyFromTransitions<
-    Extract<Flat[key], TransitionsConfig>
-  > extends infer V
-    ? unknown extends V
-      ? never
-      : V
-    : never;
-}[keyof Flat];
-
 type _GetEmitterSrcKeyFromFlat<Flat extends FlatMapN> = {
   [key in keyof Flat]: ExtractEmitterSrcKeyFromTransitions<
     Extract<Flat[key], TransitionsConfig>
@@ -321,25 +296,6 @@ export type GetGuardsFromFlat<
   T extends string = string,
 > = Record<_GetKeyGuardsFromFlat<Flat>, PredicateS<E, Pc, Tc, T>>;
 
-export type GetPromiseSrcsFromFlat<
-  Flat extends FlatMapN,
-  E extends EventObject = EventObject,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  T extends string = string,
-> = {
-  [key in _GetPromiseeSrcKeysFromFlat<Flat>]: PromiseFunction<
-    E,
-    Pc,
-    Tc,
-    T,
-    {
-      eventsMap: NotUndefined<A['children']>[key];
-    }
-  >;
-};
-
 export type GetEmitterSrcsKeyFromFlat<
   Flat extends FlatMapN,
   A extends ActorsConfigMap = ActorsConfigMap,
@@ -348,11 +304,6 @@ export type GetEmitterSrcsKeyFromFlat<
     EmitterReturn<key, A>
   >;
 };
-
-/* Record<
-  _GetPromiseeSrcKeyFromFlat<Flat>,
-  PromiseFunction<E, A, Pc, Tc>
-> */
 
 /**
  * Provide a record of all delays by key and {@linkcode DelayFunction} function.
@@ -411,61 +362,6 @@ export type GetEventsFromConfig<C extends Config> = GetEventsFromFlat<
  */
 export type GetEventsFromMachine<T extends KeyU<'config'>> =
   GetEventsFromConfig<ConfigFrom<T>>;
-
-/**
- * Provide a record of all promises by key and {@linkcode PromiseeDef} type.
- *
- * @template : {@linkcode FlatMapN} [Flat] - type of the flat map of nodes
- *
- * @see {@linkcode _GetPromiseeSrcKeysFromFlat} for extracting promise keys from the flat map.
- */
-export type GetPromiseesSrcKeyFromFlat<Flat extends FlatMapN> = Record<
-  _GetPromiseeSrcKeysFromFlat<Flat>,
-  PromiseeDef
->;
-
-export type GetPromisesFromFlat<
-  Flat extends FlatMapN,
-  E extends EventObject = EventObject,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Pc = any,
-  Tc extends PrimitiveObject = PrimitiveObject,
-  T extends string = string,
-> = {
-  [key in _GetPromiseeSrcKeysFromFlat<Flat>]?: PromiseFunction<
-    E,
-    Pc,
-    Tc,
-    T,
-    PromiseReturn<key, A>
-  >;
-};
-
-/**
- * Get all promises from a machine config.
- *
- * @template : {@linkcode Config} [C] - type of the machine config
- * @returns A type representing all promises from the machine config.
- *
- * @see {@linkcode FlatMapN} for the flat map structure.
- * @see {@linkcode GetPromiseesSrcKeyFromFlat} for extracting promises from the flat map.
- * @see {@linkcode FlatMapN} for extracting the config from a machine config.
- */
-export type GetPromiseeSrcKeysFromConfig<C extends Config> =
-  GetPromiseesSrcKeyFromFlat<FlatMapN<C>>;
-
-/**
- * Get all promises from a machine.
- *
- * @template : {@linkcode KeyU}<'config'> [T] - type of the machine
- *
- * @returns A type representing all promises from the machine.
- *
- * @see {@linkcode ConfigFrom} for extracting the config from the machine.
- * @see {@linkcode GetPromiseeSrcKeysFromConfig} for extracting promises from the machine.
- */
-export type GetPromiseesSrcFromMachine<T extends KeyU<'config'>> =
-  GetPromiseeSrcKeysFromConfig<ConfigFrom<T>>;
 
 export type GetEmittersSrcKeyFromFlat<Flat extends FlatMapN> = Record<
   _GetEmitterSrcKeyFromFlat<Flat>,
@@ -592,7 +488,6 @@ export type GetActorsFromFlat<
 > = {
   children: Partial<GetChildrenSrcFromFlat<Flat, E, A, Pc, Tc, T>>;
   emitters: Partial<GetEmittersSrcFromFlat<Flat, E, A, Pc, Tc, T>>;
-  promises: Partial<GetPromisesFromFlat<Flat, E, A, Pc, Tc, T>>;
 };
 
 export type GetActorsFromConfig<
@@ -616,7 +511,6 @@ export type GetActorsFromMachine<
 export type GetActorsSrcKeysFromFlat<Flat extends FlatMapN> = {
   children: GetChildrenSrcKeysFromFlat<Flat>;
   emitters: GetEmittersSrcKeyFromFlat<Flat>;
-  promisees: GetPromiseesSrcKeyFromFlat<Flat>;
 };
 
 export type Recomposer<P extends Keys> =
@@ -634,7 +528,6 @@ export type GetActorsSrcKeysFromFlat2<
     [key in G['src']]: Record<Extract<G, { src: key }>['on'], any>;
   };
   emitters: GetEmittersSrcKeyFromFlat<Flat>;
-  promisees: GetPromiseesSrcKeyFromFlat<Flat>;
   pContext: Recomposer<G['contexts'][keyof G['contexts']]>;
 };
 
@@ -960,29 +853,6 @@ export type DelayFnFrom<T extends KeyU<'__delay'>> = NotUndefined<
 >;
 
 /**
- * Get all promises map from a machine.
- *
- * @template : {@linkcode KeyU}<'promises'> [T] - type of the machine promises map.
- *
- * @see {@linkcode NotUndefined} for ensuring the promises map is not undefined.
- */
-export type PromisesMapFrom<T extends KeyU<'promises'>> = NotUndefined<
-  T['promises']
->;
-
-/**
- * Get the promise keys from a machine.
- *
- * @template : {@linkcode KeyU}<'promises'> [T] - type of the machine promises map.
- *
- * @see {@linkcode NotUndefined} for ensuring the promises map is not undefined.
- * @see {@linkcode PromisesMapFrom} for extracting promises from the machine.
- */
-export type PromiseKeysFrom<T extends KeyU<'__src'>> = NotUndefined<
-  T['__src']
->;
-
-/**
  * Get the machines map from a machine.
  *
  * @template : {@linkcode KeyU}<'machines'> [T] - type of the machine machines map.
@@ -1024,7 +894,6 @@ export type SimpleMachineOptions<
   actors: Partial<{
     children: RecordS<ChildFunction2<Eo, Pc, Tc, T>>;
     emitters: EmittersMap<Eo, Pc, Tc, T>;
-    promises: RecordS<PromiseFunction2<Eo, Pc, Tc, T>>;
   }>;
 }>;
 
@@ -1044,7 +913,6 @@ export type SimpleMachineOptions2 = Partial<
       {
         children?: RecordS<any>;
         emitters?: RecordS<any>;
-        promises?: RecordS<any>;
       }
     >
 >;

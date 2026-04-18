@@ -49,12 +49,12 @@ export type ExpandFnMap = <
 export const expandFnMap: ExpandFnMap = (events, promisees, key, fn) => {
   const _fn = reduceFnMap(events, promisees, fn);
 
-  return ({ pContext, context, ...rest }) => {
+  return async ({ pContext, context, ...rest }) => {
     const all = {
       pContext,
       context,
     };
-    const result = _fn({ pContext, context, ...rest });
+    const result = await _fn({ pContext, context, ...rest });
     return assignByKey(all, key, result);
   };
 };

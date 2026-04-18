@@ -36,12 +36,23 @@ export type ActionResult<
   context: Tc;
 }>;
 
+/**
+ * An action may return synchronously or asynchronously.
+ *
+ * Any action (user-provided or produced by an `addOptions` helper except
+ * `debounce`) may return `ActionResult` or a promise that resolves to one.
+ */
+export type MaybeAsyncActionResult<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+> = ActionResult<Pc, Tc> | Promise<ActionResult<Pc, Tc>>;
+
 export type Action<
   E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = FnMap<E, Pc, Tc, T, ActionResult<Pc, Tc>>;
+> = FnMap<E, Pc, Tc, T, MaybeAsyncActionResult<Pc, Tc>>;
 
 /**
  * Represents a collection of actions, where each action is identified by a string key.
@@ -59,6 +70,13 @@ export type ActionMap<
 > = Partial<Record<string, Action<E, Pc, Tc, T>>>;
 
 export type Action2<
+  E extends EventObject = EventObject,
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+> = FnR<E, Pc, Tc, T, Promise<ActionResult<Pc, Tc>>>;
+
+export type Action22<
   E extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,

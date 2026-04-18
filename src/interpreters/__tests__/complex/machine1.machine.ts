@@ -1,6 +1,7 @@
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 import type { inferT } from '#utils/typings';
+import isOnline from 'is-online';
 import { SCHEMAS } from './machine1.machine.gen';
 import { asset, intermediary } from './machine1.machine.typings';
 
@@ -16,6 +17,8 @@ export const BLOCK_IMMO_INTERMEDIARY: inferT<typeof intermediary> = {
     websites: ['https://block-immo.fr'],
   },
 };
+
+const CHECK_DELAY = 300;
 
 export const machine = createMachine(
   {
@@ -58,32 +61,10 @@ export const machine = createMachine(
         },
       },
       checking: {
+        entry: 'setOnlineStatus',
         tags: ['un', 'deux'],
-        actors: {
-          checkOnline: {
-            description: 'Check if we are online',
-            resolves: {
-              actions: 'setOnlineStatus',
-            },
-            catch: {
-              target: '/idle',
-              actions: 'setOnlineStatus',
-            },
-          },
-          getIntermediaries: {
-            description: 'Fetch intermediaries from the blockchain',
-            resolves: {
-              target: '/working',
-              actions: 'addIntermediaries',
-            },
-            catch: {
-              target: '/idle',
-              actions: {
-                name: 'error.fetchIntermediaries',
-                description: 'Failed to fetch intermediaries',
-              },
-            },
-          },
+        after: {
+          CHECK_DELAY: '/working',
         },
       },
       working: {
@@ -108,6 +89,7 @@ export const machine = createMachine(
                     ],
                   },
                   target: '/working/adding',
+                  actions: 'addIntermediary',
                 },
                 {
                   actions: ['error.addIntermediary'],
@@ -116,36 +98,8 @@ export const machine = createMachine(
             },
           },
           adding: {
-            actors: {
-              checkOnline: {
-                description: 'Check if we are online',
-                resolves: {
-                  actions: 'setOnlineStatus',
-                },
-                catch: {
-                  target: '/working/idle',
-                  actions: 'setOnlineStatus',
-                },
-              },
-              addIntermediary: {
-                description: 'Add the intermediary to the blockchain',
-                resolves: {
-                  target: '/working/idle',
-                  actions: ['addIntermediary', 'end.add'],
-                },
-                catch: {
-                  target: '/idle',
-                  actions: [
-                    {
-                      name: 'error.online.addIntermediary',
-                      description: 'Failed to add the intermediary',
-                    },
-
-                    'end.error.add',
-                  ],
-                },
-                max: 'MAX_MUTATE',
-              },
+            after: {
+              ADD_DELAY: '/working/idle',
             },
           },
         },
@@ -168,30 +122,11 @@ export const machine = createMachine(
       internetStatus: 'boolean',
       errors: typings.partial({
         noAsset: 'string',
-        fetchIntermediaries: 'string',
         intermediary: {
           offline: 'string',
-          online: 'string',
         },
       }),
     }),
-
-    actorsMap: {
-      promisees: {
-        checkOnline: {
-          resolves: 'boolean',
-          catch: 'boolean',
-        },
-        getIntermediaries: {
-          resolves: typings.array(intermediary),
-          catch: 'primitive',
-        },
-        addIntermediary: {
-          resolves: intermediary,
-          catch: 'primitive',
-        },
-      },
-    },
   }),
 ).provideOptions(({ assign, erase, batch }) => ({
   actions: {
@@ -227,38 +162,20 @@ export const machine = createMachine(
       () => 'Asset is required to start the machine',
     ),
 
-    setOnlineStatus: assign('context.internetStatus', {
-      'checkOnline::then': ({ payload }) => payload,
-      'checkOnline::catch': ({ payload }) => payload,
-    }),
-
-    addIntermediaries: assign('context.intermediaries', {
-      'getIntermediaries::then': ({
-        payload,
-        context: { intermediaries = [] },
-      }) => [...intermediaries, ...payload],
-    }),
-
-    'error.fetchIntermediaries': assign(
-      'context.errors.fetchIntermediaries',
-      () => 'Failed to fetch intermediaries',
-    ),
-
-    'error.addIntermediary': assign(
-      'context.errors.intermediary.offline',
-      () => 'Cannot add this intermediary',
+    setOnlineStatus: assign('context.internetStatus', () =>
+      isOnline({ timeout: CHECK_DELAY / 2 }),
     ),
 
     addIntermediary: assign('context.intermediaries', {
-      'addIntermediary::then': ({
+      ADD_INTERMEDIARY: async ({
         payload,
         context: { intermediaries = [] },
       }) => [...intermediaries, payload],
     }),
 
-    'error.online.addIntermediary': assign(
-      'context.errors.intermediary.online',
-      () => 'Failed to add the intermediary due to online issue',
+    'error.addIntermediary': assign(
+      'context.errors.intermediary.offline',
+      () => 'Cannot add this intermediary',
     ),
   },
 
@@ -295,5 +212,7 @@ export const machine = createMachine(
   },
   delays: {
     MAX_MUTATE: 1000,
+    CHECK_DELAY,
+    ADD_DELAY: 100,
   },
 }));

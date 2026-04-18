@@ -2,7 +2,6 @@ import type {
   DelayedTransitions,
   ExtractChildKeysFromTransitions,
   ExtractEmitterSrcKeyFromTransitions,
-  ExtractPromiseeSrcKeyFromTransitions,
   GetEventKeysFromDelayed,
   GetEventKeysFromTransitions,
   TransitionsConfig,
@@ -43,7 +42,7 @@ expectTypeOf<TTest2>().toEqualTypeOf<
   | 'after.END.[1]'
 >();
 
-//Create tests with promises
+//Create tests with emitters/children only
 const ttest3 = {
   on: {
     START: { actions: '/state1' },
@@ -58,22 +57,6 @@ const ttest3 = {
     { actions: 'f', target: '/state' },
   ],
   actors: {
-    source1: {
-      resolves: [
-        { guards: 'guard4', actions: 'build4' },
-        { actions: 'g' },
-      ],
-      catch: [{ guards: 'guard5', actions: 'build5' }, { actions: 'h' }],
-      finally: [{ guards: 'guard6', actions: 'build6' }, { actions: 'i' }],
-    },
-    source2: {
-      resolves: [
-        { guards: 'guard7', actions: 'build7' },
-        { actions: 'j' },
-      ],
-      catch: [{ guards: 'guard8', actions: 'build8' }, { actions: 'k' }],
-      finally: [{ guards: 'guard9', actions: 'build9' }, { actions: 'l' }],
-    },
     em1: {
       next: '/dfdfd',
     },
@@ -100,14 +83,6 @@ expectTypeOf<TTest3>().toEqualTypeOf<
   | 'after.END.[1]'
   | 'always.[0]'
   | 'always.[1]'
-  | 'actors.source1.then.[0]'
-  | 'actors.source1.then.[1]'
-  | 'actors.source1.catch.[0]'
-  | 'actors.source1.catch.[1]'
-  | 'actors.source2.then.[0]'
-  | 'actors.source2.then.[1]'
-  | 'actors.source2.catch.[0]'
-  | 'actors.source2.catch.[1]'
   | 'actors.em1.next'
   | 'actors.em1.error'
   | 'actors.m1.on.EVENT1'
@@ -124,10 +99,6 @@ const transition1 = {
         NEXT: '/working',
         PREVIOUS: '/idle',
       },
-    },
-    promise2: {
-      resolves: '/',
-      catch: '/',
     },
     machine122: {
       contexts: {},
@@ -163,22 +134,11 @@ const transition2 = {
         PREVIOUS: '/idle',
       },
     },
-    promise2: {
-      resolves: '/',
-      catch: '/',
-    },
-    promise3: {
-      resolves: '/',
-      catch: '/',
-    },
     emitter1: {
       next: '/',
     },
   },
 } as const satisfies TransitionsConfig;
-
-type TTS2 = ExtractPromiseeSrcKeyFromTransitions<typeof transition2>;
-expectTypeOf<TTS2>().toEqualTypeOf<'promise2' | 'promise3'>();
 
 type TTS3 = ExtractEmitterSrcKeyFromTransitions<typeof transition2>;
 expectTypeOf<TTS3>().toEqualTypeOf<'emitter1'>();

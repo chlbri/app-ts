@@ -141,6 +141,7 @@ describe('after', () => {
   });
 
   describe('#04 => Inside the remainings', () => {
+    vi.useRealTimers();
     const machine = createMachine(
       {
         initial: 'idle',
@@ -206,11 +207,12 @@ describe('after', () => {
     test(...useStateValue('active'));
     test(...send('NEXT'));
     test(...useStateValue('idle'));
-    test(...useWaiter(3));
+    test(...useWaiter(4));
     test(...useStateValue('active'));
   });
 
   describe('#05 => after transition - delay is too long', () => {
+    vi.useFakeTimers();
     const machine = createMachine(
       {
         initial: 'idle',

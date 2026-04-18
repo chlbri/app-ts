@@ -1,4 +1,3 @@
-import boolean from '#bemedev/features/booleans/typings/type';
 import numbersT from '#bemedev/features/numbers/typings';
 import stringsT from '#bemedev/features/strings/typings';
 import {
@@ -16,43 +15,6 @@ import {
 
 describe('#01 => reducers', () => {
   describe('#01 => toEventsMap', () => {
-    test('#01 => correctly combines events and promisees', () => {
-      // #region Arrange
-      const events: EventsMap = {
-        EVENT1: stringsT.type,
-        EVENT2: { data: numbersT.type },
-      };
-
-      const actors: ActorsConfigMap = {
-        promisees: {
-          promise1: {
-            resolves: stringsT.type,
-            catch: stringsT.type,
-          },
-          promise2: {
-            resolves: { success: boolean },
-            catch: { error: stringsT.type },
-          },
-        },
-      };
-      // #endregion
-
-      // #region Act
-      const result = toEventsMap(events, actors);
-      // #endregion
-
-      // #region Assert
-      expect(result).toEqual({
-        EVENT1: stringsT.type,
-        EVENT2: { data: numbersT.type },
-        'promise1::then': stringsT.type,
-        'promise1::catch': stringsT.type,
-        'promise2::then': { success: boolean },
-        'promise2::catch': { error: stringsT.type },
-      });
-      // #endregion
-    });
-
     test('#02 => works with empty actors object', () => {
       // Arrange
       const events: EventsMap = {
@@ -228,66 +190,6 @@ describe('#01 => reducers', () => {
       // Assert
       expect(result).toBe('nothing');
     });
-
-    test('#05 => correctly handles promisees', () => {
-      // Arrange
-      const events: EventsMap = {};
-      const actors: ActorsConfigMap = {
-        promisees: {
-          promise1: {
-            resolves: stringsT.type,
-            catch: boolean,
-          },
-        },
-      };
-
-      const thenFn = vi.fn().mockReturnValue('then result');
-      const catchFn = vi.fn().mockReturnValue('catch result');
-
-      const fnMap: FnMap<any, any, any, any, string> = {
-        'promise1::then': thenFn,
-        'promise1::catch': catchFn,
-      };
-
-      // Act
-      const reducedFn = reduceFnMap(events, actors, fnMap);
-      const result1 = reducedFn({
-        event: { type: 'promise1::then', payload: 'success' },
-        context: {},
-        pContext: {},
-        status: 'active' as any,
-        value: 'test',
-        tags: [],
-      });
-      const result2 = reducedFn({
-        event: { type: 'promise1::catch', payload: true },
-        context: {},
-        pContext: {},
-        status: 'active' as any,
-        value: 'test',
-        tags: [],
-      });
-
-      // Assert
-      expect(thenFn).toHaveBeenCalledWith({
-        payload: 'success',
-        context: {},
-        pContext: {},
-        status: 'active' as any,
-        value: 'test',
-        tags: [],
-      });
-      expect(catchFn).toHaveBeenCalledWith({
-        payload: true,
-        context: {},
-        pContext: {},
-        status: 'active' as any,
-        value: 'test',
-        tags: [],
-      });
-      expect(result1).toBe('then result');
-      expect(result2).toBe('catch result');
-    });
   });
 
   describe('#03 => reduceFnMapReduced', () => {
@@ -439,62 +341,6 @@ describe('#01 => reducers', () => {
 
       // Assert
       expect(result).toBe('nothing');
-    });
-
-    test('#05 => correctly handles promisees', () => {
-      // Arrange
-      const events: EventsMap = {};
-      const actors: ActorsConfigMap = {
-        promisees: {
-          promise1: {
-            resolves: stringsT.type,
-            catch: boolean,
-          },
-        },
-      };
-
-      const thenFn = vi.fn().mockReturnValue('then result');
-      const catchFn = vi.fn().mockReturnValue('catch result');
-
-      const fnMap: FnMapR<any, any, any, string> = {
-        'promise1::then': thenFn,
-        'promise1::catch': catchFn,
-      };
-
-      // Act
-      const reducedFn = reduceFnMapReduced(events, actors, fnMap);
-      const result1 = reducedFn({
-        context: {},
-        event: { type: 'promise1::then', payload: 'success' },
-        status: 'active' as any,
-        value: 'test',
-        tags: [],
-      });
-      const result2 = reducedFn({
-        context: {},
-        event: { type: 'promise1::catch', payload: true },
-        status: 'active' as any,
-        value: 'test',
-        tags: [],
-      });
-
-      // Assert
-      expect(thenFn).toHaveBeenCalledWith({
-        context: {},
-        payload: 'success',
-        status: 'active' as any,
-        value: 'test',
-        tags: [],
-      });
-      expect(catchFn).toHaveBeenCalledWith({
-        context: {},
-        payload: true,
-        status: 'active' as any,
-        value: 'test',
-        tags: [],
-      });
-      expect(result1).toBe('then result');
-      expect(result2).toBe('catch result');
     });
   });
 });

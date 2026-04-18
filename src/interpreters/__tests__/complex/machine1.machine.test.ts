@@ -1,7 +1,6 @@
 import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
 import { decomposeSV } from '#utils';
-import { sleep } from '@bemedev/sleep';
 import { BLOCK_IMMO_INTERMEDIARY, machine } from './machine1.machine';
 import {
   ASSET_1,
@@ -27,29 +26,6 @@ describe('Complex machine 1', () => {
   afterAll(service.stop);
   test(...start());
 
-  test('#01 => service add options', () => {
-    service.addOptions(() => ({
-      actors: {
-        promises: {
-          checkOnline: async () => {
-            await sleep(100); // Simulation réseau
-            return true;
-          },
-          getIntermediaries: async () => {
-            await sleep(200);
-            return [];
-          },
-          addIntermediary: {
-            ADD_INTERMEDIARY: async ({ payload }) => {
-              await sleep(100); // Simulation blockchain
-              return payload;
-            },
-          },
-        },
-      },
-    }));
-  });
-
   test('#02 => provide asset', () => {
     service.send({
       type: 'START',
@@ -60,7 +36,7 @@ describe('Complex machine 1', () => {
   });
 
   describe('#03 => Check context', () => {
-    test('#01 => the asset is undefined', () => {
+    test('#01 => the asset is defined', () => {
       expect(service.select('asset')).toEqual(ASSET_1);
     });
 
@@ -110,12 +86,12 @@ describe('Complex machine 1', () => {
   });
 
   describe('#10 => Check context', () => {
-    test('#01 => the asset is undefined', () => {
+    test('#01 => the asset is defined', () => {
       expect(service.select('asset')).toEqual(ASSET_1);
     });
 
     describe('#02 => the intermediaries', () => {
-      test('#01 => should have length 1', () => {
+      test('#01 => should have length 2', () => {
         expect(service.select('intermediaries')).toHaveLength(2);
       });
 
@@ -142,7 +118,7 @@ describe('Complex machine 1', () => {
       expect(service.select('asset')).toBeUndefined();
     });
 
-    test('#02 => the intermediaries is an empty array', () => {
+    test('#02 => the intermediaries are undefined', () => {
       expect(service.select('intermediaries')).toBeUndefined();
     });
   });
@@ -165,12 +141,12 @@ describe('Complex machine 1', () => {
   });
 
   describe('#15 => Check context', () => {
-    test('#01 => the asset is undefined', () => {
+    test('#01 => the asset is defined', () => {
       expect(service.select('asset')).toEqual(ASSET_1);
     });
 
     describe('#02 => the intermediaries', () => {
-      test('#01 => should have length 1', () => {
+      test('#01 => should have length 2', () => {
         expect(service.select('intermediaries')).toHaveLength(2);
       });
 
@@ -180,7 +156,7 @@ describe('Complex machine 1', () => {
         );
       });
 
-      test('#03 => The new intermediary is present', () => {
+      test('#03 => The mandatory intermediary is present', () => {
         expect(service.select('intermediaries.[0]')).toEqual(
           INTERMEDIARY_2,
         );
@@ -212,12 +188,12 @@ describe('Complex machine 1', () => {
   });
 
   describe('#20 => Check context', () => {
-    test('#01 => the asset is undefined', () => {
+    test('#01 => the asset is defined', () => {
       expect(service.select('asset')).toEqual(ASSET_1);
     });
 
     describe('#02 => the intermediaries', () => {
-      test('#01 => should have length 1', () => {
+      test('#01 => should have length 2', () => {
         expect(service.select('intermediaries')).toHaveLength(2);
       });
 
@@ -227,7 +203,7 @@ describe('Complex machine 1', () => {
         );
       });
 
-      test('#03 => The new intermediary is present', () => {
+      test('#03 => The mandatory intermediary is present', () => {
         expect(service.select('intermediaries.[0]')).toEqual(
           INTERMEDIARY_2,
         );
@@ -259,12 +235,12 @@ describe('Complex machine 1', () => {
   });
 
   describe('#25 => Check context', () => {
-    test('#01 => the asset is undefined', () => {
+    test('#01 => the asset is defined', () => {
       expect(service.select('asset')).toEqual(ASSET_1);
     });
 
     describe('#02 => the intermediaries', () => {
-      test('#01 => should have length 1', () => {
+      test('#01 => should have length 3', () => {
         expect(service.select('intermediaries')).toHaveLength(3);
       });
 
@@ -274,7 +250,7 @@ describe('Complex machine 1', () => {
         );
       });
 
-      test('#03 => The new intermediary is present', () => {
+      test('#03 => The mandatory intermediary is present', () => {
         expect(service.select('intermediaries.[0]')).toEqual(
           INTERMEDIARY_2,
         );

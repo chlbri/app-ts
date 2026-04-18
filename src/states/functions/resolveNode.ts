@@ -9,7 +9,6 @@ import type {
   ToEvents,
 } from '#events';
 import { toChild } from '#machines';
-import { toPromise } from '#promises';
 import { toTransition } from '#transitions';
 import toArray from '#bemedev/features/arrays/castings/toArray';
 import { identify } from '#bemedev/features/functions/functions/identify';
@@ -35,15 +34,14 @@ export type ResolveNode_F = <
  * Resolves a node configuration into a full node with all functions.
  *
  * @param events - The events map used for action and transition resolution.
- * @param actorsMap - The promisees map used for promise resolution.
+ * @param actorsMap - The actors map used for actor resolution.
  * @param config - The node configuration to resolve.
- * @param options - Optional machine options that may include actions and promises configurations.
+ * @param options - Optional machine options that may include actions and actors configurations.
  * @returns A structured representation of the node with its properties and transitions.
  *
  * @see {@linkcode ResolveNode_F} for more details
  * @see {@linkcode toAction} for converting actions
  * @see {@linkcode toTransition} for converting transitions
- * @see {@linkcode toPromise} for converting promises
  * @see {@linkcode toArray.typed} for ensuring typed arrays
  * @see {@linkcode stateType} for determining the type of the state
  * @see {@linkcode identify} for identifying properties in the configuration
@@ -81,10 +79,6 @@ export const resolveNode: ResolveNode_F = (
   const after = identify(config.after).map(tMapper);
   const actors = identify(config.actors);
 
-  const promises = actors
-    .filter(actor => 'resolves' in actor)
-    .map(promise => toPromise(events, actorsMap, promise, options));
-
   const emitters = actors
     .filter(actor => 'next' in actor)
     .map(emitter => toEmitter(events, actorsMap, emitter, options));
@@ -102,7 +96,6 @@ export const resolveNode: ResolveNode_F = (
     on,
     always,
     after,
-    promises,
     emitters,
     children,
   });

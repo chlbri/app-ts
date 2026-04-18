@@ -211,7 +211,7 @@ describe('machine coverage', () => {
       });
 
       describe('#34 => Check the service', () => {
-        test(...useIterator(114, 2));
+        test(...useIterator(118, 2));
       });
 
       describe('#35 => Close the service', async () => {
@@ -228,7 +228,7 @@ describe('machine coverage', () => {
         vi.advanceTimersByTime(10_000);
       });
 
-      test(...useIterator(114, 37));
+      test(...useIterator(118, 37));
     });
   });
 });

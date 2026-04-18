@@ -9,17 +9,48 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <details>
 <summary>
 
+## **[3.0.0] - 18/04/2026** => _00:10_
+
+</summary>
+
+- **BREAKING**: Remove `promisees` actor type — `PromiseeConfig`,
+  `src/promises/*`, `PromiseFunction*`, `Promisee`, `PromisesMap`,
+  `toPromise`, `performPromisee`, `#addPromises`, `actors.promises` and
+  their tests are removed
+- **BREAKING**: `Action` / `Action2` / `ActionResult` widened to accept
+  `Promise<ActionResult<Pc, Tc>>` — the interpreter's action pipeline is
+  now async and sequentially awaited
+- **Add**: Optional `errorFn` parameter on all action helpers (`assign`,
+  `raise`, `debounce`, etc.) — handles promise rejections without breaking
+  the main flow
+- **Add**: Complete real-life tests and state machine schema
+- **Fix**: Full `Eo` propagation in the type hierarchy (`Machine`,
+  `Interpreter`, `MachineOptions`)
+- **Fix**: `Ta` propagation into `Mo` via `provideOptions` — correct typed
+  tag validation at compile time
+- **Refactor**: Interpreter simplification — action pipeline cleaned up and
+  sequentially awaited
+- **Refactor**: Clean up test cases and improve type coverage
+- <u>Test coverage **_100%_**</u>
+
+</details>
+
+<br/>
+
+<details>
+<summary>
+
 ## **[2.5.3] - 16/04/2026** => _23:49_
 
 </summary>
 
-- **Fix**: Restauration complète de `Eo` dans `Machine.clone()` — le
-  paramrage génériques était incomplet après la refonte en v2.5.1
-- **Fix**: Propagation de `Eo` à travers `MachineOptions` via le paramètre
-  `Mo` — assure la cohérence des types à la compilation
-- **Fix**: Contrainte de `Ta` affinée en
-  `Ta extends ExtractTagsFromConfig<C>` — remplace la borne générique
-  `Ta extends string` pour une validation correcte des tags
+- **Fix**: Full restoration of `Eo` in `Machine.clone()` — the generic type
+  parameter was incomplete after the v2.5.1 refactor
+- **Fix**: `Eo` propagation through `MachineOptions` via the `Mo` parameter
+  — ensures type consistency at compile time
+- **Fix**: `Ta` constraint refined to `Ta extends ExtractTagsFromConfig<C>`
+  — replaces the generic `Ta extends string` bound for correct tag
+  validation
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -33,23 +64,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Fix**: Restauration de `Eo` dans le champ privé `#machine` de
-  `Interpreter` — la suppression introduite en v2.5.1 provoquait des
-  erreurs de type à la compilation
-- **Fix**: Propagation de `Eo` dans l'appel à `toPredicate` dans
-  `interpreter.ts` — correction des erreurs de type génériques résiduelles
-- **Fix**: Contrainte de `Ta` corrigée dans `Machine` — `Ta extends string`
-  remplacé par `Ta extends ExtractTagsFromConfig<C>` pour une borne exacte
-- **Fix**: `Eo` propagé dans `MachineOptions` via le paramètre `Mo` de
-  `Machine` — `MachineOptions<C, E, A, Pc, Tc, Ta>` devient
+- **Fix**: Restore `Eo` in the private `#machine` field of `Interpreter` —
+  the removal introduced in v2.5.1 caused type errors at compile time
+- **Fix**: `Eo` propagation in the `toPredicate` call in `interpreter.ts`
+  — fixes remaining generic type errors
+- **Fix**: `Ta` constraint corrected in `Machine` — `Ta extends string`
+  replaced by `Ta extends ExtractTagsFromConfig<C>` for an exact bound
+- **Fix**: `Eo` propagated in `MachineOptions` via the `Mo` parameter of
+  `Machine` — `MachineOptions<C, E, A, Pc, Tc, Ta>` becomes
   `MachineOptions<C, E, A, Pc, Tc, Ta, Eo>`
-- **Fix**: `Machine.clone()` restaure les paramètres de type complets —
-  `new Machine<C, Pc, Tc, E, A, Ta, Eo, Mo>` au lieu de la forme raccourcie
-  qui omettait `Eo` et `Mo`
-- **Refactor**: Script `upgrade` aligné sur `config:vitest`
+- **Fix**: `Machine.clone()` restores full type parameters —
+  `new Machine<C, Pc, Tc, E, A, Ta, Eo, Mo>` instead of the shortened form
+  that omitted `Eo` and `Mo`
+- **Refactor**: `upgrade` script aligned with `config:vitest`
 - **Update**: `rolldown` 1.0.0-rc.15 → 1.0.0-rc.16
-- **Update**: `rimraf` ^6.1.3 ajouté en dépendance de développement
-- **Chore**: `poolOptions: {}` ajouté dans `vitest.config.ts`
+- **Update**: `rimraf` ^6.1.3 added as dev dependency
+- **Chore**: `poolOptions: {}` added in `vitest.config.ts`
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -63,19 +93,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Refactor**: Suppression des paramètres de type `Mo` et `Eo` de la
-  signature publique d'`Interpreter` — `Eo` est conservé en interne mais
-  n'est plus exposé dans la classe ; `Mo` est entièrement retiré
-- **Refactor**: Simplification de `constructTests` — suppression des
-  paramètres `Eo` et `Mo`, le type d'`Interpreter` passé est réduit à
+- **Refactor**: Remove `Mo` and `Eo` type parameters from the public
+  signature of `Interpreter` — `Eo` is kept internally but no longer
+  exposed in the class; `Mo` is fully removed
+- **Refactor**: Simplify `constructTests` — remove `Eo` and `Mo`
+  parameters, the `Interpreter` type passed is reduced to
   `Interpreter<C, Pc, Tc, E, A, Ta>`
-- **Refactor**: Réordonnancement des paramètres de type dans `Machine` —
-  `Ta` (tags) précède désormais `Eo` pour une cohérence avec `Interpreter`
-- **Refactor**: Nettoyage des imports inutilisés dans `fixtures/index.ts`
-  (`ToEventObject`, `ToEvents`, `MachineOptions`) et dans `interpreter.ts`
+- **Refactor**: Reorder type parameters in `Machine` — `Ta` (tags) now
+  precedes `Eo` for consistency with `Interpreter`
+- **Refactor**: Clean up unused imports in `fixtures/index.ts`
+  (`ToEventObject`, `ToEvents`, `MachineOptions`) and in `interpreter.ts`
   (`MachineOptions`)
-- **Chore**: Ajout du script `config:vitest` dans `package.json` et
-  refactorisation de `upgrade:fast` pour l'utiliser
+- **Chore**: Add `config:vitest` script in `package.json` and refactor
+  `upgrade:fast` to use it
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -89,23 +119,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Feat**: Les `tags` sont désormais correctement inférés dans les
-  callbacks de `provideOptions` — le paramètre `tags` reçoit le type union
-  des littéraux déclarés (ex. `"un" | "deux"`) au lieu de `string`
-  générique, permettant la comparaison et le narrowing
-- **Refactor**: Réorganisation des paramètres de type dans `Machine`,
-  `Interpreter` et `constructTests` — `Eo` et `Ta` déplacés avant `Mo` pour
-  que `Mo` puisse référencer `Ta` et être correctement typé avec
+- **Feat**: `tags` are now correctly inferred in `provideOptions` callbacks
+  — the `tags` parameter receives the union type of declared literals (e.g.
+  `"un" | "deux"`) instead of a generic `string`, enabling comparison and
+  narrowing
+- **Refactor**: Reorganize type parameters in `Machine`, `Interpreter` and
+  `constructTests` — `Eo` and `Ta` moved before `Mo` so that `Mo` can
+  reference `Ta` and be correctly typed with
   `MachineOptions<C, E, A, Pc, Tc, Ta>`
-- **Refactor**: `MachineOptions` — permutation des paramètres `Flat` et
-  `Eo` pour cohérence interne
-- **Refactor**: `CreateMachine_F` — suppression du paramètre de type `Mo`
-  (retour simplifié vers `Machine<C, Pc, Tc, EventM, A>`)
-- **Refactor**: `InterpreterFrom<M>` — suppression du paramètre
-  `MachineOptionsFrom<M>` (interface simplifiée)
-- **Refactor**: `primitives.test-d.ts` — assertions de type mises à jour de
-  `.toMatchTypeOf()` vers `.branded.toEqualTypeOf()` et `.toExtend()` pour
-  des vérifications plus strictes
+- **Refactor**: `MachineOptions` — swap `Flat` and `Eo` parameters for
+  internal consistency
+- **Refactor**: `CreateMachine_F` — remove `Mo` type parameter (simplified
+  return to `Machine<C, Pc, Tc, EventM, A>`)
+- **Refactor**: `InterpreterFrom<M>` — remove `MachineOptionsFrom<M>`
+  parameter (simplified interface)
+- **Refactor**: `primitives.test-d.ts` — type assertions updated from
+  `.toMatchTypeOf()` to `.branded.toEqualTypeOf()` and `.toExtend()` for
+  stricter checks
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -118,14 +148,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Refactor**: Renommage du champ `then` en `resolves` dans la
-  configuration des promisees (`_PromiseeConfig`, `PromiseeDef`,
-  `Promisee`) — mise à jour de tous les usages dans les types, tests et
-  configurations
-- **Fix**: Suppression du `return` inutile avant `service.send()` dans
+- **Refactor**: Rename `then` field to `resolves` in promisee configuration
+  (`_PromiseeConfig`, `PromiseeDef`, `Promisee`) — update all usages in
+  types, tests and configurations
+- **Fix**: Remove unnecessary `return` before `service.send()` in
   `src/fixtures/index.ts`
-- **Refactor**: Reformatage de l'indentation dans
-  `src/transitions/types.ts` pour améliorer la lisibilité
+- **Refactor**: Reformat indentation in `src/transitions/types.ts` for
+  improved readability
 - **Update**: `@bemedev/dev-utils` ^0.5.2 → ^0.5.3
 - **Update**: `@types/node` ^25.5.2 → ^25.6.0
 - **Update**: `globals` ^17.4.0 → ^17.5.0
@@ -146,20 +175,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Fix**: Remplacement de `partialCall(fn, arg)` par
-  `partialCall.paramArray(fn, arg)` dans `interpreter.ts` et `machine.ts` —
-  mise à jour suite au changement d'API de `partialCall`
-- **Fix**: Correction de la typo `Identitfy` → `Identify` dans
-  `identify.ts`
-- **Feat**: Ajout de la classe `UndefinedHelper` dans
-  `src/libs/bemedev/features/common/types.ts` — marqueur de valeur
-  indéfinie pour les tuples partiels
-- **Feat**: Nouveaux types dans
-  `src/libs/bemedev/features/functions/types.ts` — utilitaires de tuples
-  partiels (`_Requirify`, `Parts`, `PartDiff`), types de promesses avec
-  timeout (`TimeoutPromise`, `TypeFromTimeout`, `TypeFromTimeouts`) et
-  types de callbacks (`CallBackError`, `CallBackResult`, `Callback`,
-  `CbParams`, `ResultFrom`)
+- **Fix**: Replace `partialCall(fn, arg)` with
+  `partialCall.paramArray(fn, arg)` in `interpreter.ts` and `machine.ts`
+  — update following `partialCall` API change
+- **Fix**: Fix typo `Identitfy` → `Identify` in `identify.ts`
+- **Feat**: Add `UndefinedHelper` class in
+  `src/libs/bemedev/features/common/types.ts` — undefined value marker for
+  partial tuples
+- **Feat**: New types in `src/libs/bemedev/features/functions/types.ts`
+  — partial tuple utilities (`_Requirify`, `Parts`, `PartDiff`), promise
+  types with timeout (`TimeoutPromise`, `TypeFromTimeout`,
+  `TypeFromTimeouts`) and callback types (`CallBackError`,
+  `CallBackResult`, `Callback`, `CbParams`, `ResultFrom`)
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -173,18 +200,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Refactor**: Remplacement de la dépendance `@bemedev/basifun` par
-  `@bemedev/better-promise` pour les utilitaires de promesses
-  (`TimeoutPromise`, `anyPromises`, `asyncfy`, `withTimeout`)
-- **Refactor**: Internalisation des utilitaires précédemment fournis par
-  `@bemedev/basifun` — `toArray`, `partialCall`, `switchV`, `isDefined` et
-  `identify` sont désormais résolus via les alias `#bemedev/features/…`
-- **Feat**: Ajout du type `Identify<T>` dans
+- **Refactor**: Replace `@bemedev/basifun` dependency with
+  `@bemedev/better-promise` for promise utilities (`TimeoutPromise`,
+  `anyPromises`, `asyncfy`, `withTimeout`)
+- **Refactor**: Internalize utilities previously provided by
+  `@bemedev/basifun` — `toArray`, `partialCall`, `switchV`, `isDefined`
+  and `identify` are now resolved via `#bemedev/features/…` aliases
+- **Feat**: Add `Identify<T>` type in
   `src/libs/bemedev/features/objects/types.ts`
-- **Feat**: Nouvelles implémentations locales sous
-  `src/libs/bemedev/features/arrays/castings/` et
+- **Feat**: New local implementations under
+  `src/libs/bemedev/features/arrays/castings/` and
   `src/libs/bemedev/features/functions/functions/`
-- **Update**: Ajout de l'alias de chemin `#utils/*` dans `tsconfig.json`
+- **Update**: Add `#utils/*` path alias in `tsconfig.json`
 - **Update**: `@bemedev/dev-utils` ^0.5.0 → ^0.5.2
 - <u>Test coverage **_100%_**</u>
 
@@ -199,22 +226,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Refactor**: Remplacement de `Observable<R>` par `Pausable<R>` comme
-  type de retour des fonctions d'émetteur — les acteurs fournissent
-  désormais directement un `Pausable` au lieu d'un `Observable`
-- **Feat**: Ajout du type `Pausable<R>` et `EmitterObserver<R>` dans
-  `emitters/types.ts` — interface agnostique vis-à-vis de RxJS
-- **Remove**: Suppression de `EmitterFunction` (ancienne forme `FnMap`),
-  `CollectedObservable` et `#executeEmitter` devenus obsolètes
-- **Remove**: Suppression de `src/.vitest.ts` — configuration vitest
-  centralisée dans `vitest.config.ts`
-- **Refactor**: Migration de `createTests` de `@bemedev/vitest-extended`
-  vers `@bemedev/dev-utils/vitest-extended` dans tous les fichiers de test
-- **Update**: Mise à jour des dépendances (`pnpm-lock.yaml`)
-- **Fix**: Correction des fixtures — `fakeWaiter` enveloppé dans un
-  `try/catch` pour les fake timers
-- **Chore**: Déplacement des fichiers de skills de `.github/skills` vers
-  `.claude/skills`
+- **Refactor**: Replace `Observable<R>` with `Pausable<R>` as the return
+  type of emitter functions — actors now provide a `Pausable` directly
+  instead of an `Observable`
+- **Feat**: Add `Pausable<R>` and `EmitterObserver<R>` types in
+  `emitters/types.ts` — RxJS-agnostic interface
+- **Remove**: Remove `EmitterFunction` (old `FnMap` form),
+  `CollectedObservable` and `#executeEmitter` as obsolete
+- **Remove**: Remove `src/.vitest.ts` — vitest configuration centralized
+  in `vitest.config.ts`
+- **Refactor**: Migrate `createTests` from `@bemedev/vitest-extended` to
+  `@bemedev/dev-utils/vitest-extended` in all test files
+- **Update**: Update dependencies (`pnpm-lock.yaml`)
+- **Fix**: Fix fixtures — `fakeWaiter` wrapped in `try/catch` for fake
+  timers
+- **Chore**: Move skills files from `.github/skills` to `.claude/skills`
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -228,15 +254,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Fix**: Correction de `TransformPrimitiveS<'void'>` — était mappé sur
-  `number` au lieu de `void` dans `typings.ts`
-- **Fix**: `HasUndefined<void>` retourne désormais `false` — `void` ne doit
-  pas rendre une propriété optionnelle
-- **Feat**: `PromiseeDef.then` et `.catch` acceptent maintenant `void` en
-  plus de `PrimitiveObject` dans `events/types.ts`
-- **Feat**: Ajout de l'alias `transform` exporté pour
-  `transformPrimitiveObject`
-- **Test**: Ajout du cas de test pour la transformation du type `'void'`
+- **Fix**: Fix `TransformPrimitiveS<'void'>` — was mapped to `number`
+  instead of `void` in `typings.ts`
+- **Fix**: `HasUndefined<void>` now returns `false` — `void` should not
+  make a property optional
+- **Feat**: `PromiseeDef.then` and `.catch` now accept `void` in addition
+  to `PrimitiveObject` in `events/types.ts`
+- **Feat**: Add `transform` alias export for `transformPrimitiveObject`
+- **Test**: Add test case for `'void'` type transformation
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -250,17 +275,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Rename**: `typings.maybe()` → `typings.optional()` et `Maybe<T>` →
-  `Optional<T>` (même marqueur interne `OPTIONAL`, rétro-compatible)
-- **Feat**: Ajout du type primitif `'void'` dans `typings.ts`
-- **Refactor**: Simplification de `Selector_F<T>` — suppression du wrapper
-  `NotUndefined` dans `interpreter.ts` et `interpreter.types.ts`
-- **Refactor**: Suppression du type `Decompose2<T>` et de l'import
-  `Decompose` inutilisé dans `types.ts`
-- **Fix**: Correction du chemin d'import de `AnyMachine` (`#machines` →
-  `#machine`) dans `interpreter.ts`
-- **Test**: Ajout de `.branded` aux comparaisons `expectTypeOf` pour une
-  vérification de types plus précise
+- **Rename**: `typings.maybe()` → `typings.optional()` and `Maybe<T>` →
+  `Optional<T>` (same internal `OPTIONAL` marker, backward compatible)
+- **Feat**: Add `'void'` primitive type in `typings.ts`
+- **Refactor**: Simplify `Selector_F<T>` — remove `NotUndefined` wrapper
+  in `interpreter.ts` and `interpreter.types.ts`
+- **Refactor**: Remove `Decompose2<T>` type and unused `Decompose` import
+  in `types.ts`
+- **Fix**: Fix `AnyMachine` import path (`#machines` → `#machine`) in
+  `interpreter.ts`
+- **Test**: Add `.branded` to `expectTypeOf` comparisons for more precise
+  type checking
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -274,14 +299,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Refactor**: Reformatage global — passage aux guillemets simples dans
-  tous les fichiers source TypeScript (`src/`, `oxfmt.config.ts`)
-- **Refactor**: Reformatage des expressions de types TypeScript longs pour
-  respecter `printWidth: 75` (`types.ts`, `machine.types.ts`,
-  `fixtures/index.ts`)
-- **Refactor**: Compactage des mappages de chemins dans `tsconfig.json`
-  (tableaux inline à la place de tableaux multi-lignes)
-- **Update**: Mise à jour des dépendances (`pnpm-lock.yaml`)
+- **Refactor**: Global reformatting — switch to single quotes in all
+  TypeScript source files (`src/`, `oxfmt.config.ts`)
+- **Refactor**: Reformat long TypeScript type expressions to respect
+  `printWidth: 75` (`types.ts`, `machine.types.ts`, `fixtures/index.ts`)
+- **Refactor**: Compact path mappings in `tsconfig.json` (inline arrays
+  instead of multi-line arrays)
+- **Update**: Update dependencies (`pnpm-lock.yaml`)
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -295,21 +319,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Feat**: Ajout du champ `addOptions: any` à l'interface `AnyMachine`
-  dans `machine.types.ts`
-- **Feat**: Ajout du nouveau type exporté `AddOptionsFrom<T>` dans
-  `types.ts`
-- **Feat**: Ajout de nombreux types utilitaires dans `types.ts` :
+- **Feat**: Add `addOptions: any` field to the `AnyMachine` interface in
+  `machine.types.ts`
+- **Feat**: Add new exported type `AddOptionsFrom<T>` in `types.ts`
+- **Feat**: Add many utility types in `types.ts`:
   `GetEventsFromMachine`, `GetPromiseesSrcFromMachine`,
   `GetEmittersSrcFromMachine`, `GetChildrenSrcFromMachine`,
   `GetActorKeysFromMachine`, `Decompose2`, `MachineOptionsFrom` / `MoF`,
   `ConfigFrom`, `PrivateContextFrom`, `ContextFrom`, `EventsMapFrom`,
   `StateFrom`, `DecomposedStateFrom`, `StateExtendedFrom`, `StatePFrom`,
   `StatePextendedFrom`, `ActorsMapFrom`, `EventsFrom`
-- **Feat**: Ajout des helpers `constructStateValue`, `constructSend` et de
-  la constante `defaultI` dans `fixtures/index.ts`
-- **Refactor**: Ajout de `jsxSingleQuote: true` dans `oxfmt.config.ts`
-- **Refactor**: Restructuration des imports dans `fixtures/index.ts`
+- **Feat**: Add `constructStateValue`, `constructSend` helpers and
+  `defaultI` constant in `fixtures/index.ts`
+- **Refactor**: Add `jsxSingleQuote: true` in `oxfmt.config.ts`
+- **Refactor**: Restructure imports in `fixtures/index.ts`
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -323,10 +346,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Feat**: Ajout du champ `__decomposedState: any` à l'interface
-  `AnyMachine` dans `machine.types.ts`
-- **Refactor**: Uniformisation des guillemets (simple → double) dans
-  `machine.types.ts`
+- **Feat**: Add `__decomposedState: any` field to the `AnyMachine`
+  interface in `machine.types.ts`
+- **Refactor**: Standardize quotes (single → double) in `machine.types.ts`
 - <u>Test coverage **_100%_**</u>
 
 </details>
@@ -340,16 +362,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 </summary>
 
-- **Refactor**: Simplification radicale de `rolldown.config.ts` en
-  utilisant `@bemedev/rolldown-config` — suppression de ~180 lignes de
-  configuration manuelle
-- **Refactor**: Renommage des GitHub skills (underscores → tirets) :
+- **Refactor**: Radical simplification of `rolldown.config.ts` using
+  `@bemedev/rolldown-config` — removes ~180 lines of manual configuration
+- **Refactor**: Rename GitHub skills (underscores → hyphens):
   `analyze_tests` → `analyze-tests`, `check_spacing` → `check-spacing`,
   `organize_tests` → `organize-tests`, `update_docs` → `update-docs`
-- **Update**: Mise à jour de `tsconfig.json` pour inclure
-  `rolldown.config.ts`
-- **Config**: Ajout des paramètres OXC formatter dans
-  `.vscode/settings.json`
+- **Update**: Update `tsconfig.json` to include `rolldown.config.ts`
+- **Config**: Add OXC formatter settings in `.vscode/settings.json`
 - Update dependencies (`@bemedev/rolldown-config@^0.4.2`, `rolldown`)
 - <u>Test coverage **_100%_**</u>
 
@@ -366,12 +385,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Refactor**: Migrate build tooling — replace Rollup → Rolldown, ESLint →
   OXLint, Prettier → OXFmt
-- **Refactor**: Unifier les imports — remplacer les chemins `src/...` par
-  les alias `#alias` et imports relatifs dans tous les fichiers de types
-- **Refactor**: Uniformiser les guillemets dans tous les fichiers sources
-- **Refactor**: Améliorer la lisibilité et le formatage du code de
-  l'interpréteur
-- **Update**: Mise à jour de la configuration TypeScript (`tsconfig.json`)
+- **Refactor**: Unify imports — replace `src/...` paths with `#alias`
+  aliases and relative imports in all type files
+- **Refactor**: Standardize quotes in all source files
+- **Refactor**: Improve interpreter code readability and formatting
+- **Update**: Update TypeScript configuration (`tsconfig.json`)
 - Update dependencies
 - <u>Test coverage **_100%_**</u>
 
@@ -1690,16 +1708,16 @@ MIT
 
 <br/>
 
-## Auteur
+## Author
 
 chlbri (bri_lvi@icloud.com)
 
-[My github](https://github.com/chlbri?tab=repositories)
+[My GitHub](https://github.com/chlbri?tab=repositories)
 
 [<svg width="98" height="96" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="#24292f"/></svg>](https://github.com/chlbri?tab=repositories)
 
 <br/>
 
-## Liens
+## Links
 
 - [Documentation](https://github.com/chlbri/app-ts)
