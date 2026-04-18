@@ -24,12 +24,11 @@ The **interpreter** takes a machine and executes it at runtime — it
 processes events, manages context, subscribes to actors, and drives
 transitions.
 
-### Actors — three kinds of external work
+### Actors — two kinds of external work
 
 | Actor type | Shape               | Trigger           | Direction                        |
 | ---------- | ------------------- | ----------------- | -------------------------------- |
 | `emitters` | `() => Pausable<T>` | State entry       | **Source → Machine** (read-only) |
-| `promises` | `() => Promise<T>`  | State entry       | **Source → Machine** (one-shot)  |
 | `children` | `() => Interpreter` | Machine lifecycle | **Bidirectional** (via `sendTo`) |
 
 ### Emitters importance is NOT touched during the flow
@@ -68,8 +67,6 @@ events _to_ the emitter, never modifies it, never controls its output.
 
 This differs fundamentally from:
 
-- **Promises** — triggered once on state entry, machine waits for
-  resolution.
 - **Children** — bidirectional; the parent can `sendTo` the child
   interpreter.
 
@@ -99,15 +96,15 @@ pnpm add @bemedev/app-ts
    - [batch](#53-batch)
    - [filter & erase](#54-filter--erase)
    - [resend & forceSend](#55-resend--forcesend)
+   - [Async actions & errorFn](#56-async-actions--errorfn)
 6. [Guards (predicates)](#6-guards-predicates)
 7. [Transitions: on, after, always](#7-transitions-on-after-always)
 8. [Activities (recurring actions)](#8-activities-recurring-actions)
 9. [Actors: emitters](#9-actors-emitters)
-10. [Actors: promises](#10-actors-promises)
-11. [Actors: children](#11-actors-children)
-12. [Tags](#12-tags)
-13. [Legacy options (\_legacy)](#13-legacy-options-_legacy)
-14. [API reference](#14-api-reference)
+10. [Actors: children](#10-actors-children)
+11. [Tags](#11-tags)
+12. [Legacy options (\_legacy)](#12-legacy-options-_legacy)
+13. [API reference](#13-api-reference)
 
 <br/>
 
@@ -353,7 +350,7 @@ Updates context values using decomposed paths.
       name: 'New',
     })),
 
-    // Actor-scoped assign (for emitter/promise payloads)
+    // Actor-scoped assign (for emitter payloads)
     insertData: assign('context.data', {
       'fetch::then': ({ payload, context }) => {
         context?.data?.push(...payload);
@@ -462,6 +459,39 @@ Re-dispatch events from within actions.
   },
 }))
 ```
+
+### 5.6 Async actions & errorFn
+
+As of v3.0.0, all action helpers accept `async` functions directly.
+The interpreter's action pipeline is fully async and sequentially awaited.
+
+An optional third `errorFn` argument handles promise rejections inline:
+
+```typescript
+.provideOptions(({ assign, voidAction }) => ({
+  actions: {
+    // Async assign — awaits the promise before updating context
+    fetchUser: assign<'user', User, FetchError>(
+      'context.user',
+      async ({ event }) => (await fetch(`/u/${event.id}`)).json(),
+      // errorFn: called with the rejection value; its result is merged
+      (err, state) => ({
+        context: { ...state.context, error: err.message },
+      }),
+    ),
+
+    // Async void action — errorFn absent → error flows to _addError
+    logActivity: voidAction(
+      async ({ context }) => {
+        await analytics.track(context.userId);
+      },
+    ),
+  },
+}))
+```
+
+When `errorFn` is absent and the action rejects, the error is routed to
+the internal `_addError` channel — no uncaught rejection.
 
 <br/>
 
@@ -903,101 +933,27 @@ Timeline:
                           │ NEW subscription to interval1
 ```
 
-### 9.5 Emitters vs Promises vs Children
+### 9.5 Emitters vs Children
 
-| Aspect          | Emitters                    | Promises                      | Children                       |
-| --------------- | --------------------------- | ----------------------------- | ------------------------------ |
-| Direction       | Source → Machine only       | Source → Machine only         | Bidirectional                  |
-| Cardinality     | 0..∞ emissions              | Exactly 1 resolution          | Ongoing event exchange         |
-| Machine control | **None** — read-only        | Triggered on state entry      | `sendTo` sends events to child |
-| Subscription    | `subscribe` / `unsubscribe` | One-shot `resolves` / `catch` | `interpret` / `stop`           |
-| Pause / Resume  | Via `@bemedev/rx-pausable`  | N/A                           | Via child interpreter          |
-
-<br/>
-
----
-
-## 10. Actors: Promises
-
-A promise actor is a one-shot async task triggered on state entry. The
-machine waits for resolution and routes the result to `resolves`, `catch`,
-or `finally` handlers.
-
-```typescript
-const machine = createMachine(
-  {
-    initial: 'idle',
-    states: {
-      idle: { on: { FETCH: '/fetch' } },
-      fetch: {
-        actors: {
-          fetch: {
-            resolves: {
-              actions: 'insertData',
-              target: '/idle',
-            },
-            catch: '/idle',
-          },
-        },
-      },
-    },
-  },
-  typings({
-    eventsMap: { FETCH: 'primitive' },
-    context: {
-      input: 'string',
-      data: typings.maybe(typings.array('string')),
-    },
-    actorsMap: {
-      promises: {
-        fetch: {
-          resolves: typings.array('string'),
-          catch: 'primitive',
-        },
-      },
-    },
-  }),
-).provideOptions(({ assign }) => ({
-  actors: {
-    promises: {
-      fetch: async ({ context }) => {
-        return fakeDB
-          .filter(item => item.name.includes(context.input))
-          .map(item => item.name);
-      },
-    },
-  },
-  actions: {
-    insertData: assign('context.data', {
-      'fetch::then': ({ payload, context }) => {
-        context?.data?.push(...payload);
-        return context?.data;
-      },
-    }),
-  },
-}));
-```
-
-**Lifecycle:**
-
-1. Interpreter enters the state containing the promise actor.
-2. The factory `async ({ context, event }) => ...` is called once.
-3. On success → `resolves` handler fires (actions + optional target).
-4. On rejection → `catch` handler fires.
-5. The promise is **not** retried automatically — you handle retry via
-   transitions.
+| Aspect          | Emitters                    | Children                       |
+| --------------- | --------------------------- | ------------------------------ |
+| Direction       | Source → Machine only       | Bidirectional                  |
+| Cardinality     | 0..∞ emissions              | Ongoing event exchange         |
+| Machine control | **None** — read-only        | `sendTo` sends events to child |
+| Subscription    | `subscribe` / `unsubscribe` | `interpret` / `stop`           |
+| Pause / Resume  | Via `@bemedev/rx-pausable`  | Via child interpreter          |
 
 <br/>
 
 ---
 
-## 11. Actors: Children
+## 10. Actors: Children
 
 A child actor is a nested interpreter. The parent can **send events to it**
 via `sendTo`, and the child's events can bubble up to the parent via `on`
 handlers. Context can be mapped between parent and child.
 
-### 11.1 Sending events to a child — `sendTo`
+### 10.1 Sending events to a child — `sendTo`
 
 _Derived from `src/interpreters/__tests__/children.test.ts`_
 
@@ -1048,7 +1004,7 @@ When the parent receives `NEXT`, it forwards it to the child via `sendTo`.
 When the child processes `NEXT`, the parent's `on.NEXT` handler fires
 `notify`.
 
-### 11.2 Context mapping between parent and child
+### 10.2 Context mapping between parent and child
 
 ```typescript
 const parent = createMachine(
@@ -1079,7 +1035,7 @@ the parent reads the child's context but does not write to it.
 
 ---
 
-## 12. Tags
+## 11. Tags
 
 Tags are metadata labels on states. They allow UI code to query **what
 category** the current state belongs to without checking state names
@@ -1150,11 +1106,11 @@ const machine = createMachine(
 
 ---
 
-## 13. Legacy Options (\_legacy)
+## 12. Legacy Options (\_legacy)
 
 Both `provideOptions` and `addOptions` support accessing previously defined
 options through the `_legacy` parameter. This enables composition of
-existing actions, predicates, delays, promises, and actors without manual
+existing actions, predicates, delays, and actors without manual
 tracking.
 
 ### On a Machine
@@ -1221,7 +1177,6 @@ const service3 = service2.provideOptions(({ assign }, { _legacy }) => ({
 | `_legacy.actions`    | Previously defined actions      |
 | `_legacy.predicates` | Previously defined guards       |
 | `_legacy.delays`     | Previously defined delays       |
-| `_legacy.promises`   | Previously defined promises     |
 | `_legacy.machines`   | Previously defined child actors |
 | `_legacy.emitters`   | Previously defined emitters     |
 
@@ -1237,7 +1192,7 @@ const service3 = service2.provideOptions(({ assign }, { _legacy }) => ({
 
 ---
 
-## 14. API Reference
+## 13. API Reference
 
 ### Machine Creation
 
@@ -1250,13 +1205,12 @@ Creates a new state machine.
 - `config` — Machine configuration object
   - `initial` — Initial state name
   - `states` — State definitions
-  - `actors?` — Root-level actor declarations (emitters, promises,
-    children)
+  - `actors?` — Root-level actor declarations (emitters, children)
 - `types` — Type definitions (via `typings(...)`)
   - `context` — Public context type
   - `pContext?` — Private context type
   - `eventsMap` — Event definitions
-  - `actorsMap?` — Actor type maps (emitters, promises, children)
+  - `actorsMap?` — Actor type maps (emitters, children)
 
 **Returns:** `Machine` instance
 
