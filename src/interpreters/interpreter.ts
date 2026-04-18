@@ -812,7 +812,7 @@ export class Interpreter<
   #performAction: PerformActionLater_F<Eo, Pc, Tc, Ta> = action => {
     this._iterate();
     const out = withTimeout(
-      () => action(this.#cloneState),
+      async () => action(this.#cloneState),
       'Action timed out',
       ...(this.longRuns ? [] : [DEFAULT_MAX_TIME_PROMISE]),
     );

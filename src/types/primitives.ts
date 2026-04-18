@@ -303,9 +303,16 @@ type _FnMap<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
+  Ex extends string = never,
+  TT extends Exclude<E, Ex | { type: Ex }> = Exclude<E, Ex | { type: Ex }>,
 > = {
-  [key in EventToType<E>]?: (
-    state: StatePextended<Extract<E, { type: key }>['payload'], Pc, Tc, T>,
+  [key in EventToType<TT>]?: (
+    state: StatePextended<
+      Extract<TT, { type: key }>['payload'],
+      Pc,
+      Tc,
+      T
+    >,
   ) => R;
 } & {
   else?: FnR<E, Pc, Tc, T, R>;
@@ -316,12 +323,12 @@ type _FnMapReduced<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-  Ex extends string = string,
+  Ex extends string = never,
   /**
    * @deprecated
    * Used internally
    */
-  TT extends Exclude<E, Ex> = Exclude<E, Ex>,
+  TT extends Exclude<E, Ex | { type: Ex }> = Exclude<E, Ex | { type: Ex }>,
 > = {
   [key in TT['type']]?: (
     state: StateP<Extract<TT, { type: key }>['payload'], Tc, T>,
@@ -336,7 +343,8 @@ export type FnMap<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-> = FnR<E, Pc, Tc, T, R> | _FnMap<E, Pc, Tc, T, R>;
+  Ex extends string = never,
+> = FnR<E, Pc, Tc, T, R> | _FnMap<E, Pc, Tc, T, R, Ex>;
 
 /**
  * A helper type to reduce a function signature to its context and events map.
@@ -355,7 +363,7 @@ export type FnMapR<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-  Ex extends string = string,
+  Ex extends string = never,
 > = FnReduced<E, Tc, T, R> | _FnMapReduced<E, Tc, T, R, Ex>;
 
 /**

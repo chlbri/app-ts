@@ -66,8 +66,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Fix**: Restore `Eo` in the private `#machine` field of `Interpreter` —
   the removal introduced in v2.5.1 caused type errors at compile time
-- **Fix**: `Eo` propagation in the `toPredicate` call in `interpreter.ts`
-  — fixes remaining generic type errors
+- **Fix**: `Eo` propagation in the `toPredicate` call in `interpreter.ts` —
+  fixes remaining generic type errors
 - **Fix**: `Ta` constraint corrected in `Machine` — `Ta extends string`
   replaced by `Ta extends ExtractTagsFromConfig<C>` for an exact bound
 - **Fix**: `Eo` propagated in `MachineOptions` via the `Mo` parameter of
@@ -176,14 +176,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 </summary>
 
 - **Fix**: Replace `partialCall(fn, arg)` with
-  `partialCall.paramArray(fn, arg)` in `interpreter.ts` and `machine.ts`
-  — update following `partialCall` API change
+  `partialCall.paramArray(fn, arg)` in `interpreter.ts` and `machine.ts` —
+  update following `partialCall` API change
 - **Fix**: Fix typo `Identitfy` → `Identify` in `identify.ts`
 - **Feat**: Add `UndefinedHelper` class in
   `src/libs/bemedev/features/common/types.ts` — undefined value marker for
   partial tuples
-- **Feat**: New types in `src/libs/bemedev/features/functions/types.ts`
-  — partial tuple utilities (`_Requirify`, `Parts`, `PartDiff`), promise
+- **Feat**: New types in `src/libs/bemedev/features/functions/types.ts` —
+  partial tuple utilities (`_Requirify`, `Parts`, `PartDiff`), promise
   types with timeout (`TimeoutPromise`, `TypeFromTimeout`,
   `TypeFromTimeouts`) and callback types (`CallBackError`,
   `CallBackResult`, `Callback`, `CbParams`, `ResultFrom`)
@@ -204,8 +204,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `@bemedev/better-promise` for promise utilities (`TimeoutPromise`,
   `anyPromises`, `asyncfy`, `withTimeout`)
 - **Refactor**: Internalize utilities previously provided by
-  `@bemedev/basifun` — `toArray`, `partialCall`, `switchV`, `isDefined`
-  and `identify` are now resolved via `#bemedev/features/…` aliases
+  `@bemedev/basifun` — `toArray`, `partialCall`, `switchV`, `isDefined` and
+  `identify` are now resolved via `#bemedev/features/…` aliases
 - **Feat**: Add `Identify<T>` type in
   `src/libs/bemedev/features/objects/types.ts`
 - **Feat**: New local implementations under
@@ -233,8 +233,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `emitters/types.ts` — RxJS-agnostic interface
 - **Remove**: Remove `EmitterFunction` (old `FnMap` form),
   `CollectedObservable` and `#executeEmitter` as obsolete
-- **Remove**: Remove `src/.vitest.ts` — vitest configuration centralized
-  in `vitest.config.ts`
+- **Remove**: Remove `src/.vitest.ts` — vitest configuration centralized in
+  `vitest.config.ts`
 - **Refactor**: Migrate `createTests` from `@bemedev/vitest-extended` to
   `@bemedev/dev-utils/vitest-extended` in all test files
 - **Update**: Update dependencies (`pnpm-lock.yaml`)
@@ -278,8 +278,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Rename**: `typings.maybe()` → `typings.optional()` and `Maybe<T>` →
   `Optional<T>` (same internal `OPTIONAL` marker, backward compatible)
 - **Feat**: Add `'void'` primitive type in `typings.ts`
-- **Refactor**: Simplify `Selector_F<T>` — remove `NotUndefined` wrapper
-  in `interpreter.ts` and `interpreter.types.ts`
+- **Refactor**: Simplify `Selector_F<T>` — remove `NotUndefined` wrapper in
+  `interpreter.ts` and `interpreter.types.ts`
 - **Refactor**: Remove `Decompose2<T>` type and unused `Decompose` import
   in `types.ts`
 - **Fix**: Fix `AnyMachine` import path (`#machines` → `#machine`) in
@@ -322,13 +322,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Feat**: Add `addOptions: any` field to the `AnyMachine` interface in
   `machine.types.ts`
 - **Feat**: Add new exported type `AddOptionsFrom<T>` in `types.ts`
-- **Feat**: Add many utility types in `types.ts`:
-  `GetEventsFromMachine`, `GetPromiseesSrcFromMachine`,
-  `GetEmittersSrcFromMachine`, `GetChildrenSrcFromMachine`,
-  `GetActorKeysFromMachine`, `Decompose2`, `MachineOptionsFrom` / `MoF`,
-  `ConfigFrom`, `PrivateContextFrom`, `ContextFrom`, `EventsMapFrom`,
-  `StateFrom`, `DecomposedStateFrom`, `StateExtendedFrom`, `StatePFrom`,
-  `StatePextendedFrom`, `ActorsMapFrom`, `EventsFrom`
+- **Feat**: Add many utility types in `types.ts`: `GetEventsFromMachine`,
+  `GetPromiseesSrcFromMachine`, `GetEmittersSrcFromMachine`,
+  `GetChildrenSrcFromMachine`, `GetActorKeysFromMachine`, `Decompose2`,
+  `MachineOptionsFrom` / `MoF`, `ConfigFrom`, `PrivateContextFrom`,
+  `ContextFrom`, `EventsMapFrom`, `StateFrom`, `DecomposedStateFrom`,
+  `StateExtendedFrom`, `StatePFrom`, `StatePextendedFrom`, `ActorsMapFrom`,
+  `EventsFrom`
 - **Feat**: Add `constructStateValue`, `constructSend` helpers and
   `defaultI` constant in `fixtures/index.ts`
 - **Refactor**: Add `jsxSingleQuote: true` in `oxfmt.config.ts`

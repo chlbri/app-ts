@@ -39,6 +39,6 @@ export const toChildSrc: ToChildSrc_F = (
   children,
 ) => {
   const fn = children?.[child];
-  const func = fn ? reduceFnMap(events, actorsMap, fn) : undefined;
+  const func = fn ? reduceFnMap(events, actorsMap, fn as any) : undefined;
   return func as any;
 };

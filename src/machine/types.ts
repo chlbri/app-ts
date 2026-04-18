@@ -566,7 +566,7 @@ export type FnMapFrom<
     '__eventsO' | 'pContext' | 'context' | 'actorsMap' | '__tag'
   >,
   R = any,
-  Ex extends string = string,
+  Ex extends string = never,
 > = FnMapR<
   Extract<T['__eventsO'], EventObject>,
   ContextFrom<T>,

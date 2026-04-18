@@ -74,7 +74,7 @@ export type Action2<
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-> = FnR<E, Pc, Tc, T, Promise<ActionResult<Pc, Tc>>>;
+> = FnR<E, Pc, Tc, T, MaybeAsyncActionResult<Pc, Tc>>;
 
 export type Action22<
   E extends EventObject = EventObject,

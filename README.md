@@ -462,8 +462,8 @@ Re-dispatch events from within actions.
 
 ### 5.6 Async actions & errorFn
 
-As of v3.0.0, all action helpers accept `async` functions directly.
-The interpreter's action pipeline is fully async and sequentially awaited.
+As of v3.0.0, all action helpers accept `async` functions directly. The
+interpreter's action pipeline is fully async and sequentially awaited.
 
 An optional third `errorFn` argument handles promise rejections inline:
 
@@ -490,8 +490,8 @@ An optional third `errorFn` argument handles promise rejections inline:
 }))
 ```
 
-When `errorFn` is absent and the action rejects, the error is routed to
-the internal `_addError` channel — no uncaught rejection.
+When `errorFn` is absent and the action rejects, the error is routed to the
+internal `_addError` channel — no uncaught rejection.
 
 <br/>
 
@@ -1110,8 +1110,7 @@ const machine = createMachine(
 
 Both `provideOptions` and `addOptions` support accessing previously defined
 options through the `_legacy` parameter. This enables composition of
-existing actions, predicates, delays, and actors without manual
-tracking.
+existing actions, predicates, delays, and actors without manual tracking.
 
 ### On a Machine
 
