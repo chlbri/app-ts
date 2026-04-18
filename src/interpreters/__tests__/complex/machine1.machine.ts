@@ -1,3 +1,4 @@
+import { emptyFn } from '#fixtures';
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 import type { inferT } from '#utils/typings';
@@ -162,16 +163,26 @@ export const machine = createMachine(
       () => 'Asset is required to start the machine',
     ),
 
-    setOnlineStatus: assign('context.internetStatus', () =>
-      isOnline({ timeout: CHECK_DELAY / 2 }),
+    setOnlineStatus: assign(
+      'context.internetStatus',
+      () => isOnline({ timeout: CHECK_DELAY / 2 }),
+      {
+        error: emptyFn,
+      },
     ),
 
-    addIntermediary: assign('context.intermediaries', {
-      ADD_INTERMEDIARY: async ({
-        payload,
-        context: { intermediaries = [] },
-      }) => [...intermediaries, payload],
-    }),
+    addIntermediary: assign(
+      'context.intermediaries',
+      {
+        ADD_INTERMEDIARY: async ({
+          payload,
+          context: { intermediaries = [] },
+        }) => [...intermediaries, payload],
+      },
+      {
+        error: emptyFn,
+      },
+    ),
 
     'error.addIntermediary': assign(
       'context.errors.intermediary.offline',
