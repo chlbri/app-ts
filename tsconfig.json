@@ -84,7 +84,7 @@
         "./src/machine/index.ts"
       ],
       "#registry": [
-        "./src/machine/registry.ts"
+        "src/registry.ts"
       ],
       "#config": [
         "./src/config/index.ts"

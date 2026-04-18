@@ -153,12 +153,13 @@ export class Interpreter<
   A extends ActorsConfigMap = ActorsConfigMap,
   Ta extends string = string,
   Eo extends EventObject = EventObject,
-  Path extends string = string,
+  AllPaths extends string = string,
+  Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > implements AnyInterpreter<E, A, Pc, Tc> {
   /**
    * The {@linkcode Machine} machine being interpreted.
    */
-  #machine: Machine<C, Pc, Tc, E, A, Ta, Eo, SimpleMachineOptions2, Path>;
+  #machine: Machine<C, Pc, Tc, E, A, Ta, Eo, AllPaths, Mo>;
 
   /**
    * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.
