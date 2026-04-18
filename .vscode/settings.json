@@ -3,13 +3,33 @@
     ".github/workflows/ci.yml",
     ".github/workflows/publish-NPM.yml"
   ],
-  "githubPullRequests.ignoredPullRequestBranches": ["dev"],
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "dev"
+  ],
   "demoTime.defaultFileType": "json",
   "editor.colorDecorators": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[json]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
-  "[javascript]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
-  "[typescript]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
-  "[typescriptreact]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
-  "[javascriptreact]": { "editor.defaultFormatter": "oxc.oxc-vscode" }
+  "[json]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "chat.tools.terminal.autoApprove": {
+    "pnpm": true,
+    "npx tsc": true,
+    "git stash": true,
+    "npx vitest": true,
+    "mv": true,
+    "mkdir": true
+  }
 }

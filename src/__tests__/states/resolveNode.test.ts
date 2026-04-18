@@ -1,0 +1,30 @@
+import { resolveNode } from '../../states/functions/resolveNode';
+
+test('resolveNode -> coverage', () => {
+  const inc = vi.fn();
+  const events = {};
+  const promisees = {};
+  const options = {
+    actions: {
+      inc,
+    },
+  };
+  const config = {
+    entry: 'inc',
+    exit: 'inc',
+  };
+
+  const node = resolveNode(events, promisees, config, options);
+  expect(node).toStrictEqual({
+    after: [],
+    always: [],
+    entry: [inc],
+    exit: [inc],
+    children: [],
+    emitters: [],
+    on: [],
+    states: [],
+    tags: [],
+    type: 'atomic',
+  });
+});

@@ -139,7 +139,7 @@ export type NoExtraKeysConfigNode<T extends NodeConfig> = T & {
   };
 };
 export type NoExtraKeysConfig<T extends Config> = T & {
-  [K in Exclude<keyof T, keyof Config | '__tsSchema'>]: never;
+  [K in Exclude<keyof T, keyof Config>]: never;
 } & {
   states?: Record<string, NoExtraKeysConfigNode<NodeConfig>>;
 };

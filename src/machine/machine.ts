@@ -60,6 +60,7 @@ import type {
   TimeAction_F,
   VoidAction_F,
 } from './machine.types';
+import { registerMachine } from './registry';
 import type {
   Config,
   ConfigDef,
@@ -1280,7 +1281,10 @@ export const getExits = partialCall.paramArray(getIO, 'exit');
 
 export type { Machine };
 
-export type CreateMachine_F = <
+/**
+ * @deprecated Use the 3-argument form: createMachine(name, config, types)
+ */
+export type CreateMachine_F_Legacy = <
   const C2 extends NoExtraKeysConfigDef<ConfigDef> =
     NoExtraKeysConfigDef<ConfigDef>,
   const C extends Config & TransformConfigDef<C2> = Config &
@@ -1291,39 +1295,61 @@ export type CreateMachine_F = <
   A extends NOmit<A0, 'pContext'> = NOmit<A0, 'pContext'>,
   Pc extends A0['pContext'] = A0['pContext'],
 >(
-  config: NoExtraKeysConfig<C & { __tsSchema?: NoExtraKeysConfigDef<C2> }>,
+  config: NoExtraKeysConfig<C>,
   types: { pContext: Pc; context: Tc; eventsMap: EventM; actorsMap: A },
-) => Machine<
-  C,
-  // No need to be instanciated, they will be instanciated inside
-  Pc,
-  Tc,
-  EventM,
-  A
->;
+) => Machine<C, Pc, Tc, EventM, A>;
+
+export type CreateMachine_F_New = <
+  const C2 extends NoExtraKeysConfigDef<ConfigDef> =
+    NoExtraKeysConfigDef<ConfigDef>,
+  const C extends Config & TransformConfigDef<C2> = Config &
+    TransformConfigDef<C2>,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  EventM extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
+  A0 extends GetActorKeysFromConfig2<C> = GetActorKeysFromConfig2<C>,
+  A extends NOmit<A0, 'pContext'> = NOmit<A0, 'pContext'>,
+  Pc extends A0['pContext'] = A0['pContext'],
+>(
+  name: string,
+  config: NoExtraKeysConfig<C>,
+  types?: { pContext: Pc; context: Tc; eventsMap: EventM; actorsMap: A },
+) => Machine<C, Pc, Tc, EventM, A>;
 
 /**
- * Creates a new instance of {@linkcode Machine} with the provided configuration and
+ * Creates a new instance of {@linkcode Machine} with the provided configuration.
  *
- * @param config The configuration for the machine.
- * @param types An object containing the types for the machine:
- * - `pContext`: The private context type.
- * - `context`: The context type.
- * - `eventsMap`: The events map type derived from the configuration.
- * - `promiseesMap`: The promisees map type derived from the configuration.
+ * Supports two call signatures:
+ * - **Legacy (2-arg, deprecated)**: `createMachine(config, types)`
+ * - **New (3-arg)**: `createMachine(name, config, types?)`
  *
- * @param initials The initials {@linkcode StateValue} for all compound node configs for the {@linkcode Machine}, derived from the configuration.
- * @returns A new instance of {@linkcode Machine} with the provided configuration and
- *
- * @see {@linkcode CreateMachine_F}
+ * @see {@linkcode CreateMachine_F_New}
+ * @see {@linkcode CreateMachine_F_Legacy}
  */
-export const createMachine: CreateMachine_F = (
-  config,
-  { eventsMap, actorsMap },
-) => {
-  const out = new Machine(config as Config)
-    ._provideEvents(eventsMap)
-    ._provideActors(actorsMap);
+export const createMachine: CreateMachine_F_New & CreateMachine_F_Legacy =
+  ((...args: any[]) => {
+    let name: string | undefined;
+    let config: any;
+    let types: any;
 
-  return out as any;
-};
+    if (typeof args[0] === 'string') {
+      name = args[0];
+      config = args[1];
+      types = args[2];
+    } else {
+      config = args[0];
+      types = args[1];
+    }
+
+    const eventsMap = types?.eventsMap ?? {};
+    const actorsMap = types?.actorsMap ?? {};
+
+    const out = new Machine(config as Config)
+      ._provideEvents(eventsMap)
+      ._provideActors(actorsMap);
+
+    if (name) {
+      registerMachine(name, out as any);
+    }
+
+    return out as any;
+  }) as any;
