@@ -4,7 +4,8 @@ import { createMachine } from '#machine';
 import { typings } from '#utils';
 import { constructTests } from '#fixtures';
 
-export const machine1 = createMachine('src/__tests__/delays/fixtures',
+export const machine1 = createMachine(
+  'src/__tests__/delays/fixtures',
   {
     initial: 'idle',
     states: {
