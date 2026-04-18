@@ -22,14 +22,4 @@ export default createMachine(
       filtered: {},
     },
   },
-  typings({
-    context: {
-      scores,
-    },
-    eventsMap: {
-      SET_SCORES: { scores },
-      FILTER_HIGH_SCORES: 'primitive',
-    },
-    promiseesMap: {},
-  }),
 );

@@ -21,26 +21,28 @@ describe('Error transitions testing)', () => {
       complete: () => console.warn('Subject completed'),
     });
 
-    const machine = _raw_machine.provideOptions(({ assign, voidAction }) => ({
-      actors: { emitters: { interval: () => createPausable(sub) } },
+    const machine = _raw_machine.provideOptions(
+      ({ assign, voidAction }) => ({
+        actors: { emitters: { interval: () => createPausable(sub) } },
 
-      actions: {
-        assigN: assign('context', {
-          'interval::next': ({ payload, context }) => context + payload,
-        }),
+        actions: {
+          assigN: assign('context', {
+            'interval::next': ({ payload, context }) => context + payload,
+          }),
 
-        signals: voidAction({
-          'interval::error': ({ payload }) => {
-            mock('Error received:', payload);
-            console.warn('Error received:', payload);
-          },
-          'interval::next': ({ payload }) => {
-            mock('NEXT received:', payload);
-            console.warn('Next received:', payload);
-          },
-        }),
-      },
-    }));
+          signals: voidAction({
+            'interval::error': ({ payload }) => {
+              mock('Error received:', payload);
+              console.warn('Error received:', payload);
+            },
+            'interval::next': ({ payload }) => {
+              mock('NEXT received:', payload);
+              console.warn('Next received:', payload);
+            },
+          }),
+        },
+      }),
+    );
 
     const service = interpret(machine, { context: 0 });
 

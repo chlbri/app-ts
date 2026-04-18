@@ -2,14 +2,14 @@ import type {
   AnyArray,
   Equals,
   Keys,
-  NOmit,
   NotUndefined,
+  PrimitiveObject,
   Ru,
   SoA,
   SoRa,
 } from '#bemedev/globals/types';
 import type { StateValue } from '#states';
-import type { RecordS } from '~types';
+import type { EmptyObject } from '@bemedev/decompose';
 
 type PrimitiveS =
   | 'string'
@@ -57,9 +57,9 @@ export type Custom<T = any> = {
   [CUSTOM]: T;
 };
 
-export type PartialCustom = {
+export type PartialCustom<T extends ObjectMap = EmptyObject> = {
   [PARTIAL]: undefined;
-};
+} & T;
 
 type __PrimitiveObject = Types | ObjectMap | Custom | PartialCustom;
 
@@ -71,18 +71,23 @@ export type Optional<
 };
 
 export type ArrayCustom<
-  T extends __PrimitiveObject | Optional = __PrimitiveObject,
+  T extends __PrimitiveObject | Optional | ArrayCustom = __PrimitiveObject,
 > = {
   [ARRAY]: T;
 };
 
 type ObjectMap = {
-  [key: Keys]: SoRa<_PrimitiveObject>;
+  [key: Keys]: _PrimitiveObject;
 };
 
 type _PrimitiveObject = __PrimitiveObject | Optional | ArrayCustom;
 
-export type PrimitiveObjectT = SoRa<Types | PrimitiveObjectMapT>;
+export type PrimitiveObjectT =
+  | Types
+  | ArrayCustom<Types>
+  | Optional<Types>
+  | PrimitiveObjectMapT
+  | PartialCustom<Omit<PrimitiveObjectMapT, typeof PARTIAL>>;
 export interface PrimitiveObjectMapT {
   [key: Keys]: PrimitiveObjectT;
 }
@@ -92,17 +97,23 @@ export interface PrimitiveObjectMapT {
  *
  * @remark
  */
-export type ObjectT = _PrimitiveObject | SoRa<_PrimitiveObject>;
-type ActorsMap = {
-  children: RecordS<PrimitiveObjectT>;
-  emitters: RecordS<{
-    next: PrimitiveObjectT;
-    error: PrimitiveObjectT;
-  }>;
+export type ObjectT = _PrimitiveObject;
+export type ActorsMapT<
+  P extends string = string,
+  E extends string = string,
+> = {
+  children?: Record<P, PrimitiveObjectT>;
+  emitters?: Record<
+    E,
+    {
+      next: PrimitiveObjectT;
+      error: PrimitiveObjectT;
+    }
+  >;
 };
 export type Args<
-  E extends ObjectT = ObjectT,
-  P extends ActorsMap = ActorsMap,
+  E extends PrimitiveObjectMapT = PrimitiveObjectMapT,
+  P extends ActorsMapT = ActorsMapT,
 > = {
   eventsMap: E;
   pContext: ObjectT;
@@ -111,7 +122,7 @@ export type Args<
 };
 
 type ReduceTuple2<T extends AnyArray<ObjectT>> = T extends [
-  infer First,
+  infer First extends ObjectT,
   ...infer Rest extends AnyArray<ObjectT>,
 ]
   ? [TransformObject<First>, ...ReduceTuple2<Rest>]
@@ -127,8 +138,8 @@ type __TransformPrimitiveObject<T> = T extends Types
       ? ReduceTuple2<T>
       : T extends ArrayCustom<infer A>
         ? TransformObject<A>[]
-        : T extends PartialCustom
-          ? Partial<__TransformPrimitiveObject<NOmit<T, typeof PARTIAL>>>
+        : T extends PartialCustom<infer U>
+          ? Partial<__TransformPrimitiveObject<U>>
           : T extends Optional<infer TMaybe>
             ? __TransformPrimitiveObject<TMaybe> | undefined
             : {
@@ -171,7 +182,12 @@ type Undefiny<T> = T extends AnyArray
     ? UndefinyObject<T>
     : T;
 
-export type TransformObject<T> = Undefiny<__TransformPrimitiveObject<T>>;
+export type TransformObject<T extends ObjectT> = Undefiny<
+  __TransformPrimitiveObject<T>
+>;
+
+export type TransformPrimitiveObject<T extends PrimitiveObjectT> =
+  TransformObject<T> extends infer U extends PrimitiveObject ? U : never;
 
 export const transformPrimitiveObject = <T extends ObjectT>(
   obj: T,
@@ -186,7 +202,8 @@ export const transformPrimitiveObject = <T extends ObjectT>(
   const checkObject = typeof obj === 'object';
   if (checkObject) {
     if (OPTIONAL in _obj) {
-      return transformPrimitiveObject(_obj[OPTIONAL]);
+      const d = _obj[OPTIONAL] as ObjectT;
+      return transformPrimitiveObject(d as ObjectT);
     }
 
     const isCustom = Object.keys(obj).every(key => key === CUSTOM);
@@ -196,7 +213,7 @@ export const transformPrimitiveObject = <T extends ObjectT>(
     const entries = Object.entries(obj).filter(([key]) => key !== PARTIAL);
 
     entries.forEach(([key, value]) => {
-      out[key] = transformPrimitiveObject(value);
+      out[key] = transformPrimitiveObject(value as ObjectT);
     });
 
     return out;
@@ -210,9 +227,9 @@ export const transform = transformPrimitiveObject;
 type UndefinyT<T> = ObjectT extends T ? 'undefined' : T;
 
 export type TransformArgs<T extends Partial<Args>> = {
-  eventsMap: TransformObject<T['eventsMap']>;
-  pContext: TransformObject<UndefinyT<T['pContext']>>;
-  context: TransformObject<UndefinyT<T['context']>>;
+  eventsMap: TransformPrimitiveObject<NotUndefined<T['eventsMap']>>;
+  pContext: TransformObject<NotUndefined<UndefinyT<T['pContext']>>>;
+  context: TransformObject<NotUndefined<UndefinyT<T['context']>>>;
   actorsMap: {
     children: TransformObject<NotUndefined<T['actorsMap']>['children']>;
 
@@ -225,7 +242,7 @@ export type TransformArgs<T extends Partial<Args>> = {
   : never;
 
 const DEFAULT_ARGS = {
-  eventsMap: 'primitive',
+  eventsMap: {},
   pContext: 'undefined',
   context: 'primitive',
   actorsMap: {
@@ -249,7 +266,7 @@ const defaultArgs = <const T extends Partial<Args>>(values?: T) => {
 export const typings = <const T extends Partial<Args>>(
   args?: T,
 ): TransformArgs<T> => {
-  const out = transformPrimitiveObject(defaultArgs(args as any));
+  const out = transformPrimitiveObject(defaultArgs(args) as ObjectT);
   return out as TransformArgs<T>;
 };
 
@@ -346,7 +363,7 @@ typings.intersection = <T extends [ObjectMap, ObjectMap, ...ObjectMap[]]>(
   return out as IntersectionCustom<T>;
 };
 
-typings.partial = <T extends ObjectT>(value: T): T & PartialCustom => {
+typings.partial = <T extends ObjectMap>(value: T): PartialCustom<T> => {
   const entries = Object.entries(value).filter(([key]) => key !== PARTIAL);
   const out: any = {};
 

@@ -12,7 +12,7 @@ describe('Integration testing for interpret, Children', () => {
   const DELAY = 1000;
 
   describe('#01 => With delay', () => {
-        const machine = _machine1;
+    const machine = _machine1;
 
     machine.addOptions(() => ({
       delays: { DELAY },
@@ -38,7 +38,7 @@ describe('Integration testing for interpret, Children', () => {
   });
 
   describe('#01 => With delay, but cannot reach caused by guard', () => {
-        const machine = _machine2;
+    const machine = _machine2;
 
     machine.addOptions(({ isDefined }) => ({
       delays: { DELAY3: DELAY * 3 },
@@ -64,7 +64,7 @@ describe('Integration testing for interpret, Children', () => {
   });
 
   describe('#02 => complex, two always with parameters', () => {
-        const machine = _machine3;
+    const machine = _machine3;
 
     // machine.addPredicates({ returnFalse });
     machine.addOptions(({ isDefined }) => ({

@@ -2,7 +2,7 @@ import { emptyFn } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { createConfig } from '#machines';
-import { notU, typings } from '#utils';
+import { notU } from '#utils';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
@@ -86,7 +86,8 @@ export const config21 = createConfig({
   },
 });
 
-export const machine21 = createMachine('src/__tests__/interpreters/data/machine21',
+export const machine21 = createMachine(
+  'src/__tests__/interpreters/data/machine21',
   {
     actors: {
       machine1: {
@@ -98,29 +99,6 @@ export const machine21 = createMachine('src/__tests__/interpreters/data/machine2
     },
     ...config21,
   },
-  typings({
-    eventsMap: {
-      NEXT: 'primitive',
-      FETCH: 'primitive',
-      WRITE: { value: 'string' },
-      SEND: 'primitive',
-    },
-    context: {
-      iterator: 'number',
-      input: 'string',
-      data: typings.array('string'),
-    },
-    pContext: {
-      iterator: 'number',
-    },
-    actorsMap: {
-      children: {
-        machine1: {
-          NEXT: 'primitive',
-        },
-      },
-    },
-  }),
 ).provideOptions(
   ({ isNotValue, isValue, assign, voidAction, sendTo }) => ({
     actions: {

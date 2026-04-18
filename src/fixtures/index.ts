@@ -209,8 +209,10 @@ type Option<
         { type: T }
       >['payload'] extends infer P
         ? object extends P
-          ? []
-          : [payload: P]
+          ? P extends never
+            ? []
+            : [payload: P]
+          : []
         : []
     ) => TestArr;
 

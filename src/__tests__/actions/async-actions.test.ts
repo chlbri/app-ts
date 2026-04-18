@@ -25,8 +25,7 @@ const TINY_DELAY = 20; // ms — resolves fast enough not to hit a 5 s max
 
 describe('Async action helpers', () => {
   describe('#01 => assign — async fn, no options', () => {
-        const machine = _machine1
-    .provideOptions(({ assign }) => ({
+    const machine = _machine1.provideOptions(({ assign }) => ({
       actions: {
         loadUser: assign(
           'context.name',
@@ -57,8 +56,7 @@ describe('Async action helpers', () => {
   });
 
   describe('#02 => assign — async fn + { max } — resolves before timeout', () => {
-        const machine = _machine2
-    .provideOptions(({ assign }) => ({
+    const machine = _machine2.provideOptions(({ assign }) => ({
       actions: {
         loadUser: assign(
           'context.name',
@@ -83,8 +81,7 @@ describe('Async action helpers', () => {
   });
 
   describe('#03 => assign — async fn + { error } handler on reject', () => {
-        const machine = _machine3
-    .provideOptions(({ assign }) => ({
+    const machine = _machine3.provideOptions(({ assign }) => ({
       actions: {
         loadUser: assign(
           'context.name',
@@ -115,8 +112,7 @@ describe('Async action helpers', () => {
   describe('#04 => voidAction — async fn, no options', () => {
     const sideEffect = vi.fn();
 
-        const machine = _machine4
-    .provideOptions(({ voidAction }) => ({
+    const machine = _machine4.provideOptions(({ voidAction }) => ({
       actions: {
         ping: voidAction(
           async () => {
@@ -144,8 +140,7 @@ describe('Async action helpers', () => {
   describe('#05 => voidAction — async fn + { error } handler', () => {
     const errorHandler = vi.fn();
 
-        const machine = _machine5
-    .provideOptions(({ voidAction }) => ({
+    const machine = _machine5.provideOptions(({ voidAction }) => ({
       actions: {
         ping: voidAction(
           async () => {
@@ -176,8 +171,7 @@ describe('Async action helpers', () => {
   });
 
   describe('#06 => filter — async predicate, no options', () => {
-        const machine = _machine6
-    .provideOptions(({ filter }) => ({
+    const machine = _machine6.provideOptions(({ filter }) => ({
       actions: {
         filterEven: filter('context.items', (item: number) => {
           return item % 2 === 0;
@@ -202,8 +196,7 @@ describe('Async action helpers', () => {
     // sendTo is a curried helper — sendTo(machine?)(fn)
     // We test only that the async fn resolves without error and the
     // sentEvent reaches the interpreter (checked via warnings or lack thereof).
-        const machine = _machine7
-    .provideOptions(({ voidAction }) => ({
+    const machine = _machine7.provideOptions(({ voidAction }) => ({
       actions: {
         // sendTo without a target machine — we use voidAction to prove async runs
         dispatchEvent: voidAction(
@@ -231,8 +224,7 @@ describe('Async action helpers', () => {
   });
 
   describe('#08 => assign — sync fn still works (backward compat)', () => {
-        const machine = _machine8
-    .provideOptions(({ assign }) => ({
+    const machine = _machine8.provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context', ({ context }) => (context ?? 0) + 1),
       },

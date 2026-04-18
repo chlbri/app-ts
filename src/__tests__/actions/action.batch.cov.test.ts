@@ -4,28 +4,30 @@ import _raw_machine from './action.batch.cov.machine';
 vi.useFakeTimers();
 
 describe('Machine batch action', () => {
-  const machine = _raw_machine.provideOptions(({ batch, assign, voidAction }) => ({
-    actions: {
-      inc1: assign('context', ({ context }) => context + 1),
-      inc2: batch(
-        assign('context', ({ context }) => context + 1),
-        assign('context', ({ context }) => context + 1),
-        voidAction(() => console.warn('Increment by 2')),
-      ),
-      inc5: batch(
-        assign('context', ({ context }) => context + 1),
-        assign('context', ({ context }) => context + 1),
-        assign('context', ({ context }) => context + 1),
-        assign('context', ({ context }) => context + 1),
-        assign('context', async ({ context }) => context + 3, {
-          error: () => 4,
-        }),
-        voidAction(() =>
-          console.warn('Tricky, last action increment by 3'),
+  const machine = _raw_machine.provideOptions(
+    ({ batch, assign, voidAction }) => ({
+      actions: {
+        inc1: assign('context', ({ context }) => context + 1),
+        inc2: batch(
+          assign('context', ({ context }) => context + 1),
+          assign('context', ({ context }) => context + 1),
+          voidAction(() => console.warn('Increment by 2')),
         ),
-      ),
-    },
-  }));
+        inc5: batch(
+          assign('context', ({ context }) => context + 1),
+          assign('context', ({ context }) => context + 1),
+          assign('context', ({ context }) => context + 1),
+          assign('context', ({ context }) => context + 1),
+          assign('context', async ({ context }) => context + 3, {
+            error: () => 4,
+          }),
+          voidAction(() =>
+            console.warn('Tricky, last action increment by 3'),
+          ),
+        ),
+      },
+    }),
+  );
 
   const service = interpret(machine, { context: 0 });
 

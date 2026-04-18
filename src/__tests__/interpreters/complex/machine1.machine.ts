@@ -1,5 +1,4 @@
 import { createMachine } from '#machine';
-import { typings } from '#utils';
 import type { inferT } from '#utils/typings';
 import isOnline from 'is-online';
 import { asset, intermediary } from './machine1.machine.typings';
@@ -106,28 +105,6 @@ export const machine = createMachine(
       },
     },
   },
-  typings({
-    eventsMap: {
-      START: typings.partial({
-        asset,
-        mandatory: intermediary,
-      }),
-      ADD_INTERMEDIARY: intermediary,
-      RESET: 'primitive',
-    },
-
-    context: typings.partial({
-      asset,
-      intermediaries: typings.array(intermediary),
-      internetStatus: 'boolean',
-      errors: typings.partial({
-        noAsset: 'string',
-        intermediary: {
-          offline: 'string',
-        },
-      }),
-    }),
-  }),
 ).provideOptions(({ assign, erase, batch }) => ({
   actions: {
     provideAsset: assign('context.asset', {

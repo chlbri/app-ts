@@ -84,7 +84,10 @@ export type TransitionConfigA<Paths = string> =
   | Require<TransitionConfigMapA<Paths>, 'actions'>
   | Paths;
 
-export type TransitionConfigMapF<Paths = string> = Require<_TransitionConfigMap<Paths>, 'target'>;
+export type TransitionConfigMapF<Paths = string> = Require<
+  _TransitionConfigMap<Paths>,
+  'target'
+>;
 
 export type TransitionConfigF<Paths = string> =
   | Require<TransitionConfigMapF<Paths>, 'target'>
@@ -103,7 +106,9 @@ export type TransitionConfigMap<Paths = string> =
  * @see {@linkcode TransitionConfigMapF} for a version that requires a target.
  * @see {@linkcode TransitionConfigMapA} for a version that requires actions.
  */
-export type TransitionConfig<Paths = string> = Paths | TransitionConfigMap<Paths>;
+export type TransitionConfig<Paths = string> =
+  | Paths
+  | TransitionConfigMap<Paths>;
 
 /**
  * A version {@linkcode TransitionConfig} with string declaration.
@@ -130,7 +135,9 @@ export type ArrayTransitions<Paths = string> = readonly [
  * @see {@linkcode ArrayTransitions} for an array of transitions.
  * @see {@linkcode TransitionConfig} for a single transition configuration.
  */
-export type SingleOrArrayT<Paths = string> = ArrayTransitions<Paths> | TransitionConfig<Paths>;
+export type SingleOrArrayT<Paths = string> =
+  | ArrayTransitions<Paths>
+  | TransitionConfig<Paths>;
 
 /**
  * Representation of a always transition config.
@@ -151,7 +158,9 @@ export type AlwaysConfig<Paths = string> =
  *
  * @remarks For the purpose of delay transition config.
  */
-export type DelayedTransitions<Paths = string> = RecordS<SingleOrArrayT<Paths>>;
+export type DelayedTransitions<Paths = string> = RecordS<
+  SingleOrArrayT<Paths>
+>;
 
 export type GetEventKeysFromDelayed<T> = {
   [key in keyof T & string]: T[key] extends AnyArray

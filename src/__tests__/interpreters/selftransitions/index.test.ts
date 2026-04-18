@@ -10,7 +10,7 @@ beforeAll(() => {
 describe('Self Transitions', () => {
   const DELAY = 1000;
   it('should handle after self transitions', async () => {
-        const machine = _machine1;
+    const machine = _machine1;
 
     machine.addOptions(() => ({
       delays: {
@@ -27,7 +27,7 @@ describe('Self Transitions', () => {
   });
 
   it('should handle always self transitions', async () => {
-        const machine = _machine2;
+    const machine = _machine2;
 
     const service = interpret(machine);
 

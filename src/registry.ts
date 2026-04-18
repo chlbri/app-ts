@@ -1,10 +1,5 @@
-import type { PrimitiveObject } from '#bemedev/globals/types';
-import type { ActorsConfigMap, EventObject, EventsMap } from '#events';
-import type {
-  ConfigDef,
-  NoExtraKeysConfigDef,
-  SimpleMachineOptions2,
-} from '#machines';
+import type { ConfigDef, NoExtraKeysConfigDef } from '#machines';
+import type { ObjectT } from '#utils/typings';
 import type { AnyMachine } from './machine/machine.types';
 
 /**
@@ -21,16 +16,14 @@ export interface Register extends Record<
       map: NoExtraKeysConfigDef<ConfigDef>;
       all: string;
     };
-    events: {
-      map: EventsMap;
-      all: EventObject;
-    };
+    events: string;
 
-    actors: ActorsConfigMap;
-    pContext: any;
-    context: PrimitiveObject;
-    tags: string;
-    options: SimpleMachineOptions2;
+    actors: {
+      children: string;
+      emitters: string;
+    };
+    pContext?: ObjectT;
+    tags?: string;
   }
   // oxlint-disable-next-line typescript/no-empty-object-type
 > {}

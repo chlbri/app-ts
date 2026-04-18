@@ -1,32 +1,26 @@
 import { createMachine } from '#machine';
-import { typings } from '#utils';
 
-export default createMachine('src/__tests__/interpreters/legacy-options.9.machine',
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                CHECK: [
-                  {
-                    guards: 'isPositive',
-                    target: '/positive',
-                  },
-                  {
-                    guards: 'isNegative',
-                    target: '/negative',
-                  },
-                ],
-              },
+export default createMachine(
+  'src/__tests__/interpreters/legacy-options.9.machine',
+  {
+    initial: 'idle',
+    states: {
+      idle: {
+        on: {
+          CHECK: [
+            {
+              guards: 'isPositive',
+              target: '/positive',
             },
-            positive: {},
-            negative: {},
-          },
+            {
+              guards: 'isNegative',
+              target: '/negative',
+            },
+          ],
         },
-        typings({
-          eventsMap: {
-            CHECK: 'primitive',
-          },
-          context: 'number',
-        }),
-      );
+      },
+      positive: {},
+      negative: {},
+    },
+  },
+);

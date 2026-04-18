@@ -39,7 +39,6 @@ import {
   type ExtendedActionsParams,
   type PrivateContextFrom,
   type ScheduledData,
-  type SimpleMachineOptions2,
 } from '#machines';
 import {
   flatMap,
@@ -107,6 +106,7 @@ import type {
   WorkingStatus,
 } from './interpreter.types';
 
+import type { FinallyConfig } from '#actor';
 import _unknown from '#bemedev/features/common/castings/_unknown';
 import type {
   AllowedNames,
@@ -116,7 +116,6 @@ import type {
 import { toEmitterSrc, type EmitterFunction2 } from '#emitters';
 import type { Machine } from '#machine';
 import type { ActorsMapFrom, AnyMachine, ChildFunction2 } from '#machines';
-import type { FinallyConfig } from '#actor';
 import { createScheduler } from '@bemedev/scheduler';
 import type { ChildConfig, EmitterConfig } from '../actor.types';
 import { createSubscriber, type SubscriberClass } from './subscriber';
@@ -131,7 +130,7 @@ import { createSubscriber, type SubscriberClass } from './subscriber';
  * @template : type {@linkcode types} [Tc] - The context type.
  * @template : type {@linkcode EventsMap} [E] - The events map type, which maps event names to their
  * @template : type {@linkcode PromiseeMap} [P] - The promisees map type, which maps promise names to their
- * @template Mo : type {@linkcode SimpleMachineOptions2} - The machine options type, which includes various configurations for the machine. Default to {@linkcode MachineOptions}.
+ * @template Mo : type {@linkcode MachineOptions} - The machine options type, which includes various configurations for the machine. Default to {@linkcode MachineOptions}.
  *
  * @implements : {@linkcode AnyInterpreter}
  *
@@ -154,12 +153,11 @@ export class Interpreter<
   Ta extends string = string,
   Eo extends EventObject = EventObject,
   AllPaths extends string = string,
-  Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > implements AnyInterpreter<E, A, Pc, Tc> {
   /**
    * The {@linkcode Machine} machine being interpreted.
    */
-  #machine: Machine<C, Pc, Tc, E, A, Ta, Eo, AllPaths, Mo>;
+  #machine: Machine<C, Pc, Tc, E, A, Ta, Eo, AllPaths>;
 
   /**
    * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.

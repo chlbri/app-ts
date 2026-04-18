@@ -8,8 +8,7 @@ vi.useFakeTimers();
 describe('Coverage actors', () => {
   describe('#03 => From describe 2 but, two different ids', () => {
     const DELAY = 350;
-        const childMachine = _childMachine1
-    .provideOptions(({ assign }) => ({
+    const childMachine = _childMachine1.provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context.iter1', ({ context }) => context.iter1 + 1),
         inc2: assign('context.iter2', ({ context }) => context.iter2 + 1),
@@ -17,7 +16,7 @@ describe('Coverage actors', () => {
       delays: { DELAY, DELAY2: DELAY * 2 },
     }));
 
-        const machine = _machine2;
+    const machine = _machine2;
 
     machine.addOptions(() => ({
       actors: {

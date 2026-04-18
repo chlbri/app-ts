@@ -6,7 +6,7 @@ import _machine4 from './addOptions-return.4.machine';
 
 describe('Machine addOptions return', () => {
   test('#01 => should return the options object from machine.addOptions', () => {
-        const machine = _machine1;
+    const machine = _machine1;
 
     const result = machine.addOptions(({ assign }) => ({
       actions: {
@@ -21,7 +21,7 @@ describe('Machine addOptions return', () => {
   });
 
   test('#02 => should return undefined when callback returns undefined', () => {
-        const machine = _machine2;
+    const machine = _machine2;
 
     const result = machine.addOptions(() => undefined as any);
 
@@ -29,7 +29,7 @@ describe('Machine addOptions return', () => {
   });
 
   test('#03 => should return options with multiple properties', () => {
-        const machine = _machine3;
+    const machine = _machine3;
 
     const result = machine.addOptions(({ assign }) => ({
       actions: {
@@ -50,8 +50,7 @@ describe('Machine addOptions return', () => {
   });
 
   test('#04 => should still add options to machine even when capturing return value', async () => {
-        const machine = _machine4;
-
+    const machine = _machine4.renew;
     const result = machine.addOptions(({ assign }) => ({
       actions: {
         increment: assign('context', ({ context }) => context + 1),

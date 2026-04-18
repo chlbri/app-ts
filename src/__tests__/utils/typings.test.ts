@@ -1,4 +1,8 @@
-import { ARRAY, transformPrimitiveObject, typings } from '../../utils/typings';
+import {
+  ARRAY,
+  transformPrimitiveObject,
+  typings,
+} from '../../utils/typings';
 
 describe('Coverage', () => {
   it('#01 => should correctly transform TupleCustom types', () => {

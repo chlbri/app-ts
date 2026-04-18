@@ -11,7 +11,7 @@ import _machine6 from './filter-erase.6.machine';
 describe('Filter and Erase actions', () => {
   describe('#01 => Filter action', () => {
     describe('#01 => Filter array of numbers', () => {
-            const machine = _machine1;
+      const machine = _machine1;
 
       const service = interpret(machine, {
         context: { numbers: [] },
@@ -76,7 +76,7 @@ describe('Filter and Erase actions', () => {
         active: 'boolean',
       });
 
-            const machine = _machine2;
+      const machine = _machine2;
 
       const service = interpret(machine, {
         context: { people: [] },
@@ -141,7 +141,7 @@ describe('Filter and Erase actions', () => {
     describe('#03 => Filter object properties', () => {
       const scores = typings.record('number');
 
-            const machine = _machine3;
+      const machine = _machine3;
 
       const service = interpret(machine, {
         context: { scores: {} },
@@ -208,7 +208,7 @@ describe('Filter and Erase actions', () => {
 
   describe('#02 => Erase action', () => {
     describe('#01 => Erase single context property', () => {
-            const machine = _machine4;
+      const machine = _machine4;
 
       const service = interpret(machine, {
         context: {
@@ -258,7 +258,7 @@ describe('Filter and Erase actions', () => {
     });
 
     describe('#02 => Erase nested property', () => {
-            const machine = _machine5;
+      const machine = _machine5;
 
       const service = interpret(machine, {
         context: {
@@ -321,7 +321,7 @@ describe('Filter and Erase actions', () => {
     });
 
     describe('#03 => Erase multiple properties with batch', () => {
-            const machine = _machine6;
+      const machine = _machine6;
 
       const service = interpret(machine, {
         context: {},

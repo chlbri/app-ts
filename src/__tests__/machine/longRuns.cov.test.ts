@@ -13,9 +13,9 @@ const BEYOND_MAX = DEFAULT_MAX_TIME_PROMISE + 100_000;
 
 describe('longRuns - no timeout limit for async actions and after', () => {
   describe('#01 => longRuns property propagation', () => {
-        const machineWithLong = _machineWithLong1;
+    const machineWithLong = _machineWithLong1;
 
-        const machineWithoutLong = _machineWithoutLong2;
+    const machineWithoutLong = _machineWithoutLong2;
 
     test('#01 => machine.longRuns is true when __longRuns: true', () => {
       expect(machineWithLong.longRuns).toBe(true);
@@ -40,8 +40,7 @@ describe('longRuns - no timeout limit for async actions and after', () => {
   });
 
   describe('#02 => without __longRuns: async action times out at DEFAULT_MAX_TIME_PROMISE', () => {
-        const machine = _machine3
-    .provideOptions(({ voidAction }) => ({
+    const machine = _machine3.provideOptions(({ voidAction }) => ({
       actions: {
         slowAction: voidAction(
           () =>
@@ -69,8 +68,7 @@ describe('longRuns - no timeout limit for async actions and after', () => {
   describe('#03 => with __longRuns: true: async action completes beyond DEFAULT_MAX_TIME_PROMISE', () => {
     const done = vi.fn();
 
-        const machine = _machine4
-    .provideOptions(({ voidAction }) => ({
+    const machine = _machine4.provideOptions(({ voidAction }) => ({
       actions: {
         slowAction: voidAction(
           () =>
@@ -103,7 +101,7 @@ describe('longRuns - no timeout limit for async actions and after', () => {
   describe('#04 => after transition with __longRuns: true', () => {
     const DELAY = 5_000;
 
-        const machine = _machine5;
+    const machine = _machine5;
 
     machine.addOptions(() => ({
       delays: { DELAY },

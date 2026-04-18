@@ -1,5 +1,5 @@
 import { interpret } from '#interpreters';
-import { notU, typings } from '#utils';
+import { notU } from '#utils';
 import { createConfig } from '#machines';
 import { createMachine } from '#machine';
 import { DELAY } from './constants';
@@ -85,7 +85,8 @@ export const config2 = createConfig({
   },
 });
 
-export const machine2 = createMachine('src/__tests__/interpreters/data/machine2',
+export const machine2 = createMachine(
+  'src/__tests__/interpreters/data/machine2',
   {
     actors: {
       machine1: {
@@ -97,29 +98,6 @@ export const machine2 = createMachine('src/__tests__/interpreters/data/machine2'
     },
     ...config2,
   },
-  typings({
-    eventsMap: {
-      NEXT: 'primitive',
-      FETCH: 'primitive',
-      WRITE: { value: 'string' },
-      FINISH: 'primitive',
-    },
-    pContext: {
-      iterator: 'number',
-    },
-    context: {
-      iterator: 'number',
-      input: 'string',
-      data: typings.array('string'),
-    },
-    actorsMap: {
-      children: {
-        machine1: {
-          NEXT: 'primitive',
-        },
-      },
-    },
-  }),
 ).provideOptions(({ isNotValue, isValue, assign, voidAction }) => ({
   actions: {
     inc: assign(
@@ -175,29 +153,9 @@ const _config2 = createConfig({
   },
 });
 
-export const _machine2 = createMachine('src/__tests__/interpreters/data/machine2._2',
+export const _machine2 = createMachine(
+  'src/__tests__/interpreters/data/machine2._2',
   _config2,
-  typings({
-    eventsMap: {
-      NEXT: 'primitive',
-      FETCH: 'primitive',
-      WRITE: { value: 'string' },
-      FINISH: 'primitive',
-    },
-    pContext: { iterator: 'number' },
-    context: {
-      iterator: 'number',
-      input: 'string',
-      data: typings.array('string'),
-    },
-    actorsMap: {
-      children: {
-        machine1: {
-          NEXT: 'primitive',
-        },
-      },
-    },
-  }),
 ).provideOptions(
   ({
     isNotValue,

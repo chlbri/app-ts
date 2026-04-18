@@ -3,9 +3,7 @@
     ".github/workflows/ci.yml",
     ".github/workflows/publish-NPM.yml"
   ],
-  "githubPullRequests.ignoredPullRequestBranches": [
-    "dev"
-  ],
+  "githubPullRequests.ignoredPullRequestBranches": ["dev"],
   "demoTime.defaultFileType": "json",
   "editor.colorDecorators": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",

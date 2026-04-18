@@ -56,7 +56,8 @@ export const config3 = createConfig({
   },
 });
 
-export const machine3 = createMachine('src/__tests__/interpreters/data/machine3',
+export const machine3 = createMachine(
+  'src/__tests__/interpreters/data/machine3',
   config3,
   typings({
     eventsMap: {

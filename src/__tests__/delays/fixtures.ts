@@ -1,37 +1,26 @@
 import { DELAY } from '#fixturesData';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
-import { typings } from '#utils';
 import { constructTests } from '#fixtures';
 
-export const machine1 = createMachine(
-  'src/__tests__/delays/fixtures',
-  {
-    initial: 'idle',
-    states: {
-      idle: {
-        activities: {
-          DELAY: 'inc',
-        },
-        on: {
-          NEXT: { description: 'Next', target: '/final' },
-        },
+export const machine1 = createMachine('src/__tests__/delays/fixtures', {
+  initial: 'idle',
+  states: {
+    idle: {
+      activities: {
+        DELAY: 'inc',
       },
-      final: {
-        on: {
-          NEXT: '/idle',
-        },
+      on: {
+        NEXT: { description: 'Next', target: '/final' },
+      },
+    },
+    final: {
+      on: {
+        NEXT: '/idle',
       },
     },
   },
-  typings({
-    eventsMap: { NEXT: 'primitive' },
-    promiseesMap: {},
-    context: {
-      iterator: 'number',
-    },
-  }),
-).provideOptions(({ assign }) => ({
+}).provideOptions(({ assign }) => ({
   actions: {
     inc: assign('context.iterator', ({ context }) => context.iterator + 1),
   },

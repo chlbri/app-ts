@@ -1,6 +1,4 @@
 import { createMachine } from '#machine';
-import { defaultT } from '#fixtures';
-import num from '#bemedev/features/numbers/typings';
 
 export default createMachine(
   'src/__tests__/interpreters/children.1.machine',
@@ -12,5 +10,7 @@ export default createMachine(
       },
     },
   },
-  { ...defaultT, context: num.type },
+  {
+    context: 'number',
+  },
 );

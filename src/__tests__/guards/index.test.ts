@@ -11,7 +11,7 @@ import _machine4 from './index.4.machine';
 describe('Interpret for guards', () => {
   const guard1 = vi.fn().mockReturnValue(defaultC);
   describe('#00 => isDefinedS coverage', () => {
-        const machine = _machine1;
+    const machine = _machine1;
 
     machine.addOptions(({ isDefined }) => ({
       predicates: {
@@ -28,7 +28,7 @@ describe('Interpret for guards', () => {
   });
 
   describe('#01 => string', () => {
-        const machine = _machine2;
+    const machine = _machine2;
 
     const service = interpret(machine, defaultC);
     const { useStateValue, send, start } = constructTests(service);
@@ -81,7 +81,7 @@ describe('Interpret for guards', () => {
   });
 
   describe('#02 => describer', () => {
-        const machine = _machine3;
+    const machine = _machine3;
 
     const service = interpret(machine, defaultC);
     const { useStateValue, send, start } = constructTests(service);
@@ -134,7 +134,7 @@ describe('Interpret for guards', () => {
   });
 
   describe('#03 => And/Or', () => {
-        const machine = _machine4;
+    const machine = _machine4;
 
     machine.addOptions(({ isDefined, isNotDefined }) => ({
       predicates: {

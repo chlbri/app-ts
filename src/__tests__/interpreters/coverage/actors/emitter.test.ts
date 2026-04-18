@@ -13,8 +13,6 @@ const SHORT = 200;
 
 describe('Coverage actors', () => {
   describe('#01 => same emitter actor id in two states', () => {
-    
-
     machine.addOptions(({ assign }) => ({
       actions: {
         assignN: assign('context', {

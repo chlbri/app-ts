@@ -1,34 +1,36 @@
-import { interpret } from '#interpreter';
-import { notU, typings } from '#utils';
 import { constructTests } from '#fixtures';
+import { interpret } from '#interpreter';
+import { notU } from '#utils';
 import _raw_machine from './sendToActions2.machine';
 
 vi.useFakeTimers();
 
 describe('cov => Performs send to itself actions', () => {
-  const machine = _raw_machine.provideOptions(({ assign, forceSend, resend }) => ({
-    actions: {
-      inc: assign('context.iterator', ({ context }) => {
-        const iterator = notU(context?.iterator);
-        if (iterator === undefined) return;
+  const machine = _raw_machine.provideOptions(
+    ({ assign, forceSend, resend }) => ({
+      actions: {
+        inc: assign('context.iterator', ({ context }) => {
+          const iterator = notU(context?.iterator);
+          if (iterator === undefined) return;
 
-        return iterator + 1;
-      }),
+          return iterator + 1;
+        }),
 
-      dec: assign('context.iterator', ({ context }) => {
-        const iterator = notU(context?.iterator);
-        if (iterator === undefined) return;
-        return iterator - 1;
-      }),
+        dec: assign('context.iterator', ({ context }) => {
+          const iterator = notU(context?.iterator);
+          if (iterator === undefined) return;
+          return iterator - 1;
+        }),
 
-      init: assign('context', () => ({
-        iterator: 0,
-      })),
+        init: assign('context', () => ({
+          iterator: 0,
+        })),
 
-      forceSendInc: forceSend('INCREMENT'),
-      sendDec: resend('DECREMENT'),
-    },
-  }));
+        forceSendInc: forceSend('INCREMENT'),
+        sendDec: resend('DECREMENT'),
+      },
+    }),
+  );
 
   const service = interpret(machine, {
     exact: true,

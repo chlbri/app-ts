@@ -4,8 +4,6 @@ import {
   transform,
   transformPrimitiveObject,
   typings,
-  type TransformObject,
-  type inferT,
 } from '../../utils/typings';
 
 describe('Typing utils', () => {

@@ -1,21 +1,16 @@
 import { createMachine } from '#machine';
-import { typings } from '#utils';
 
-export default createMachine('src/__tests__/interpreters/children.4.machine',
-      {
-        initial: 'active',
-        states: {
-          active: {
-            on: { NEXT: '/inactive' },
-          },
-          inactive: {
-            on: { NEXT: '/active' },
-          },
-        },
+export default createMachine(
+  'src/__tests__/interpreters/children.4.machine',
+  {
+    initial: 'active',
+    states: {
+      active: {
+        on: { NEXT: '/inactive' },
       },
-      typings({
-        eventsMap: {
-          NEXT: 'primitive',
-        },
-      }),
-    );
+      inactive: {
+        on: { NEXT: '/active' },
+      },
+    },
+  },
+);

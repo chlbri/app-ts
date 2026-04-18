@@ -3,7 +3,8 @@ import { toFunction } from '#utils';
 import { machine2 } from './machine2';
 
 // #region machine23
-export const machine23 = createMachine('src/__tests__/interpreters/data/machine23',
+export const machine23 = createMachine(
+  'src/__tests__/interpreters/data/machine23',
   {
     initial: 'idle',
     states: {
@@ -88,12 +89,6 @@ export const machine23 = createMachine('src/__tests__/interpreters/data/machine2
       },
       final: {},
     },
-  },
-  {
-    eventsMap: machine2.eventsMap,
-    context: machine2.context,
-    pContext: machine2.pContext,
-    actorsMap: machine2.actorsMap,
   },
 )
   .provideOptions(toFunction<any>(machine2.options))

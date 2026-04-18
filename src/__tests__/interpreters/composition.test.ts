@@ -220,8 +220,7 @@ describe('Composition', () => {
   describe('#03 => Exceed selfTransitionsCounter', () => {
     const fn = vi.spyOn(console, 'error');
 
-        const machine = _machine1
-    .provideOptions(({ isValue, assign }) => ({
+    const machine = _machine1.provideOptions(({ isValue, assign }) => ({
       actions: {
         addCondition: ({ pContext, context }) => ({
           pContext,
@@ -279,8 +278,7 @@ describe('Composition', () => {
   describe('#04 => Send without changed value', () => {
     const inc = vi.fn().mockReturnValue({ pContext: {}, context: {} });
 
-        const machine = _machine2
-    .provideOptions(() => ({
+    const machine = _machine2.provideOptions(() => ({
       actions: {
         inc,
       },
@@ -340,8 +338,7 @@ describe('Composition', () => {
   describe('#05 => After without changed value', () => {
     const inc = vi.fn().mockReturnValue({ pContext: {}, context: {} });
 
-        const machine = _machine3
-    .provideOptions(() => ({
+    const machine = _machine3.provideOptions(() => ({
       actions: {
         inc,
       },
@@ -373,8 +370,7 @@ describe('Composition', () => {
     const inc = vi.fn().mockReturnValue({ pContext: {}, context: {} });
     const inc2 = vi.fn().mockReturnValue({ pContext: {}, context: {} });
 
-        const machine = _machine4
-    .provideOptions(() => ({
+    const machine = _machine4.provideOptions(() => ({
       actions: {
         inc,
         inc2,

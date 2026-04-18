@@ -1,15 +1,22 @@
+import toArray from '#bemedev/features/arrays/castings/toArray';
 import _any from '#bemedev/features/common/castings/any';
 import commonT from '#bemedev/features/common/typings';
 import extract from '#bemedev/features/common/typings/extract';
+import { partialCall } from '#bemedev/features/functions/functions/partialCall';
 import byKey from '#bemedev/features/objects/typings/byKey';
 import keysOf from '#bemedev/features/objects/typings/keysOf';
 import type {
   AllowedNames,
+  Cast,
   NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
 import { DEFAULT_DELIMITER } from '#constants';
-import { type EventsMap } from '#events';
+import {
+  type EventsMap,
+  type ToEventObject,
+  type ToEvents,
+} from '#events';
 import {
   isDefinedS,
   isNotDefinedS,
@@ -35,18 +42,24 @@ import {
   type StateValue,
 } from '#states';
 import { merge, reduceFnMap } from '#utils';
-import toArray from '#bemedev/features/arrays/castings/toArray';
-import { partialCall } from '#bemedev/features/functions/functions/partialCall';
 import { decompose, getByKey, type Decompose } from '@bemedev/decompose';
 
 import type { Action } from '#actions';
 import type { DelayFunction } from '#delays';
-import { EventsR, ActorsConfigMap, type EventObject } from '#events';
+import { ActorsConfigMap, EventsR, type EventObject } from '#events';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import type { PredicateS } from '#guards';
-import cloneDeep from 'clone-deep';
+import type {
+  ActorsMapT,
+  ObjectT,
+  PrimitiveObjectT,
+  TransformObject,
+  TransformPrimitiveObject,
+} from '#utils/typings';
 import { withTimeout } from '@bemedev/better-promise';
+import cloneDeep from 'clone-deep';
+import { registerMachine, type Register } from '../registry';
 import { assignByKey, expandFnMap } from './functions';
 import type {
   AddOptions_F,
@@ -59,8 +72,7 @@ import type {
   TimeAction_F,
   VoidAction_F,
 } from './machine.types';
-import { registerMachine, type Register } from '../registry';
-import type { Config, SimpleMachineOptions2 } from './types';
+import type { Config, MachineOptions } from './types';
 
 /**
  * A class representing a state machine.
@@ -85,7 +97,14 @@ class Machine<
   Ta extends string = string,
   Eo extends EventObject = EventObject,
   AllPaths extends string = string,
-  Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
+  Mo extends MachineOptions<C, A, Pc, Tc, Ta, Eo> = MachineOptions<
+    C,
+    A,
+    Pc,
+    Tc,
+    Ta,
+    Eo
+  >,
 > implements AnyMachine<E, A, Pc, Tc> {
   /**
    * The configuration of the machine for this {@linkcode Machine}.
@@ -1276,25 +1295,40 @@ export function createMachine<
   const C extends Config<Current['paths']['map']> = Config<
     Current['paths']['map']
   >,
+  const Pc extends Current['pContext'] = Current['pContext'],
+  const Tc extends PrimitiveObjectT = PrimitiveObjectT,
+  const E extends Record<Current['events'], ObjectT> = Record<
+    Current['events'],
+    ObjectT
+  >,
+  const A extends ActorsMapT<
+    Current['actors']['children'],
+    Current['actors']['emitters']
+  > = ActorsMapT<
+    Current['actors']['children'],
+    Current['actors']['emitters']
+  >,
+  const _E extends EventsMap = Cast<TransformObject<E>, EventsMap>,
+  _A extends ActorsConfigMap = Cast<TransformObject<A>, ActorsConfigMap>,
 >(
   name: Name,
   config: C,
+
   types?: {
-    pContext?: any;
-    context?: any;
-    eventsMap?: any;
-    actorsMap?: any;
+    context?: Tc;
+    pContext?: Pc;
+    eventsMap?: E;
+    actorsMap?: A;
   },
 ): Machine<
   C,
-  Current['pContext'],
-  Current['context'],
-  Current['events']['map'],
-  Current['actors'],
-  Current['tags'],
-  Current['events']['all'],
-  Current['paths']['all'],
-  Current['options']
+  TransformObject<Cast<Pc, 'undefined'>>,
+  TransformPrimitiveObject<Tc>,
+  _E,
+  _A,
+  Extract<Current['tags'], string>,
+  ToEventObject<ToEvents<_E, _A>>,
+  Current['paths']['all']
 > {
   const eventsMap = types?.eventsMap ?? {};
   const actorsMap = types?.actorsMap ?? {};

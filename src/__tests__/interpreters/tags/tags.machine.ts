@@ -1,5 +1,4 @@
 import { createMachine } from '#machine';
-import { typings } from '#utils';
 
 export const machine = createMachine(
   'src/__tests__/interpreters/tags/tags.machine',
@@ -22,7 +21,4 @@ export const machine = createMachine(
       final: {},
     },
   },
-  typings({
-    eventsMap: { NEXT: 'primitive', PREV: 'primitive' },
-  }),
 );

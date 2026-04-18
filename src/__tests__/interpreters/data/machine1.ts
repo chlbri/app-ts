@@ -1,9 +1,9 @@
 import { createMachine } from '#machine';
-import { typings } from '#utils';
 import { DELAY } from './constants';
 
 // #region machine1
-export const machine1 = createMachine('src/__tests__/interpreters/data/machine1',
+export const machine1 = createMachine(
+  'src/__tests__/interpreters/data/machine1',
   {
     initial: 'idle',
 
@@ -16,11 +16,6 @@ export const machine1 = createMachine('src/__tests__/interpreters/data/machine1'
       final: {},
     },
   },
-
-  typings({
-    eventsMap: { NEXT: 'primitive' },
-    context: { iterator: 'number' },
-  }),
 );
 
 machine1.addOptions(({ assign }) => ({

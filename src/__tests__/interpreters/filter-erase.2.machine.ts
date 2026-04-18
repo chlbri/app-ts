@@ -32,15 +32,4 @@ export default createMachine(
       filtered: {},
     },
   },
-  typings({
-    context: {
-      people: typings.array(person),
-    },
-    eventsMap: {
-      ADD_PEOPLE: {
-        people: typings.array(person),
-      },
-      FILTER_ACTIVE: 'primitive',
-    },
-  }),
 );

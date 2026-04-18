@@ -1,6 +1,5 @@
-import num from '#bemedev/features/numbers/typings';
+import { constructTests, defaultC } from '#fixtures';
 import { interpret } from '#interpreter';
-import { constructTests, defaultC, defaultT } from '#fixtures';
 import _child1 from './children.1.machine';
 import _parent2 from './children.2.machine';
 import _parent3 from './children.3.machine';
@@ -12,8 +11,7 @@ describe('Integration testing for interpret, Children', () => {
     vi.useFakeTimers();
   });
 
-    const child = _child1
-    .provideOptions(({ assign }) => ({
+  const child = _child1.provideOptions(({ assign }) => ({
     actions: {
       inc: assign('context', ({ context }) => context + 1),
     },
@@ -21,8 +19,7 @@ describe('Integration testing for interpret, Children', () => {
   }));
 
   describe('#01 => context are same', () => {
-        const parent = _parent2
-    .provideOptions(() => ({
+    const parent = _parent2.provideOptions(() => ({
       actors: {
         children: {
           child: () => interpret(child, { context: 0 }),
@@ -52,8 +49,7 @@ describe('Integration testing for interpret, Children', () => {
   });
 
   describe('#02 => context of child, and the type correspond to a subtype of privateContext of parent', () => {
-        const parent = _parent3
-    .provideOptions(() => ({
+    const parent = _parent3.provideOptions(() => ({
       actors: {
         children: {
           child: () => interpret(child, { context: 0 }),
@@ -89,10 +85,9 @@ describe('Integration testing for interpret, Children', () => {
 
   describe('#03 => Cover child->on', () => {
     const notify = vi.fn();
-        const child = _child4;
+    const child = _child4;
 
-        const parent = _parent5
-    .provideOptions(({ sendTo, voidAction }) => ({
+    const parent = _parent5.provideOptions(({ sendTo, voidAction }) => ({
       actions: {
         notify: voidAction(() => {
           console.warn('REACH');

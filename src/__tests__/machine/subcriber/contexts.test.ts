@@ -1,6 +1,10 @@
 import _any from '#bemedev/features/common/castings/any';
 import { createTests } from '@bemedev/dev-utils/vitest-extended';
-import { assignByKey, getByKey, mergeByKey } from '../../../machine/functions/subcriber/contexts';
+import {
+  assignByKey,
+  getByKey,
+  mergeByKey,
+} from '../../../machine/functions/subcriber/contexts';
 
 describe('functions', () => {
   describe('#01 => assignByKey', () => {

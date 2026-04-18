@@ -5,7 +5,6 @@ import machine from './delay.notDefined.machine';
 
 vi.useFakeTimers();
 describe('#05 => Delay is not defined', () => {
-  
   const service = interpret(machine, defaultC);
 
   const { useStateValue, useWaiter, start, useWarnings } = constructTests(

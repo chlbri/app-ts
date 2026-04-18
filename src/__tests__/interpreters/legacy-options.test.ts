@@ -16,7 +16,7 @@ import _machine14 from './legacy-options.14.machine';
 
 describe.concurrent('Legacy Options Access', () => {
   test('#01 => should access previous actions via _legacy', async () => {
-        const machine = _machine1;
+    const machine = _machine1;
 
     // First call to addOptions - define increment
     machine.addOptions(({ assign }) => ({
@@ -50,7 +50,7 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#02 => should access previous actions via _legacy, replace the same action', async () => {
-        const machine = _machine2;
+    const machine = _machine2;
 
     // First call to addOptions - define increment
     machine.addOptions(({ assign }) => ({
@@ -84,7 +84,7 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#03 =>should access previous predicates via _legacy', async () => {
-        const machine = _machine3;
+    const machine = _machine3;
 
     // First call - define isPositive
     machine.addOptions(() => ({
@@ -115,8 +115,7 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#04 => should work with provideOptions', async () => {
-        const machine = _machine4
-    .provideOptions(({ assign }) => ({
+    const machine = _machine4.provideOptions(({ assign }) => ({
       actions: {
         add: assign('context', ({ context }) => context + 2),
       },
@@ -147,7 +146,7 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#05 => _legacy should be immutable', async () => {
-        const machine = _machine5;
+    const machine = _machine5;
 
     machine.addOptions(({ assign }) => ({
       actions: {
@@ -166,7 +165,7 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#06 => should handle multiple calls with cumulative legacy', async () => {
-        const machine = _machine6;
+    const machine = _machine6;
 
     // First call
     machine.addOptions(({ assign }) => ({
@@ -215,7 +214,7 @@ describe.concurrent('Legacy Options Access', () => {
 
   describe('#07 => Service (Interpreter) addOptions', () => {
     test('#01 => should access previous actions via _legacy on service.addOptions', async () => {
-            const machine = _machine7;
+      const machine = _machine7;
 
       const service = interpret(machine, { context: 0 });
 
@@ -250,7 +249,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#02 => should access previous actions via _legacy on service.addOptions, changes the same action', async () => {
-            const machine = _machine8;
+      const machine = _machine8;
 
       const service = interpret(machine, { context: 0 });
 
@@ -300,7 +299,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#03 => should access previous predicates via _legacy on service.addOptions', async () => {
-            const machine = _machine9;
+      const machine = _machine9;
 
       const service = interpret(machine, { context: 5 });
 
@@ -331,7 +330,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#04 => should handle cumulative legacy on service.addOptions', async () => {
-            const machine = _machine10;
+      const machine = _machine10;
 
       const service = interpret(machine, { context: 0 });
 
@@ -366,7 +365,7 @@ describe.concurrent('Legacy Options Access', () => {
 
   describe('#08 => Service (Interpreter) provideOptions', () => {
     test('#01 => should access previous actions via _legacy on service.provideOptions', async () => {
-            const machine = _machine11;
+      const machine = _machine11;
 
       const service1 = interpret(machine, { context: 1 });
 
@@ -402,7 +401,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#02 => should return new service instance with provideOptions', async () => {
-            const machine = _machine12;
+      const machine = _machine12;
 
       const service1 = interpret(machine, { context: 0 });
       const service2 = service1.provideOptions(({ assign }) => ({
@@ -426,7 +425,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#03 => should chain provideOptions with cumulative legacy', async () => {
-            const machine = _machine13;
+      const machine = _machine13;
 
       const service1 = interpret(machine, { context: 0 });
 
@@ -476,7 +475,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#04 => should preserve context and pContext across provideOptions', async () => {
-            const machine = _machine14;
+      const machine = _machine14;
 
       const service1 = interpret(machine, { context: 10 });
 

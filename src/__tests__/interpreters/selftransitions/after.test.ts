@@ -29,7 +29,7 @@ describe('after', () => {
   });
 
   describe('#01 => simple', () => {
-        const machine = _machine1;
+    const machine = _machine1;
 
     machine.addOptions(() => ({
       delays: {
@@ -53,7 +53,7 @@ describe('after', () => {
   });
 
   describe('#02 => complex, two delays', () => {
-        const machine = _machine2;
+    const machine = _machine2;
 
     machine.addOptions(() => ({
       delays: {
@@ -82,7 +82,7 @@ describe('after', () => {
   });
 
   describe('#03 => complex, two delays with parameters', () => {
-        const machine = _machine3;
+    const machine = _machine3;
     machine.addOptions(() => ({
       delays: {
         DELAY,
@@ -116,7 +116,7 @@ describe('after', () => {
 
   describe('#04 => Inside the remainings', () => {
     vi.useRealTimers();
-        const machine = _machine4;
+    const machine = _machine4;
 
     machine.addOptions(() => ({
       delays: {
@@ -167,7 +167,7 @@ describe('after', () => {
 
   describe('#05 => after transition - delay is too long', () => {
     vi.useFakeTimers();
-        const machine = _machine5;
+    const machine = _machine5;
 
     machine.addOptions(() => ({
       delays: {

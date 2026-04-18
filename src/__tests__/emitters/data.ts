@@ -1,5 +1,5 @@
 import { createMachine } from '#machine';
-import { notU, typings } from '#utils';
+import { notU } from '#utils';
 import { createPausable } from '@bemedev/rx-pausable';
 import { interval } from 'rxjs/internal/observable/interval';
 import { map } from 'rxjs/internal/operators/map';
@@ -11,7 +11,8 @@ export const WAITERS = {
   long: 1000,
 };
 
-export const machineEmitter1 = createMachine('src/__tests__/emitters/data',
+export const machineEmitter1 = createMachine(
+  'src/__tests__/emitters/data',
   {
     initial: 'inactive',
     actors: {
@@ -37,17 +38,6 @@ export const machineEmitter1 = createMachine('src/__tests__/emitters/data',
       },
     },
   },
-  typings({
-    context: 'number',
-    eventsMap: {
-      NEXT: 'primitive',
-    },
-    actorsMap: {
-      emitters: {
-        interval: { next: 'number', error: 'primitive' },
-      },
-    },
-  }),
 );
 
 export const machineEmitter2 = machineEmitter1.provideOptions(
@@ -73,7 +63,8 @@ export const machineEmitter2 = machineEmitter1.provideOptions(
   }),
 );
 
-export const machineEmitter3 = createMachine('src/__tests__/emitters/data._2',
+export const machineEmitter3 = createMachine(
+  'src/__tests__/emitters/data._2',
   {
     initial: 'inactive',
     states: {
@@ -101,17 +92,6 @@ export const machineEmitter3 = createMachine('src/__tests__/emitters/data._2',
       },
     },
   },
-  typings({
-    context: 'number',
-    eventsMap: {
-      NEXT: 'primitive',
-    },
-    actorsMap: {
-      emitters: {
-        interval1: { next: 'number', error: 'primitive' },
-      },
-    },
-  }),
 ).provideOptions(({ assign }) => ({
   actions: {
     assigN: assign('context', {

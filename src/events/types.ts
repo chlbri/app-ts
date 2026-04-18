@@ -1,4 +1,5 @@
 import type {
+  Equals,
   NotUndefined,
   PrimitiveObject,
   Unionize,
@@ -100,7 +101,11 @@ export type ToEvents<E extends EventsMap, A extends ActorsConfigMap> =
   | EventStrings;
 
 export type EventArgObject<E extends EventObject> =
-  object extends E['payload'] ? E['type'] | E : E;
+  object extends E['payload']
+    ? E['type'] | E
+    : Equals<E['payload'], EmptyObject> extends true
+      ? E['type'] | E
+      : E;
 
 export type EventArgAll<E extends AllEvent> = E extends string
   ? E
