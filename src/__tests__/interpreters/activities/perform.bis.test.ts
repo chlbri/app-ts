@@ -1,46 +1,11 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
 import { notU, typings } from '#utils';
+import _raw_machine from './perform.bis.machine';
 
 vi.useFakeTimers();
 describe('cov => Performs send to itself actions', () => {
-  const machine101 = createMachine(
-    {
-      entry: 'init',
-      initial: 'idle',
-      states: {
-        idle: {
-          on: {
-            DECREMENT: { actions: 'dec' },
-            INCREMENT: { actions: 'inc' },
-            REDECREMENT: { actions: 'sendDec' },
-            NEXT: '/next',
-          },
-        },
-        next: {
-          on: {
-            NEXT: '/idle',
-            'INCREMENT.FORCE': { actions: 'forceSendInc' },
-            REDECREMENT: { actions: 'sendDec' },
-          },
-        },
-      },
-    },
-    typings({
-      eventsMap: {
-        DECREMENT: 'primitive',
-        REDECREMENT: 'primitive',
-        INCREMENT: 'primitive',
-        'INCREMENT.FORCE': 'primitive',
-        NEXT: 'primitive',
-      },
-
-      context: typings.partial({
-        iterator: 'number',
-      }),
-    }),
-  ).provideOptions(({ assign, forceSend, resend }) => ({
+  const machine = _raw_machine.provideOptions(({ assign, forceSend, resend }) => ({
     actions: {
       inc: assign('context.iterator', ({ context }) => {
         const iterator = notU(context?.iterator);
@@ -64,7 +29,7 @@ describe('cov => Performs send to itself actions', () => {
     },
   }));
 
-  const service = interpret(machine101, {
+  const service = interpret(machine, {
     exact: true,
     context: {},
   });

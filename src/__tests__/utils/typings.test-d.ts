@@ -4,7 +4,7 @@ import {
   transform,
   transformPrimitiveObject,
   typings,
-  type TransformPrimitiveObject,
+  type TransformObject,
   type inferT,
 } from '../../utils/typings';
 
@@ -37,7 +37,7 @@ describe('Typing utils', () => {
     });
 
     it('#04 => should transform with "undefined" as string', () => {
-      type TTT4 = TransformPrimitiveObject<{
+      type TTT4 = TransformObject<{
         age: 'number';
         [PARTIAL]: 'undefined';
       }>;

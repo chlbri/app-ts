@@ -1,11 +1,6 @@
 import { toAction } from '#actions';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type {
-  ActorsConfigMap,
-  EventsMap,
-  ToEventObject,
-  ToEvents,
-} from '#events';
+import type { ActorsConfigMap, EventObject, EventsMap } from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
 import type { SimpleMachineOptions } from '#machines';
 import type { Transition, TransitionConfig } from '#transitions';
@@ -17,13 +12,13 @@ export type ToTransition_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
 >(
   events: E,
   actorsMap: A,
   config: TransitionConfig,
   options?: Pick<
-    SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
+    SimpleMachineOptions<Pc, Tc, T, Eo>,
     'actions' | 'predicates'
   >,
 ) => Transition<Eo, Pc, Tc, T>;

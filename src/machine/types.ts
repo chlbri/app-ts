@@ -5,6 +5,7 @@ import type {
   NotUndefined,
   PrimitiveObject,
 } from '#bemedev/globals/types';
+import { Identify } from '#bemedev/globals/types';
 import type { DelayFunction2 } from '#delays';
 import type {
   EmitterDef,
@@ -12,13 +13,7 @@ import type {
   EmitterReturn,
   EmittersMap,
 } from '#emitters';
-import type {
-  ActorsConfigMap,
-  EventObject,
-  EventsMap,
-  ToEventObject,
-  ToEvents,
-} from '#events';
+import type { ActorsConfigMap, EventObject, EventsMap } from '#events';
 import type { PredicateS, PredicateS2 } from '#guards';
 import type {
   ActivityConfig,
@@ -49,10 +44,9 @@ import type {
   FnMapR,
   FnR,
   KeyU,
-  RecordS,
   ReduceArray,
 } from '~types';
-import { Identify } from '#bemedev/globals/types';
+import { RecordS } from './../types/primitives';
 /**
  * Type representing the main JSON config.
  *
@@ -75,10 +69,13 @@ export type MachineConfig = Describer | string;
  * @see {@linkcode MachineConfig}
  * @see {@linkcode SingleOrArrayL}
  */
-export type Config = NodeConfig & {
+export type Config<
+  Paths extends NoExtraKeysConfigDef<ConfigDef> =
+    NoExtraKeysConfigDef<ConfigDef>,
+> = NodeConfig & {
   readonly strict?: boolean;
   readonly __longRuns?: boolean;
-};
+} & TransformConfigDef<Paths>;
 
 export type ChildEvents<
   K extends string,
@@ -606,12 +603,11 @@ export type FnMapFrom<
  */
 export type MachineOptions<
   C extends Config = Config,
-  E extends EventsMap = EventsMap,
   A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
   Flat extends FlatMapN<C, false> = FlatMapN<C, false>,
 > = Partial<{
   actions: Partial<GetActionsFromFlat<Flat, Eo, Pc, Tc, T>>;
@@ -881,12 +877,10 @@ export type ChildrenKeysFrom<T extends KeyU<'__childKey'>> =
  *
  */
 export type SimpleMachineOptions<
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
 > = Partial<{
   actions: Partial<RecordS<Action2<Eo, Pc, Tc, T>>>;
   predicates: Partial<RecordS<PredicateS2<Eo, Pc, Tc, T>>>;

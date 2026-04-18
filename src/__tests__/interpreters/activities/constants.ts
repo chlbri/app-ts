@@ -3,7 +3,7 @@ import { createMachine } from '#machine';
 
 export const DELAY = 1000;
 
-export const machine = createMachine(
+export const machine = createMachine('src/__tests__/interpreters/activities/constants',
   {
     initial: 'state1',
     states: {

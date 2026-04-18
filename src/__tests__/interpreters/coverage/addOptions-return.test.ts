@@ -1,29 +1,13 @@
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { typings } from '#utils';
+import _machine1 from './addOptions-return.1.machine';
+import _machine2 from './addOptions-return.2.machine';
+import _machine3 from './addOptions-return.3.machine';
+import _machine4 from './addOptions-return.4.machine';
+import _machine5 from './addOptions-return.5.machine';
 
 describe.concurrent('Interpreter addOptions return', () => {
   test('#01 => should return the options object from service.addOptions', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              INCREMENT: {
-                actions: 'increment',
-              },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          INCREMENT: 'primitive',
-        },
-        context: 'number',
-      }),
-    );
+        const machine = _machine1;
 
     const service = interpret(machine, { context: 0 });
 
@@ -40,18 +24,7 @@ describe.concurrent('Interpreter addOptions return', () => {
   });
 
   test('#02 => should return undefined when callback returns undefined', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {},
-        },
-      },
-      typings({
-        eventsMap: {},
-        context: 'number',
-      }),
-    );
+        const machine = _machine2;
 
     const service = interpret(machine, { context: 0 });
 
@@ -61,30 +34,7 @@ describe.concurrent('Interpreter addOptions return', () => {
   });
 
   test('#03 => should return options with multiple properties', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              CHECK: [
-                {
-                  guards: 'isPositive',
-                  target: '/positive',
-                },
-              ],
-            },
-          },
-          positive: {},
-        },
-      },
-      typings({
-        eventsMap: {
-          CHECK: 'primitive',
-        },
-        context: 'number',
-      }),
-    );
+        const machine = _machine3;
 
     const service = interpret(machine, { context: 0 });
 
@@ -107,26 +57,7 @@ describe.concurrent('Interpreter addOptions return', () => {
   });
 
   test('#04 => should still add options to service even when capturing return value', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              INCREMENT: {
-                actions: 'increment',
-              },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          INCREMENT: 'primitive',
-        },
-        context: 'number',
-      }),
-    );
+        const machine = _machine4;
 
     const service = interpret(machine, { context: 0 });
 
@@ -147,26 +78,7 @@ describe.concurrent('Interpreter addOptions return', () => {
   });
 
   test('#05 => should return consistent type across multiple addOptions calls', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              FIRST: { actions: 'first' },
-              SECOND: { actions: 'second' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          FIRST: 'primitive',
-          SECOND: 'primitive',
-        },
-        context: 'number',
-      }),
-    );
+        const machine = _machine5;
 
     const service = interpret(machine, { context: 0 });
 

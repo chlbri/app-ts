@@ -91,6 +91,9 @@
       ],
       "#bemedev/*": [
         "./src/libs/bemedev/*"
+      ],
+      "@bemedev/app-ts": [
+        "./src/index.ts"
       ]
     }
   }

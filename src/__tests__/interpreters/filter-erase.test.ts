@@ -1,46 +1,17 @@
 import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
 import { typings } from '#utils';
+import _machine1 from './filter-erase.1.machine';
+import _machine2 from './filter-erase.2.machine';
+import _machine3 from './filter-erase.3.machine';
+import _machine4 from './filter-erase.4.machine';
+import _machine5 from './filter-erase.5.machine';
+import _machine6 from './filter-erase.6.machine';
 
 describe('Filter and Erase actions', () => {
   describe('#01 => Filter action', () => {
     describe('#01 => Filter array of numbers', () => {
-      const machine = createMachine(
-        {
-          initial: 'state1',
-          states: {
-            state1: {
-              on: {
-                ADD: {
-                  actions: 'addNumbers',
-                },
-                FILTER: {
-                  actions: 'filterEven',
-                  target: '/state2',
-                },
-              },
-            },
-            state2: {
-              on: {
-                RESET: '/state1',
-              },
-            },
-          },
-        },
-        typings({
-          context: {
-            numbers: typings.array('number'),
-          },
-          eventsMap: {
-            ADD: {
-              values: typings.array('number'),
-            },
-            FILTER: 'primitive',
-            RESET: 'primitive',
-          },
-        }),
-      );
+            const machine = _machine1;
 
       const service = interpret(machine, {
         context: { numbers: [] },
@@ -105,36 +76,7 @@ describe('Filter and Erase actions', () => {
         active: 'boolean',
       });
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                ADD_PEOPLE: {
-                  actions: 'addPeople',
-                },
-                FILTER_ACTIVE: {
-                  actions: 'filterActive',
-                  target: '/filtered',
-                },
-              },
-            },
-            filtered: {},
-          },
-        },
-        typings({
-          context: {
-            people: typings.array(person),
-          },
-          eventsMap: {
-            ADD_PEOPLE: {
-              people: typings.array(person),
-            },
-            FILTER_ACTIVE: 'primitive',
-          },
-        }),
-      );
+            const machine = _machine2;
 
       const service = interpret(machine, {
         context: { people: [] },
@@ -199,35 +141,7 @@ describe('Filter and Erase actions', () => {
     describe('#03 => Filter object properties', () => {
       const scores = typings.record('number');
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                SET_SCORES: {
-                  actions: 'setScores',
-                },
-                FILTER_HIGH_SCORES: {
-                  actions: 'filterHighScores',
-                  target: '/filtered',
-                },
-              },
-            },
-            filtered: {},
-          },
-        },
-        typings({
-          context: {
-            scores,
-          },
-          eventsMap: {
-            SET_SCORES: { scores },
-            FILTER_HIGH_SCORES: 'primitive',
-          },
-          promiseesMap: {},
-        }),
-      );
+            const machine = _machine3;
 
       const service = interpret(machine, {
         context: { scores: {} },
@@ -294,35 +208,7 @@ describe('Filter and Erase actions', () => {
 
   describe('#02 => Erase action', () => {
     describe('#01 => Erase single context property', () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                SET_NAME: {
-                  actions: 'setName',
-                },
-                CLEAR_NAME: {
-                  actions: 'clearName',
-                  target: '/cleared',
-                },
-              },
-            },
-            cleared: {},
-          },
-        },
-        typings({
-          context: {
-            name: typings.optional('string'),
-            data: 'number',
-          },
-          eventsMap: {
-            SET_NAME: { name: 'string' },
-            CLEAR_NAME: 'primitive',
-          },
-        }),
-      );
+            const machine = _machine4;
 
       const service = interpret(machine, {
         context: {
@@ -372,36 +258,7 @@ describe('Filter and Erase actions', () => {
     });
 
     describe('#02 => Erase nested property', () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                SET_USER: {
-                  actions: 'setUser',
-                },
-                CLEAR_EMAIL: {
-                  actions: 'clearEmail',
-                },
-              },
-            },
-          },
-        },
-        typings({
-          context: {
-            user: {
-              name: 'string',
-              email: typings.optional('string'),
-            },
-          },
-          eventsMap: {
-            SET_USER: { name: 'string', email: 'string' },
-            CLEAR_EMAIL: 'primitive',
-          },
-          promiseesMap: {},
-        }),
-      );
+            const machine = _machine5;
 
       const service = interpret(machine, {
         context: {
@@ -464,41 +321,7 @@ describe('Filter and Erase actions', () => {
     });
 
     describe('#03 => Erase multiple properties with batch', () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                SET_DATA: {
-                  actions: 'setData',
-                },
-                CLEAR_ALL: {
-                  actions: 'clearAll',
-                  target: '/cleared',
-                },
-              },
-            },
-            cleared: {},
-          },
-        },
-        typings({
-          context: typings.partial({
-            name: 'string',
-            email: 'string',
-            age: 'number',
-          }),
-          eventsMap: {
-            SET_DATA: {
-              name: 'string',
-              email: 'string',
-              age: 'number',
-            },
-            CLEAR_ALL: 'primitive',
-          },
-          promiseesMap: {},
-        }),
-      );
+            const machine = _machine6;
 
       const service = interpret(machine, {
         context: {},

@@ -1,6 +1,7 @@
 import { defaultT, fakeWaiter } from '#fixtures';
-import { createMachine } from '#machine';
 import { interpret } from '#interpreter';
+import _machine1 from './index.1.machine';
+import _machine2 from './index.2.machine';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -9,20 +10,7 @@ beforeAll(() => {
 describe('Self Transitions', () => {
   const DELAY = 1000;
   it('should handle after self transitions', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            after: {
-              DELAY: '/active',
-            },
-          },
-          active: {},
-        },
-      },
-      defaultT,
-    );
+        const machine = _machine1;
 
     machine.addOptions(() => ({
       delays: {
@@ -39,18 +27,7 @@ describe('Self Transitions', () => {
   });
 
   it('should handle always self transitions', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            always: ['/active'],
-          },
-          active: {},
-        },
-      },
-      defaultT,
-    );
+        const machine = _machine2;
 
     const service = interpret(machine);
 

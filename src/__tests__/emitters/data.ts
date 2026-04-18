@@ -11,7 +11,7 @@ export const WAITERS = {
   long: 1000,
 };
 
-export const machineEmitter1 = createMachine(
+export const machineEmitter1 = createMachine('src/__tests__/emitters/data',
   {
     initial: 'inactive',
     actors: {
@@ -73,7 +73,7 @@ export const machineEmitter2 = machineEmitter1.provideOptions(
   }),
 );
 
-export const machineEmitter3 = createMachine(
+export const machineEmitter3 = createMachine('src/__tests__/emitters/data._2',
   {
     initial: 'inactive',
     states: {

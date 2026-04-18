@@ -1,12 +1,7 @@
 import isDefined from '#bemedev/features/common/castings/is/defined';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import { GUARD_TYPE } from '#constants';
-import type {
-  ActorsConfigMap,
-  EventsMap,
-  ToEventObject,
-  ToEvents,
-} from '#events';
+import type { ActorsConfigMap, EventObject, EventsMap } from '#events';
 import type { GuardConfig } from '#guards';
 import type { StateExtended } from '#states';
 import { reduceFnMap } from '#utils';
@@ -20,7 +15,7 @@ export type _ToPredicateF = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
 >(
   events: E,
   actorsMap: A,
@@ -37,7 +32,7 @@ export type ToPredicate_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
 >(
   events: E,
   actorsMap: A,

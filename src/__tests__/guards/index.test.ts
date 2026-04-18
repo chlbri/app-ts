@@ -1,28 +1,17 @@
 import numberT from '#bemedev/features/numbers/typings';
 import stringT from '#bemedev/features/strings/typings';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
 import { constructTests, defaultC, defaultT } from '#fixtures';
 import { transformEventArg, ALWAYS_EVENT } from '#events';
+import _machine1 from './index.1.machine';
+import _machine2 from './index.2.machine';
+import _machine3 from './index.3.machine';
+import _machine4 from './index.4.machine';
 
 describe('Interpret for guards', () => {
   const guard1 = vi.fn().mockReturnValue(defaultC);
   describe('#00 => isDefinedS coverage', () => {
-    const machine = createMachine(
-      {
-        initial: 'state1',
-        states: {
-          state1: {
-            always: {
-              guards: 'guard1',
-              target: '/state2',
-            },
-          },
-          state2: {},
-        },
-      },
-      defaultT,
-    );
+        const machine = _machine1;
 
     machine.addOptions(({ isDefined }) => ({
       predicates: {
@@ -39,30 +28,7 @@ describe('Interpret for guards', () => {
   });
 
   describe('#01 => string', () => {
-    const machine = createMachine(
-      {
-        initial: 'state1',
-        states: {
-          state1: {
-            always: {
-              guards: 'guard1',
-              target: '/state2',
-            },
-          },
-          state2: {
-            on: {
-              NEXT: '/state1',
-            },
-          },
-        },
-      },
-      {
-        ...defaultT,
-        eventsMap: {
-          NEXT: {},
-        },
-      },
-    );
+        const machine = _machine2;
 
     const service = interpret(machine, defaultC);
     const { useStateValue, send, start } = constructTests(service);
@@ -115,30 +81,7 @@ describe('Interpret for guards', () => {
   });
 
   describe('#02 => describer', () => {
-    const machine = createMachine(
-      {
-        initial: 'state1',
-        states: {
-          state1: {
-            always: {
-              guards: { name: 'guard1', description: 'Just a guard' },
-              target: '/state2',
-            },
-          },
-          state2: {
-            on: {
-              NEXT: '/state1',
-            },
-          },
-        },
-      },
-      {
-        ...defaultT,
-        eventsMap: {
-          NEXT: {},
-        },
-      },
-    );
+        const machine = _machine3;
 
     const service = interpret(machine, defaultC);
     const { useStateValue, send, start } = constructTests(service);
@@ -191,49 +134,7 @@ describe('Interpret for guards', () => {
   });
 
   describe('#03 => And/Or', () => {
-    const machine = createMachine(
-      {
-        initial: 'state1',
-        states: {
-          state1: {
-            always: {
-              guards: [
-                'returnTrue',
-                {
-                  or: [
-                    'returnFalse',
-                    {
-                      and: [
-                        {
-                          name: 'returnTrue',
-                          description: 'Just return TRUE',
-                        },
-                        'returnTrue2',
-                      ],
-                    },
-                    {
-                      name: 'returnFalse2',
-                      description: 'Just a guard',
-                    },
-                  ],
-                },
-              ],
-              target: '/state2',
-            },
-          },
-          state2: {},
-        },
-      },
-      {
-        ...defaultT,
-        context: {
-          data: numberT.type,
-        },
-        pContext: {
-          data: stringT.type,
-        },
-      },
-    );
+        const machine = _machine4;
 
     machine.addOptions(({ isDefined, isNotDefined }) => ({
       predicates: {

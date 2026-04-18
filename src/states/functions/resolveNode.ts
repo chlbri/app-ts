@@ -2,12 +2,7 @@ import { toAction } from '#actions';
 import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import { toEmitter } from '#emitters';
-import type {
-  ActorsConfigMap,
-  EventsMap,
-  ToEventObject,
-  ToEvents,
-} from '#events';
+import type { ActorsConfigMap, EventObject, EventsMap } from '#events';
 import { toChild } from '#machines';
 import { toTransition } from '#transitions';
 import toArray from '#bemedev/features/arrays/castings/toArray';
@@ -22,12 +17,12 @@ export type ResolveNode_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
 >(
   events: E,
   actorsMap: A,
   config: NodeConfig,
-  options?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
+  options?: SimpleMachineOptions<Pc, Tc, T, Eo>,
 ) => Node<Eo, Pc, Tc, T>;
 
 /**

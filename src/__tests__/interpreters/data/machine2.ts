@@ -85,7 +85,7 @@ export const config2 = createConfig({
   },
 });
 
-export const machine2 = createMachine(
+export const machine2 = createMachine('src/__tests__/interpreters/data/machine2',
   {
     actors: {
       machine1: {
@@ -175,7 +175,7 @@ const _config2 = createConfig({
   },
 });
 
-export const _machine2 = createMachine(
+export const _machine2 = createMachine('src/__tests__/interpreters/data/machine2._2',
   _config2,
   typings({
     eventsMap: {

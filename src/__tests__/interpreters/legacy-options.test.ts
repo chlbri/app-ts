@@ -1,33 +1,22 @@
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { typings } from '#utils';
+import _machine1 from './legacy-options.1.machine';
+import _machine2 from './legacy-options.2.machine';
+import _machine3 from './legacy-options.3.machine';
+import _machine4 from './legacy-options.4.machine';
+import _machine5 from './legacy-options.5.machine';
+import _machine6 from './legacy-options.6.machine';
+import _machine7 from './legacy-options.7.machine';
+import _machine8 from './legacy-options.8.machine';
+import _machine9 from './legacy-options.9.machine';
+import _machine10 from './legacy-options.10.machine';
+import _machine11 from './legacy-options.11.machine';
+import _machine12 from './legacy-options.12.machine';
+import _machine13 from './legacy-options.13.machine';
+import _machine14 from './legacy-options.14.machine';
 
 describe.concurrent('Legacy Options Access', () => {
   test('#01 => should access previous actions via _legacy', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              NEXT: {
-                actions: 'increment',
-              },
-              DOUBLE: {
-                actions: 'doubleIncrement',
-              },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          NEXT: 'primitive',
-          DOUBLE: 'primitive',
-        },
-        context: 'number',
-      }),
-    );
+        const machine = _machine1;
 
     // First call to addOptions - define increment
     machine.addOptions(({ assign }) => ({
@@ -61,26 +50,7 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#02 => should access previous actions via _legacy, replace the same action', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              NEXT: {
-                actions: 'increment',
-              },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          NEXT: 'primitive',
-        },
-        context: 'number',
-      }),
-    );
+        const machine = _machine2;
 
     // First call to addOptions - define increment
     machine.addOptions(({ assign }) => ({
@@ -114,35 +84,7 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#03 =>should access previous predicates via _legacy', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              CHECK: [
-                {
-                  guards: 'isPositive',
-                  target: '/positive',
-                },
-                {
-                  guards: 'isNegative',
-                  target: '/negative',
-                },
-              ],
-            },
-          },
-          positive: {},
-          negative: {},
-        },
-      },
-      typings({
-        eventsMap: {
-          CHECK: 'primitive',
-        },
-        context: 'number',
-      }),
-    );
+        const machine = _machine3;
 
     // First call - define isPositive
     machine.addOptions(() => ({
@@ -173,30 +115,8 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#04 => should work with provideOptions', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              ADD: {
-                actions: 'add',
-              },
-              MULTIPLY: {
-                actions: 'multiply',
-              },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          ADD: 'primitive',
-          MULTIPLY: 'primitive',
-        },
-        context: 'number',
-      }),
-    ).provideOptions(({ assign }) => ({
+        const machine = _machine4
+    .provideOptions(({ assign }) => ({
       actions: {
         add: assign('context', ({ context }) => context + 2),
       },
@@ -227,18 +147,7 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#05 => _legacy should be immutable', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {},
-        },
-      },
-      typings({
-        eventsMap: {},
-        context: 'number',
-      }),
-    );
+        const machine = _machine5;
 
     machine.addOptions(({ assign }) => ({
       actions: {
@@ -257,28 +166,7 @@ describe.concurrent('Legacy Options Access', () => {
   });
 
   test('#06 => should handle multiple calls with cumulative legacy', async () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              FIRST: { actions: 'first' },
-              SECOND: { actions: 'second' },
-              THIRD: { actions: 'third' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          FIRST: 'primitive',
-          SECOND: 'primitive',
-          THIRD: 'primitive',
-        },
-        context: 'number',
-      }),
-    );
+        const machine = _machine6;
 
     // First call
     machine.addOptions(({ assign }) => ({
@@ -327,30 +215,7 @@ describe.concurrent('Legacy Options Access', () => {
 
   describe('#07 => Service (Interpreter) addOptions', () => {
     test('#01 => should access previous actions via _legacy on service.addOptions', async () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                NEXT: {
-                  actions: 'increment',
-                },
-                TRIPLE: {
-                  actions: 'tripleIncrement',
-                },
-              },
-            },
-          },
-        },
-        typings({
-          eventsMap: {
-            NEXT: 'primitive',
-            TRIPLE: 'primitive',
-          },
-          context: 'number',
-        }),
-      );
+            const machine = _machine7;
 
       const service = interpret(machine, { context: 0 });
 
@@ -385,26 +250,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#02 => should access previous actions via _legacy on service.addOptions, changes the same action', async () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                NEXT: {
-                  actions: 'increment',
-                },
-              },
-            },
-          },
-        },
-        typings({
-          eventsMap: {
-            NEXT: 'primitive',
-          },
-          context: 'number',
-        }),
-      );
+            const machine = _machine8;
 
       const service = interpret(machine, { context: 0 });
 
@@ -454,35 +300,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#03 => should access previous predicates via _legacy on service.addOptions', async () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                CHECK: [
-                  {
-                    guards: 'isPositive',
-                    target: '/positive',
-                  },
-                  {
-                    guards: 'isNegative',
-                    target: '/negative',
-                  },
-                ],
-              },
-            },
-            positive: {},
-            negative: {},
-          },
-        },
-        typings({
-          eventsMap: {
-            CHECK: 'primitive',
-          },
-          context: 'number',
-        }),
-      );
+            const machine = _machine9;
 
       const service = interpret(machine, { context: 5 });
 
@@ -513,26 +331,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#04 => should handle cumulative legacy on service.addOptions', async () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                FIRST: { actions: 'first' },
-                SECOND: { actions: 'second' },
-              },
-            },
-          },
-        },
-        typings({
-          eventsMap: {
-            FIRST: 'primitive',
-            SECOND: 'primitive',
-          },
-          context: 'number',
-        }),
-      );
+            const machine = _machine10;
 
       const service = interpret(machine, { context: 0 });
 
@@ -567,30 +366,7 @@ describe.concurrent('Legacy Options Access', () => {
 
   describe('#08 => Service (Interpreter) provideOptions', () => {
     test('#01 => should access previous actions via _legacy on service.provideOptions', async () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                ADD: {
-                  actions: 'add',
-                },
-                MULTIPLY: {
-                  actions: 'multiply',
-                },
-              },
-            },
-          },
-        },
-        typings({
-          eventsMap: {
-            ADD: 'primitive',
-            MULTIPLY: 'primitive',
-          },
-          context: 'number',
-        }),
-      );
+            const machine = _machine11;
 
       const service1 = interpret(machine, { context: 1 });
 
@@ -626,26 +402,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#02 => should return new service instance with provideOptions', async () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                INCREMENT: {
-                  actions: 'increment',
-                },
-              },
-            },
-          },
-        },
-        typings({
-          eventsMap: {
-            INCREMENT: 'primitive',
-          },
-          context: 'number',
-        }),
-      );
+            const machine = _machine12;
 
       const service1 = interpret(machine, { context: 0 });
       const service2 = service1.provideOptions(({ assign }) => ({
@@ -669,28 +426,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#03 => should chain provideOptions with cumulative legacy', async () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                OP1: { actions: 'op1' },
-                OP2: { actions: 'op2' },
-                OP3: { actions: 'op3' },
-              },
-            },
-          },
-        },
-        typings({
-          eventsMap: {
-            OP1: 'primitive',
-            OP2: 'primitive',
-            OP3: 'primitive',
-          },
-          context: 'number',
-        }),
-      );
+            const machine = _machine13;
 
       const service1 = interpret(machine, { context: 0 });
 
@@ -740,26 +476,7 @@ describe.concurrent('Legacy Options Access', () => {
     });
 
     test('#04 => should preserve context and pContext across provideOptions', async () => {
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                INCREMENT: {
-                  actions: 'increment',
-                },
-              },
-            },
-          },
-        },
-        typings({
-          eventsMap: {
-            INCREMENT: 'primitive',
-          },
-          context: 'number',
-        }),
-      );
+            const machine = _machine14;
 
       const service1 = interpret(machine, { context: 10 });
 

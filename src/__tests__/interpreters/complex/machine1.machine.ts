@@ -21,7 +21,7 @@ export const BLOCK_IMMO_INTERMEDIARY: inferT<typeof intermediary> = {
 const CHECK_DELAY = 300;
 
 export const machine = createMachine(
-  'src/interpreters/__tests__/complex/machine1',
+  'src/__tests__/interpreters/complex/machine1.machine',
   {
     initial: 'idle',
     states: {

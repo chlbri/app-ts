@@ -30,6 +30,11 @@
     "git stash": true,
     "npx vitest": true,
     "mv": true,
-    "mkdir": true
+    "mkdir": true,
+    "uniq": true,
+    "/^cd \"/Users/chlbri/Documents/github/NODE JS/Librairies bemedev/app-ts\" && node extract-machines\\.mjs$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
   }
 }

@@ -7,13 +7,16 @@ import {
 } from '#constants';
 import { constructTests, defaultC, defaultT } from '#fixtures';
 import { DELAY, fakeDB, machine21, machine3 } from '#fixturesData';
-import { createMachine } from '#machine';
 import type { StateValue } from '#states';
 import { nothing, typings } from '#utils';
 
 import equal from 'fast-deep-equal';
 import { interpret, TIME_TO_RINIT_SELF_COUNTER } from '#interpreter';
 import type { AnyInterpreter } from '../../interpreters/interpreter.types';
+import _machine1 from './composition.1.machine';
+import _machine2 from './composition.2.machine';
+import _machine3 from './composition.3.machine';
+import _machine4 from './composition.4.machine';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -217,48 +220,8 @@ describe('Composition', () => {
   describe('#03 => Exceed selfTransitionsCounter', () => {
     const fn = vi.spyOn(console, 'error');
 
-    const machine = createMachine(
-      {
-        on: {
-          ADD_CONDITION: { actions: 'addCondition' },
-          REMOVE_CONDITION: { actions: 'removeCondition' },
-        },
-        initial: 'idle',
-        states: {
-          idle: {
-            entry: 'inc',
-            always: {
-              guards: ['condition', 'limit'],
-              target: '/working',
-            },
-            after: {
-              DELAY: '/working',
-            },
-          },
-          working: {
-            entry: 'inc',
-            always: {
-              guards: ['condition', 'limit'],
-              target: '/idle',
-            },
-            after: {
-              DELAY: '/idle',
-            },
-          },
-        },
-      },
-
-      typings({
-        eventsMap: {
-          ADD_CONDITION: 'primitive',
-          REMOVE_CONDITION: 'primitive',
-        },
-        context: {
-          condition: 'boolean',
-          iterator: 'number',
-        },
-      }),
-    ).provideOptions(({ isValue, assign }) => ({
+        const machine = _machine1
+    .provideOptions(({ isValue, assign }) => ({
       actions: {
         addCondition: ({ pContext, context }) => ({
           pContext,
@@ -316,19 +279,8 @@ describe('Composition', () => {
   describe('#04 => Send without changed value', () => {
     const inc = vi.fn().mockReturnValue({ pContext: {}, context: {} });
 
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              NEXT: { actions: 'inc' },
-            },
-          },
-        },
-      },
-      { ...defaultT, eventsMap: { NEXT: {} } },
-    ).provideOptions(() => ({
+        const machine = _machine2
+    .provideOptions(() => ({
       actions: {
         inc,
       },
@@ -388,19 +340,8 @@ describe('Composition', () => {
   describe('#05 => After without changed value', () => {
     const inc = vi.fn().mockReturnValue({ pContext: {}, context: {} });
 
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            after: {
-              NEXT: { actions: 'inc' },
-            },
-          },
-        },
-      },
-      defaultT,
-    ).provideOptions(() => ({
+        const machine = _machine3
+    .provideOptions(() => ({
       actions: {
         inc,
       },
@@ -432,25 +373,8 @@ describe('Composition', () => {
     const inc = vi.fn().mockReturnValue({ pContext: {}, context: {} });
     const inc2 = vi.fn().mockReturnValue({ pContext: {}, context: {} });
 
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            after: {
-              DELAY: { actions: 'inc2' },
-            },
-          },
-        },
-      },
-      {
-        ...defaultT,
-        context: { iterator: 0 },
-        actorsMap: {
-          ...defaultT.actorsMap,
-        },
-      },
-    ).provideOptions(() => ({
+        const machine = _machine4
+    .provideOptions(() => ({
       actions: {
         inc,
         inc2,

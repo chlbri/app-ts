@@ -1,22 +1,15 @@
 import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { typings } from '#utils';
+import _childMachine1 from './2ids.1.machine';
+import _machine2 from './2ids.2.machine';
 
 vi.useFakeTimers();
 
 describe('Coverage actors', () => {
   describe('#03 => From describe 2 but, two different ids', () => {
     const DELAY = 350;
-    const childMachine = createMachine(
-      {
-        activities: {
-          DELAY: ['inc'],
-          DELAY2: ['inc2'],
-        },
-      },
-      typings({ context: { iter1: 'number', iter2: 'number' } }),
-    ).provideOptions(({ assign }) => ({
+        const childMachine = _childMachine1
+    .provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context.iter1', ({ context }) => context.iter1 + 1),
         inc2: assign('context.iter2', ({ context }) => context.iter2 + 1),
@@ -24,48 +17,7 @@ describe('Coverage actors', () => {
       delays: { DELAY, DELAY2: DELAY * 2 },
     }));
 
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: { NEXT: '/working' },
-            actors: {
-              child1: {
-                contexts: {
-                  '.': 'all',
-                  iter1: 'iter1',
-                },
-              },
-            },
-          },
-          working: {
-            on: { NEXT: '/idle' },
-            actors: {
-              child2: {
-                contexts: {
-                  iter2: 'iter2',
-                },
-              },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: { NEXT: 'primitive' },
-        actorsMap: {
-          children: { child1: 'primitive', child2: 'primitive' },
-        },
-        pContext: {
-          iter1: 'number',
-          iter2: 'number',
-          all: {
-            iter1: 'number',
-            iter2: 'number',
-          },
-        },
-      }),
-    );
+        const machine = _machine2;
 
     machine.addOptions(() => ({
       actors: {

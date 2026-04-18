@@ -1,35 +1,13 @@
 import { ALWAYS_EVENT, transformEventArg } from '#events';
 import { constructTests, defaultC, defaultT } from '#fixtures';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
+import _machine1 from './actions.1.machine';
+import _machine2 from './actions.2.machine';
 
 describe('Interpret for actions', () => {
   const action1 = vi.fn().mockReturnValue(defaultC);
   describe('#01 => string', () => {
-    const machine = createMachine(
-      {
-        initial: 'state1',
-        states: {
-          state1: {
-            always: {
-              actions: 'action1',
-              target: '/state2',
-            },
-          },
-          state2: {
-            on: {
-              NEXT: '/state1',
-            },
-          },
-        },
-      },
-      {
-        ...defaultT,
-        eventsMap: {
-          NEXT: {},
-        },
-      },
-    );
+        const machine = _machine1;
 
     const service = interpret(machine, defaultC);
     const { send, useStateValue, start } = constructTests(service);
@@ -80,33 +58,7 @@ describe('Interpret for actions', () => {
   });
 
   describe('#02 => describer', () => {
-    const machine = createMachine(
-      {
-        initial: 'state1',
-        states: {
-          state1: {
-            always: {
-              actions: {
-                name: 'action1',
-                description: 'Just an action',
-              },
-              target: '/state2',
-            },
-          },
-          state2: {
-            on: {
-              NEXT: '/state1',
-            },
-          },
-        },
-      },
-      {
-        ...defaultT,
-        eventsMap: {
-          NEXT: {},
-        },
-      },
-    );
+        const machine = _machine2;
 
     const service = interpret(machine, defaultC);
     const { send, useStateValue, start } = constructTests(service);

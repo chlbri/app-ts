@@ -2,9 +2,8 @@ import _any from '#bemedev/features/common/castings/any';
 import type { PrimitiveObject } from '#bemedev/globals/types';
 import type {
   ActorsConfigMap,
+  EventObject,
   EventsMap,
-  ToEventObject,
-  ToEvents,
   ToEventsR,
 } from '#events';
 import {
@@ -54,7 +53,7 @@ export type ReduceFnMap_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
 >(
   events: E,
   actorsMap: A,
@@ -106,7 +105,7 @@ export type ReduceFnMap2_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R = any,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
 >(
   events: E,
   actorsMap: A,

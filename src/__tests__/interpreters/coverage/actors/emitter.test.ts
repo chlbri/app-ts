@@ -1,11 +1,11 @@
 import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
 import { notU, typings } from '#utils';
 import { createPausable } from '@bemedev/rx-pausable';
 import { interval } from 'rxjs/internal/observable/interval';
 import { map } from 'rxjs/internal/operators/map';
 import { take } from 'rxjs/internal/operators/take';
+import machine from './emitter.machine';
 
 vi.useFakeTimers();
 
@@ -13,34 +13,7 @@ const SHORT = 200;
 
 describe('Coverage actors', () => {
   describe('#01 => same emitter actor id in two states', () => {
-    const machine = createMachine(
-      {
-        initial: 'inactive',
-        states: {
-          inactive: {
-            on: { NEXT: '/active' },
-            actors: {
-              interval: { next: { actions: ['assignN'] } },
-            },
-          },
-          active: {
-            on: { NEXT: '/inactive' },
-            actors: {
-              interval: { next: { actions: ['assignN'] } },
-            },
-          },
-        },
-      },
-      typings({
-        context: 'number',
-        eventsMap: { NEXT: 'primitive' },
-        actorsMap: {
-          emitters: {
-            interval: { next: 'number', error: 'primitive' },
-          },
-        },
-      }),
-    );
+    
 
     machine.addOptions(({ assign }) => ({
       actions: {

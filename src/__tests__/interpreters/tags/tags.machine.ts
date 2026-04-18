@@ -2,7 +2,7 @@ import { createMachine } from '#machine';
 import { typings } from '#utils';
 
 export const machine = createMachine(
-  'src/interpreters/__tests__/tags/tags',
+  'src/__tests__/interpreters/tags/tags.machine',
   {
     initial: 'idle',
     states: {

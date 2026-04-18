@@ -2,8 +2,12 @@ import { DEFAULT_MAX_TIME_PROMISE } from '#constants';
 import { constructTests, defaultC, defaultT } from '#fixtures';
 import { returnFalse } from '#guards';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
 import { createConfig } from '#machines';
+import _machine1 from './after.1.machine';
+import _machine2 from './after.2.machine';
+import _machine3 from './after.3.machine';
+import _machine4 from './after.4.machine';
+import _machine5 from './after.5.machine';
 
 const DELAY = 1000;
 
@@ -25,7 +29,7 @@ describe('after', () => {
   });
 
   describe('#01 => simple', () => {
-    const machine = createMachine(simpleConfig, defaultT);
+        const machine = _machine1;
 
     machine.addOptions(() => ({
       delays: {
@@ -49,22 +53,7 @@ describe('after', () => {
   });
 
   describe('#02 => complex, two delays', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            after: {
-              DELAY1: '/result1',
-              DELAY2: '/result2',
-            },
-          },
-          result1: {},
-          result2: {},
-        },
-      },
-      defaultT,
-    );
+        const machine = _machine2;
 
     machine.addOptions(() => ({
       delays: {
@@ -93,22 +82,7 @@ describe('after', () => {
   });
 
   describe('#03 => complex, two delays with parameters', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            after: {
-              DELAY: { guards: 'returnFalse', target: '/result1' },
-              DELAY2: '/result2',
-            },
-          },
-          result1: {},
-          result2: {},
-        },
-      },
-      defaultT,
-    );
+        const machine = _machine3;
     machine.addOptions(() => ({
       delays: {
         DELAY,
@@ -142,27 +116,7 @@ describe('after', () => {
 
   describe('#04 => Inside the remainings', () => {
     vi.useRealTimers();
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            after: {
-              DELAY2: '/active',
-            },
-            on: {
-              NEXT: '/active',
-            },
-          },
-          active: {
-            on: {
-              NEXT: '/idle',
-            },
-          },
-        },
-      },
-      { ...defaultT, eventsMap: { NEXT: {} } },
-    );
+        const machine = _machine4;
 
     machine.addOptions(() => ({
       delays: {
@@ -213,16 +167,7 @@ describe('after', () => {
 
   describe('#05 => after transition - delay is too long', () => {
     vi.useFakeTimers();
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: { after: { DELAY: '/active' } },
-          active: {},
-        },
-      },
-      defaultT,
-    );
+        const machine = _machine5;
 
     machine.addOptions(() => ({
       delays: {

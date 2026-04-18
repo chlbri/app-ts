@@ -1,39 +1,11 @@
 import { DELAY } from '#fixturesData';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { typings } from '#utils';
 import { constructTests } from '#fixtures';
+import _raw_machine from './perform.machine';
 
 vi.useFakeTimers();
 describe('Performs activities on events', () => {
-  const machine101 = createMachine(
-    {
-      initial: 'idle',
-      states: {
-        idle: {
-          activities: {
-            DELAY: 'inc',
-          },
-          on: {
-            PAUSE: { actions: 'pause' },
-            RESUME: { actions: 'resume' },
-            STOP: { actions: 'stop' },
-          },
-        },
-      },
-    },
-    typings({
-      eventsMap: {
-        PAUSE: 'primitive',
-        RESUME: 'primitive',
-        STOP: 'primitive',
-      },
-
-      context: {
-        iterator: 'number',
-      },
-    }),
-  ).provideOptions(
+  const machine = _raw_machine.provideOptions(
     ({ assign, pauseActivity, resumeActivity, stopActivity }) => ({
       actions: {
         inc: assign(
@@ -50,7 +22,7 @@ describe('Performs activities on events', () => {
     }),
   );
 
-  const service = interpret(machine101, {
+  const service = interpret(machine, {
     exact: true,
     context: { iterator: 0 },
   });

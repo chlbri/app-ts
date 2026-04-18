@@ -1,7 +1,10 @@
 import { DEFAULT_MAX_TIME_PROMISE } from '#constants';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { typings } from '#utils';
+import _machineWithLong1 from './longRuns.cov.1.machine';
+import _machineWithoutLong2 from './longRuns.cov.2.machine';
+import _machine3 from './longRuns.cov.3.machine';
+import _machine4 from './longRuns.cov.4.machine';
+import _machine5 from './longRuns.cov.5.machine';
 
 vi.useFakeTimers();
 
@@ -10,15 +13,9 @@ const BEYOND_MAX = DEFAULT_MAX_TIME_PROMISE + 100_000;
 
 describe('longRuns - no timeout limit for async actions and after', () => {
   describe('#01 => longRuns property propagation', () => {
-    const machineWithLong = createMachine(
-      { __longRuns: true, initial: 'idle', states: { idle: {} } },
-      typings({ eventsMap: {}, context: 'number' }),
-    );
+        const machineWithLong = _machineWithLong1;
 
-    const machineWithoutLong = createMachine(
-      { initial: 'idle', states: { idle: {} } },
-      typings({ eventsMap: {}, context: 'number' }),
-    );
+        const machineWithoutLong = _machineWithoutLong2;
 
     test('#01 => machine.longRuns is true when __longRuns: true', () => {
       expect(machineWithLong.longRuns).toBe(true);
@@ -43,17 +40,8 @@ describe('longRuns - no timeout limit for async actions and after', () => {
   });
 
   describe('#02 => without __longRuns: async action times out at DEFAULT_MAX_TIME_PROMISE', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: { TEST: { target: 'idle', actions: 'slowAction' } },
-          },
-        },
-      },
-      typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-    ).provideOptions(({ voidAction }) => ({
+        const machine = _machine3
+    .provideOptions(({ voidAction }) => ({
       actions: {
         slowAction: voidAction(
           () =>
@@ -81,18 +69,8 @@ describe('longRuns - no timeout limit for async actions and after', () => {
   describe('#03 => with __longRuns: true: async action completes beyond DEFAULT_MAX_TIME_PROMISE', () => {
     const done = vi.fn();
 
-    const machine = createMachine(
-      {
-        __longRuns: true,
-        initial: 'idle',
-        states: {
-          idle: {
-            on: { TEST: { target: 'idle', actions: 'slowAction' } },
-          },
-        },
-      },
-      typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-    ).provideOptions(({ voidAction }) => ({
+        const machine = _machine4
+    .provideOptions(({ voidAction }) => ({
       actions: {
         slowAction: voidAction(
           () =>
@@ -125,17 +103,7 @@ describe('longRuns - no timeout limit for async actions and after', () => {
   describe('#04 => after transition with __longRuns: true', () => {
     const DELAY = 5_000;
 
-    const machine = createMachine(
-      {
-        __longRuns: true,
-        initial: 'idle',
-        states: {
-          idle: { after: { DELAY: '/active' } },
-          active: {},
-        },
-      },
-      typings({ eventsMap: {}, context: 'number' }),
-    );
+        const machine = _machine5;
 
     machine.addOptions(() => ({
       delays: { DELAY },

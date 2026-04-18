@@ -1,6 +1,8 @@
 import { constructTests, defaultC, defaultT } from '#fixtures';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machines';
+import _machine1 from './always.1.machine';
+import _machine2 from './always.2.machine';
+import _machine3 from './always.3.machine';
 
 describe('Integration testing for interpret, Children', () => {
   beforeAll(() => {
@@ -10,22 +12,7 @@ describe('Integration testing for interpret, Children', () => {
   const DELAY = 1000;
 
   describe('#01 => With delay', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            after: {
-              DELAY: '/notActive',
-            },
-            always: '/active',
-          },
-          active: {},
-          notActive: {},
-        },
-      },
-      defaultT,
-    );
+        const machine = _machine1;
 
     machine.addOptions(() => ({
       delays: { DELAY },
@@ -51,22 +38,7 @@ describe('Integration testing for interpret, Children', () => {
   });
 
   describe('#01 => With delay, but cannot reach caused by guard', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            after: {
-              DELAY3: '/notActive',
-            },
-            always: { guards: 'returnFalse', target: '/active' },
-          },
-          active: {},
-          notActive: {},
-        },
-      },
-      defaultT,
-    );
+        const machine = _machine2;
 
     machine.addOptions(({ isDefined }) => ({
       delays: { DELAY3: DELAY * 3 },
@@ -92,24 +64,7 @@ describe('Integration testing for interpret, Children', () => {
   });
 
   describe('#02 => complex, two always with parameters', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            always: [
-              { guards: 'returnFalse', target: '/result1' },
-              { guards: 'returnFalse', target: '/result3' },
-              '/result2',
-            ],
-          },
-          result1: {},
-          result2: {},
-          result3: {},
-        },
-      },
-      defaultT,
-    );
+        const machine = _machine3;
 
     // machine.addPredicates({ returnFalse });
     machine.addOptions(({ isDefined }) => ({

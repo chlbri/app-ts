@@ -1,11 +1,6 @@
 import type { ChildConfig } from '../../actor.types';
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type {
-  ActorsConfigMap,
-  EventsMap,
-  ToEventObject,
-  ToEvents,
-} from '#events';
+import type { ActorsConfigMap, EventObject, EventsMap } from '#events';
 import { toTransition } from '#transitions';
 import _any from '#bemedev/features/common/castings/any';
 import type { SimpleMachineOptions } from '#machines';
@@ -20,12 +15,12 @@ export type ToChild_F = <
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
   R extends { eventsMap: any } = { eventsMap: any },
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
 >(
   events: E,
   actorsMap: A,
   child: ChildConfig & { __id: string },
-  options?: SimpleMachineOptions<E, A, Pc, Tc, T, Eo>,
+  options?: SimpleMachineOptions<Pc, Tc, T, Eo>,
 ) => Child<Eo, Pc, Tc, T, R>;
 
 /**

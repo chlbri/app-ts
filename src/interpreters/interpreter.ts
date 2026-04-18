@@ -22,8 +22,7 @@ import {
   type EventArg,
   type EventArgT,
   type EventObject,
-  type ToEventObject,
-  type ToEvents,
+  type EventsMap,
   type ToEventsR,
 } from '#events';
 import { toPredicate, type GuardConfig } from '#guards';
@@ -38,9 +37,9 @@ import {
   type DirectMerge_F,
   type EventsMapFrom,
   type ExtendedActionsParams,
-  type GetEventsFromConfig,
   type PrivateContextFrom,
   type ScheduledData,
+  type SimpleMachineOptions2,
 } from '#machines';
 import {
   flatMap,
@@ -116,13 +115,7 @@ import type {
 } from '#bemedev/globals/types';
 import { toEmitterSrc, type EmitterFunction2 } from '#emitters';
 import type { Machine } from '#machine';
-import type {
-  ActorsMapFrom,
-  AnyMachine,
-  ChildFunction2,
-  ExtractTagsFromConfig,
-  GetActorKeysFromConfig,
-} from '#machines';
+import type { ActorsMapFrom, AnyMachine, ChildFunction2 } from '#machines';
 import type { FinallyConfig } from '#actor';
 import { createScheduler } from '@bemedev/scheduler';
 import type { ChildConfig, EmitterConfig } from '../actor.types';
@@ -156,15 +149,16 @@ export class Interpreter<
   const C extends Config = Config,
   const Pc = any,
   const Tc extends PrimitiveObject = PrimitiveObject,
-  E extends GetEventsFromConfig<C> = GetEventsFromConfig<C>,
-  A extends ActorsConfigMap = GetActorKeysFromConfig<C>,
-  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  E extends EventsMap = EventsMap,
+  A extends ActorsConfigMap = ActorsConfigMap,
+  Ta extends string = string,
+  Eo extends EventObject = EventObject,
+  Path extends string = string,
 > implements AnyInterpreter<E, A, Pc, Tc> {
   /**
    * The {@linkcode Machine} machine being interpreted.
    */
-  #machine: Machine<C, Pc, Tc, E, A, Ta, Eo>;
+  #machine: Machine<C, Pc, Tc, E, A, Ta, Eo, SimpleMachineOptions2, Path>;
 
   /**
    * The current {@linkcode WorkingStatus} status of the this {@linkcode Interpreter} service.

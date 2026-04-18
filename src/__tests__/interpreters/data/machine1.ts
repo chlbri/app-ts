@@ -3,7 +3,7 @@ import { typings } from '#utils';
 import { DELAY } from './constants';
 
 // #region machine1
-export const machine1 = createMachine(
+export const machine1 = createMachine('src/__tests__/interpreters/data/machine1',
   {
     initial: 'idle',
 

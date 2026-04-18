@@ -1,11 +1,13 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import type { Keys } from '#bemedev/globals/types';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
 import { type StateValue } from '#states';
 import { typings } from '#utils';
 import { constructTests } from '#fixtures';
 import type { inferT } from '../../utils/typings';
+import _machine1 from './real.1.machine';
+import _machine2 from './real.2.machine';
+import _mainMachine3 from './real.3.machine';
 
 beforeAll(() => {
   vi.useFakeTimers();
@@ -18,103 +20,7 @@ describe('REAL LIFE TESTS', () => {
       entry: 'inc',
     } as const;
 
-    const machine = createMachine(
-      'src/machine/__tests__/real',
-      {
-        initial: 'idle',
-        ...actions,
-        states: {
-          idle: {
-            ...actions,
-            on: {
-              NEXT: '/parallel',
-            },
-            description: 'First state',
-          },
-          compound: {
-            ...actions,
-            on: {
-              NEXT: '/idle',
-            },
-            initial: 'idle',
-            states: {
-              idle: {
-                ...actions,
-                on: {
-                  NEXT: '/compound/next',
-                },
-              },
-              next: {
-                ...actions,
-                on: {
-                  PREVIOUS: '/compound/idle',
-                  NEXT: '/parallel',
-                },
-              },
-            },
-          },
-          parallel: {
-            ...actions,
-            on: {
-              PREVIOUS: '/compound/next',
-            },
-            type: 'parallel',
-            states: {
-              atomic: {
-                initial: 'idle',
-                ...actions,
-                on: {
-                  NEXT: '/idle',
-                },
-
-                states: {
-                  idle: {
-                    entry: 'inc',
-                    on: {
-                      NEXT: '/parallel/atomic/next',
-                    },
-                  },
-                  next: {
-                    ...actions,
-                    on: {
-                      PREVIOUS: '/parallel/atomic/idle',
-                    },
-                  },
-                },
-              },
-              compound: {
-                ...actions,
-                on: {
-                  NEXT: '/compound/next',
-                },
-                initial: 'idle',
-                states: {
-                  idle: {
-                    ...actions,
-                    on: {
-                      NEXT: '/parallel/compound/next',
-                    },
-                  },
-                  next: {
-                    ...actions,
-                    on: {
-                      NEXT: '/compound/idle',
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          NEXT: 'primitive',
-          PREVIOUS: 'primitive',
-        },
-        context: 'number',
-      }),
-    ).provideOptions(({ assign }) => ({
+    const machine = _machine1.provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context', ({ context }) => context + 1),
       },
@@ -254,88 +160,7 @@ describe('REAL LIFE TESTS', () => {
       entry: 'inc',
     } as const;
 
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            ...io,
-            on: {
-              NEXT: '/parallel',
-            },
-          },
-          parallel: {
-            ...io,
-            type: 'parallel',
-            states: {
-              atomic: {
-                ...io,
-                initial: 'idle',
-
-                states: {
-                  idle: {
-                    ...io,
-                    on: {
-                      NEXT: {
-                        target: '/parallel/atomic/next',
-                      },
-                    },
-                  },
-                  next: {
-                    ...io,
-                    on: {
-                      PREVIOUS: '/parallel/atomic/idle',
-                      NEXT: '/parallel/atomic/idle',
-                    },
-                  },
-                },
-              },
-              compound: {
-                ...io,
-                initial: 'idle',
-
-                states: {
-                  idle: {
-                    ...io,
-                    on: {
-                      NEXT: {
-                        target: '/parallel/compound/compound',
-                      },
-                    },
-                  },
-                  compound: {
-                    ...io,
-                    initial: 'idle',
-                    states: {
-                      idle: {
-                        ...io,
-                        on: {
-                          NEXT: '/parallel/compound/compound/next',
-                        },
-                      },
-                      next: {
-                        ...io,
-                        on: {
-                          PREVIOUS: '/parallel/compound/compound/idle',
-                          NEXT: '/idle',
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          NEXT: 'primitive',
-          PREVIOUS: 'primitive',
-        },
-        context: 'number',
-      }),
-    ).provideOptions(({ assign }) => ({
+    const machine = _machine2.provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context', ({ context }) => context + 1),
       },
@@ -976,199 +801,114 @@ describe('REAL LIFE TESTS', () => {
       ),
     });
 
-    const mainMachine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            entry: 'prepare',
-            always: '/working',
-          },
-          working: {
-            on: {
-              CHANGE_LANG: {
-                actions: ['changeLang'],
+    const mainMachine = _mainMachine3.provideOptions(
+      ({ assign, debounce }) => ({
+        actions: {
+          changeLang: debounce(
+            assign('context.lang', {
+              CHANGE_LANG: ({ payload: { lang } }) => {
+                return lang;
               },
-              REMOVE: {
-                actions: ['remove'],
-              },
-              ADD: {
-                actions: ['add'],
-              },
-              UPDATE: {
-                actions: 'update',
-              },
-              'UPDATE:NOW': {
-                actions: 'update:now',
-              },
-              'FIELDS:REGISTER': {
-                actions: ['fields.register', 'fields.register.finish'],
-                target: '/working/register',
-              },
-              'FIELDS:MODIFY': {
-                actions: ['fields.modify'],
-                target: '/working/idle',
-              },
-            },
+            }),
+            { ms: 500, id: 'change-lang' },
+          ),
 
-            initial: 'idle',
-
-            states: {
-              idle: {},
-
-              register: {
-                on: {
-                  'VALUES:REGISTER': {
-                    actions: [
-                      'values.start.register',
-                      'values.register',
-                      'values.register.finish',
-                    ],
-                  },
-                  'VALUES:MODIFY': {
-                    actions: ['values.modify'],
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      typings({
-        context: typings.partial({
-          lang,
-          fields: typings.array(field),
-          responses: typings.soa('string'),
-          states: typings.partial({
-            fields: state,
-            values: state,
-          }),
-          values: typings.record('string'),
-        }),
-        eventsMap: {
-          CHANGE_LANG: { lang },
-          REMOVE: { index: 'number' },
-          ADD: 'primitive',
-          UPDATE: {
-            index: 'number',
-            value: typings.partial(field),
-          },
-          'UPDATE:NOW': {
-            index: 'number',
-            value: field,
-          },
-          'FIELDS:REGISTER': 'primitive',
-          'FIELDS:MODIFY': 'primitive',
-          'VALUES:REGISTER': typings.record('string'),
-          'VALUES:MODIFY': 'primitive',
-        },
-      }),
-    ).provideOptions(({ assign, debounce }) => ({
-      actions: {
-        changeLang: debounce(
-          assign('context.lang', {
-            CHANGE_LANG: ({ payload: { lang } }) => {
-              return lang;
-            },
-          }),
-          { ms: 500, id: 'change-lang' },
-        ),
-
-        add: assign('context.fields', ({ context: { fields } }) => {
-          fields?.push({ label: '', type: 'text' });
-          return fields;
-        }),
-
-        remove: assign('context.fields', {
-          REMOVE: ({ context: { fields }, payload: { index } }) => {
-            fields?.splice(index, 1);
+          add: assign('context.fields', ({ context: { fields } }) => {
+            fields?.push({ label: '', type: 'text' });
             return fields;
-          },
-        }),
+          }),
 
-        update: debounce(
-          assign('context.fields', {
-            UPDATE: ({
+          remove: assign('context.fields', {
+            REMOVE: ({ context: { fields }, payload: { index } }) => {
+              fields?.splice(index, 1);
+              return fields;
+            },
+          }),
+
+          update: debounce(
+            assign('context.fields', {
+              UPDATE: ({
+                context: { fields },
+                payload: { index, value },
+              }) => {
+                if (!fields) return fields;
+                fields[index] = { ...fields[index], ...value };
+                return fields;
+              },
+            }),
+            { ms: 500, id: 'update-field' },
+          ),
+
+          'update:now': assign('context.fields', {
+            'UPDATE:NOW': ({
               context: { fields },
               payload: { index, value },
             }) => {
               if (!fields) return fields;
-              fields[index] = { ...fields[index], ...value };
+              fields[index] = value;
               return fields;
             },
           }),
-          { ms: 500, id: 'update-field' },
-        ),
 
-        'update:now': assign('context.fields', {
-          'UPDATE:NOW': ({
-            context: { fields },
-            payload: { index, value },
-          }) => {
-            if (!fields) return fields;
-            fields[index] = value;
-            return fields;
-          },
-        }),
+          // #region Fields
+          'fields.register': assign(
+            'context.states.fields',
+            () => 'registration' as const,
+          ),
 
-        // #region Fields
-        'fields.register': assign(
-          'context.states.fields',
-          () => 'registration' as const,
-        ),
+          'fields.register.finish': debounce(
+            assign('context.states.fields', () => 'registered' as const),
+            { ms: 500, id: 'register-fields-finish' },
+          ),
 
-        'fields.register.finish': debounce(
-          assign('context.states.fields', () => 'registered' as const),
-          { ms: 500, id: 'register-fields-finish' },
-        ),
+          'fields.modify': assign(
+            'context.states.fields',
+            () => 'idle' as const,
+          ),
+          // #endregion
 
-        'fields.modify': assign(
-          'context.states.fields',
-          () => 'idle' as const,
-        ),
-        // #endregion
+          // #region Values
+          'values.start.register': assign(
+            'context.states.values',
+            () => 'registration' as const,
+          ),
 
-        // #region Values
-        'values.start.register': assign(
-          'context.states.values',
-          () => 'registration' as const,
-        ),
+          'values.register': assign('context.values', {
+            'VALUES:REGISTER': ({ payload }) => payload,
+          }),
 
-        'values.register': assign('context.values', {
-          'VALUES:REGISTER': ({ payload }) => payload,
-        }),
+          'values.register.finish': debounce(
+            assign('context.states.values', () => 'registered' as const),
+            { ms: 500, id: 'register-values-finish' },
+          ),
 
-        'values.register.finish': debounce(
-          assign('context.states.values', () => 'registered' as const),
-          { ms: 500, id: 'register-values-finish' },
-        ),
+          'values.modify': assign(
+            'context.states.values',
+            () => 'idle' as const,
+          ),
+          // #endregion
 
-        'values.modify': assign(
-          'context.states.values',
-          () => 'idle' as const,
-        ),
-        // #endregion
+          /**
+           * Prepare at starting point
+           * @returns
+           */
+          prepare: assign('context', () => {
+            const current = { label: '', type: 'text' } as inferT<
+              typeof field
+            >;
 
-        /**
-         * Prepare at starting point
-         * @returns
-         */
-        prepare: assign('context', () => {
-          const current = { label: '', type: 'text' } as inferT<
-            typeof field
-          >;
-
-          return {
-            fields: [structuredClone(current)],
-            lang: 'en' as const,
-            states: {
-              fields: 'idle' as const,
-              values: 'idle' as const,
-            },
-          };
-        }),
-      },
-    }));
+            return {
+              fields: [structuredClone(current)],
+              lang: 'en' as const,
+              states: {
+                fields: 'idle' as const,
+                values: 'idle' as const,
+              },
+            };
+          }),
+        },
+      }),
+    );
 
     const service = interpret(mainMachine, {
       context: {},

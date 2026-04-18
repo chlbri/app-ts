@@ -1,39 +1,10 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { typings } from '#utils';
+import _raw_machine from './index.machine';
 
 describe('Coverage of interpretr #2', () => {
   describe('#01 => Cov select and pSelect for primitive units', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            entry: ['inc'],
-            on: {
-              INC: { actions: ['inc', 'neverRun'] },
-              'INC.PRIVATE': { actions: 'incPrivate' },
-              NEXT: {
-                description: 'Next',
-                actions: ['inc', 'incPrivate'],
-                target: '/final',
-              },
-            },
-          },
-          final: {},
-        },
-      },
-      typings({
-        eventsMap: {
-          INC: 'primitive',
-          'INC.PRIVATE': 'primitive',
-          NEXT: 'primitive',
-        },
-        context: 'number',
-        pContext: 'number',
-      }),
-    ).provideOptions(({ assign, voidAction }) => ({
+    const machine = _raw_machine.provideOptions(({ assign, voidAction }) => ({
       actions: {
         inc: assign('context', ({ context }) => context + 1),
         incPrivate: assign('pContext', ({ pContext }) => pContext + 1),

@@ -1,25 +1,19 @@
 import num from '#bemedev/features/numbers/typings';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
 import { constructTests, defaultC, defaultT } from '#fixtures';
-import { typings } from '#utils';
+import _child1 from './children.1.machine';
+import _parent2 from './children.2.machine';
+import _parent3 from './children.3.machine';
+import _child4 from './children.4.machine';
+import _parent5 from './children.5.machine';
 
 describe('Integration testing for interpret, Children', () => {
   beforeAll(() => {
     vi.useFakeTimers();
   });
 
-  const child = createMachine(
-    {
-      initial: 'idle',
-      states: {
-        idle: {
-          activities: { DELAY: 'inc' },
-        },
-      },
-    },
-    { ...defaultT, context: num.type },
-  ).provideOptions(({ assign }) => ({
+    const child = _child1
+    .provideOptions(({ assign }) => ({
     actions: {
       inc: assign('context', ({ context }) => context + 1),
     },
@@ -27,31 +21,8 @@ describe('Integration testing for interpret, Children', () => {
   }));
 
   describe('#01 => context are same', () => {
-    const parent = createMachine(
-      {
-        initial: 'idle',
-        actors: {
-          child: {
-            contexts: {
-              '.': '.',
-            },
-          },
-        },
-        states: {
-          idle: {},
-        },
-      },
-      {
-        ...defaultT,
-        pContext: num.type,
-        actorsMap: {
-          ...defaultT.actorsMap,
-          children: {
-            child: {},
-          },
-        },
-      },
-    ).provideOptions(() => ({
+        const parent = _parent2
+    .provideOptions(() => ({
       actors: {
         children: {
           child: () => interpret(child, { context: 0 }),
@@ -81,37 +52,8 @@ describe('Integration testing for interpret, Children', () => {
   });
 
   describe('#02 => context of child, and the type correspond to a subtype of privateContext of parent', () => {
-    const parent = createMachine(
-      {
-        initial: 'idle',
-        actors: {
-          child: {
-            contexts: {
-              '.': 'iterator',
-            },
-          },
-        },
-        states: {
-          idle: {},
-          working: {
-            on: {
-              NEXT: '/idle',
-            },
-          },
-        },
-      },
-      {
-        ...defaultT,
-        pContext: { iterator: num.type },
-        eventsMap: { NEXT: {} },
-        actorsMap: {
-          ...defaultT.actorsMap,
-          children: {
-            child: {},
-          },
-        },
-      },
-    ).provideOptions(() => ({
+        const parent = _parent3
+    .provideOptions(() => ({
       actors: {
         children: {
           child: () => interpret(child, { context: 0 }),
@@ -147,60 +89,10 @@ describe('Integration testing for interpret, Children', () => {
 
   describe('#03 => Cover child->on', () => {
     const notify = vi.fn();
-    const child = createMachine(
-      {
-        initial: 'active',
-        states: {
-          active: {
-            on: { NEXT: '/inactive' },
-          },
-          inactive: {
-            on: { NEXT: '/active' },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          NEXT: 'primitive',
-        },
-      }),
-    );
+        const child = _child4;
 
-    const parent = createMachine(
-      {
-        actors: {
-          child: {
-            on: {
-              NEXT: {
-                actions: ['notify'],
-              },
-            },
-          },
-        },
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              NEXT: {
-                actions: ['sendChildNext'],
-              },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: {
-          NEXT: 'primitive',
-        },
-        actorsMap: {
-          children: {
-            child: {
-              NEXT: 'primitive',
-            },
-          },
-        },
-      }),
-    ).provideOptions(({ sendTo, voidAction }) => ({
+        const parent = _parent5
+    .provideOptions(({ sendTo, voidAction }) => ({
       actions: {
         notify: voidAction(() => {
           console.warn('REACH');

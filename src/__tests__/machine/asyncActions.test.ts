@@ -1,6 +1,14 @@
-import { createMachine } from '#machine';
 import { interpret } from '#interpreter';
-import { typings } from '#utils';
+import _machine1 from './asyncActions.1.machine';
+import _machine2 from './asyncActions.2.machine';
+import _machine3 from './asyncActions.3.machine';
+import _machine4 from './asyncActions.4.machine';
+import _machine5 from './asyncActions.5.machine';
+import _machine6 from './asyncActions.6.machine';
+import _machine7 from './asyncActions.7.machine';
+import _machine8 from './asyncActions.8.machine';
+import _machine9 from './asyncActions.9.machine';
+import _machine10 from './asyncActions.10.machine';
 
 vi.useFakeTimers();
 
@@ -11,22 +19,8 @@ describe('Machine createOptions - error handlers', () => {
     describe('#01 => calls errorFn when fn throws', () => {
       const errorFn = vi.fn((state: any) => state);
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ assign }) => ({
+            const machine = _machine1
+    .provideOptions(({ assign }) => ({
         actions: {
           myAction: assign(
             'context',
@@ -75,22 +69,8 @@ describe('Machine createOptions - error handlers', () => {
         context: -1,
       }));
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ assign }) => ({
+            const machine = _machine2
+    .provideOptions(({ assign }) => ({
         actions: {
           myAction: assign(
             'context',
@@ -126,22 +106,8 @@ describe('Machine createOptions - error handlers', () => {
     describe('#03 => with max defined, still calls errorFn when fn throws', () => {
       const errorFn = vi.fn((state: any) => state);
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ assign }) => ({
+            const machine = _machine3
+    .provideOptions(({ assign }) => ({
         actions: {
           myAction: assign(
             'context',
@@ -173,22 +139,8 @@ describe('Machine createOptions - error handlers', () => {
     describe('#01 => calls errorFn when fn throws', () => {
       const errorFn = vi.fn(() => theError);
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ voidAction }) => ({
+            const machine = _machine4
+    .provideOptions(({ voidAction }) => ({
         actions: {
           myAction: voidAction(
             async () => {
@@ -238,22 +190,8 @@ describe('Machine createOptions - error handlers', () => {
         context: -99,
       }));
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ voidAction }) => ({
+            const machine = _machine5
+    .provideOptions(({ voidAction }) => ({
         actions: {
           myAction: voidAction(
             async ({ event }) => {
@@ -282,22 +220,8 @@ describe('Machine createOptions - error handlers', () => {
     describe('#03 => with max defined, still calls errorFn when fn throws', () => {
       const errorFn = vi.fn((state: any) => state);
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ voidAction }) => ({
+            const machine = _machine6
+    .provideOptions(({ voidAction }) => ({
         actions: {
           myAction: voidAction(
             {
@@ -327,22 +251,8 @@ describe('Machine createOptions - error handlers', () => {
       const theData = { message: 'Success' };
       const passFn = vi.fn(async data => console.log(data));
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ voidAction }) => ({
+            const machine = _machine7
+    .provideOptions(({ voidAction }) => ({
         actions: {
           myAction: voidAction(
             {
@@ -385,22 +295,8 @@ describe('Machine createOptions - error handlers', () => {
     describe('#01 => calls errorFn when fn throws', () => {
       const errorFn = vi.fn((state: any) => state);
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ sendTo }) => {
+            const machine = _machine8
+    .provideOptions(({ sendTo }) => {
         const _sendTo = sendTo();
         return {
           actions: {
@@ -446,22 +342,8 @@ describe('Machine createOptions - error handlers', () => {
         context: 0,
       }));
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ sendTo }) => ({
+            const machine = _machine9
+    .provideOptions(({ sendTo }) => ({
         actions: {
           myAction: sendTo()(
             async () => {
@@ -489,22 +371,8 @@ describe('Machine createOptions - error handlers', () => {
     describe('#03 => with max defined, still calls errorFn when fn throws', () => {
       const errorFn = vi.fn(() => payload);
 
-      const machine = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {
-              on: {
-                TEST: {
-                  target: 'idle',
-                  actions: 'myAction',
-                },
-              },
-            },
-          },
-        },
-        typings({ context: 'number', eventsMap: { TEST: 'primitive' } }),
-      ).provideOptions(({ sendTo }) => ({
+            const machine = _machine10
+    .provideOptions(({ sendTo }) => ({
         actions: {
           myAction: sendTo()(
             async () => {

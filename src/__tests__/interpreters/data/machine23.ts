@@ -3,7 +3,7 @@ import { toFunction } from '#utils';
 import { machine2 } from './machine2';
 
 // #region machine23
-export const machine23 = createMachine(
+export const machine23 = createMachine('src/__tests__/interpreters/data/machine23',
   {
     initial: 'idle',
     states: {

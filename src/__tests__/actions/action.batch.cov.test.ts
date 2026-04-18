@@ -1,38 +1,10 @@
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { typings } from '#utils';
+import _raw_machine from './action.batch.cov.machine';
 
 vi.useFakeTimers();
 
 describe('Machine batch action', () => {
-  const machine = createMachine(
-    {
-      initial: 'idle',
-      states: {
-        idle: {
-          on: {
-            INC1: {
-              actions: 'inc1',
-            },
-            INC2: {
-              actions: 'inc2',
-            },
-            INC5: {
-              actions: 'inc5',
-            },
-          },
-        },
-      },
-    },
-    typings({
-      eventsMap: {
-        INC1: 'primitive',
-        INC2: 'primitive',
-        INC5: 'primitive',
-      },
-      context: 'number',
-    }),
-  ).provideOptions(({ batch, assign, voidAction }) => ({
+  const machine = _raw_machine.provideOptions(({ batch, assign, voidAction }) => ({
     actions: {
       inc1: assign('context', ({ context }) => context + 1),
       inc2: batch(

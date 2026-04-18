@@ -1,10 +1,5 @@
 import type { PrimitiveObject } from '#bemedev/globals/types';
-import type {
-  ActorsConfigMap,
-  EventsMap,
-  ToEventObject,
-  ToEvents,
-} from '#events';
+import type { ActorsConfigMap, EventObject, EventsMap } from '#events';
 import type { EmitterFunction2, EmittersMap } from '../types';
 
 export type ToEmitterSrc_F = <
@@ -13,7 +8,7 @@ export type ToEmitterSrc_F = <
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
-  Eo extends ToEventObject<ToEvents<E, A>> = ToEventObject<ToEvents<E, A>>,
+  Eo extends EventObject = EventObject,
   R = any,
 >(
   events: E,

@@ -1,13 +1,16 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { _machine2, DELAY, fakeDB, machine2 } from '#fixturesData';
 import { interpret } from '#interpreters';
-import { createMachine, getEntries, Machine } from '#machine';
+import { getEntries, Machine } from '#machine';
 
 import { nothing, reduceDescriber } from '#utils';
 import { createTests } from '@bemedev/dev-utils/vitest-extended';
 import equal from 'fast-deep-equal';
 import path from 'path';
 import { constructTests, defaultT } from '#fixtures';
+import _machine1 from './cov.1.machine';
+import _machineT2 from './cov.2.machine';
+import _machineT3 from './cov.3.machine';
 
 describe('machine coverage', () => {
   beforeAll(() => vi.useFakeTimers());
@@ -876,37 +879,7 @@ describe('machine coverage', () => {
   });
 
   describe('#04 = > coverage retrieve initial', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              NEXT: '/state1',
-            },
-          },
-          state1: {
-            activities: { DELAY: 'inc' },
-            initial: 'state11',
-            states: {
-              state11: {
-                initial: 'state111',
-                states: {
-                  state111: {
-                    initial: 'state1111',
-                    states: {
-                      state1111: {},
-                    },
-                  },
-                  state112: {},
-                },
-              },
-            },
-          },
-        },
-      },
-      { ...defaultT, eventsMap: { NEXT: {} } },
-    );
+        const machine = _machine1;
 
     const service = interpret(machine);
     const { useStateValue, start, send } = constructTests(service);
@@ -1018,22 +991,7 @@ describe('machine coverage', () => {
   describe('#06 => machine id is not defined', () => {
     describe('#01 => string', () => {
       const idM = 'machineNotDefined' as const;
-      // @ts-expect-error - deep instantiation with `as any` types and overloaded createMachine
-      const machineT = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {},
-          },
-          actors: {
-            [idM]: {
-              on: {},
-            },
-          },
-        },
-        defaultT as any,
-        // defaultI,
-      );
+            const machineT = _machineT2;
 
       const service = interpret(machineT);
       const { start } = constructTests(service);
@@ -1066,22 +1024,7 @@ describe('machine coverage', () => {
         name: 'machineNotDefined',
         description: 'Not defined',
       };
-      const machineT = createMachine(
-        {
-          initial: 'idle',
-          states: {
-            idle: {},
-          },
-          actors: {
-            [idM.name]: {
-              description: idM.description,
-              on: {},
-            },
-          },
-        },
-        defaultT as any,
-        // defaultI,
-      );
+            const machineT = _machineT3;
 
       const service = interpret(machineT);
 

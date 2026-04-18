@@ -1,8 +1,14 @@
 import { emptyFn } from '#fixtures';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { typings } from '#utils';
 import { sleep } from '@bemedev/sleep';
+import _machine1 from './async-actions.1.machine';
+import _machine2 from './async-actions.2.machine';
+import _machine3 from './async-actions.3.machine';
+import _machine4 from './async-actions.4.machine';
+import _machine5 from './async-actions.5.machine';
+import _machine6 from './async-actions.6.machine';
+import _machine7 from './async-actions.7.machine';
+import _machine8 from './async-actions.8.machine';
 
 vi.useFakeTimers();
 
@@ -19,22 +25,8 @@ const TINY_DELAY = 20; // ms — resolves fast enough not to hit a 5 s max
 
 describe('Async action helpers', () => {
   describe('#01 => assign — async fn, no options', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              LOAD: { actions: 'loadUser', target: '/idle' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: { LOAD: 'primitive' },
-        context: { name: 'string' },
-      }),
-    ).provideOptions(({ assign }) => ({
+        const machine = _machine1
+    .provideOptions(({ assign }) => ({
       actions: {
         loadUser: assign(
           'context.name',
@@ -65,22 +57,8 @@ describe('Async action helpers', () => {
   });
 
   describe('#02 => assign — async fn + { max } — resolves before timeout', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              LOAD: { actions: 'loadUser', target: '/idle' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: { LOAD: 'primitive' },
-        context: { name: 'string' },
-      }),
-    ).provideOptions(({ assign }) => ({
+        const machine = _machine2
+    .provideOptions(({ assign }) => ({
       actions: {
         loadUser: assign(
           'context.name',
@@ -105,22 +83,8 @@ describe('Async action helpers', () => {
   });
 
   describe('#03 => assign — async fn + { error } handler on reject', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              LOAD: { actions: 'loadUser', target: '/idle' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: { LOAD: 'primitive' },
-        context: { name: 'string', error: 'string' },
-      }),
-    ).provideOptions(({ assign }) => ({
+        const machine = _machine3
+    .provideOptions(({ assign }) => ({
       actions: {
         loadUser: assign(
           'context.name',
@@ -151,19 +115,8 @@ describe('Async action helpers', () => {
   describe('#04 => voidAction — async fn, no options', () => {
     const sideEffect = vi.fn();
 
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              PING: { actions: 'ping', target: '/idle' },
-            },
-          },
-        },
-      },
-      typings({ eventsMap: { PING: 'primitive' } }),
-    ).provideOptions(({ voidAction }) => ({
+        const machine = _machine4
+    .provideOptions(({ voidAction }) => ({
       actions: {
         ping: voidAction(
           async () => {
@@ -191,22 +144,8 @@ describe('Async action helpers', () => {
   describe('#05 => voidAction — async fn + { error } handler', () => {
     const errorHandler = vi.fn();
 
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              PING: { actions: 'ping', target: '/idle' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: { PING: 'primitive' },
-        context: { errored: 'boolean' },
-      }),
-    ).provideOptions(({ voidAction }) => ({
+        const machine = _machine5
+    .provideOptions(({ voidAction }) => ({
       actions: {
         ping: voidAction(
           async () => {
@@ -237,22 +176,8 @@ describe('Async action helpers', () => {
   });
 
   describe('#06 => filter — async predicate, no options', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              FILTER: { actions: 'filterEven' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: { FILTER: 'primitive' },
-        context: { items: typings.array('number') },
-      }),
-    ).provideOptions(({ filter }) => ({
+        const machine = _machine6
+    .provideOptions(({ filter }) => ({
       actions: {
         filterEven: filter('context.items', (item: number) => {
           return item % 2 === 0;
@@ -277,22 +202,8 @@ describe('Async action helpers', () => {
     // sendTo is a curried helper — sendTo(machine?)(fn)
     // We test only that the async fn resolves without error and the
     // sentEvent reaches the interpreter (checked via warnings or lack thereof).
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              DISPATCH: { actions: 'dispatchEvent', target: '/idle' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: { DISPATCH: 'primitive' },
-        context: { dispatched: 'boolean' },
-      }),
-    ).provideOptions(({ voidAction }) => ({
+        const machine = _machine7
+    .provideOptions(({ voidAction }) => ({
       actions: {
         // sendTo without a target machine — we use voidAction to prove async runs
         dispatchEvent: voidAction(
@@ -320,22 +231,8 @@ describe('Async action helpers', () => {
   });
 
   describe('#08 => assign — sync fn still works (backward compat)', () => {
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              INC: { actions: 'inc', target: '/idle' },
-            },
-          },
-        },
-      },
-      typings({
-        eventsMap: { INC: 'primitive' },
-        context: 'number',
-      }),
-    ).provideOptions(({ assign }) => ({
+        const machine = _machine8
+    .provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context', ({ context }) => (context ?? 0) + 1),
       },

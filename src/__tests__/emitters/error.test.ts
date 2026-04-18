@@ -1,10 +1,9 @@
 import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
-import { createMachine } from '#machine';
-import { typings } from '#utils';
 import { createPausable } from '@bemedev/rx-pausable';
 import { Subject } from 'rxjs';
+import _raw_machine from './error.machine';
 
 vi.useFakeTimers();
 describe('Error transitions testing)', () => {
@@ -22,32 +21,7 @@ describe('Error transitions testing)', () => {
       complete: () => console.warn('Subject completed'),
     });
 
-    const machine = createMachine(
-      {
-        initial: 'idle',
-        actors: {
-          interval: {
-            next: {
-              actions: ['assigN'],
-            },
-            error: {
-              actions: ['signals'],
-            },
-          },
-        },
-        states: {
-          idle: {},
-        },
-      },
-      typings({
-        actorsMap: {
-          emitters: {
-            interval: { next: 'number', error: 'number' },
-          },
-        },
-        context: 'number',
-      }),
-    ).provideOptions(({ assign, voidAction }) => ({
+    const machine = _raw_machine.provideOptions(({ assign, voidAction }) => ({
       actors: { emitters: { interval: () => createPausable(sub) } },
 
       actions: {
