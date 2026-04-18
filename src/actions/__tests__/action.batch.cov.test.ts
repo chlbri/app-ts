@@ -45,7 +45,9 @@ describe('Machine batch action', () => {
         assign('context', ({ context }) => context + 1),
         assign('context', ({ context }) => context + 1),
         assign('context', ({ context }) => context + 1),
-        assign('context', ({ context }) => context + 3),
+        assign('context', async ({ context }) => context + 3, {
+          error: () => 4,
+        }),
         voidAction(() =>
           console.warn('Tricky, last action increment by 3'),
         ),

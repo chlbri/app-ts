@@ -723,7 +723,7 @@ export class Interpreter<
     this.#startInitialEntries();
     this.#startChildren();
     this.#throwing();
-    return this._next();
+    this._next();
   };
 
   /**
@@ -811,7 +811,13 @@ export class Interpreter<
 
   #performAction: PerformActionLater_F<Eo, Pc, Tc, Ta> = action => {
     this._iterate();
-    return action(this.#cloneState);
+    const out = withTimeout(
+      () => action(this.#cloneState),
+      'Action timed out',
+      ...(this.longRuns ? [] : [DEFAULT_MAX_TIME_PROMISE]),
+    );
+
+    return out();
   };
 
   #performScheduledAction = (scheduled?: ScheduledData<Pc, Tc>) => {
@@ -1225,7 +1231,7 @@ export class Interpreter<
       const promise = withTimeout(
         _promise,
         from,
-        DEFAULT_MAX_TIME_PROMISE,
+        ...(this.longRuns ? [] : [DEFAULT_MAX_TIME_PROMISE]),
       );
 
       promises.push(promise);
@@ -2024,7 +2030,7 @@ export class Interpreter<
       this.#config = next;
       this.#performConfig(true);
       this.#makeWork();
-      return this._next();
+      this._next();
     } else return this.#makeWork();
   };
 

@@ -90,25 +90,14 @@ export type ActorsConfigMap = {
  * @template : {@linkcode ActorsConfigMap} [A], the configuration map for actors which includes children and emitters.
  * @returns A union type of events, emitter-events, and child-events.
  */
-export type ToEventsR<
-  E extends EventsMap,
-  A extends ActorsConfigMap,
-  Ex extends string = never,
-> =
+export type ToEventsR<E extends EventsMap, A extends ActorsConfigMap> =
   | EventsR<E>
   | _EmitterConfigR<NotUndefined<A['emitters']>>
-  | _ChildConfigR<NotUndefined<A['children']>> extends infer U extends
-  EventObject
-  ? never extends Ex
-    ? U
-    : Exclude<U, { type: Ex }>
-  : never;
+  | _ChildConfigR<NotUndefined<A['children']>>;
 
-export type ToEvents<
-  E extends EventsMap,
-  A extends ActorsConfigMap,
-  Ex extends string = never,
-> = ToEventsR<E, A, Ex> | EventStrings;
+export type ToEvents<E extends EventsMap, A extends ActorsConfigMap> =
+  | ToEventsR<E, A>
+  | EventStrings;
 
 export type EventArgObject<E extends EventObject> =
   object extends E['payload'] ? E['type'] | E : E;

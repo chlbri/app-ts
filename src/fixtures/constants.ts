@@ -2,6 +2,7 @@ export const defaultC = {
   pContext: undefined,
   context: undefined,
 } as const;
+
 export const defaultT = {
   ...defaultC,
   eventsMap: {},
@@ -11,3 +12,6 @@ export const defaultT = {
     promisees: {},
   },
 } as const;
+
+/* v8 ignore next */
+export const emptyFn = () => {};

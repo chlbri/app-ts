@@ -673,11 +673,16 @@ class Machine<
             fn as any,
           );
 
-          return async ({ pContext, context, ...rest }) => {
+          return async ({ pContext, context, event, ...rest }) => {
             const all = cloneDeep({ pContext, context });
 
             const execute = async () => {
-              const rawResult = await _fn({ pContext, context, ...rest });
+              const rawResult = await _fn({
+                pContext,
+                context,
+                event,
+                ...rest,
+              });
               return assignByKey(all, _any(key), rawResult);
             };
 
@@ -691,9 +696,15 @@ class Machine<
                 return await tp();
               }
               return await execute();
-            } catch (e) {
-              if (errorFn) return _any(errorFn)(e, { pContext, context });
-              throw e;
+            } catch (e: any) {
+              const rawResult = errorFn({
+                context,
+                pContext,
+                payload: e,
+                ...rest,
+              });
+
+              return assignByKey(all, _any(key), rawResult);
             }
           };
         },
@@ -1123,10 +1134,12 @@ class Machine<
 
       const { error: errorFn, max } = options;
 
-      return async ({ context, pContext, ...rest }) => {
+      return async ({ context, pContext, event, ...rest }) => {
+        const out = _any({ context, pContext });
         const state = this.#cloneStateExtended({
           context,
           pContext,
+          event,
           ...rest,
         });
 
@@ -1134,7 +1147,7 @@ class Machine<
           const fn2 = reduceFnMap(this.eventsMap, this.#actorsMap, fn);
           const { event, to } = (await fn2(state)) as any;
           const sentEvent = { to, event };
-          return _any({ context, pContext, sentEvent });
+          return _any({ ...out, sentEvent });
         };
 
         try {
@@ -1143,9 +1156,15 @@ class Machine<
             return await tp();
           }
           return await execute();
-        } catch (e) {
-          if (errorFn) return _any(errorFn)(e, { context, pContext });
-          throw e;
+        } catch (e: any) {
+          errorFn({
+            context,
+            pContext,
+            payload: e,
+            ...rest,
+          });
+
+          return out;
         }
       };
     };
@@ -1162,37 +1181,36 @@ class Machine<
    *
    * @see {@linkcode VoidAction_F}
    */
-  #voidAction: VoidAction_F<Eo, Pc, Tc, Ta> = (fn?, options?) => {
+  #voidAction: VoidAction_F<Eo, Pc, Tc, Ta> = (fn, options?) => {
     if (!options) {
       return ({ context, pContext, ...rest }) => {
-        if (fn) {
-          const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
-          const state = this.#cloneStateExtended({
-            context,
-            pContext,
-            ...rest,
-          });
-          _fn(state);
-        }
+        const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
+        const state = this.#cloneStateExtended({
+          context,
+          pContext,
+          ...rest,
+        });
+        _fn(state);
+
         return _any({ context, pContext });
       };
     }
 
     const { error: errorFn, max } = options;
 
-    return async ({ context, pContext, ...rest }) => {
+    return async ({ context, pContext, event, ...rest }) => {
+      const out = _any({ context, pContext });
       const state = this.#cloneStateExtended({
         context,
         pContext,
+        event,
         ...rest,
       });
 
       const execute = async () => {
-        if (fn) {
-          const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
-          await _fn(state);
-        }
-        return _any({ context, pContext });
+        const _fn = reduceFnMap(this.#eventsMap, this.#actorsMap, fn);
+        await _fn(state);
+        return out;
       };
 
       try {
@@ -1201,9 +1219,15 @@ class Machine<
           return await tp();
         }
         return await execute();
-      } catch (e) {
-        if (errorFn) return _any(errorFn)(e, { context, pContext });
-        throw e;
+      } catch (e: any) {
+        errorFn({
+          context,
+          pContext,
+          payload: e,
+          ...rest,
+        });
+
+        return out;
       }
     };
   };

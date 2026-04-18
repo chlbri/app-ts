@@ -1,3 +1,4 @@
+import { emptyFn } from '#fixtures';
 import { interpret } from '#interpreter';
 import { createMachine } from '#machine';
 import { createConfig } from '#machines';
@@ -136,7 +137,12 @@ export const machine21 = createMachine(
       write: assign('context.input', {
         WRITE: ({ payload: { value } }) => value,
       }),
-      send: sendTo(machine1)(() => ({ to: 'machine1', event: 'NEXT' })),
+      send: sendTo(machine1)(
+        async () => ({ to: 'machine1', event: 'NEXT' }),
+        {
+          error: emptyFn,
+        },
+      ),
       insertData: assign('context.data', ({ context }) =>
         fakeDB
           .filter(item => item.name.includes(context?.input ?? ''))
