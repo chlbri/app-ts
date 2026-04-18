@@ -1415,24 +1415,24 @@ export class Interpreter<
 
   #collectedEmitterConfigs: [
     from: string,
-    ...promisees: (EmitterConfig & { id: string })[],
+    ...emitters: (EmitterConfig & { id: string })[],
   ][] = [];
 
   #collectEmitterConfigs = () => {
     const entriesFlat = Object.entries(this.#machine.flat);
     const entries: [
       from: string,
-      ...promisees: (EmitterConfig & { id: string })[],
+      ...emitters: (EmitterConfig & { id: string })[],
     ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
       const actors = Object.entries(node.actors ?? {});
-      const promisees = toArray
+      const emitters = toArray
         .typed(actors)
         .map(([id, actor]) => ({ ...actor, id }))
         .filter(actor => 'next' in actor);
       if (node.actors) {
-        entries.push([from, ...promisees]);
+        entries.push([from, ...emitters]);
       }
     });
 
@@ -1442,24 +1442,24 @@ export class Interpreter<
 
   #collectedChildrenConfig: [
     from: string,
-    ...promisees: (ChildConfig & { id: string })[],
+    ...children: (ChildConfig & { id: string })[],
   ][] = [];
 
   #collectChildrenConfig = () => {
     const entriesFlat = Object.entries(this.#machine.flat);
     const entries: [
       from: string,
-      ...promisees: (ChildConfig & { id: string })[],
+      ...children: (ChildConfig & { id: string })[],
     ][] = [];
 
     entriesFlat.forEach(([from, node]) => {
       const actors = Object.entries(node.actors ?? {});
-      const promisees = toArray
+      const chidlren = toArray
         .typed(actors)
         .map(([id, actor]) => ({ ...actor, id }))
         .filter(actor => 'on' in actor || 'contexts' in actor);
       if (node.actors) {
-        entries.push([from, ...promisees]);
+        entries.push([from, ...chidlren]);
       }
     });
 

@@ -102,7 +102,6 @@ export type PredicateOr<
 /**
  * Union of all predicate functions.
  * @template : type {@linkcode EventObject} [E], the events map to use for resolving the predicate.
- * @template : type {@linkcode PromiseeMap} [P], the promisees map to use for resolving the predicate.
  * @template : [Pc], the type of the private context.
  * @template : type {@linkcode PrimitiveObject} [Tc], the type of the context.
  *

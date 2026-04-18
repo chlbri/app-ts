@@ -92,7 +92,7 @@ type _PrimitiveObject = __PrimitiveObject | Optional | ArrayCustom;
  */
 export type PrimitiveObjectT = _PrimitiveObject | SoRa<_PrimitiveObject>;
 type ActorsMap = Partial<
-  Record<'children' | 'promisees' | 'emitters', PrimitiveObjectT>
+  Record<'children' | 'emitters', PrimitiveObjectT>
 >;
 
 export type Args<
@@ -214,9 +214,6 @@ export type TransformArgs<T extends Partial<Args>> = {
     children: TransformPrimitiveObject<
       NotUndefined<T['actorsMap']>['children']
     >;
-    promisees: TransformPrimitiveObject<
-      NotUndefined<T['actorsMap']>['promisees']
-    >;
     emitters: TransformPrimitiveObject<
       NotUndefined<T['actorsMap']>['emitters']
     >;
@@ -233,7 +230,6 @@ const DEFAULT_ARGS = {
   context: 'primitive',
   actorsMap: {
     children: 'primitive',
-    promisees: 'primitive',
     emitters: 'primitive',
   },
 } as const satisfies Args;
