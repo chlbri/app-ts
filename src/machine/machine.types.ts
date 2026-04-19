@@ -71,7 +71,7 @@ export type Elements<
   actorsMap: A;
   context: Tc;
   actions?: Mo['actions'];
-  predicates?: Mo['predicates'];
+  guards?: Mo['guards'];
   delays?: Mo['delays'];
   actors?: Mo['actors'];
 };
@@ -319,7 +319,7 @@ export type LegacyOptions<
   Mo extends SimpleMachineOptions2 = SimpleMachineOptions2,
 > = Readonly<{
   actions?: Mo['actions'];
-  predicates?: Mo['predicates'];
+  guards?: Mo['guards'];
   delays?: Mo['delays'];
   actors?: Mo['actors'];
 }>;

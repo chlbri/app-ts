@@ -35,7 +35,7 @@ describe('Machine addOptions return', () => {
       actions: {
         setZero: assign('context', () => 0),
       } as any,
-      predicates: {
+      guards: {
         isPositive: ({ context }) => context > 0,
       },
       delays: {
@@ -45,7 +45,7 @@ describe('Machine addOptions return', () => {
 
     expect(result).toBeDefined();
     expect(result?.actions).toBeDefined();
-    expect(result?.predicates).toBeDefined();
+    expect(result?.guards).toBeDefined();
     expect(result?.delays).toBeDefined();
   });
 

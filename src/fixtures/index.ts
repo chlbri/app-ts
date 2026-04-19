@@ -289,8 +289,9 @@ export const constructTests = <
   const A extends ActorsConfigMap = ActorsConfigMap,
   T extends object = object,
   Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
+  Eo extends EventObject = EventObject,
 >(
-  service: Interpreter<C, Pc, Tc, E, A, Ta>,
+  service: Interpreter<C, Pc, Tc, E, A, Ta, Eo>,
   helper?: (option: Option<C, E, A, Pc, Tc>) => T,
   startIndex = 0,
 ): ConstructTestsResult<C, E, T> => {

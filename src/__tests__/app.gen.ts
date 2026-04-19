@@ -16,12 +16,16 @@ type Entry<
 > = {
   paths: { map: any; all: string };
   events: Events;
-  actors: {
+  options: {
     children: Children;
     emitters: Emitters;
+    tags: Tags;
+    actions: string;
+    delays: string;
+    guards: string;
   };
-  pContext: PContext;
-  tags: Tags;
+  pContext?: PContext;
+  tags?: Tags;
 };
 
 declare module '../index' {

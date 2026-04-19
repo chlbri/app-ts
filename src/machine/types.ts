@@ -47,6 +47,8 @@ import type {
   ReduceArray,
 } from '~types';
 import { RecordS } from './../types/primitives';
+import type { RegisterOptions } from '#registry';
+
 /**
  * Type representing the main JSON config.
  *
@@ -611,9 +613,24 @@ export type MachineOptions<
   Flat extends FlatMapN<C, false> = FlatMapN<C, false>,
 > = Partial<{
   actions: Partial<GetActionsFromFlat<Flat, Eo, Pc, Tc, T>>;
-  predicates: Partial<GetGuardsFromFlat<Flat, Eo, Pc, Tc, T>>;
+  guards: Partial<GetGuardsFromFlat<Flat, Eo, Pc, Tc, T>>;
   delays: Partial<GetDelaysFromFlat<Flat, Eo, Pc, Tc, T>>;
   actors: Partial<GetActorsFromFlat<Flat, Eo, A, Pc, Tc, T>>;
+}>;
+export type MachineOptions2<
+  Pc = any,
+  Tc extends PrimitiveObject = PrimitiveObject,
+  T extends string = string,
+  Eo extends EventObject = EventObject,
+  O extends RegisterOptions = RegisterOptions,
+> = Partial<{
+  actions: Partial<Record<O['actions'], Action2<Eo, Pc, Tc, T>>>;
+  guards: Partial<Record<O['guards'], PredicateS<Eo, Pc, Tc, T>>>;
+  delays: Partial<Record<O['delays'], DelayFunction2<Eo, Pc, Tc, T>>>;
+  actors: Partial<{
+    children: Record<O['children'], ChildFunction2<Eo, Pc, Tc, T, any>>;
+    emitters: Record<O['emitters'], EmitterFunction2<Eo, Pc, Tc, T, any>>;
+  }>;
 }>;
 
 /**
@@ -883,7 +900,7 @@ export type SimpleMachineOptions<
   Eo extends EventObject = EventObject,
 > = Partial<{
   actions: Partial<RecordS<Action2<Eo, Pc, Tc, T>>>;
-  predicates: Partial<RecordS<PredicateS2<Eo, Pc, Tc, T>>>;
+  guards: Partial<RecordS<PredicateS2<Eo, Pc, Tc, T>>>;
   delays: Partial<RecordS<DelayFunction2<Eo, Pc, Tc, T>>>;
   actors: Partial<{
     children: RecordS<ChildFunction2<Eo, Pc, Tc, T>>;
@@ -901,7 +918,7 @@ export type SimpleMachineOptions<
  * This type is more flexible than {@linkcode SimpleMachineOptions}
  */
 export type SimpleMachineOptions2 = Partial<
-  Record<'actions' | 'predicates' | 'delays', any> &
+  Record<'actions' | 'guards' | 'delays', any> &
     Record<
       'actors',
       {

@@ -42,7 +42,7 @@ describe('Integration testing for interpret, Children', () => {
 
     machine.addOptions(({ isDefined }) => ({
       delays: { DELAY3: DELAY * 3 },
-      predicates: { returnFalse: isDefined('context') },
+      guards: { returnFalse: isDefined('context') },
     }));
     const service = interpret(machine, defaultC);
 
@@ -68,7 +68,7 @@ describe('Integration testing for interpret, Children', () => {
 
     // machine.addPredicates({ returnFalse });
     machine.addOptions(({ isDefined }) => ({
-      predicates: { returnFalse: isDefined('pContext') },
+      guards: { returnFalse: isDefined('pContext') },
     }));
 
     const service = interpret(machine);

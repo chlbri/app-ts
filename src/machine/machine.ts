@@ -465,7 +465,7 @@ class Machine<
   // #region private
   #actions?: Mo['actions'];
 
-  #predicates?: Mo['predicates'];
+  #predicates?: Mo['guards'];
 
   #delays?: Mo['delays'];
 
@@ -615,7 +615,7 @@ class Machine<
   #addActions = (actions?: Mo['actions']) =>
     (this.#actions = merge(this.#actions, actions));
 
-  #addPredicates = (predicates?: Mo['predicates']) =>
+  #addGuards = (predicates?: Mo['guards']) =>
     (this.#predicates = merge(this.#predicates, predicates));
 
   #addDelays = (delays?: Mo['delays']) =>
@@ -832,7 +832,7 @@ class Machine<
     const out = this.createOptions(helper as any);
 
     this.#addActions(out?.actions);
-    this.#addPredicates(out?.predicates);
+    this.#addGuards(out?.guards);
     this.#addDelays(out?.delays);
     this.#addChildren(out?.actors?.children);
     this.#addEmitters(out?.actors?.emitters);
@@ -871,7 +871,7 @@ class Machine<
     const pContext = cloneDeep(this.#pContext);
     const context = structuredClone(this.#context);
     const actions = cloneDeep(this.#actions);
-    const predicates = cloneDeep(this.#predicates);
+    const guards = cloneDeep(this.#predicates);
     const delays = cloneDeep(this.#delays);
     const actorsMap = cloneDeep(this.#actorsMap);
     const events = cloneDeep(this.#eventsMap);
@@ -882,7 +882,7 @@ class Machine<
       pContext,
       context,
       actions,
-      predicates,
+      guards,
       delays,
       actors,
       events,
@@ -922,7 +922,7 @@ class Machine<
       config,
       pContext,
       context,
-      predicates,
+      guards,
       actions,
       delays,
 
@@ -938,7 +938,7 @@ class Machine<
     out.#eventsMap = events;
     out.#actorsMap = actorsMap;
 
-    out.#addPredicates(predicates);
+    out.#addGuards(guards);
     out.#addActions(actions);
     out.#addDelays(delays);
     out.#addChildren(actors?.children);
@@ -1302,11 +1302,11 @@ export function createMachine<
     ObjectT
   >,
   const A extends ActorsMapT<
-    Current['actors']['children'],
-    Current['actors']['emitters']
+    Current['options']['children'],
+    Current['options']['emitters']
   > = ActorsMapT<
-    Current['actors']['children'],
-    Current['actors']['emitters']
+    Current['options']['children'],
+    Current['options']['emitters']
   >,
   const _E extends EventsMap = Cast<TransformObject<E>, EventsMap>,
   _A extends ActorsConfigMap = Cast<TransformObject<A>, ActorsConfigMap>,
@@ -1326,7 +1326,7 @@ export function createMachine<
   TransformPrimitiveObject<Tc>,
   _E,
   _A,
-  Extract<Current['tags'], string>,
+  Exclude<Current['tags'], undefined>,
   ToEventObject<ToEvents<_E, _A>>,
   Current['paths']['all']
 > {

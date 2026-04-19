@@ -20,4 +20,7 @@ export default createMachine(
       },
     },
   },
+  {
+    context: 'number',
+  },
 );

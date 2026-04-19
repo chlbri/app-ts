@@ -14,7 +14,7 @@ describe('Interpret for guards', () => {
     const machine = _machine1;
 
     machine.addOptions(({ isDefined }) => ({
-      predicates: {
+      guards: {
         guard1: isDefined('events.payload'),
       },
     }));
@@ -51,7 +51,7 @@ describe('Interpret for guards', () => {
 
     test('#04 => add guard', () => {
       service.addOptions(() => ({
-        predicates: {
+        guards: {
           guard1,
         },
       }));
@@ -104,7 +104,7 @@ describe('Interpret for guards', () => {
 
     test('#04 => add guard', () => {
       service.addOptions(() => ({
-        predicates: {
+        guards: {
           guard1,
         },
       }));
@@ -137,7 +137,7 @@ describe('Interpret for guards', () => {
     const machine = _machine4;
 
     machine.addOptions(({ isDefined, isNotDefined }) => ({
-      predicates: {
+      guards: {
         returnFalse: isNotDefined('events'),
         returnFalse2: isDefined('events.type'),
         returnTrue: true,

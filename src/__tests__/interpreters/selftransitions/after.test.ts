@@ -88,7 +88,7 @@ describe('after', () => {
         DELAY,
         DELAY2: DELAY * 4,
       },
-      predicates: {
+      guards: {
         returnFalse,
       },
     }));

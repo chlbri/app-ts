@@ -2,6 +2,11 @@ import type { ConfigDef, NoExtraKeysConfigDef } from '#machines';
 import type { ObjectT } from '#utils/typings';
 import type { AnyMachine } from './machine/machine.types';
 
+export type RegisterOptions = Record<
+  'children' | 'emitters' | 'tags' | 'actions' | 'delays' | 'guards',
+  string
+>;
+
 /**
  * The Register interface is augmented by the CLI-generated `app.gen.ts` file.
  * It uses the TanStack Start pattern of `declare module` augmentation
@@ -18,10 +23,7 @@ export interface Register extends Record<
     };
     events: string;
 
-    actors: {
-      children: string;
-      emitters: string;
-    };
+    options: RegisterOptions;
     pContext?: ObjectT;
     tags?: string;
   }

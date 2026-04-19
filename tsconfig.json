@@ -42,7 +42,7 @@
       "#emitters": ["./src/emitters/index.ts"],
       "#machine": ["./src/machine/machine.ts"],
       "#machines": ["./src/machine/index.ts"],
-      "#registry": ["src/registry.ts"],
+      "#registry": ["./src/registry.ts"],
       "#config": ["./src/config/index.ts"],
       "#bemedev/*": ["./src/libs/bemedev/*"],
       "@bemedev/app-ts": ["./src/index.ts"]

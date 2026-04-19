@@ -1,5 +1,5 @@
 import { createMachine } from '#machine';
-import type { inferT } from '#utils/typings';
+import { typings, type inferT } from '#utils/typings';
 import isOnline from 'is-online';
 import { asset, intermediary } from './machine1.machine.typings';
 import { emptyFn } from '#fixtures';
@@ -105,6 +105,28 @@ export const machine = createMachine(
       },
     },
   },
+  {
+    eventsMap: {
+      START: {
+        asset,
+        mandatory: intermediary,
+      },
+      ADD_INTERMEDIARY: intermediary,
+      RESET: 'primitive',
+    },
+
+    context: typings.partial({
+      asset,
+      intermediaries: typings.array(intermediary),
+      internetStatus: 'boolean',
+      errors: typings.partial({
+        noAsset: 'string',
+        intermediary: {
+          offline: 'string',
+        },
+      }),
+    }),
+  },
 ).provideOptions(({ assign, erase, batch }) => ({
   actions: {
     provideAsset: assign('context.asset', {
@@ -162,7 +184,7 @@ export const machine = createMachine(
     ),
   },
 
-  predicates: {
+  guards: {
     assetIsDefined: {
       START: ({ payload }) => !!payload.asset,
     },

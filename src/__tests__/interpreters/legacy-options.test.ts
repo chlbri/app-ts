@@ -88,7 +88,7 @@ describe.concurrent('Legacy Options Access', () => {
 
     // First call - define isPositive
     machine.addOptions(() => ({
-      predicates: {
+      guards: {
         isPositive: ({ context }) => context > 0,
       },
     }));
@@ -99,7 +99,7 @@ describe.concurrent('Legacy Options Access', () => {
       expect(previousPredicates?.isPositive).toBeDefined();
 
       return {
-        predicates: {
+        guards: {
           isNegative: ({ context }) => context < 0,
         },
       };
@@ -305,7 +305,7 @@ describe.concurrent('Legacy Options Access', () => {
 
       // First call - define isPositive
       service.addOptions(() => ({
-        predicates: {
+        guards: {
           isPositive: ({ context }) => context > 0,
         },
       }));
@@ -316,7 +316,7 @@ describe.concurrent('Legacy Options Access', () => {
         expect(previousPredicates?.isPositive).toBeDefined();
 
         return {
-          predicates: {
+          guards: {
             isNegative: ({ context }) => context < 0,
           },
         };

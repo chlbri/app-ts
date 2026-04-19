@@ -6,7 +6,6 @@ import type {
   PrimitiveObject,
   Ru,
   SoA,
-  SoRa,
 } from '#bemedev/globals/types';
 import type { StateValue } from '#states';
 import type { EmptyObject } from '@bemedev/decompose';
@@ -187,7 +186,7 @@ export type TransformObject<T extends ObjectT> = Undefiny<
 >;
 
 export type TransformPrimitiveObject<T extends PrimitiveObjectT> =
-  TransformObject<T> extends infer U extends PrimitiveObject ? U : never;
+  TransformObject<T> extends infer U extends PrimitiveObject ? U : any;
 
 export const transformPrimitiveObject = <T extends ObjectT>(
   obj: T,
