@@ -1,4 +1,4 @@
-import { defaultT, fakeWaiter } from '#fixtures';
+import { fakeWaiter } from '#fixtures';
 import { interpret } from '#interpreter';
 import _machine1 from './index.1.machine';
 import _machine2 from './index.2.machine';

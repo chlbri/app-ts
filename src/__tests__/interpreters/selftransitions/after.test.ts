@@ -1,8 +1,7 @@
 import { DEFAULT_MAX_TIME_PROMISE } from '#constants';
-import { constructTests, defaultC, defaultT } from '#fixtures';
+import { constructTests, defaultC } from '#fixtures';
 import { returnFalse } from '#guards';
 import { interpret } from '#interpreter';
-import { createConfig } from '#machines';
 import _machine1 from './after.1.machine';
 import _machine2 from './after.2.machine';
 import _machine3 from './after.3.machine';
@@ -15,18 +14,6 @@ vi.useFakeTimers();
 
 describe('after', () => {
   beforeAll(() => {});
-
-  const simpleConfig = createConfig({
-    initial: 'idle',
-    states: {
-      idle: {
-        after: {
-          DELAY: '/active',
-        },
-      },
-      active: {},
-    },
-  });
 
   describe('#01 => simple', () => {
     const machine = _machine1;

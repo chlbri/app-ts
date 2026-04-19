@@ -1,10 +1,11 @@
 import { interpret } from '#interpreters';
 import { notU } from '#utils';
-import { createConfig } from '#machines';
+import { createConfig, type EventsFrom } from '#machines';
 import { createMachine } from '#machine';
 import { DELAY } from './constants';
 import { fakeDB } from './fakeDB';
 import { machine1 } from './machine1';
+import * as helpers from '@bemedev/typings/helpers';
 // #region machine2
 
 export const config2 = createConfig({
@@ -85,6 +86,25 @@ export const config2 = createConfig({
   },
 });
 
+const typings = helpers.any({
+  eventsMap: {
+    FETCH: 'never',
+    WRITE: {
+      value: 'string',
+    },
+    NEXT: 'never',
+    FINISH: 'never',
+  },
+  pContext: {
+    iterator: 'number',
+  },
+  context: {
+    iterator: 'number',
+    input: 'string',
+    data: helpers.array('string'),
+  },
+});
+
 export const machine2 = createMachine(
   'src/__tests__/interpreters/data/machine2',
   {
@@ -98,6 +118,7 @@ export const machine2 = createMachine(
     },
     ...config2,
   },
+  typings,
 ).provideOptions(({ isNotValue, isValue, assign, voidAction }) => ({
   actions: {
     inc: assign(
@@ -119,7 +140,7 @@ export const machine2 = createMachine(
         .map(item => item.name),
     ),
   },
-  predicates: {
+  guards: {
     isInputEmpty: isValue('context.input', ''),
     isInputNotEmpty: isNotValue('context.input', ''),
   },
@@ -156,6 +177,7 @@ const _config2 = createConfig({
 export const _machine2 = createMachine(
   'src/__tests__/interpreters/data/machine2._2',
   _config2,
+  typings,
 ).provideOptions(
   ({
     isNotValue,
@@ -193,7 +215,7 @@ export const _machine2 = createMachine(
         ),
       ),
     },
-    predicates: {
+    guards: {
       isInputEmpty: isValue('context.input', ''),
       isInputNotEmpty: isNotValue('context.input', ''),
     },
@@ -208,5 +230,7 @@ export const _machine2 = createMachine(
     },
   }),
 );
+
+type TT = Extract<EventsFrom<typeof machine2>, { type: 'WRITE' }>;
 
 // #endregion

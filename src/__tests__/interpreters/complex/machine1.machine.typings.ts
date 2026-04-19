@@ -1,49 +1,49 @@
-import { typings } from '#utils';
+import { helpers } from '@bemedev/typings';
 
-export const pphoneNumber = typings.any({
+export const pphoneNumber = helpers.any({
   countryCode: 'number',
   number: 'string',
-  network: typings.optional('string'),
+  network: helpers.optional('string'),
 });
 
-export const personality = typings.litterals('individual', 'company');
+export const personality = helpers.litterals('individual', 'company');
 
-export const social = typings.any({
+export const social = helpers.primitiveObject({
   platform: 'string',
   url: 'string',
 });
 
-export const intermediary = typings.intersection(
+export const intermediary = helpers.intersection(
   {
     id: 'string',
     wallet: 'string',
-    sacrifice: typings.optional('number'),
-    contacts: typings.any({
-      phoneNumbers: typings.array(pphoneNumber),
-      emails: typings.optional(typings.array('string')),
-      socials: typings.optional(typings.array(social)),
-      websites: typings.optional(typings.array('string')),
+    sacrifice: helpers.optional('number'),
+    contacts: helpers.primitiveObject({
+      phoneNumbers: helpers.array(pphoneNumber),
+      emails: helpers.optional(helpers.array('string')),
+      socials: helpers.optional(helpers.array(social)),
+      websites: helpers.optional(helpers.array('string')),
     }),
   },
-  typings.discriminatedUnion(
+  helpers.union.discriminated(
     'personality',
     {
-      personality: typings.litterals('individual'),
+      personality: helpers.litterals('individual'),
       nationalID: 'string',
-      name: typings.any({
-        firstName: typings.optional('string'),
-        lastName: typings.optional('string'),
+      name: helpers.primitiveObject({
+        firstName: helpers.optional('string'),
+        lastName: helpers.optional('string'),
       }),
     },
     {
-      personality: typings.litterals('company'),
+      personality: helpers.litterals('company'),
       companyName: 'string',
       registrationNumber: 'string',
     },
   ),
 );
 
-export const location = typings.partial({
+export const location = helpers.partial({
   address: 'string',
   city: 'string',
   country: 'string',
@@ -54,22 +54,22 @@ export const location = typings.partial({
   googleMapsLink: 'string',
 });
 
-export const currency = typings.any({
+export const currency = helpers.any({
   display: 'string',
   bank: 'string',
-  description: typings.optional('string'),
+  description: helpers.optional('string'),
 });
 
-export const asset = typings.any({
+export const asset = helpers.any({
   id: 'string',
   description: 'string',
   value: 'number',
   currency,
-  location: typings.optional(location),
+  location: helpers.optional(location),
 
-  medias: typings.partial({
-    photos: typings.array('string'),
-    videos: typings.array('string'),
-    documents: typings.array('string'),
+  medias: helpers.partial({
+    photos: helpers.array('string'),
+    videos: helpers.array('string'),
+    documents: helpers.array('string'),
   }),
 });

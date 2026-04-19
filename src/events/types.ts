@@ -103,9 +103,11 @@ export type ToEvents<E extends EventsMap, A extends ActorsConfigMap> =
 export type EventArgObject<E extends EventObject> =
   object extends E['payload']
     ? E['type'] | E
-    : Equals<E['payload'], EmptyObject> extends true
+    : E['payload'] extends never
       ? E['type'] | E
-      : E;
+      : Equals<E['payload'], EmptyObject> extends true
+        ? E['type'] | E
+        : E;
 
 export type EventArgAll<E extends AllEvent> = E extends string
   ? E

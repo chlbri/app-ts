@@ -1,8 +1,8 @@
+import { emptyFn } from '#fixtures';
 import { createMachine } from '#machine';
-import { typings, type inferT } from '#utils/typings';
+import { helpers, type inferT } from '@bemedev/typings';
 import isOnline from 'is-online';
 import { asset, intermediary } from './machine1.machine.typings';
-import { emptyFn } from '#fixtures';
 
 export const BLOCK_IMMO_INTERMEDIARY: inferT<typeof intermediary> = {
   id: 'block-immo-001',
@@ -107,19 +107,19 @@ export const machine = createMachine(
   },
   {
     eventsMap: {
-      START: {
+      START: helpers.partial({
         asset,
         mandatory: intermediary,
-      },
+      }),
       ADD_INTERMEDIARY: intermediary,
       RESET: 'primitive',
     },
 
-    context: typings.partial({
+    context: helpers.partial({
       asset,
-      intermediaries: typings.array(intermediary),
+      intermediaries: helpers.array(intermediary),
       internetStatus: 'boolean',
-      errors: typings.partial({
+      errors: helpers.partial({
         noAsset: 'string',
         intermediary: {
           offline: 'string',

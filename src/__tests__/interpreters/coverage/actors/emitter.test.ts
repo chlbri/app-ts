@@ -1,6 +1,6 @@
 import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
-import { notU, typings } from '#utils';
+import { notU } from '#utils';
 import { createPausable } from '@bemedev/rx-pausable';
 import { interval } from 'rxjs/internal/observable/interval';
 import { map } from 'rxjs/internal/operators/map';

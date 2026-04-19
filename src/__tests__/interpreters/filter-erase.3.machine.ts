@@ -1,8 +1,6 @@
 import { createMachine } from '#machine';
 import { typings } from '#utils';
 
-const scores = typings.record('number');
-
 export default createMachine(
   'src/__tests__/interpreters/filter-erase.3.machine',
   {
@@ -22,4 +20,5 @@ export default createMachine(
       filtered: {},
     },
   },
+  { context: { scores: typings.record('number') } },
 );

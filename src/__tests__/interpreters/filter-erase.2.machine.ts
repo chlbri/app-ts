@@ -7,11 +7,7 @@ interface Person {
   active: boolean;
 }
 
-const person = typings.any({
-  name: 'string',
-  age: 'number',
-  active: 'boolean',
-});
+const person = typings.custom<Person>();
 
 export default createMachine(
   'src/__tests__/interpreters/filter-erase.2.machine',
@@ -32,4 +28,5 @@ export default createMachine(
       filtered: {},
     },
   },
+  { context: { people: typings.array(person) } },
 );

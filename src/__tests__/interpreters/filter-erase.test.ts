@@ -1,6 +1,5 @@
 import { constructTests } from '#fixtures';
 import { interpret } from '#interpreter';
-import { typings } from '#utils';
 import _machine1 from './filter-erase.1.machine';
 import _machine2 from './filter-erase.2.machine';
 import _machine3 from './filter-erase.3.machine';
@@ -70,12 +69,6 @@ describe('Filter and Erase actions', () => {
         active: boolean;
       }
 
-      const person = typings.any({
-        name: 'string',
-        age: 'number',
-        active: 'boolean',
-      });
-
       const machine = _machine2;
 
       const service = interpret(machine, {
@@ -139,8 +132,6 @@ describe('Filter and Erase actions', () => {
     });
 
     describe('#03 => Filter object properties', () => {
-      const scores = typings.record('number');
-
       const machine = _machine3;
 
       const service = interpret(machine, {

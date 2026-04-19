@@ -7,17 +7,12 @@ import { DEFAULT_NOTHING } from '#constants';
 import type {
   ActorsConfigMap,
   EventArg,
-  EventArgT,
+  EventArgObject,
   EventObject,
   EventsMap,
-  ToEventsR,
 } from '#events';
 import type { Interpreter } from '#interpreter';
-import type {
-  Config,
-  ExtractTagsFromConfig,
-  GetEventsFromConfig,
-} from '#machines';
+import type { Config, GetEventsFromConfig } from '#machines';
 import type { StateValue } from '#states';
 import { IS_TEST } from '#utils';
 import type { EmptyObject } from '@bemedev/decompose';
@@ -189,9 +184,7 @@ type OptionTupleOf = (
 ) => [string, () => any];
 
 type Option<
-  C extends Config = Config,
-  E extends EventsMap = GetEventsFromConfig<C>,
-  A extends ActorsConfigMap = ActorsConfigMap,
+  Eo extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = {
@@ -201,13 +194,10 @@ type Option<
   tupleOf: OptionTupleOf;
 
   sender: {
-    <T extends EventArgT<E>>(
+    <T extends Eo['type']>(
       type: T,
     ): (
-      ...data: Extract<
-        ToEventsR<E, A>,
-        { type: T }
-      >['payload'] extends infer P
+      ...data: Extract<Eo, { type: T }>['payload'] extends infer P
         ? object extends P
           ? P extends never
             ? []
@@ -216,13 +206,10 @@ type Option<
         : []
     ) => TestArr;
 
-    index: <T extends EventArgT<E>>(
+    index: <T extends Eo['type']>(
       type: T,
     ) => (
-      ...data: Extract<
-        ToEventsR<E, A>,
-        { type: T }
-      >['payload'] extends infer P
+      ...data: Extract<Eo, { type: T }>['payload'] extends infer P
         ? object extends P
           ? [index: number]
           : [index: number, payload: P]
@@ -232,15 +219,15 @@ type Option<
 };
 
 type ConstructTestsResult<
-  C extends Config = Config,
-  E extends EventsMap = GetEventsFromConfig<C>,
+  Eo extends EventObject,
   T extends object = object,
+  Ta extends string = string,
 > = T &
   Record<
     'start' | 'stop' | 'dispose' | 'pause' | 'resume',
     (index?: number) => TestArr
   > & {
-    send: (_event: EventArg<E>, index?: number) => TestArr;
+    send: (_event: EventArgObject<Eo>, index?: number) => TestArr;
     useStateValue: (value: StateValue, index?: number) => TestArr;
     useWarnings: {
       (...warnings: string[]): TestArr;
@@ -250,16 +237,14 @@ type ConstructTestsResult<
       (...warnings: string[]): TestArr;
       index: (index: number, ...warnings: string[]) => TestArr;
     };
-  } & (ExtractTagsFromConfig<C> extends infer Tags
-    ? string extends Tags
-      ? EmptyObject
-      : {
-          useTags: {
-            (...tags: Tags[]): TestArr;
-            index: (index: number, ...tags: Tags[]) => TestArr;
-          };
-        }
-    : EmptyObject);
+  } & (string extends Ta
+    ? EmptyObject
+    : {
+        useTags: {
+          (...tags: Ta[]): TestArr;
+          index: (index: number, ...tags: Ta[]) => TestArr;
+        };
+      });
 
 type ConstructTestsResult2 = Record<
   'start' | 'stop' | 'dispose' | 'pause' | 'resume',
@@ -287,14 +272,14 @@ export const constructTests = <
   Tc extends PrimitiveObject = PrimitiveObject,
   const E extends EventsMap = EventsMap,
   const A extends ActorsConfigMap = ActorsConfigMap,
-  T extends object = object,
-  Ta extends ExtractTagsFromConfig<C> = ExtractTagsFromConfig<C>,
-  Eo extends EventObject = EventObject,
+  const T extends object = object,
+  const Ta extends string = string,
+  const Eo extends EventObject = EventObject,
 >(
   service: Interpreter<C, Pc, Tc, E, A, Ta, Eo>,
-  helper?: (option: Option<C, E, A, Pc, Tc>) => T,
+  helper?: (option: Option<Eo, Pc, Tc>) => T,
   startIndex = 0,
-): ConstructTestsResult<C, E, T> => {
+): ConstructTestsResult<Eo, T, Ta> => {
   let _index = startIndex;
   const index = (__index?: number) => {
     if (__index !== undefined) return __index + '';
@@ -519,5 +504,5 @@ export const constructTests = <
     ),
   };
 
-  return _unknown<ConstructTestsResult<C, E, T>>(out);
+  return _unknown<ConstructTestsResult<Eo, T, Ta>>(out);
 };

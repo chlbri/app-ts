@@ -1,5 +1,5 @@
 import { createMachine } from '#machine';
-import { typings } from '#utils';
+import { partial } from '@bemedev/typings/helpers';
 
 export default createMachine(
   'src/__tests__/actions/sendToActions/sendToActions1.machine',
@@ -26,7 +26,7 @@ export default createMachine(
     },
   },
   {
-    context: typings.partial({
+    context: partial({
       iterator: 'number',
     }),
   },

@@ -199,15 +199,17 @@ export type Subscribe_F<
   options?: SubscriberOptions<Eo, Tc, T>,
 ) => SubscriberClass<E, A, Tc, T, Eo>;
 
-export type Selector_F<T = any> = T extends Primitive
-  ? undefined
-  : <
-      D extends Decompose<T, { start: false; object: 'both' }>,
-      K extends Extract<keyof D, string>,
-      R = D[K],
-    >(
-      selector: K,
-    ) => R;
+export type Selector_F<T = any> = 0 extends 1 & T
+  ? (key: string) => any
+  : T extends Primitive
+    ? undefined
+    : <
+        D extends Decompose<T, { start: false; object: 'both' }>,
+        K extends Extract<keyof D, string>,
+        R = D[K],
+      >(
+        selector: K,
+      ) => R;
 
 export interface AnyInterpreter<
   E extends EventsMap = EventsMap,
@@ -239,7 +241,7 @@ export interface AnyInterpreter<
 
   subscribe: AddSubscriber_F<E, A, Tc, T>;
 
-  send: (event: EventArg<E>) => Promise<void>;
+  send: (event: any) => Promise<void>;
   toActionFn: (action: ActionConfig) => any;
   toPredicateFn: (guard: GuardConfig) => any;
   toPromiseSrcFn: (src: string) => any;

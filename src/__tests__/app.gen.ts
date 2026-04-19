@@ -24,8 +24,8 @@ type Entry<
     delays: string;
     guards: string;
   };
-  pContext?: PContext;
-  tags?: Tags;
+  pContext: PContext;
+  tags: Tags;
 };
 
 declare module '../index' {

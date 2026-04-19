@@ -1,4 +1,4 @@
-import { constructTests, defaultC, defaultT } from '#fixtures';
+import { constructTests, defaultC } from '#fixtures';
 import { interpret } from '#interpreter';
 import _machine1 from './always.1.machine';
 import _machine2 from './always.2.machine';

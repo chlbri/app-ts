@@ -5,10 +5,10 @@ import {
   DEFAULT_MAX_SELF_TRANSITIONS,
   DEFAULT_MIN_ACTIVITY_TIME,
 } from '#constants';
-import { constructTests, defaultC, defaultT } from '#fixtures';
+import { constructTests, defaultC } from '#fixtures';
 import { DELAY, fakeDB, machine21, machine3 } from '#fixturesData';
 import type { StateValue } from '#states';
-import { nothing, typings } from '#utils';
+import { nothing } from '#utils';
 
 import equal from 'fast-deep-equal';
 import { interpret, TIME_TO_RINIT_SELF_COUNTER } from '#interpreter';
@@ -231,9 +231,13 @@ describe('Composition', () => {
           return context.iterator + 1;
         }),
       },
-      predicates: {
+      guards: {
         condition: isValue('context.condition', false),
-        limit: ({ context: { iterator } }) => {
+        limit: ({
+          context: { iterator },
+        }: {
+          context: { iterator: number; condition: boolean };
+        }) => {
           return iterator <= DEFAULT_MAX_SELF_TRANSITIONS;
         },
       },

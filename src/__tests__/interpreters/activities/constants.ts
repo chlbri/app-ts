@@ -1,4 +1,3 @@
-import { defaultC } from '#fixtures';
 import { createMachine } from '#machine';
 
 export const DELAY = 1000;

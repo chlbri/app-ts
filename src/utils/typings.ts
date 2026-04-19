@@ -56,9 +56,9 @@ export type Custom<T = any> = {
   [CUSTOM]: T;
 };
 
-export type PartialCustom<T extends ObjectMap = EmptyObject> = {
+export type PartialCustom<T extends ObjectMap = EmptyObject> = T & {
   [PARTIAL]: undefined;
-} & T;
+};
 
 type __PrimitiveObject = Types | ObjectMap | Custom | PartialCustom;
 
@@ -186,7 +186,7 @@ export type TransformObject<T extends ObjectT> = Undefiny<
 >;
 
 export type TransformPrimitiveObject<T extends PrimitiveObjectT> =
-  TransformObject<T> extends infer U extends PrimitiveObject ? U : any;
+  TransformObject<T> extends infer U extends PrimitiveObject ? U : never;
 
 export const transformPrimitiveObject = <T extends ObjectT>(
   obj: T,

@@ -2,9 +2,9 @@ import tupleOf from '#bemedev/features/arrays/castings/tuple';
 import type { Keys } from '#bemedev/globals/types';
 import { interpret } from '#interpreter';
 import { type StateValue } from '#states';
-import { typings } from '#utils';
+import * as helpers from '@bemedev/typings/helpers';
 import { constructTests } from '#fixtures';
-import type { inferT } from '../../utils/typings';
+import type { inferT } from '@bemedev/typings';
 import _machine1 from './real.1.machine';
 import _machine2 from './real.2.machine';
 import _mainMachine3 from './real.3.machine';
@@ -15,11 +15,6 @@ beforeAll(() => {
 
 describe('REAL LIFE TESTS', () => {
   describe('#01 => Real life testing', () => {
-    const actions = {
-      exit: 'inc',
-      entry: 'inc',
-    } as const;
-
     const machine = _machine1.provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context', ({ context }) => context + 1),
@@ -155,11 +150,6 @@ describe('REAL LIFE TESTS', () => {
   });
 
   describe('#02 => Cover', () => {
-    const io = {
-      exit: 'inc',
-      entry: 'inc',
-    } as const;
-
     const machine = _machine2.provideOptions(({ assign }) => ({
       actions: {
         inc: assign('context', ({ context }) => context + 1),
@@ -749,27 +739,24 @@ describe('REAL LIFE TESTS', () => {
   });
 
   describe('#03 => Real life testing #2', () => {
-    const state = typings.litterals('registration', 'registered', 'idle');
-    // type State = 'registration' | 'registered' | 'idle';
+    // #region Typings
+    const csvData = helpers.record(helpers.union('string', 'number'));
 
-    const csvData = typings.record(typings.union('string', 'number'));
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const deep = typings.union(
+    const deep = helpers.union(
       'string',
       'number',
-      typings.array(typings.union('string', 'number')),
+      helpers.array(helpers.union('string', 'number')),
     );
 
     type CSVDataDeep = inferT<typeof deep> | CsvDataMap;
     interface CsvDataMap {
       [key: Keys]: CSVDataDeep;
     }
-    const csvDataDeep = typings.custom<CSVDataDeep>();
 
-    const lang = typings.litterals('en', 'es', 'fr');
+    const csvDataDeep = helpers.custom<CSVDataDeep>();
+    const lang = helpers.litterals('en', 'es', 'fr');
 
-    const fieldType = typings.litterals(
+    const fieldType = helpers.litterals(
       'number',
       'date',
       'conditional',
@@ -787,19 +774,20 @@ describe('REAL LIFE TESTS', () => {
       'week',
     );
 
-    const field = typings.any({
+    const field = helpers.any({
       label: 'string',
       type: fieldType,
-      options: typings.optional(typings.array('string')),
-      data: typings.optional(
-        typings.partial({
-          data: [csvData],
-          headers: ['string'],
+      options: helpers.optional(helpers.array('string')),
+      data: helpers.optional(
+        helpers.partial({
+          data: helpers.array(csvData),
+          headers: helpers.array('string'),
           merged: csvDataDeep,
           name: 'string',
         }),
       ),
     });
+    // #endregion
 
     const mainMachine = _mainMachine3.provideOptions(
       ({ assign, debounce }) => ({
@@ -934,7 +922,7 @@ describe('REAL LIFE TESTS', () => {
       });
     };
 
-    const useValue = (value: inferT<typeof typings.sv>, index: number) => {
+    const useValue = (value: inferT<typeof helpers.sv>, index: number) => {
       const invite = `#${index < 10 ? '0' + index : index} => value match`;
       return tupleOf(invite, () => {
         expect(service.state.value).toEqual(value);

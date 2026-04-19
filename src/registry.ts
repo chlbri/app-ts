@@ -1,5 +1,5 @@
 import type { ConfigDef, NoExtraKeysConfigDef } from '#machines';
-import type { ObjectT } from '#utils/typings';
+import type { ObjectT } from '@bemedev/typings';
 import type { AnyMachine } from './machine/machine.types';
 
 export type RegisterOptions = Record<

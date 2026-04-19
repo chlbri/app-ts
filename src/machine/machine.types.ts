@@ -19,6 +19,7 @@ import type {
   ActorsConfigMap,
   EventArg,
   EventArgAll,
+  EventArgObject,
   EventObject,
   EventsMap,
 } from '#events';
@@ -130,13 +131,22 @@ export type AssignAction_F<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = <
-  D = Decompose<
-    {
-      pContext: Pc;
-      context: Tc;
-    },
-    { object: 'both'; start: false; sep: '.' }
-  >,
+  D = 0 extends 1 & Tc
+    ? Record<string, any>
+    : 0 extends 1 & Pc
+      ? Decompose<
+          { context: Tc },
+          { object: 'both'; start: false; sep: '.' }
+        >
+      : Pc extends undefined
+        ? Decompose<
+            { context: Tc },
+            { object: 'both'; start: false; sep: '.' }
+          >
+        : Decompose<
+            { pContext: Pc; context: Tc },
+            { object: 'both'; start: false; sep: '.' }
+          >,
   K extends keyof D = keyof D,
   F extends D[K] | Promise<D[K]> = D[K] | Promise<D[K]>,
   Err extends PrimitiveObject = PrimitiveObject,
@@ -196,23 +206,30 @@ export type FilterAction_F<
   Tc extends PrimitiveObject = PrimitiveObject,
   T extends string = string,
 > = <
-  D = Decompose<
-    {
-      pContext: Pc;
-      context: Tc;
-    },
-    { object: 'object'; start: false; sep: '.' }
-  >,
+  D = 0 extends 1 & Tc
+    ? Record<string, any>
+    : 0 extends 1 & Pc
+      ? Decompose<
+          { context: Tc },
+          { object: 'both'; start: false; sep: '.' }
+        >
+      : Pc extends undefined
+        ? Decompose<
+            { context: Tc },
+            { object: 'both'; start: false; sep: '.' }
+          >
+        : Decompose<
+            { pContext: Pc; context: Tc },
+            { object: 'both'; start: false; sep: '.' }
+          >,
   K extends keyof D & string = keyof D & string,
 >(
   key: K,
-  fn: K extends string
-    ? D[K] extends Array<infer Item>
-      ? (item: Item, index: number, array: Item[]) => boolean
-      : D[K] extends Ru
-        ? (value: ValuesOf<D[K]>, all: D[K]) => boolean
-        : never
-    : never,
+  fn: D[K] extends Array<infer Item>
+    ? (item: Item, index: number, array: Item[]) => boolean
+    : D[K] extends Ru
+      ? (value: ValuesOf<D[K]>, all: D[K]) => boolean
+      : never,
 ) => Action2<E, Pc, Tc, T>;
 
 export type EraseAction_F<
@@ -222,16 +239,25 @@ export type EraseAction_F<
   T extends string = string,
 > = <
   D extends object = Extract<
-    Decompose<
-      {
-        pContext: Pc;
-        context: Tc;
-      },
-      { object: 'both'; start: false; sep: '.' }
-    >,
+    0 extends 1 & Tc
+      ? Record<string, any>
+      : 0 extends 1 & Pc
+        ? Decompose<
+            { context: Tc },
+            { object: 'both'; start: false; sep: '.' }
+          >
+        : Pc extends undefined
+          ? Decompose<
+              { context: Tc },
+              { object: 'both'; start: false; sep: '.' }
+            >
+          : Decompose<
+              { pContext: Pc; context: Tc },
+              { object: 'both'; start: false; sep: '.' }
+            >,
     object
   >,
-  DD = SubTypeLow<D, undefined>,
+  DD = 0 extends 1 & Tc ? Record<string, any> : SubTypeLow<D, undefined>,
   K extends keyof DD & string = keyof DD & string,
 >(
   key: K,
@@ -400,13 +426,13 @@ export type SendToEvent<T = any> = {
 };
 
 export type ExtendedActionsParams<
-  E extends EventsMap = EventsMap,
+  Eo extends EventObject = EventObject,
   Pc = any,
   Tc extends PrimitiveObject = PrimitiveObject,
 > = Partial<{
   scheduled: ScheduledData<Pc, Tc>;
-  resend: EventArg<E>;
-  forceSend: EventArg<E>;
+  resend: EventArgObject<Eo>;
+  forceSend: EventArgObject<Eo>;
   pauseActivity: string;
   resumeActivity: string;
   stopActivity: string;

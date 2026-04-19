@@ -95,7 +95,7 @@ describe.concurrent('Legacy Options Access', () => {
 
     // Second call - access and extend with isNegative using _legacy
     machine.addOptions((_, { _legacy }) => {
-      const previousPredicates = _legacy.predicates;
+      const previousPredicates = _legacy.guards;
       expect(previousPredicates?.isPositive).toBeDefined();
 
       return {
@@ -312,7 +312,7 @@ describe.concurrent('Legacy Options Access', () => {
 
       // Second call - access and extend with isNegative using _legacy
       service.addOptions((_, { _legacy }) => {
-        const previousPredicates = _legacy.predicates;
+        const previousPredicates = _legacy.guards;
         expect(previousPredicates?.isPositive).toBeDefined();
 
         return {

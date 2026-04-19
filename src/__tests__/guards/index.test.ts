@@ -1,7 +1,5 @@
-import numberT from '#bemedev/features/numbers/typings';
-import stringT from '#bemedev/features/strings/typings';
 import { interpret } from '#interpreter';
-import { constructTests, defaultC, defaultT } from '#fixtures';
+import { constructTests, defaultC } from '#fixtures';
 import { transformEventArg, ALWAYS_EVENT } from '#events';
 import _machine1 from './index.1.machine';
 import _machine2 from './index.2.machine';

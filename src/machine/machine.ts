@@ -50,14 +50,9 @@ import { ActorsConfigMap, EventsR, type EventObject } from '#events';
 
 import { _unknown } from '#bemedev/globals/utils/_unknown';
 import type { PredicateS } from '#guards';
-import type {
-  ActorsMapT,
-  ObjectT,
-  PrimitiveObjectT,
-  TransformObject,
-  TransformPrimitiveObject,
-} from '#utils/typings';
+import type { ActorsMapT } from '#utils/typings';
 import { withTimeout } from '@bemedev/better-promise';
+import { inferT, ObjectT } from '@bemedev/typings';
 import cloneDeep from 'clone-deep';
 import { registerMachine, type Register } from '../registry';
 import { assignByKey, expandFnMap } from './functions';
@@ -92,11 +87,11 @@ class Machine<
   const C extends Config = Config,
   const Pc = any,
   const Tc extends PrimitiveObject = PrimitiveObject,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Ta extends string = string,
-  Eo extends EventObject = EventObject,
-  AllPaths extends string = string,
+  const E extends EventsMap = EventsMap,
+  const A extends ActorsConfigMap = ActorsConfigMap,
+  const Ta extends string = string,
+  const Eo extends EventObject = EventObject,
+  const AllPaths extends string = string,
   Mo extends MachineOptions<C, A, Pc, Tc, Ta, Eo> = MachineOptions<
     C,
     A,
@@ -1296,7 +1291,7 @@ export function createMachine<
     Current['paths']['map']
   >,
   const Pc extends Current['pContext'] = Current['pContext'],
-  const Tc extends PrimitiveObjectT = PrimitiveObjectT,
+  const Tc extends ObjectT = ObjectT,
   const E extends Record<Current['events'], ObjectT> = Record<
     Current['events'],
     ObjectT
@@ -1308,8 +1303,8 @@ export function createMachine<
     Current['options']['children'],
     Current['options']['emitters']
   >,
-  const _E extends EventsMap = Cast<TransformObject<E>, EventsMap>,
-  _A extends ActorsConfigMap = Cast<TransformObject<A>, ActorsConfigMap>,
+  const _E extends EventsMap = Cast<inferT<E>, EventsMap>,
+  _A extends ActorsConfigMap = Cast<inferT<A>, ActorsConfigMap>,
 >(
   name: Name,
   config: C,
@@ -1322,8 +1317,8 @@ export function createMachine<
   },
 ): Machine<
   C,
-  TransformObject<Cast<Pc, 'undefined'>>,
-  TransformPrimitiveObject<Tc>,
+  inferT<Pc extends ObjectT ? Pc : 'undefined'>,
+  inferT<Tc> extends infer U extends PrimitiveObject ? U : any,
   _E,
   _A,
   Exclude<Current['tags'], undefined>,

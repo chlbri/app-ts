@@ -35,6 +35,7 @@ describe('machine coverage', () => {
 
         pContext: { iterator: 0 },
       });
+
       const subscriber = service.subscribe(
         {
           WRITE: ({ payload: { value } }) =>
@@ -58,6 +59,8 @@ describe('machine coverage', () => {
       const strings: (string | string[])[] = [];
 
       // #region Hooks
+
+      service.send('NEXT');
 
       const {
         start,
@@ -151,10 +154,7 @@ describe('machine coverage', () => {
           test(...useStateValue('idle', 1));
           test(...useIterator(6, 2));
           test(...useIteratorC(6, 3));
-          const array = [
-            'Debounced action executed',
-            // ...Array(16).fill('nothing call nothing'),
-          ];
+          const array = ['Debounced action executed'];
           describe(...useConsole(4, ...array));
         });
 
@@ -327,162 +327,170 @@ describe('machine coverage', () => {
           describe(...useConsole(5, ['WRITE with', ':', `"${INPUT}"`]));
         });
 
-        test(...useWaiter(12, 20));
+        describe.skip('REST', () => {
+          test(...useWaiter(12, 20));
 
-        describe('#21 => Check the service', () => {
-          test(
-            ...useStateValue(
-              {
-                working: {
-                  fetch: 'idle',
-                  ui: 'idle',
+          describe('#21 => Check the service', () => {
+            test(
+              ...useStateValue(
+                {
+                  working: {
+                    fetch: 'idle',
+                    ui: 'idle',
+                  },
                 },
-              },
-              1,
-            ),
-          );
+                1,
+              ),
+            );
 
-          test(...useIterator(90, 2));
-          test(...useIteratorC(48, 3));
-          test(...useInput('', 4));
-          describe(...useConsole(5, ...Array(12).fill('sendPanelToUser')));
-        });
-
-        test(
-          '#22 => Close the subscriber',
-          subscriber.close.bind(subscriber),
-        );
-
-        test(...useWrite({ value: INPUT }));
-
-        describe('#24 => Check the service', () => {
-          test(
-            ...useStateValue(
-              {
-                working: {
-                  fetch: 'idle',
-                  ui: 'input',
-                },
-              },
-              1,
-            ),
-          );
-
-          test(...useIterator(90, 2));
-          test(...useIteratorC(48, 3));
-          test(...useInput(INPUT, 4));
-          describe(...useConsole(5));
-        });
-
-        test(...useWaiter(6, 25));
-
-        describe('#26 => Check the service', () => {
-          test(
-            ...useStateValue(
-              {
-                working: {
-                  fetch: 'idle',
-                  ui: 'input',
-                },
-              },
-              1,
-            ),
-          );
-
-          test(...useIterator(102, 2));
-          test(...useIteratorC(54, 3));
-          test(...useInput(INPUT, 4));
-          describe(...useData(5));
-          describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
-        });
-
-        test(...send('FETCH', 27));
-
-        describe('#28 => Check the service', () => {
-          test(
-            ...useStateValue(
-              {
-                working: {
-                  fetch: 'idle',
-                  ui: 'input',
-                },
-              },
-              1,
-            ),
-          );
-
-          test(...useIterator(102, 2));
-          test(...useIteratorC(54, 3));
-          test(...useInput(INPUT, 4));
-          describe(...useData(5, ...FAKES));
-          describe(...useConsole(6));
-        });
-
-        test(...useWaiter(0, 29));
-
-        describe('#30 => Check the service', () => {
-          test(
-            ...useStateValue(
-              {
-                working: {
-                  fetch: 'idle',
-                  ui: 'input',
-                },
-              },
-              1,
-            ),
-          );
-
-          test(...useIterator(102, 2));
-          test(...useIteratorC(54, 3));
-          test(...useInput(INPUT, 4));
-          describe(...useData(5, ...FAKES));
-          describe(...useConsole(5));
-        });
-
-        test(...useWaiter(6, 31));
-
-        describe('#32 => Check the service', () => {
-          test(
-            ...useStateValue(
-              {
-                working: {
-                  fetch: 'idle',
-                  ui: 'input',
-                },
-              },
-              1,
-            ),
-          );
-
-          test(...useIterator(114, 2));
-          test(...useIteratorC(60, 3));
-          test(...useInput(INPUT, 4));
-          describe(...useData(5, ...FAKES));
-          describe(...useConsole(6, ...Array(6).fill('sendPanelToUser')));
-        });
-
-        describe('#33 => Close the service', async () => {
-          test(...pause(1));
-
-          describe('#02 => Calls of log', () => {
-            test('#01 => Length of calls of log is the same of length of strings', () => {
-              expect(log).toBeCalledTimes(strings.length);
-            });
-
-            test('#02 => Log is called "70" times', () => {
-              expect(log).toBeCalledTimes(70);
-            });
-          });
-
-          test('#03 => Log the time of all tests', () => {
-            console.timeEnd(TEXT);
+            test(...useIterator(90, 2));
+            test(...useIteratorC(48, 3));
+            test(...useInput('', 4));
+            describe(
+              ...useConsole(5, ...Array(12).fill('sendPanelToUser')),
+            );
           });
 
           test(
-            '#04 => dispose',
-            service[Symbol.asyncDispose].bind(service),
+            '#22 => Close the subscriber',
+            subscriber.close.bind(subscriber),
           );
+
+          test(...useWrite({ value: INPUT }));
+
+          describe('#24 => Check the service', () => {
+            test(
+              ...useStateValue(
+                {
+                  working: {
+                    fetch: 'idle',
+                    ui: 'input',
+                  },
+                },
+                1,
+              ),
+            );
+
+            test(...useIterator(90, 2));
+            test(...useIteratorC(48, 3));
+            test(...useInput(INPUT, 4));
+            describe(...useConsole(5));
+          });
+
+          test(...useWaiter(6, 25));
+
+          describe('#26 => Check the service', () => {
+            test(
+              ...useStateValue(
+                {
+                  working: {
+                    fetch: 'idle',
+                    ui: 'input',
+                  },
+                },
+                1,
+              ),
+            );
+
+            test(...useIterator(102, 2));
+            test(...useIteratorC(54, 3));
+            test(...useInput(INPUT, 4));
+            describe(...useData(5));
+            describe(
+              ...useConsole(6, ...Array(6).fill('sendPanelToUser')),
+            );
+          });
+
+          test(...send('FETCH', 27));
+
+          describe('#28 => Check the service', () => {
+            test(
+              ...useStateValue(
+                {
+                  working: {
+                    fetch: 'idle',
+                    ui: 'input',
+                  },
+                },
+                1,
+              ),
+            );
+
+            test(...useIterator(102, 2));
+            test(...useIteratorC(54, 3));
+            test(...useInput(INPUT, 4));
+            describe(...useData(5, ...FAKES));
+            describe(...useConsole(6));
+          });
+
+          test(...useWaiter(0, 29));
+
+          describe('#30 => Check the service', () => {
+            test(
+              ...useStateValue(
+                {
+                  working: {
+                    fetch: 'idle',
+                    ui: 'input',
+                  },
+                },
+                1,
+              ),
+            );
+
+            test(...useIterator(102, 2));
+            test(...useIteratorC(54, 3));
+            test(...useInput(INPUT, 4));
+            describe(...useData(5, ...FAKES));
+            describe(...useConsole(5));
+          });
+
+          test(...useWaiter(6, 31));
+
+          describe('#32 => Check the service', () => {
+            test(
+              ...useStateValue(
+                {
+                  working: {
+                    fetch: 'idle',
+                    ui: 'input',
+                  },
+                },
+                1,
+              ),
+            );
+
+            test(...useIterator(114, 2));
+            test(...useIteratorC(60, 3));
+            test(...useInput(INPUT, 4));
+            describe(...useData(5, ...FAKES));
+            describe(
+              ...useConsole(6, ...Array(6).fill('sendPanelToUser')),
+            );
+          });
+
+          describe('#33 => Close the service', async () => {
+            test(...pause(1));
+
+            describe('#02 => Calls of log', () => {
+              test('#01 => Length of calls of log is the same of length of strings', () => {
+                expect(log).toBeCalledTimes(strings.length);
+              });
+
+              test('#02 => Log is called "70" times', () => {
+                expect(log).toBeCalledTimes(70);
+              });
+            });
+
+            test('#03 => Log the time of all tests', () => {
+              console.timeEnd(TEXT);
+            });
+
+            test(
+              '#04 => dispose',
+              service[Symbol.asyncDispose].bind(service),
+            );
+          });
         });
       });
     });

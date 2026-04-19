@@ -19,7 +19,7 @@ import {
   possibleEvents,
   transformEventArg,
   type ActorsConfigMap,
-  type EventArg,
+  type EventArgObject,
   type EventArgT,
   type EventObject,
   type EventsMap,
@@ -148,10 +148,10 @@ export class Interpreter<
   const C extends Config = Config,
   const Pc = any,
   const Tc extends PrimitiveObject = PrimitiveObject,
-  E extends EventsMap = EventsMap,
-  A extends ActorsConfigMap = ActorsConfigMap,
-  Ta extends string = string,
-  Eo extends EventObject = EventObject,
+  const E extends EventsMap = EventsMap,
+  const A extends ActorsConfigMap = ActorsConfigMap,
+  const Ta extends string = string,
+  const Eo extends EventObject = EventObject,
   AllPaths extends string = string,
 > implements AnyInterpreter<E, A, Pc, Tc> {
   /**
@@ -829,7 +829,7 @@ export class Interpreter<
     return this.#sendTo(sentEvent.to, sentEvent.event);
   };
 
-  #performResendAction = async (resend?: EventArg<E>) => {
+  #performResendAction = async (resend?: EventArgObject<Eo>) => {
     if (!resend) return;
     const cannot = this.#cannotPerformEvents(resend);
     if (cannot) return;
@@ -845,7 +845,7 @@ export class Interpreter<
    *
    * @see {@linkcode TransitionConfig} for more information about transitions.
    */
-  #performForceSendAction = async (forceSend?: EventArg<E>) => {
+  #performForceSendAction = async (forceSend?: EventArgObject<Eo>) => {
     if (!forceSend) return;
     const values = Object.values(this.#machine.flat);
 
@@ -901,7 +901,7 @@ export class Interpreter<
     resumeTimer,
     stopTimer,
     sentEvent,
-  }: ExtendedActionsParams<E, Pc, Tc>) => {
+  }: ExtendedActionsParams<Eo, Pc, Tc>) => {
     this.#performSendToAction(sentEvent);
 
     this.#performScheduledAction(scheduled);
@@ -1985,7 +1985,7 @@ export class Interpreter<
     return possibleEvents(this.#flat);
   }
 
-  #cannotPerformEvents = (_event: EventArg<E>) => {
+  #cannotPerformEvents = (_event: EventArgObject<Eo>) => {
     const type = eventToType(_event);
     const check = !this.#possibleEvents.includes(type);
     return check;
@@ -2004,7 +2004,7 @@ export class Interpreter<
 
     return (...data: Payload) => {
       const payload = data.length === 1 ? data[0] : {};
-      const event = { type, payload } as EventArg<E>;
+      const event = { type, payload } as unknown as EventArgObject<Eo>;
       return this.send(event);
     };
   };
@@ -2015,7 +2015,7 @@ export class Interpreter<
    * @param _event - the {@linkcode EventArg} event to send.
    *
    */
-  #send = async (_event: EventArg<E>) => {
+  #send = async (_event: EventArgObject<Eo>) => {
     const event = transformEventArg(_event);
     const next = await this._send(event as any);
 
@@ -2036,7 +2036,7 @@ export class Interpreter<
    * If the event cannot be performed, it will not be sent.
    * If the event is sent, it will be processed and the state will be updated.
    */
-  send = async (_event: EventArg<E>) => {
+  send = async (_event: EventArgObject<Eo>) => {
     const check = this.#cannotPerformEvents(_event);
     if (check) return;
     return this.#send(_event);
